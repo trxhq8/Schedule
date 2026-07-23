@@ -1,0 +1,2509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مخططي">
+<meta name="application-name" content="مخططي">
+<meta name="theme-color" content="#7c9473">
+<meta name="msapplication-TileColor" content="#4c6350">
+<meta name="description" content="مخطط يومي شخصي: تودو، أكل، وتمارين">
+<title>My Planner | مخططي</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMzMzQ0M0EiLz4KPHJlY3QgeD0iMjciIHk9IjI0IiB3aWR0aD0iMTAiIGhlaWdodD0iNTIiIHJ4PSI0IiBmaWxsPSIjRTBBNDU4Ii8+CjxyZWN0IHg9IjMzIiB5PSIyMCIgd2lkdGg9IjQyIiBoZWlnaHQ9IjYwIiByeD0iNSIgZmlsbD0iI0Y3RjVFRSIvPgo8cmVjdCB4PSI0MSIgeT0iMzQiIHdpZHRoPSIyNiIgaGVpZ2h0PSIzLjQiIHJ4PSIxLjciIGZpbGw9IiNCOUM0QjUiLz4KPHJlY3QgeD0iNDEiIHk9IjQ1IiB3aWR0aD0iMjYiIGhlaWdodD0iMy40IiByeD0iMS43IiBmaWxsPSIjQjlDNEI1Ii8+CjxyZWN0IHg9IjQxIiB5PSI1NiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjMuNCIgcng9IjEuNyIgZmlsbD0iI0I5QzRCNSIvPgo8cGF0aCBkPSJNNDAgNjggTDQ4LjUgNzYgTDY1IDU3IiBmaWxsPSJub25lIiBzdHJva2U9IiNFMEE0NTgiIHN0cm9rZS13aWR0aD0iNi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Tajawal:wght@400;500;700&family=Rubik:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f5ee; --card:#ffffff; --ink:#2f3d33; --ink-soft:#5b6a5f;
+    --accent:#7c9473; --accent-deep:#4c6350; --gold:#e0a458; --line:#e7e3d5;
+    --blue:#6a8caf; --water:#6fa3c9; --shadow:0 10px 30px rgba(0,0,0,0.10);
+    --font-head:'Cairo',sans-serif; --font-body:'Tajawal',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); font-family:var(--font-body); color:var(--ink); padding:0 0 60px; min-height:100vh; }
+  .wrap{max-width:760px; margin:0 auto; padding:0 14px;}
+  .hidden{display:none !important;}
+  h1,h2,h3{font-family:var(--font-head);}
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---- onboarding (name + style only) ---- */
+  .ob-overlay{ position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+  .ob-card{ background:var(--card); border-radius:22px; max-width:440px; width:100%; padding:24px 22px; box-shadow:var(--shadow); animation:fadeUp .4s ease; margin:auto; }
+  .ob-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .ob-progress{ display:flex; gap:5px; }
+  .ob-dot{ width:7px; height:7px; border-radius:50%; background:var(--line); }
+  .ob-dot.active{ background:var(--accent-deep); width:20px; border-radius:5px; }
+  .lang-toggle{ font-family:var(--font-head); font-weight:700; font-size:0.75rem; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:999px; padding:5px 12px; cursor:pointer; }
+  .ob-step{display:none;} .ob-step.active{display:block; animation:fadeUp .3s ease;}
+  .ob-card h2{ color:var(--accent-deep); font-size:1.15rem; text-align:center; margin:0 0 6px; }
+  .ob-card p.sub{ text-align:center; color:var(--ink-soft); font-size:0.83rem; margin:0 0 16px; }
+  .ob-input{ width:100%; border:1.5px solid var(--line); border-radius:14px; padding:13px 16px; font-family:var(--font-body); font-size:1rem; background:var(--bg); color:var(--ink); text-align:center; margin-bottom:16px; }
+  .ob-input:focus{ outline:none; border-color:var(--accent-deep); }
+  .ob-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .ob-choice{ border:1.5px solid var(--line); border-radius:14px; padding:14px 8px; text-align:center; cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.82rem; background:var(--bg); transition:all .15s ease; color:var(--ink); }
+  .ob-choice .ic{ font-size:1.5rem; display:block; margin-bottom:5px; }
+  .ob-choice.selected{ border-color:var(--accent-deep); background:var(--card); box-shadow:var(--shadow); outline:2px solid var(--accent-deep); }
+  .ob-btn{ width:100%; font-family:var(--font-head); font-weight:800; font-size:0.95rem; background:var(--accent-deep); color:#fff; border:none; border-radius:14px; padding:13px; cursor:pointer; }
+  .ob-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .ob-btn.secondary{ background:transparent; color:var(--ink-soft); font-weight:700; margin-top:8px; font-size:0.8rem; }
+  .palette-dot{ width:36px; height:36px; border-radius:50%; margin:0 auto 6px; }
+  .val-msg{ color:#c0392b; font-size:0.76rem; text-align:center; margin-bottom:10px; min-height:15px; }
+
+  /* ---- topnav ---- */
+  .topnav{ position:sticky; top:0; z-index:40; backdrop-filter:blur(10px); background:color-mix(in srgb, var(--bg) 85%, transparent); border-bottom:1px solid var(--line); padding:10px 14px; }
+  .topnav-inner{ max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .brand{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:0.9rem; }
+  .nav-actions{ display:flex; gap:6px; }
+  .icon-btn{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; color:var(--ink); }
+
+  /* ---- home ---- */
+  .hero{ text-align:center; padding:22px 0 8px; animation:fadeUp .5s ease; }
+  .hero h1{ font-weight:800; font-size:1.3rem; color:var(--accent-deep); margin:0 0 6px; }
+  .hero p{ margin:0; color:var(--ink-soft); font-size:0.85rem; }
+  .day-badge{ display:inline-block; margin-top:12px; font-family:var(--font-head); font-weight:800; background:var(--accent-deep); color:#fff; padding:8px 18px; border-radius:999px; font-size:0.86rem; box-shadow:var(--shadow); }
+  .home-cards{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:22px; }
+  @media(min-width:520px){ .home-cards{grid-template-columns:repeat(3,1fr);} }
+  .home-card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px 16px; text-align:center; cursor:pointer; transition:transform .15s ease; box-shadow:var(--shadow); }
+  .home-card:hover{ transform:translateY(-4px); }
+  .home-card .ic{ font-size:2.2rem; display:block; margin-bottom:8px; }
+  .home-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; }
+  .home-card .dsc{ font-size:0.75rem; color:var(--ink-soft); margin-top:4px; }
+
+  .back-row{ margin:14px 0 4px; display:flex; justify-content:space-between; align-items:center; }
+  .back-btn{ font-family:var(--font-head); font-weight:700; font-size:0.8rem; background:var(--card); border:1px solid var(--line); color:var(--ink-soft); border-radius:999px; padding:7px 16px; cursor:pointer; }
+  .edit-btn{ font-family:var(--font-head); font-weight:700; font-size:0.75rem; background:none; border:none; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
+
+  section.panel{ display:none; padding-top:6px; } section.panel.active{ display:block; animation:fadeUp .3s ease; }
+
+  .setup-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px 16px; box-shadow:var(--shadow); margin-bottom:16px; }
+  .setup-card h3{ color:var(--accent-deep); font-size:1rem; margin:0 0 4px; }
+  .setup-card p.sub{ color:var(--ink-soft); font-size:0.8rem; margin:0 0 14px; }
+  .setup-btn{ width:100%; font-family:var(--font-head); font-weight:800; font-size:0.9rem; background:var(--accent-deep); color:#fff; border:none; border-radius:12px; padding:12px; cursor:pointer; margin-top:6px; }
+  .setup-input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:10px 14px; font-family:var(--font-body); font-size:0.88rem; background:var(--bg); color:var(--ink); margin-bottom:12px; }
+  .setup-row{ display:flex; gap:10px; margin-bottom:12px; }
+  .setup-row > *{ flex:1; }
+  .tag-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .tag-chip{ background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:0.78rem; display:flex; align-items:center; gap:6px; color:var(--ink); }
+  .commit-chip .pin-btn{ opacity:0; transition:opacity 0.15s; background:none; border:none; cursor:pointer; font-size:0.85rem; padding:2px; }
+  .commit-chip:hover .pin-btn, .commit-chip .pin-btn.pinned-visible{ opacity:1; }
+  .tag-chip button{ border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:0.85rem; padding:0; line-height:1; }
+  .tag-add-row{ display:flex; gap:8px; margin-bottom:12px; }
+  .tag-add-row input{ flex:1; margin-bottom:0; }
+  .tag-add-row button{ flex:0 0 auto; width:auto; padding:0 16px; margin-top:0; border-radius:12px; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:14px 0 16px; font-size:0.76rem; color:var(--ink-soft); }
+  .legend span{ background:var(--card); border:1px solid var(--line); padding:4px 10px; border-radius:999px; }
+
+  .log-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:18px; box-shadow:var(--shadow); }
+  .log-card h3{ color:var(--accent-deep); font-size:0.95rem; margin:0 0 10px; }
+  .log-form{ display:flex; gap:8px; margin-bottom:12px; }
+  .log-form input{ flex:1; border:1px solid var(--line); border-radius:12px; padding:9px 12px; font-family:var(--font-body); font-size:0.88rem; background:var(--bg); color:var(--ink); }
+  .log-form button{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; background:var(--accent-deep); color:#fff; border:none; border-radius:12px; padding:9px 18px; cursor:pointer; }
+  .chart-box{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px; margin-bottom:12px; }
+  .log-list{ display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto; }
+  .log-row{ display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:7px 12px; font-size:0.82rem; }
+  .log-row .kg{ font-weight:800; color:var(--accent-deep); font-family:var(--font-head); }
+  .log-row .diff{ font-size:0.72rem; font-weight:700; }
+  .log-row .diff.up{ color:#5a8a5f; } .log-row .diff.down{ color:#c15b4a; }
+  .log-empty{ text-align:center; color:var(--ink-soft); font-size:0.8rem; padding:10px 0; }
+
+  .grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+  @media(max-width:480px){ .grid{grid-template-columns:repeat(4,1fr);} }
+  .day-btn{ aspect-ratio:1; background:var(--card); border:1px solid var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:transform .15s ease; font-family:var(--font-head); position:relative; padding:4px; }
+  .day-btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow); }
+  .day-btn .num{ font-weight:800; font-size:0.82rem; color:var(--accent-deep); }
+  .day-btn .preview{ font-size:0.78rem; margin-top:2px; }
+  .day-btn.special{ border-color:var(--gold); }
+  .day-btn.rest{ opacity:0.65; }
+  .day-btn.today{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+  .day-btn.today::before{ content:attr(data-today-label); position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:var(--accent-deep); color:#fff; font-size:0.55rem; padding:1px 6px; border-radius:999px; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px; backdrop-filter:blur(2px); }
+  .overlay.open{ display:flex; }
+  .card{ background:var(--card); border-radius:20px; max-width:430px; width:100%; max-height:88vh; overflow-y:auto; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.3); padding:26px 20px 22px; animation:popIn .2s ease; }
+  @keyframes popIn{ from{opacity:0; transform:scale(.95);} to{opacity:1; transform:scale(1);} }
+  .card h2{ text-align:center; color:var(--accent-deep); font-size:1.1rem; margin:6px 0 2px; }
+  .card .subtitle{ text-align:center; color:var(--ink-soft); font-size:0.8rem; margin-bottom:14px; }
+  .total-kcal{ text-align:center; border:1px solid var(--gold); border-radius:999px; padding:8px 16px; font-family:var(--font-head); font-weight:800; color:var(--gold); font-size:0.9rem; margin-bottom:14px; }
+  .meal,.exercise{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px 14px; margin-bottom:10px; }
+  .meal .label{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; color:var(--accent-deep); margin-bottom:3px; display:flex; justify-content:space-between; }
+  .meal .label .kcal{ font-size:0.7rem; color:var(--gold); border:1px solid var(--line); border-radius:999px; padding:1px 8px; }
+  .meal .content,.exercise .content{ font-size:0.86rem; line-height:1.7; color:var(--ink); }
+  .exercise .label{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; color:var(--blue); margin-bottom:4px; }
+  .exercise .content div{ padding:2px 0; }
+  .warn-chip{ background:var(--bg); border:1px solid #d9a79e; color:#b06355; border-radius:12px; padding:8px 12px; font-size:0.77rem; line-height:1.6; margin-top:6px; }
+  .info-chip{ background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); border-radius:12px; padding:8px 12px; font-size:0.77rem; line-height:1.6; margin-top:6px; }
+  .close-btn{ position:absolute; top:10px; left:10px; background:var(--accent); color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-size:1rem; cursor:pointer; }
+
+  .today-date{ text-align:center; font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; margin-bottom:4px; }
+  .today-plan{ text-align:center; color:var(--ink-soft); font-size:0.8rem; margin-bottom:16px; }
+  .checklist{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .check-item{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; transition:all .15s ease; box-shadow:var(--shadow); }
+  .check-item.done{ border-color:var(--accent); }
+  .check-item .box{ width:24px; height:24px; border-radius:8px; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; background:var(--card); }
+  .check-item.done .box{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .check-item .txt{ font-size:0.86rem; flex:1; }
+  .check-item.done .txt{ text-decoration:line-through; color:var(--ink-soft); }
+  .supp-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+  .supp-chip{ flex:1; min-width:100px; text-align:center; padding:14px 10px; border-radius:14px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.85rem; box-shadow:var(--shadow); color:var(--ink); }
+  .supp-chip.done{ border-color:var(--gold); color:var(--gold); }
+  .supp-chip .ic{ font-size:1.3rem; display:block; margin-bottom:4px; }
+  .water-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; text-align:center; box-shadow:var(--shadow); margin-bottom:18px; }
+  .water-card h3{ color:var(--water); font-size:0.95rem; margin:0 0 10px; }
+  .water-cups{ font-size:1.4rem; letter-spacing:2px; margin-bottom:10px; min-height:28px; }
+  .water-controls{ display:flex; align-items:center; justify-content:center; gap:16px; }
+  .water-btn{ width:40px; height:40px; border-radius:50%; border:none; background:var(--water); color:#fff; font-size:1.2rem; cursor:pointer; }
+  .water-count{ font-family:var(--font-head); font-weight:800; font-size:1rem; color:var(--ink); min-width:80px; }
+  .src-note{ text-align:center; font-size:0.7rem; color:var(--ink-soft); opacity:0.7; margin-top:14px; line-height:1.7; }
+  footer{ text-align:center; margin-top:30px; font-size:0.72rem; color:var(--ink-soft); opacity:0.7; }
+
+  /* agenda */
+  .commit-banner{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:16px; font-size:0.85rem; text-align:center; box-shadow:var(--shadow); }
+  .agenda-list{ display:flex; flex-direction:column; gap:8px; }
+  .agenda-slot{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; box-shadow:var(--shadow); }
+  .agenda-slot .time{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:0.82rem; }
+  .agenda-slot .note{ font-size:0.83rem; color:var(--ink); margin-top:4px; }
+  .agenda-slot .note.empty{ color:var(--ink-soft); opacity:0.6; font-style:italic; }
+  .agenda-edit{ width:100%; border:1px solid var(--accent); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.83rem; margin-top:6px; background:var(--bg); color:var(--ink); }
+  /* calendar */
+  .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-header button{ background:var(--card); border:1px solid var(--line); border-radius:10px; width:38px; height:38px; font-size:1.2rem; cursor:pointer; color:var(--accent-deep); box-shadow:var(--shadow); }
+  .cal-month-label{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1.05rem; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px; }
+  .cal-dayname{ text-align:center; font-size:0.58rem; color:var(--ink-soft); font-weight:700; padding-bottom:4px; overflow:hidden; white-space:nowrap; }
+  .cal-cell{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:12px; background:var(--card); border:1px solid var(--line); cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--ink); position:relative; box-shadow:var(--shadow); transition:transform 0.1s; }
+  .cal-cell:active{ transform:scale(0.93); }
+  .cal-cell.empty{ background:none; border:none; box-shadow:none; cursor:default; }
+  .cal-cell.today{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .cal-cell.has-commit::after{ content:''; position:absolute; bottom:5px; width:5px; height:5px; border-radius:50%; background:var(--gold); }
+  .cal-cell.today.has-commit::after{ background:#fff; }
+</style>
+</head>
+<body>
+
+<!-- ============ ONBOARDING: name + style only ============ -->
+<div class="ob-overlay" id="obOverlay">
+  <div class="ob-card">
+    <div class="ob-top">
+      <div class="ob-progress"><div class="ob-dot active" data-step="1"></div><div class="ob-dot" data-step="2"></div></div>
+      <button class="lang-toggle" id="obLangToggle">EN</button>
+    </div>
+    <div class="ob-step active" id="obStep1">
+      <h2 data-i18n="q_name"></h2>
+      <p class="sub" data-i18n="q_name_sub"></p>
+      <input type="text" class="ob-input" id="obName">
+      <button class="ob-btn" id="obNext1" disabled data-i18n="next"></button>
+    </div>
+    <div class="ob-step" id="obStep2">
+      <h2 data-i18n="q_style"></h2>
+      <p class="sub" data-i18n="q_font_sub"></p>
+      <div class="ob-grid" id="obFontGrid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="ob-choice selected" data-font="classic" style="font-family:'Cairo';">كلاسيكي<br><span style="font-size:0.62rem;opacity:0.7;">Cairo</span></div>
+        <div class="ob-choice" data-font="modern" style="font-family:'Rubik';">عصري<br><span style="font-size:0.62rem;opacity:0.7;">Rubik</span></div>
+        <div class="ob-choice" data-font="elegant" style="font-family:'IBM Plex Sans Arabic';">أنيق<br><span style="font-size:0.62rem;opacity:0.7;">Plex</span></div>
+      </div>
+      <p class="sub" data-i18n="q_palette_sub"></p>
+      <div class="ob-grid" id="obPaletteGrid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="ob-choice selected" data-palette="sage"><div class="palette-dot" style="background:linear-gradient(135deg,#7c9473,#e0a458);"></div><span data-i18n="pal_sage"></span></div>
+        <div class="ob-choice" data-palette="ocean"><div class="palette-dot" style="background:linear-gradient(135deg,#5f9ea0,#4f9fc4);"></div><span data-i18n="pal_ocean"></span></div>
+        <div class="ob-choice" data-palette="sunset"><div class="palette-dot" style="background:linear-gradient(135deg,#d97757,#f2b544);"></div><span data-i18n="pal_sunset"></span></div>
+        <div class="ob-choice" data-palette="violet"><div class="palette-dot" style="background:linear-gradient(135deg,#8b7cc4,#c9a3e8);"></div><span data-i18n="pal_violet"></span></div>
+      </div>
+      <p class="sub" data-i18n="q_mode_sub"></p>
+      <div class="ob-grid" id="obModeGrid">
+        <div class="ob-choice selected" data-mode="light"><span class="ic">☀️</span><span data-i18n="mode_light"></span></div>
+        <div class="ob-choice" data-mode="dark"><span class="ic">🌙</span><span data-i18n="mode_dark"></span></div>
+      </div>
+      <div style="border-top:1px solid var(--line);margin:16px 0 14px;padding-top:14px;">
+        <p class="sub" style="margin-bottom:10px;" data-i18n="backup_sub"></p>
+        <div style="display:flex;gap:10px;">
+          <button class="ob-btn" id="exportBtn" type="button" style="flex:1;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);font-size:0.8rem;padding:10px;">⬇️ <span data-i18n="backup_export"></span></button>
+          <button class="ob-btn" id="importBtn" type="button" style="flex:1;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);font-size:0.8rem;padding:10px;">⬆️ <span data-i18n="backup_import"></span></button>
+        </div>
+        <input type="file" id="importFileInput" accept="application/json" class="hidden">
+      </div>
+      <button class="ob-btn" id="obFinish" data-i18n="start"></button>
+      <button class="ob-btn secondary" id="obBack2" data-i18n="back"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div class="topnav hidden" id="mainNav">
+  <div class="topnav-inner">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="brand" id="brandLabel">🗓️</div>
+      <button class="icon-btn" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
+    </div>
+    <div class="nav-actions">
+      <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
+      <button class="icon-btn" id="modeBtn" title="Mode">🌙</button>
+      <button class="icon-btn lang-toggle" id="mainLangToggle" style="width:auto;padding:0 12px;border-radius:999px;">EN</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
+    </div>
+  </div>
+  <div id="demoConfirmBar" class="hidden" style="max-width:760px;margin:8px auto 0;background:#fdf0ee;border:1px solid #d9a79e;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span id="demoConfirmText" style="font-size:0.8rem;color:#b06355;flex:1;min-width:200px;"></span>
+    <button id="demoConfirmYes" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;"></button>
+    <button id="demoConfirmNo" style="background:none;border:1px solid #d9a79e;color:#b06355;border-radius:8px;padding:6px 14px;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;"></button>
+  </div>
+</div>
+
+<div class="wrap hidden" id="mainWrap">
+
+  <!-- HOME -->
+  <section class="panel active" id="panel-home">
+    <div class="hero">
+      <h1 id="heroTitle"></h1>
+      <p id="heroSub"></p>
+      <div class="day-badge" id="dayBadge"></div>
+      <div class="day-badge hidden" id="streakBadge" style="background:var(--gold);margin-inline-start:8px;"></div>
+    </div>
+    <div class="home-cards">
+      <div class="home-card" data-goto="today"><span class="ic">✅</span><div class="ttl" data-i18n="card_todo"></div><div class="dsc" data-i18n="card_todo_d"></div></div>
+      <div class="home-card" data-goto="food"><span class="ic">🍽️</span><div class="ttl" data-i18n="card_food"></div><div class="dsc" data-i18n="card_food_d"></div></div>
+    </div>
+  </section>
+
+  <!-- TO DO -->
+  <section class="panel" id="panel-today">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+
+    <!-- content (always visible, even before any setup) -->
+    <div id="todoContent">
+      <div class="home-card" id="dailyRoutineToggleCard" style="margin-bottom:16px;cursor:pointer;">
+        <span class="ic">🗓️</span><div class="ttl" data-i18n="daily_routine_title"></div><div class="dsc" data-i18n="daily_routine_desc"></div>
+      </div>
+
+      <!-- setup, nested + collapsible like the Exercise folder inside Food -->
+      <div class="setup-card hidden" id="todoSetupCard">
+        <h3 data-i18n="q_commit"></h3>
+        <p class="sub" data-i18n="q_commit_sub"></p>
+        <div class="tag-chips" id="commitListChips"></div>
+        <input type="text" class="setup-input" id="commitLabel" data-i18n-ph="commit_label_ph">
+        <div class="setup-row">
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="from_label"></label><input type="time" class="setup-input" id="commitFrom" value="08:00"></div>
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="to_label"></label><input type="time" class="setup-input" id="commitTo" value="16:00"></div>
+        </div>
+        <p class="sub" style="margin-bottom:8px;" data-i18n="q_commit_days"></p>
+        <div class="ob-grid" id="commitDaysGrid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px;"></div>
+        <p class="sub" style="margin-bottom:8px;" data-i18n="q_commit_range"></p>
+        <div class="setup-row">
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="commit_from_date"></label><input type="date" class="setup-input" id="commitFromDate"></div>
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="commit_to_date"></label><input type="date" class="setup-input" id="commitToDate"></div>
+        </div>
+        <button class="setup-btn" id="commitAddBtn" type="button" data-i18n="add_commit" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);"></button>
+        <button class="setup-btn" id="todoSetupSave" data-i18n="save" style="margin-top:14px;"></button>
+      </div>
+
+      <div class="cal-header">
+        <button id="calPrevMonth" type="button">‹</button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button id="calNextMonth" type="button">›</button>
+      </div>
+      <button class="setup-btn" id="calTodayBtn" type="button" data-i18n="cal_today_btn" style="margin-bottom:12px;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);"></button>
+      <div class="cal-grid" id="calendarGrid"></div>
+      <p class="sub" style="text-align:center;" data-i18n="cal_hint"></p>
+    </div>
+  </section>
+
+  <!-- FOOD -->
+  <section class="panel" id="panel-food">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><button class="edit-btn" id="editFoodBtn" data-i18n="edit_setup"></button></div>
+
+    <!-- setup -->
+    <div class="setup-card" id="foodSetupCard">
+      <div class="ob-progress" style="justify-content:center;margin-bottom:14px;display:flex;gap:5px;">
+        <div class="ob-dot active" data-fstep="1"></div>
+        <div class="ob-dot" data-fstep="2"></div>
+        <div class="ob-dot" data-fstep="3"></div>
+        <div class="ob-dot" data-fstep="4"></div>
+      </div>
+
+      <!-- STEP 1: body stats + goal -->
+      <div class="ob-step active" id="fStep1">
+        <h3 data-i18n="q_body"></h3>
+        <p class="sub" data-i18n="q_body_sub"></p>
+        <div class="setup-row">
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="weight_label"></label><input type="number" step="0.1" class="setup-input" id="bodyWeight" data-i18n-ph="weight_ph"></div>
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="height_label"></label><input type="number" class="setup-input" id="bodyHeight" data-i18n-ph="height_ph"></div>
+        </div>
+        <div class="setup-row">
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="age_label"></label><input type="number" class="setup-input" id="bodyAge" data-i18n-ph="age_ph"></div>
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="sex_label"></label>
+            <select class="setup-input" id="bodySex"><option value="male" data-i18n="sex_male"></option><option value="female" data-i18n="sex_female"></option></select>
+          </div>
+        </div>
+        <div class="val-msg" id="bodyStatsValMsg"></div>
+        <h3 data-i18n="q_food_goal"></h3>
+        <div class="ob-grid" id="foodGoalGrid">
+          <div class="ob-choice" data-goal="gain"><span class="ic">💪</span><span data-i18n="goal_gain"></span></div>
+          <div class="ob-choice" data-goal="lose"><span class="ic">🔥</span><span data-i18n="goal_lose"></span></div>
+        </div>
+        <button class="setup-btn" id="fNext1" data-i18n="next"></button>
+      </div>
+
+      <!-- STEP 2: diet type + meal count -->
+      <div class="ob-step" id="fStep2">
+        <h3 data-i18n="q_diet_type"></h3>
+        <p class="sub" data-i18n="q_diet_type_sub"></p>
+        <div class="ob-grid" id="dietTypeGrid" style="grid-template-columns:1fr 1fr;">
+          <div class="ob-choice" data-diet="balanced"><span class="ic">🍽️</span><span data-i18n="diet_balanced"></span></div>
+          <div class="ob-choice" data-diet="highProtein"><span class="ic">🥩</span><span data-i18n="diet_high_protein"></span></div>
+          <div class="ob-choice" data-diet="lowCarb"><span class="ic">🥗</span><span data-i18n="diet_low_carb"></span></div>
+          <div class="ob-choice" data-diet="if168"><span class="ic">⏱️</span><span data-i18n="diet_if"></span></div>
+        </div>
+        <div class="info-chip" id="dietTypeNote" style="margin-bottom:16px;"></div>
+        <h3 data-i18n="q_meal_count"></h3>
+        <p class="sub" data-i18n="q_meal_count_sub"></p>
+        <div class="ob-grid" id="mealCountGrid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="ob-choice" data-mealcount="3">3</div>
+          <div class="ob-choice" data-mealcount="4">4</div>
+          <div class="ob-choice" data-mealcount="5">5</div>
+        </div>
+        <div class="setup-row">
+          <button class="setup-btn secondary-btn" id="fBack2" data-i18n="back" style="background:var(--card);color:var(--ink-soft);border:1px solid var(--line);"></button>
+          <button class="setup-btn" id="fNext2" data-i18n="next"></button>
+        </div>
+      </div>
+
+      <!-- STEP 3: allergies + supplements + water -->
+      <div class="ob-step" id="fStep3">
+        <h3 data-i18n="q_allergy"></h3>
+        <p class="sub" data-i18n="q_allergy_sub"></p>
+        <div class="ob-grid" id="obAllergyGrid">
+          <div class="ob-choice" data-allergy="eggs"><span class="ic">🥚</span><span data-i18n="alg_eggs"></span></div>
+          <div class="ob-choice" data-allergy="dairy"><span class="ic">🥛</span><span data-i18n="alg_dairy"></span></div>
+          <div class="ob-choice" data-allergy="nuts"><span class="ic">🥜</span><span data-i18n="alg_nuts"></span></div>
+          <div class="ob-choice" data-allergy="gluten"><span class="ic">🌾</span><span data-i18n="alg_gluten"></span></div>
+          <div class="ob-choice" data-allergy="seafood"><span class="ic">🐟</span><span data-i18n="alg_seafood"></span></div>
+          <div class="ob-choice" data-allergy="none"><span class="ic">✅</span><span data-i18n="alg_none"></span></div>
+        </div>
+        <div class="tag-chips" id="allergyOtherChips"></div>
+        <div class="tag-add-row">
+          <input type="text" class="setup-input" id="allergyOtherField" data-i18n-ph="allergy_other_ph">
+          <button class="setup-btn" id="allergyOtherAdd" type="button">➕</button>
+        </div>
+        <div class="val-msg" id="allergyValMsg"></div>
+        <h3 data-i18n="q_supplements"></h3>
+        <p class="sub" data-i18n="q_supplements_sub"></p>
+        <div class="ob-grid" id="obSupGrid" style="grid-template-columns:1fr 1fr;">
+          <div class="ob-choice" data-sup="protein"><span class="ic">🥤</span><span data-i18n="protein"></span></div>
+          <div class="ob-choice" data-sup="creatine"><span class="ic">💊</span><span data-i18n="creatine"></span></div>
+        </div>
+        <div class="tag-chips" id="supOtherChips"></div>
+        <div class="tag-add-row">
+          <input type="text" class="setup-input" id="supOtherField" data-i18n-ph="sup_other_ph">
+          <button class="setup-btn" id="supOtherAdd" type="button">➕</button>
+        </div>
+        <div class="setup-row">
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="water_target_label"></label><input type="number" step="0.1" class="setup-input" id="waterTargetInput" data-i18n-ph="water_ph"><p class="sub" style="margin:-8px 0 12px;" data-i18n="water_suggest"></p></div>
+        </div>
+        <div class="val-msg" id="waterValMsg"></div>
+        <div class="setup-row">
+          <button class="setup-btn secondary-btn" id="fBack3" data-i18n="back" style="background:var(--card);color:var(--ink-soft);border:1px solid var(--line);"></button>
+          <button class="setup-btn" id="fNext3" data-i18n="next"></button>
+        </div>
+      </div>
+
+      <!-- STEP 4: target date -->
+      <div class="ob-step" id="fStep4">
+        <h3 data-i18n="q_target"></h3>
+        <p class="sub" data-i18n="q_target_sub"></p>
+        <div class="setup-row">
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="target_weight_label"></label><input type="number" step="0.1" class="setup-input" id="targetWeightInput" data-i18n-ph="target_weight_ph"></div>
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="target_date_label"></label><input type="date" class="setup-input" id="targetDateInput"></div>
+        </div>
+        <div class="val-msg" id="targetValMsg"></div>
+        <div class="setup-row">
+          <button class="setup-btn secondary-btn" id="fBack4" data-i18n="back" style="background:var(--card);color:var(--ink-soft);border:1px solid var(--line);"></button>
+          <button class="setup-btn" id="foodSetupSave" data-i18n="save"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- content -->
+    <div id="foodContent" class="hidden">
+      <div class="info-chip hidden" id="exercisePromptBanner" style="cursor:pointer;margin-bottom:14px;"></div>
+      <div class="today-plan" id="todayPlanLabel"></div>
+      <div class="checklist" id="mealChecklist"></div>
+      <div class="supp-row" id="supChipsRow"></div>
+      <div class="water-card">
+        <h3 id="waterTitle"></h3>
+        <div class="water-cups" id="waterCups"></div>
+        <div class="water-controls">
+          <button class="water-btn" id="waterMinus">−</button>
+          <div class="water-count" id="waterCount"></div>
+          <button class="water-btn" id="waterPlus">+</button>
+        </div>
+      </div>
+      <div class="log-card">
+        <h3 data-i18n="weight_log_title"></h3>
+        <div class="chart-box"><svg id="weightChart" width="100%" height="140" viewBox="0 0 320 140" preserveAspectRatio="none"></svg></div>
+        <div class="log-form">
+          <input type="number" step="0.1" id="weightInput">
+          <button id="saveWeightBtn" data-i18n="save"></button>
+        </div>
+        <div class="log-list" id="logList"></div>
+      </div>
+      <div class="legend" id="foodLegend"></div>
+      <div class="grid" id="foodGrid"></div>
+
+      <!-- nested Exercise folder, like a file browser: click to open/close what we already built -->
+      <div class="home-card" id="exerciseToggleCard" style="margin-top:20px;cursor:pointer;">
+        <span class="ic">🏋️</span><div class="ttl" data-i18n="card_workout"></div><div class="dsc" id="exerciseToggleDsc" data-i18n="card_workout_d"></div>
+      </div>
+      <div id="exerciseNested" class="hidden" style="margin-top:14px;border-top:2px dashed var(--line);padding-top:16px;">
+        <!-- setup -->
+        <div class="setup-card" id="workoutSetupCard">
+          <h3 data-i18n="q_ex_goal"></h3>
+          <p class="sub" data-i18n="q_ex_goal_sub"></p>
+          <div class="ob-grid" id="obExGoalGrid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="ob-choice" data-exgoal="muscle"><span class="ic">💪</span><span data-i18n="ex_goal_muscle"></span></div>
+            <div class="ob-choice" data-exgoal="lose"><span class="ic">🔥</span><span data-i18n="ex_goal_lose"></span></div>
+            <div class="ob-choice" data-exgoal="mobility"><span class="ic">🧘</span><span data-i18n="ex_goal_mobility"></span></div>
+          </div>
+          <h3 data-i18n="q_fitness_level"></h3>
+          <p class="sub" data-i18n="q_fitness_level_sub"></p>
+          <div class="ob-grid" id="obFitnessLevelGrid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="ob-choice" data-fitlevel="beginner"><span class="ic">🌱</span><span data-i18n="fitlevel_beginner"></span></div>
+            <div class="ob-choice" data-fitlevel="amateur"><span class="ic">💪</span><span data-i18n="fitlevel_amateur"></span></div>
+            <div class="ob-choice" data-fitlevel="pro"><span class="ic">🔥</span><span data-i18n="fitlevel_pro"></span></div>
+          </div>
+          <div class="val-msg" id="fitnessLevelValMsg"></div>
+          <h3 data-i18n="q_equip"></h3>
+          <div class="ob-grid" id="obEquipGrid">
+            <div class="ob-choice" data-equip="dumbbells"><span class="ic">🏋️</span><span data-i18n="eq_db"></span></div>
+            <div class="ob-choice" data-equip="band"><span class="ic">🎗️</span><span data-i18n="eq_band"></span></div>
+            <div class="ob-choice" data-equip="bar"><span class="ic">🧗</span><span data-i18n="eq_bar"></span></div>
+            <div class="ob-choice" data-equip="none"><span class="ic">🚫</span><span data-i18n="eq_none"></span></div>
+          </div>
+          <div class="tag-chips" id="equipOtherChips"></div>
+          <div class="tag-add-row">
+            <input type="text" class="setup-input" id="equipOtherField" data-i18n-ph="equip_other_ph">
+            <button class="setup-btn" id="equipOtherAdd" type="button">➕</button>
+          </div>
+          <h3 data-i18n="q_injury"></h3>
+          <div class="ob-grid" id="obInjuryGrid">
+            <div class="ob-choice" data-injury="elbow"><span class="ic">💪</span><span data-i18n="inj_elbow"></span></div>
+            <div class="ob-choice" data-injury="shoulder"><span class="ic">🙆</span><span data-i18n="inj_shoulder"></span></div>
+            <div class="ob-choice" data-injury="knee"><span class="ic">🦵</span><span data-i18n="inj_knee"></span></div>
+            <div class="ob-choice" data-injury="lowback"><span class="ic">🔙</span><span data-i18n="inj_back"></span></div>
+            <div class="ob-choice" data-injury="none"><span class="ic">✅</span><span data-i18n="inj_none"></span></div>
+          </div>
+          <div class="tag-chips" id="injuryOtherChips"></div>
+          <div class="tag-add-row">
+            <input type="text" class="setup-input" id="injuryOtherField" data-i18n-ph="injury_other_ph">
+            <button class="setup-btn" id="injuryOtherAdd" type="button">➕</button>
+          </div>
+          <div class="val-msg" id="injuryValMsg"></div>
+          <h3 data-i18n="q_rest"></h3>
+          <p class="sub" data-i18n="q_rest_sub"></p>
+          <div class="ob-grid" id="obRestGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+          <div class="split-preview" id="splitPreview" style="font-size:0.78rem;color:var(--ink-soft);text-align:center;margin-bottom:12px;"></div>
+          <div class="val-msg" id="restValMsg"></div>
+          <button class="setup-btn" id="workoutSetupSave" disabled data-i18n="save"></button>
+        </div>
+
+        <!-- content -->
+        <div id="workoutContent" class="hidden">
+          <div class="back-row"><span></span><button class="edit-btn" id="editWorkoutBtn" data-i18n="edit_setup"></button></div>
+          <div class="legend" id="workoutLegend"></div>
+          <div class="grid" id="workoutGrid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <button class="close-btn" id="closeBtn">✕</button>
+    <h2 id="dayTitle"></h2>
+    <p class="subtitle" id="daySubtitle"></p>
+    <div id="cardBody"></div>
+  </div>
+</div>
+
+<footer class="hidden" id="mainFooter">🌱<div style="font-size:0.6rem;opacity:0.4;margin-top:4px;" id="footerVersion"></div></footer>
+
+<script>
+/* ================= VERSION + SERVICE WORKER ================= */
+/* Bump this on every real deploy — must match APP_VERSION inside sw.js so
+   the old cache gets cleared and the new one takes over immediately. */
+const APP_VERSION='v1.0.0';
+if('serviceWorker' in navigator && window.isSecureContext){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
+  });
+}
+
+/* ================= STORAGE + ERRORS ================= */
+const _mem={};
+async function storageGet(key){
+  try{ if(window.storage&&window.storage.get){ const r=await window.storage.get(key,false); return r?r.value:null; } }catch(e){}
+  try{ const v=localStorage.getItem('planner_'+key); if(v!==null) return v; }catch(e){}
+  return _mem[key]!==undefined?_mem[key]:null;
+}
+async function storageSet(key,value){
+  _mem[key]=value;
+  try{ if(window.storage&&window.storage.set){ await window.storage.set(key,value,false); return; } }catch(e){}
+  try{ localStorage.setItem('planner_'+key,value); }catch(e){}
+}
+async function storageDelete(key){
+  delete _mem[key];
+  try{ if(window.storage&&window.storage.delete){ await window.storage.delete(key,false); return; } }catch(e){}
+  try{ localStorage.removeItem('planner_'+key); }catch(e){}
+}
+async function storageListKeys(prefix){
+  try{
+    if(window.storage&&window.storage.list){ const r=await window.storage.list(prefix,false); if(r&&r.keys) return r.keys; }
+  }catch(e){}
+  const found=[];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith('planner_'+prefix)) found.push(k.slice('planner_'.length));
+    }
+  }catch(e){}
+  return found;
+}
+const INJURY_KEYWORDS={
+  avoidLegs:['رجل','رجلي','رجلك','ركبة','ركبتي','كاحل','قدم','قدمي','ساق','فخذ','عرقوب','كسر رجل','كسر قدم','مكسورة رجل','leg','legs','knee','ankle','foot','feet','calf','thigh'],
+  avoidPush:['كتف','كتفي','صدر','تراي','عضلة ثلاثية','shoulder','chest','triceps','ذراع','ذراعي','يد','يدي','رسغ','معصم','arm','hand','wrist'],
+  avoidPull:['كوع','مرفق','رسغ','معصم','ظهر','يد','يدي','ذراع','ذراعي','باي','elbow','wrist','forearm','back','hand','arm','bicep']
+};
+function analyzeInjuryTextLocal(text){
+  const norm=text.trim().toLowerCase();
+  const hit=(cat)=>INJURY_KEYWORDS[cat].some(k=>norm.includes(k.toLowerCase()));
+  const avoidLegs=hit('avoidLegs'), avoidPush=hit('avoidPush'), avoidPull=hit('avoidPull');
+  if(!avoidLegs&&!avoidPush&&!avoidPull){
+    return {avoidPush:false,avoidPull:false,avoidLegs:false,
+      noteAr:`📝 ملاحظتك: ${text} — ما قدرنا نحدد أي عضلة بالضبط، انتبه واختر تمارين تريحك`,
+      noteEn:`📝 Your note: ${text} — couldn't pinpoint a muscle group, be mindful and pick what feels right`};
+  }
+  const parts=[];
+  if(avoidLegs) parts.push({ar:'الرجل',en:'legs'});
+  if(avoidPush) parts.push({ar:'الصدر/الكتف/الذراع',en:'chest/shoulders/arms'});
+  if(avoidPull) parts.push({ar:'الظهر/الذراع',en:'back/arms'});
+  return {avoidPush,avoidPull,avoidLegs,
+    noteAr:`🩹 لاحظنا "${text}" — تخطينا تمارين ${parts.map(p=>p.ar).join(' و')} اليوم لسلامتك`,
+    noteEn:`🩹 Noted "${text}" — skipped ${parts.map(p=>p.en).join(' & ')} exercises today for your safety`};
+}
+const FOOD_WORD_MAP={
+  banana:'موز', موز:'banana', موزة:'banana',
+  egg:'بيض', eggs:'بيض', بيض:'egg', بيضة:'egg',
+  milk:'حليب', حليب:'milk',
+  honey:'عسل', عسل:'honey',
+  dates:'تمر', تمر:'dates',
+  nuts:'مكسرات', مكسرات:'nuts', peanut:'فول سوداني', 'فول سوداني':'peanut',
+  cheese:'جبن', جبن:'cheese', جبنة:'cheese',
+  yogurt:'زبادي', زبادي:'يوغورت',
+  fish:'سمك', سمك:'fish',
+  chicken:'دجاج', دجاج:'chicken',
+  bread:'خبز', خبز:'bread',
+  rice:'رز', رز:'rice', الرز:'rice',
+  gluten:'جلوتين', جلوتين:'gluten'
+};
+const SUBSTITUTE_MAP={
+  banana:{ar:'تفاحة أو ٣ تمرات',en:'an apple or 3 dates'}, موز:{ar:'تفاحة أو ٣ تمرات',en:'an apple or 3 dates'}, موزة:{ar:'تفاحة أو ٣ تمرات',en:'an apple or 3 dates'},
+  egg:{ar:'فول مدمس أو شوفان بالحليب',en:'foul medames or oats with milk'}, eggs:{ar:'فول مدمس أو شوفان بالحليب',en:'foul medames or oats with milk'}, بيض:{ar:'فول مدمس أو شوفان بالحليب',en:'foul medames or oats with milk'}, بيضة:{ar:'فول مدمس أو شوفان بالحليب',en:'foul medames or oats with milk'},
+  milk:{ar:'حليب نباتي (لوز أو شوفان)',en:'plant milk (almond or oat)'}, حليب:{ar:'حليب نباتي (لوز أو شوفان)',en:'plant milk (almond or oat)'},
+  honey:{ar:'دبس تمر أو سكر بني',en:'date syrup or brown sugar'}, عسل:{ar:'دبس تمر أو سكر بني',en:'date syrup or brown sugar'},
+  dates:{ar:'زبيب أو تين مجفف',en:'raisins or dried figs'}, تمر:{ar:'زبيب أو تين مجفف',en:'raisins or dried figs'},
+  nuts:{ar:'بذور دوار الشمس أو اليقطين',en:'sunflower or pumpkin seeds'}, مكسرات:{ar:'بذور دوار الشمس أو اليقطين',en:'sunflower or pumpkin seeds'},
+  peanut:{ar:'طحينة',en:'tahini'}, 'فول سوداني':{ar:'طحينة',en:'tahini'},
+  cheese:{ar:'لبنة أو جبن نباتي',en:'labneh or plant-based cheese'}, جبن:{ar:'لبنة أو جبن نباتي',en:'labneh or plant-based cheese'}, جبنة:{ar:'لبنة أو جبن نباتي',en:'labneh or plant-based cheese'},
+  yogurt:{ar:'زبادي نباتي (صويا أو جوز الهند)',en:'plant-based yogurt (soy or coconut)'}, زبادي:{ar:'زبادي نباتي (صويا أو جوز الهند)',en:'plant-based yogurt (soy or coconut)'},
+  fish:{ar:'دجاج مشوي',en:'grilled chicken'}, سمك:{ar:'دجاج مشوي',en:'grilled chicken'},
+  chicken:{ar:'سمك مشوي أو لحم',en:'grilled fish or meat'}, دجاج:{ar:'سمك مشوي أو لحم',en:'grilled fish or meat'},
+  bread:{ar:'خبز خالي الجلوتين أو أرز',en:'gluten-free bread or rice'}, خبز:{ar:'خبز خالي الجلوتين أو أرز',en:'gluten-free bread or rice'},
+  rice:{ar:'كينوا أو بطاطا مسلوقة',en:'quinoa or boiled potato'}, رز:{ar:'كينوا أو بطاطا مسلوقة',en:'quinoa or boiled potato'}, الرز:{ar:'كينوا أو بطاطا مسلوقة',en:'quinoa or boiled potato'},
+  gluten:{ar:'منتجات خالية الجلوتين',en:'gluten-free products'}, جلوتين:{ar:'منتجات خالية الجلوتين',en:'gluten-free products'}
+};
+function analyzeAllergyTextLocal(text){
+  const words=text.split(/[\s,،/]+/).map(w=>w.trim()).filter(Boolean);
+  const avoidWords=[];
+  let substitute=null;
+  words.forEach(w=>{
+    avoidWords.push(w);
+    const key=w.toLowerCase();
+    const mapped=FOOD_WORD_MAP[key]||FOOD_WORD_MAP[w];
+    if(mapped) avoidWords.push(mapped);
+    if(!substitute) substitute=SUBSTITUTE_MAP[key]||SUBSTITUTE_MAP[w];
+  });
+  const subText=substitute ? {ar:substitute.ar,en:substitute.en} : {ar:'شي مشابه بنفس الفئة الغذائية',en:'something similar in the same food group'};
+  return {avoidWords,
+    noteAr:`🥗 عندك حساسية "${text}" — شيلناها من الوجبة، بديلها: ${subText.ar}`,
+    noteEn:`🥗 You're allergic to "${text}" — removed it from the meal, substitute: ${subText.en}`,
+    subNoteAr:`⚠️ شيلنا "${text}" — بديلها: ${subText.ar}`,
+    subNoteEn:`⚠️ Removed "${text}" — substitute: ${subText.en}`};
+}
+function showErr(msg){
+  let el=document.getElementById('errBanner');
+  if(!el){ el=document.createElement('div'); el.id='errBanner'; el.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;padding:10px;font-size:12px;z-index:9999;text-align:center;'; document.body.appendChild(el); }
+  el.textContent='⚠️ '+msg;
+}
+function showToast(msg,type){
+  let el=document.getElementById('toastBanner');
+  if(!el){ el=document.createElement('div'); el.id='toastBanner'; el.style.cssText='position:fixed;bottom:0;left:0;right:0;color:#fff;padding:10px;font-size:12px;z-index:9999;text-align:center;'; document.body.appendChild(el); }
+  el.style.background = type==='error' ? '#c0392b' : '#4c6350';
+  el.textContent=(type==='error'?'⚠️ ':'✅ ')+msg;
+  clearTimeout(showToast._t);
+  showToast._t=setTimeout(()=>{ if(el&&el.parentNode) el.parentNode.removeChild(el); },3500);
+}
+window.addEventListener('error',e=>showErr(e.message));
+window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.message?e.reason.message:String(e.reason)));
+
+/* ================= I18N ================= */
+const I18N={
+ ar:{ next:'التالي',back:'رجوع',start:'يلا نبدأ 🚀',save:'حفظ',back_home:'🏠 الرئيسية',edit_setup:'⚙️ عدّل الإعداد',
+  q_name:'هلا فيييييك 👋 شنو اسمك؟', q_name_sub:'بنخصص كل شي على اسمك',
+  q_style:'🎨 اختر ستايلك', q_font_sub:'الخط:', q_palette_sub:'الألوان:', q_mode_sub:'الوضع:',
+  pal_sage:'غابة',pal_ocean:'بحر',pal_sunset:'غروب',pal_violet:'بنفسج',mode_light:'فاتح',mode_dark:'داكن',
+  backup_sub:'📦 نسخة احتياطية لبياناتك (اختياري بس مهم)',backup_export:'تصدير',backup_import:'استيراد',
+  card_todo:'تودو اليوم',card_todo_d:'مهامك ودوامك وأجندتك',
+  card_food:'الأكل',card_food_d:'وجباتك، مكملاتك، وزنك',
+  card_workout:'التمارين',card_workout_d:'جدول أسبوعي دائم يناسبك',
+  q_commit:'📌 عندك التزام يومي ثابت؟',q_commit_sub:'مثل دوام أو كلية — تقدر تضيف أكثر من التزام',
+  commit_label_ph:'مثلاً: كلية، دوام، نادي...',q_commit_days:'أي أيام؟',add_commit:'➕ ضيف الالتزام',
+  q_commit_range:'من أي تاريخ لأي تاريخ؟ (اختياري — اتركه فاضي لو دائم للأبد)',
+  commit_from_date:'من تاريخ',commit_to_date:'إلى تاريخ',
+  daily_routine_title:'🗓️ الروتين اليومي',daily_routine_desc:'ضيف أو عدّل التزاماتك المتكررة',
+  from_label:'من',to_label:'إلى',
+  agenda_title:'🗓️ أجندة اليوم — اضغط على أي وقت وسجل شنو عندك',
+  cal_hint:'اضغط أي يوم عشان تشوف التزاماتك، وتقدر تفتح التفاصيل بالساعة من جواه',
+  cal_today_btn:'📍 رجّعني لليوم',
+  daily_reset_note:'✅ الأجندة تصفر كل يوم جديد، وعلاماتك تنحفظ.',
+  q_food_goal:'🎯 هدفك بالأكل',goal_gain:'زيادة وزن',goal_lose:'إنقاص وزن',
+  q_body:'⚖️ وزنك وطولك',q_body_sub:'عشان نحسب سعراتك الحقيقية، مو رقم تخميني',
+  weight_label:'الوزن (كج)',height_label:'الطول (سم)',age_label:'العمر',sex_label:'الجنس',sex_male:'ذكر',sex_female:'أنثى',
+  weight_ph:'اكتب وزنك',height_ph:'اكتب طولك',age_ph:'اكتب عمرك',target_weight_ph:'اكتب وزنك المستهدف',
+  calorie_target_note:'🎯 هدفك اليومي المحسوب: ~{n} سعرة (بناءً على وزنك وطولك وعمرك)',
+  calorie_no_body:'⚠️ ما دخلت وزن/طول — السعرات تقديرية عامة، عدّل الإعداد لحساب أدق',
+  q_diet_type:'🍽️ نوع نظامك الغذائي',q_diet_type_sub:'كل نوع له تأثير حقيقي على وجباتك، مو بس اسم',
+  diet_balanced:'متوازن',diet_high_protein:'عالي البروتين',diet_low_carb:'قليل الكارب',diet_if:'صيام متقطع ١٦:٨',
+  q_meal_count:'🍴 كم وجبة تقدر تاكل باليوم؟',q_meal_count_sub:'يتغير تلقائياً لو اخترت صيام متقطع',
+  q_target:'📅 عندك هدف بتاريخ محدد؟',q_target_sub:'اختياري — يخلي حساب السعرات أدق حسب المدة الباقية',
+  pick_something_allergy:'🚫 لازم تختار وحدة على الأقل — لو ما عندك حساسية، اختر "ما عندي"',
+  target_weight_label:'وزنك المستهدف (كج)',target_date_label:'بحلول تاريخ',
+  target_unsafe:'⚠️ هالمعدل سريع وغير آمن (أكثر من 1 كج بالأسبوع) — استخدمنا أقصى معدل آمن بدل هدفك بالضبط',
+  target_rate_note:'📉 عشان توصل هدفك، لازم معدل تقريبي {n} كج بالأسبوع — السعرات محسوبة على هذا الأساس',
+  q_allergy:'🥛 حساسية أكل؟',q_allergy_sub:'اختر كل الموجود',
+  alg_eggs:'بيض',alg_dairy:'حليب ومشتقاته',alg_nuts:'مكسرات',alg_gluten:'جلوتين',alg_seafood:'أسماك',alg_none:'ما عندي',
+  allergy_other_ph:'حساسية ثانية؟ اكتبها هنا (اختياري)',
+  q_supplements:'💊 مكملات أو أدوية تاخذها؟',q_supplements_sub:'تقدر تختار أكثر من وحدة',
+  protein:'بروتين',creatine:'كرياتين',sup_other_ph:'مكمل أو دواء ثاني؟ اكتبه هنا (اختياري)',
+  water_target_label:'هدف الماء (لتر)',
+  water_ph:'اكتب هدفك من الماء',water_suggest:'💧 اقتراح: ٣ لتر يومياً غالباً كافي لمعظم الناس',
+  weight_log_title:'⚖️ سجل وزنك الأسبوعي',
+  q_ex_goal:'🎯 هدفك بالتمرين',q_ex_goal_sub:'تقدر تختار أكثر من وحدة',
+  q_fitness_level:'📊 وش مستواك بالتمرين؟',q_fitness_level_sub:'هذا يحدد نوع التمارين نفسه، مو بس عدد العدات',
+  fitlevel_beginner:'مبتدئ',fitlevel_amateur:'متوسط',fitlevel_pro:'محترف',
+  pick_something_fitlevel:'🚫 لازم تختار مستواك عشان نعطيك تمارين مناسبة لك',
+  ex_goal_muscle:'بناء عضل',ex_goal_lose:'حرق دهون',ex_goal_mobility:'مرونة',
+  q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_none:'ولا شي',
+  equip_other_ph:'أداة ثانية؟ اكتبها هنا (اختياري)',
+  q_injury:'🩹 عندك إصابات؟',inj_elbow:'الكوع',inj_shoulder:'الكتف',inj_knee:'الركبة',inj_back:'أسفل الظهر',inj_none:'ما عندي',
+  injury_other_ph:'إصابة ثانية؟ اكتبها هنا (اختياري)',
+  q_rest:'😴 اختر أيام راحتك',q_rest_sub:'من يوم لثلاثة، والباقي يترتب تلقائياً بشكل متوازن',
+  pick_something_injury:'🚫 لازم تختار وحدة على الأقل — لو ما عندك إصابة، اختر "ما عندي"',
+  rest_val_max:'🚫 أقصى شي ٣ أيام راحة',
+  log_empty:'لسا ما سجلت أي وزن',chart_need2:'سجل وزنين على الأقل عشان يبان الرسم 📈',
+  latest_weight:'آخر وزن مسجل',to_goal:'للهدف',goal_line:'هدف',kg:'كج',
+  today_label:'اليوم',workout_today:'تمرين اليوم',
+  kcal_total:'🔥 مجموع اليوم: ~{n} سعرة',main_ex:'التمارين الأساسية',small_ex:'✨ العضلات الصغيرة / الكور',closing:'🧘 الختام',
+  allergy_note:'🥗 عدلنا بعض المكونات حسب حساسيتك',
+  type_push:'دفع',type_pull:'سحب',type_legs:'رجل',rest_day_name:'راحة',special_day:'★ يوم مميز',
+  water_title:'💧 الماء اليوم (الهدف {n} لتر)',
+  no_note:'ما سجلت شي — اضغط تكتب',workout_progress_title:'📊 آخر ٧ أيام'
+ },
+ en:{ next:'Next',back:'Back',start:"Let's go 🚀",save:'Save',back_home:'🏠 Home',edit_setup:'⚙️ Edit setup',
+  q_name:"Welcome 👋 What's your name?",q_name_sub:'We personalize everything for you',
+  q_style:'🎨 Pick your style',q_font_sub:'Font:',q_palette_sub:'Colors:',q_mode_sub:'Mode:',
+  pal_sage:'Forest',pal_ocean:'Ocean',pal_sunset:'Sunset',pal_violet:'Violet',mode_light:'Light',mode_dark:'Dark',
+  backup_sub:'📦 Backup your data (optional but important)',backup_export:'Export',backup_import:'Import',
+  card_todo:"To-Do",card_todo_d:'Tasks, commitments & agenda',
+  card_food:'Food',card_food_d:'Meals, supplements & weight',
+  card_workout:'Workout',card_workout_d:'A recurring weekly plan for you',
+  q_commit:'📌 Any daily fixed commitment?',q_commit_sub:'Like work or college — add more than one if needed',
+  commit_label_ph:'e.g. College, Work, Gym...',q_commit_days:'Which days?',add_commit:'➕ Add commitment',
+  q_commit_range:'From which date to which? (optional — leave blank if it runs forever)',
+  commit_from_date:'From date',commit_to_date:'To date',
+  daily_routine_title:'🗓️ Daily Routine',daily_routine_desc:'Add or edit your recurring commitments',
+  from_label:'From',to_label:'To',
+  agenda_title:"🗓️ Today's agenda — tap any time to note what's on",
+  cal_hint:'Tap any day to see your commitments, then open hour-by-hour details from there',
+  cal_today_btn:'📍 Back to today',
+  daily_reset_note:'✅ The agenda resets each new day, and checkmarks are saved.',
+  q_food_goal:'🎯 Your food goal',goal_gain:'Gain weight',goal_lose:'Lose weight',
+  q_body:'⚖️ Your weight and height',q_body_sub:'So we calculate your real calories, not a guess',
+  weight_label:'Weight (kg)',height_label:'Height (cm)',age_label:'Age',sex_label:'Sex',sex_male:'Male',sex_female:'Female',
+  weight_ph:'Type your weight',height_ph:'Type your height',age_ph:'Type your age',target_weight_ph:'Type your target weight',
+  calorie_target_note:'🎯 Your calculated daily target: ~{n} kcal (based on weight, height & age)',
+  calorie_no_body:"⚠️ You haven't entered weight/height — calories are a generic estimate, edit setup for accuracy",
+  q_diet_type:'🍽️ Your diet type',q_diet_type_sub:'Each type really changes your meals, not just a label',
+  diet_balanced:'Balanced',diet_high_protein:'High-Protein',diet_low_carb:'Low-Carb',diet_if:'Intermittent Fasting 16:8',
+  q_meal_count:'🍴 How many meals a day can you manage?',q_meal_count_sub:'Auto-adjusts if you pick intermittent fasting',
+  q_target:'📅 Have a target by a specific date?',q_target_sub:'Optional — makes the calorie math more precise based on time left',
+  pick_something_allergy:'🚫 Pick at least one — if you have no allergies, choose "None"',
+  target_weight_label:'Target weight (kg)',target_date_label:'By this date',
+  target_unsafe:"⚠️ That pace is too fast/unsafe (over 1kg/week) — capped it at a safe rate instead of your exact target",
+  target_rate_note:'📉 To hit your goal you need about {n} kg/week — calories are calculated on this basis',
+  q_allergy:'🥛 Food allergies?',q_allergy_sub:'Pick all that apply',
+  alg_eggs:'Eggs',alg_dairy:'Dairy',alg_nuts:'Nuts',alg_gluten:'Gluten',alg_seafood:'Seafood',alg_none:'None',
+  allergy_other_ph:'Another allergy? Type it here (optional)',
+  q_supplements:'💊 Supplements or medicine you take?',q_supplements_sub:'Pick more than one if needed',
+  protein:'Protein',creatine:'Creatine',sup_other_ph:'Another supplement/medicine? Type it here (optional)',
+  water_target_label:'Water goal (liters)',
+  water_ph:'Type your water goal',water_suggest:'💧 Suggestion: 3 liters/day is usually enough for most people',
+  weight_log_title:'⚖️ Weekly weight log',
+  q_ex_goal:'🎯 Your workout goal',q_ex_goal_sub:'You can pick more than one',
+  q_fitness_level:'📊 What is your fitness level?',q_fitness_level_sub:"This changes the actual exercise type, not just rep counts",
+  fitlevel_beginner:'Beginner',fitlevel_amateur:'Amateur',fitlevel_pro:'Pro',
+  pick_something_fitlevel:'🚫 Pick your level so we can give you the right exercises',
+  ex_goal_muscle:'Build muscle',ex_goal_lose:'Fat loss',ex_goal_mobility:'Mobility',
+  q_equip:'🎒 What equipment do you have?',eq_db:'Dumbbells',eq_band:'Resistance band',eq_bar:'Pull-up bar',eq_none:'None',
+  equip_other_ph:'Other equipment? Type it here (optional)',
+  q_injury:'🩹 Any injuries?',inj_elbow:'Elbow',inj_shoulder:'Shoulder',inj_knee:'Knee',inj_back:'Lower back',inj_none:'None',
+  injury_other_ph:'Other injury? Type it here (optional)',
+  q_rest:'😴 Pick your rest days',q_rest_sub:'1 to 3 days — the rest balances automatically',
+  pick_something_injury:'🚫 Pick at least one — if you have no injuries, choose "None"',
+  rest_val_max:'🚫 Maximum 3 rest days',
+  log_empty:'No weight logged yet',chart_need2:'Log at least two weights to see the chart 📈',
+  latest_weight:'Latest weight',to_goal:'to goal',goal_line:'Goal',kg:'kg',
+  today_label:'Today',workout_today:"Today's workout",
+  kcal_total:'🔥 Day total: ~{n} kcal',main_ex:'Main exercises',small_ex:'✨ Small muscles / core',closing:'🧘 Cool-down',
+  allergy_note:'🥗 Some ingredients adjusted for your allergies',
+  type_push:'Push',type_pull:'Pull',type_legs:'Legs',rest_day_name:'Rest',special_day:'★ Special day',
+  water_title:'💧 Water today (goal {n} L)',
+  no_note:'Nothing noted — tap to add',workout_progress_title:'📊 Last 7 days'
+ }
+};
+let LANG='ar';
+function t(k){ return (I18N[LANG]&&I18N[LANG][k])||I18N.ar[k]||k; }
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>el.placeholder=t(el.dataset.i18nPh));
+  document.documentElement.lang=LANG; document.documentElement.dir=LANG==='ar'?'rtl':'ltr';
+  document.getElementById('obLangToggle').textContent=LANG==='ar'?'EN':'ع';
+  document.getElementById('mainLangToggle').textContent=LANG==='ar'?'EN':'ع';
+}
+
+/* ================= THEMES ================= */
+const PALETTES={
+ sage:{ light:{bg:'#f6f5ee',card:'#ffffff',ink:'#2f3d33',inkSoft:'#5b6a5f',line:'#e7e3d5',accent:'#7c9473',accentDeep:'#4c6350',gold:'#c98d3f',water:'#6fa3c9',blue:'#6a8caf'},
+        dark:{bg:'#1c211d',card:'#262d27',ink:'#e8ece7',inkSoft:'#a4b0a6',line:'#3a423b',accent:'#8fae85',accentDeep:'#b5cdaa',gold:'#e0a458',water:'#7fb3d9',blue:'#8aa8c7'} },
+ ocean:{ light:{bg:'#f0f6f6',card:'#ffffff',ink:'#25393b',inkSoft:'#547376',line:'#d9e7e7',accent:'#5f9ea0',accentDeep:'#38696b',gold:'#d98a55',water:'#4f9fc4',blue:'#5a7fa6'},
+         dark:{bg:'#172223',card:'#20302f',ink:'#e3edec',inkSoft:'#9cb5b3',line:'#324645',accent:'#72b3b5',accentDeep:'#a3d5d6',gold:'#e8a06a',water:'#6cb4d9',blue:'#81a5c9'} },
+ sunset:{ light:{bg:'#fdf5ee',card:'#ffffff',ink:'#3d2c24',inkSoft:'#7a6459',line:'#f0e0d3',accent:'#d97757',accentDeep:'#a3512f',gold:'#d9930f',water:'#5a9bd6',blue:'#c96b4a'},
+          dark:{bg:'#241c17',card:'#302620',ink:'#f2e8e1',inkSoft:'#bdaa9d',line:'#453931',accent:'#e08b6c',accentDeep:'#f0b195',gold:'#f2b544',water:'#74aede',blue:'#d98a6c'} },
+ violet:{ light:{bg:'#f5f2fb',card:'#ffffff',ink:'#332c44',inkSoft:'#6b6285',line:'#e3dcf2',accent:'#8b7cc4',accentDeep:'#5c4d94',gold:'#c48a3f',water:'#8b9ee8',blue:'#7c6bb0'},
+          dark:{bg:'#1d1926',card:'#282133',ink:'#eae6f2',inkSoft:'#aaa2c2',line:'#3d3550',accent:'#a396d9',accentDeep:'#c5baea',gold:'#d9a95f',water:'#9fb0ee',blue:'#9a8cc9'} }
+};
+const FONTS={ classic:{head:"'Cairo',sans-serif",body:"'Tajawal',sans-serif"}, modern:{head:"'Rubik',sans-serif",body:"'Rubik',sans-serif"}, elegant:{head:"'IBM Plex Sans Arabic',sans-serif",body:"'IBM Plex Sans Arabic',sans-serif"} };
+function applyTheme(palette,mode,font){
+  const p=(PALETTES[palette]||PALETTES.sage)[mode==='dark'?'dark':'light'];
+  const r=document.documentElement.style;
+  r.setProperty('--bg',p.bg); r.setProperty('--card',p.card); r.setProperty('--ink',p.ink);
+  r.setProperty('--ink-soft',p.inkSoft); r.setProperty('--line',p.line);
+  r.setProperty('--accent',p.accent); r.setProperty('--accent-deep',p.accentDeep);
+  r.setProperty('--gold',p.gold); r.setProperty('--water',p.water); r.setProperty('--blue',p.blue);
+  const f=FONTS[font]||FONTS.classic;
+  r.setProperty('--font-head',f.head); r.setProperty('--font-body',f.body);
+  const mb=document.getElementById('modeBtn'); if(mb) mb.textContent=mode==='dark'?'☀️':'🌙';
+}
+
+/* ================= PROFILE ================= */
+let P={ name:'',font:'classic',palette:'sage',mode:'light',lang:'ar',
+  todoSetup:null,
+  foodSetup:null,
+  workoutSetup:null,
+  streakCount:0, lastStreakDate:'',
+  workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null
+};
+
+/* ================= ONBOARDING (name + style) ================= */
+document.getElementById('obLangToggle').addEventListener('click',()=>{ LANG=LANG==='ar'?'en':'ar'; applyI18n(); });
+document.getElementById('mainLangToggle').addEventListener('click',async()=>{
+  LANG=LANG==='ar'?'en':'ar'; P.lang=LANG; applyI18n(); await storageSet('profile',JSON.stringify(P));
+  refreshHome();
+  renderCalendar();
+  if(P.foodSetup) buildFoodGrid(todayWeekdayIndex());
+  if(P.workoutSetup) buildWorkoutGrid();
+});
+
+function goToObStep(n){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('obStep'+n).classList.add('active');
+  document.querySelectorAll('#obOverlay > .ob-card > .ob-top .ob-dot').forEach(d=>d.classList.toggle('active',+d.dataset.step===n));
+}
+const obNameInput=document.getElementById('obName');
+obNameInput.addEventListener('input',()=>{ document.getElementById('obNext1').disabled=obNameInput.value.trim().length===0; });
+document.getElementById('obNext1').addEventListener('click',()=>{ P.name=obNameInput.value.trim(); goToObStep(2); });
+document.getElementById('obBack2').addEventListener('click',()=>goToObStep(1));
+
+document.querySelectorAll('#obFontGrid .ob-choice').forEach(el=>el.addEventListener('click',()=>{
+  document.querySelectorAll('#obFontGrid .ob-choice').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); P.font=el.dataset.font; applyTheme(P.palette,P.mode,P.font);
+}));
+document.querySelectorAll('#obPaletteGrid .ob-choice').forEach(el=>el.addEventListener('click',()=>{
+  document.querySelectorAll('#obPaletteGrid .ob-choice').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); P.palette=el.dataset.palette; applyTheme(P.palette,P.mode,P.font);
+}));
+document.querySelectorAll('#obModeGrid .ob-choice').forEach(el=>el.addEventListener('click',()=>{
+  document.querySelectorAll('#obModeGrid .ob-choice').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); P.mode=el.dataset.mode; applyTheme(P.palette,P.mode,P.font);
+}));
+document.getElementById('obFinish').addEventListener('click',async()=>{
+  P.lang=LANG;
+  await storageSet('profile',JSON.stringify(P));
+  launchApp();
+});
+document.getElementById('settingsBtn').addEventListener('click',()=>{
+  document.getElementById('obOverlay').classList.remove('hidden');
+  obNameInput.value=P.name; document.getElementById('obNext1').disabled=P.name.length===0;
+  goToObStep(1);
+});
+document.getElementById('demoResetBtn').addEventListener('click',()=>{
+  const bar=document.getElementById('demoConfirmBar');
+  document.getElementById('demoConfirmText').textContent = LANG==='ar'
+    ? 'هذا زر عرض توضيحي مؤقت — بيمسح كل شي (اسمك، إعداداتك، سجل وزنك) ويرجعك لشاشة "شنو اسمك". متأكد؟'
+    : 'This temporary demo button will wipe everything (name, setups, weight log) and restart from "What\'s your name". Sure?';
+  document.getElementById('demoConfirmYes').textContent = LANG==='ar' ? 'ايه، امسح' : 'Yes, reset';
+  document.getElementById('demoConfirmNo').textContent = LANG==='ar' ? 'الغاء' : 'Cancel';
+  bar.classList.remove('hidden');
+});
+document.getElementById('demoConfirmNo').addEventListener('click',()=>{
+  document.getElementById('demoConfirmBar').classList.add('hidden');
+});
+document.getElementById('demoConfirmYes').addEventListener('click',async()=>{
+  await storageDelete('profile');
+  await storageDelete('weight-log');
+  await storageDelete('food-draft');
+  const allDailyKeys=await storageListKeys('daily-track:');
+  for(const k of allDailyKeys){ await storageDelete(k); }
+  foodDraft=null;
+  P={ name:'',font:'classic',palette:'sage',mode:'light',lang:'ar',
+      todoSetup:null,foodSetup:null,workoutSetup:null,
+      streakCount:0,lastStreakDate:'',workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null };
+  weightLog=[];
+  dailyTrack={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false};
+  LANG='ar';
+  document.getElementById('demoConfirmBar').classList.add('hidden');
+  document.getElementById('mainNav').classList.add('hidden');
+  document.getElementById('mainWrap').classList.add('hidden');
+  document.getElementById('mainFooter').classList.add('hidden');
+  applyI18n();
+  applyTheme(P.palette,P.mode,P.font);
+  obNameInput.value='';
+  document.getElementById('obNext1').disabled=true;
+  document.querySelectorAll('#obFontGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.font==='classic'));
+  document.querySelectorAll('#obPaletteGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.palette==='sage'));
+  document.querySelectorAll('#obModeGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.mode==='light'));
+  goToObStep(1);
+  document.getElementById('obOverlay').classList.remove('hidden');
+});
+document.getElementById('modeBtn').addEventListener('click',async()=>{
+  P.mode=P.mode==='dark'?'light':'dark'; applyTheme(P.palette,P.mode,P.font);
+  await storageSet('profile',JSON.stringify(P));
+});
+
+/* ---- BACKUP: export/import everything as a JSON file, so data survives a
+   cleared cache, a new phone, or switching from the Artifact to Netlify ---- */
+document.getElementById('exportBtn').addEventListener('click',async()=>{
+  try{
+    const backup={exportedAt:new Date().toISOString(),profile:P,weightLog,dailyTrack,dailyTracks:{}};
+    const dailyKeys=await storageListKeys('daily-track:');
+    for(const k of dailyKeys){
+      try{ const v=await storageGet(k); if(v) backup.dailyTracks[k]=JSON.parse(v); }catch(e){}
+    }
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`planner-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(LANG==='ar'?'انحفظت نسخة احتياطية 👍':'Backup saved 👍');
+  }catch(err){ showToast((LANG==='ar'?'فشل التصدير: ':'Export failed: ')+err.message,'error'); }
+});
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFileInput').click());
+document.getElementById('importFileInput').addEventListener('change',async(e)=>{
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(data.profile){ P={...P,...data.profile}; await storageSet('profile',JSON.stringify(P)); }
+    if(data.weightLog){ weightLog=data.weightLog; await storageSet('weight-log',JSON.stringify(weightLog)); }
+    if(data.dailyTracks){ for(const [k,v] of Object.entries(data.dailyTracks)){ await storageSet(k,JSON.stringify(v)); } }
+    if(data.dailyTrack){ dailyTrack=data.dailyTrack; await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
+    LANG=P.lang||'ar';
+    launchApp();
+    showToast(LANG==='ar'?'رجعنا بياناتك بنجاح ✅':'Backup restored successfully ✅');
+  }catch(err){ showToast((LANG==='ar'?'فشل الاستيراد — تأكد إن الملف صحيح: ':'Import failed — check the file: ')+err.message,'error'); }
+  e.target.value='';
+});
+
+document.getElementById('homeBtn').addEventListener('click',()=>showPanel('home'));
+document.querySelectorAll('.back-btn').forEach(b=>b.addEventListener('click',()=>showPanel('home')));
+function showPanel(name){ document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0}); }
+
+/* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
+const DAY_NAMES={ ar:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'], en:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'] };
+function todayWeekdayIndex(){ const js=new Date().getDay(); return (js+1)%7; }
+
+/* ================= FOOD CONTENT ================= */
+const SLOT_LABELS=[
+  {ar:'🍳 الفطور',en:'🍳 Breakfast'},
+  {ar:'🍇 سناك ١',en:'🍇 Snack 1'},
+  {ar:'🍚 الغدا',en:'🍚 Lunch'},
+  {ar:'🥤 سناك ٢',en:'🥤 Snack 2'},
+  {ar:'🌙 العشا',en:'🌙 Dinner'}
+];
+const SLOT_KEYS=['breakfast','snack1','lunch','snack2','dinner'];
+
+const MEAL_POOLS={
+ gain:{
+  breakfast:[
+   {ar:'بيض مقلي (٢-٣) بالطماط + خبز تنور + ملعقة عسل',en:'Fried eggs (2-3) w/ tomato + bread + honey',kcal:550},
+   {ar:'عجة بيض (٣) بالبصل والجبن + خبز',en:'3-egg omelet w/ onion & cheese + bread',kcal:600},
+   {ar:'فول مدمس بزيت الزيتون + خبز + بيضة',en:'Foul medames w/ olive oil + bread + egg',kcal:600},
+   {ar:'شوفان بالحليب + موز + عسل + مكسرات',en:'Oats w/ milk + banana + honey + nuts',kcal:650},
+   {ar:'بيض مقلي (٣) + جبن + خبز تنور',en:'3 fried eggs + cheese + bread',kcal:600},
+   {ar:'أومليت بالخضار (٣ بيضات) + خبز + جبنة',en:'Veggie omelet (3 eggs) + bread + cheese',kcal:600},
+   {ar:'فطور بيتي: بيض + جبن + عسل + خبز + لبنة',en:'Home breakfast: eggs + cheese + honey + bread + labneh',kcal:700},
+   {ar:'بيض مسلوق (٣) + أفوكادو + خبز أسمر',en:'3 boiled eggs + avocado + whole wheat bread',kcal:580}
+  ],
+  snack1:[
+   {ar:'٥ حبات تمر + كوب حليب كامل الدسم',en:'5 dates + full-fat milk',kcal:350},
+   {ar:'زبادي + عسل + حفنة مكسرات',en:'Yogurt + honey + handful of nuts',kcal:400},
+   {ar:'موزة + ٤ تمرات',en:'Banana + 4 dates',kcal:300},
+   {ar:'تفاحة + زبادي يوناني',en:'Apple + Greek yogurt',kcal:300},
+   {ar:'موز + كوب حليب',en:'Banana + milk',kcal:350},
+   {ar:'٥ تمرات + حفنة مكسرات',en:'5 dates + handful of nuts',kcal:400},
+   {ar:'تمر + كوب حليب',en:'Dates + milk',kcal:350},
+   {ar:'بسبوسة قطعة وحدة + شاي',en:'A piece of basbousa + tea',kcal:380}
+  ],
+  lunch:[
+   {ar:'رز بسمتي + دجاج مشوي (صدر ونص) + مرقة باميا',en:'Basmati rice + grilled chicken + okra stew',kcal:850},
+   {ar:'رز + قيمة لحم مفروم + سلطة بزيت زيتون',en:'Rice + minced meat + olive-oil salad',kcal:850},
+   {ar:'رز + سمك مقلي (قطعتين) + مرقة خضار',en:'Rice + fried fish (2 pcs) + veg stew',kcal:900},
+   {ar:'رز + تكة دجاج + سلطة + خبز',en:'Rice + chicken tikka + salad + bread',kcal:850},
+   {ar:'مجبوس دجاج (صحن كبير) + سلطة',en:'Chicken machboos (big plate) + salad',kcal:950},
+   {ar:'رز + لحم + مرقة باذنجان + سلطة',en:'Rice + meat + eggplant stew + salad',kcal:900},
+   {ar:'برياني دجاج + سلطة زبادي',en:'Chicken biryani + yogurt salad',kcal:900},
+   {ar:'وجبة عائلية دسمة (قوزي/مجبوس) 👨‍👩‍👦',en:'Big family meal (qouzi/machboos) 👨‍👩‍👦',kcal:1100}
+  ],
+  snack2:[
+   {ar:'شيك بروتين بالحليب + موزة',en:'Protein shake w/ milk + banana',kcal:450},
+   {ar:'بيضتين مسلوقات + خبز توست + جبنة',en:'2 boiled eggs + toast + cheese',kcal:400},
+   {ar:'شيك بروتين بالحليب + ٣ تمرات',en:'Protein shake w/ milk + 3 dates',kcal:450},
+   {ar:'كوب حليب كامل + ٥ تمرات + فول سوداني',en:'Full-fat milk + 5 dates + peanuts',kcal:450},
+   {ar:'شيك بروتين + ملعقة زبدة فول سوداني',en:'Protein shake + spoon of peanut butter',kcal:500},
+   {ar:'بيضتين مسلوقات + خبز + حليب',en:'2 boiled eggs + bread + milk',kcal:450},
+   {ar:'شيك بروتين + موزة',en:'Protein shake + banana',kcal:450},
+   {ar:'توست بالجبن والعسل',en:'Toast with cheese and honey',kcal:420}
+  ],
+  dinner:[
+   {ar:'شوربة عدس + خبز + زبادي',en:'Lentil soup + bread + yogurt',kcal:450},
+   {ar:'زبادي + خيار + خبز + تمر',en:'Yogurt + cucumber + bread + dates',kcal:450},
+   {ar:'شوربة خضار بالدجاج + خبز',en:'Chicken veg soup + bread',kcal:450},
+   {ar:'شوربة عدس + خبز',en:'Lentil soup + bread',kcal:400},
+   {ar:'زبادي + فواكه + عسل',en:'Yogurt + fruit + honey',kcal:350},
+   {ar:'شوربة عدس خفيفة + خبز',en:'Light lentil soup + bread',kcal:400},
+   {ar:'زبادي + خيار (خفيف)',en:'Yogurt + cucumber (light)',kcal:300},
+   {ar:'شوربة شعيرية بالدجاج + خبز',en:'Chicken vermicelli soup + bread',kcal:400}
+  ]
+ },
+ lose:{
+  breakfast:[
+   {ar:'عجة بياض بيض (٤) بالخضار + خبز أسمر رقاقة',en:'Egg-white omelet (4) with veggies + 1 slice whole wheat bread',kcal:320},
+   {ar:'شوفان بحليب خالي الدسم + قرفة + نص موزة',en:'Oats with skim milk + cinnamon + half a banana',kcal:320},
+   {ar:'٢ بيض مسلوق + خبز أسمر رقاقة + خيار',en:'2 boiled eggs + 1 slice whole wheat bread + cucumber',kcal:320},
+   {ar:'توست أسمر بجبن قليل الدسم + طماط',en:'Whole wheat toast with low-fat cheese + tomato',kcal:320},
+   {ar:'عجة بيضة كاملة وحدة + بياضين + سبانخ',en:'1 whole egg + 2 egg whites omelet + spinach',kcal:320},
+   {ar:'شوفان بحليب خالي الدسم + تفاح مبشور وقرفة',en:'Oats with skim milk + grated apple & cinnamon',kcal:320},
+   {ar:'فطور بيتي خفيف: بيضتين + خبز أسمر + خيار وطماط',en:'Light home breakfast: 2 eggs + whole wheat bread + cucumber & tomato',kcal:350},
+   {ar:'زبادي يوناني + شوفان نيء + توت',en:'Greek yogurt overnight oats with berries',kcal:300}
+  ],
+  snack1:[
+   {ar:'تفاحة + ١٠ حبات لوز',en:'An apple + 10 almonds',kcal:200},
+   {ar:'برتقالة + بيضة مسلوقة',en:'An orange + a boiled egg',kcal:200},
+   {ar:'زبادي يوناني + ملعقة عسل',en:'Greek yogurt + a spoon of honey',kcal:200},
+   {ar:'موزة + نص ملعقة زبدة فول سوداني',en:'A banana + half a spoon of peanut butter',kcal:200},
+   {ar:'كيوي + ١٠ حبات لوز',en:'A kiwi + 10 almonds',kcal:200},
+   {ar:'بيضة مسلوقة + خيار',en:'A boiled egg + cucumber',kcal:200},
+   {ar:'فواكه موسمية متنوعة',en:'A mix of seasonal fruit',kcal:200},
+   {ar:'جزر ومقرمشات خضار + ملعقتين حمص',en:'Carrot & veggie sticks + 2 spoons of hummus',kcal:180}
+  ],
+  lunch:[
+   {ar:'صدر دجاج مشوي (١٨٠غ) + سلطة خضراء كبيرة + ربع كوب كينوا',en:'Grilled chicken breast (180g) + big green salad + 1/4 cup quinoa',kcal:550},
+   {ar:'سمك مشوي (١٨٠غ) + خضار مشوية + بطاطا مسلوقة صغيرة',en:'Grilled fish (180g) + grilled vegetables + a small boiled potato',kcal:550},
+   {ar:'لحم مشوي قليل الدهن (١٥٠غ) + سلطة تبولة + ربع كوب رز',en:'Lean grilled meat (150g) + tabbouleh + 1/4 cup rice',kcal:550},
+   {ar:'صدر دجاج مشوي (١٨٠غ) + سلطة فتوش (بدون خبز مقلي)',en:'Grilled chicken breast (180g) + fattoush (no fried bread)',kcal:550},
+   {ar:'سمك مشوي (١٨٠غ) + ربع كوب أرز بني + خضار سوتيه',en:'Grilled fish (180g) + 1/4 cup brown rice + sautéed vegetables',kcal:550},
+   {ar:'دجاج مشوي (١٨٠غ) + سلطة يونانية خفيفة + خبز أسمر رقاقة',en:'Grilled chicken (180g) + light Greek salad + 1 slice whole wheat bread',kcal:550},
+   {ar:'سلطة دجاج مشوي كبيرة بصلصة زبادي خفيفة',en:'Big grilled chicken salad with light yogurt dressing',kcal:500},
+   {ar:'دجاج مشوي أو مسلوق (١٨٠غ) + سلطة كبيرة + ربع كوب رز',en:'Grilled or boiled chicken (180g) + a big salad + 1/4 cup rice',kcal:570}
+  ],
+  snack2:[
+   {ar:'زبادي يوناني قليل الدسم + توت',en:'Low-fat Greek yogurt + berries',kcal:200},
+   {ar:'حمص بخبز رقاق صغير',en:'Hummus with a small piece of flatbread',kcal:200},
+   {ar:'تفاحة + ١٠ حبات لوز',en:'An apple + 10 almonds',kcal:200},
+   {ar:'زبادي يوناني + فراولة',en:'Greek yogurt + strawberries',kcal:200},
+   {ar:'حمص بالخضار',en:'Hummus with veggie sticks',kcal:200},
+   {ar:'زبادي يوناني + عسل',en:'Greek yogurt + honey',kcal:200},
+   {ar:'زبادي يوناني + مكسرات قليلة',en:'Greek yogurt + a few nuts',kcal:200},
+   {ar:'كوب حليب خالي الدسم + ٣ تمرات',en:'Skim milk + 3 dates',kcal:180}
+  ],
+  dinner:[
+   {ar:'شوربة عدس + سلطة خيار وطماط',en:'Lentil soup + cucumber-tomato salad',kcal:380},
+   {ar:'سلطة دجاج مشوي بخس وخيار',en:'Grilled chicken lettuce & cucumber salad',kcal:380},
+   {ar:'شوربة خضار خفيفة بدون كريمة',en:'Light vegetable soup, no cream',kcal:380},
+   {ar:'عدس أصفر بدون خبز + سلطة خضراء',en:'Yellow lentils, no bread + green salad',kcal:380},
+   {ar:'سلطة تونة (بدون مايونيز، بزيت زيتون)',en:'Tuna salad (no mayo, olive oil instead)',kcal:380},
+   {ar:'شوربة خضار بالدجاج خفيفة',en:'Light chicken vegetable soup',kcal:380},
+   {ar:'سلطة خفيفة بجبنة قليلة الدسم',en:'Light salad with low-fat cheese',kcal:330},
+   {ar:'شوربة عدس أحمر بالليمون',en:'Red lentil soup with lemon',kcal:350}
+  ]
+ }
+};
+
+function currentGoalKey(){ return (P.foodSetup&&P.foodSetup.goal==='lose') ? 'lose' : 'gain'; }
+const EXTRA_ITEMS={
+  gain:[
+    {ar:'شيك بروتين إضافي',en:'Extra protein shake',kcal:300},
+    {ar:'حفنة مكسرات',en:'Handful of nuts',kcal:200},
+    {ar:'ملعقتين زبدة فول سوداني',en:'2 tbsp peanut butter',kcal:190},
+    {ar:'موزة بالعسل',en:'Banana with honey',kcal:180},
+    {ar:'كوب حليب كامل الدسم إضافي',en:'Extra full-fat milk',kcal:150},
+    {ar:'ربع رغيف خبز إضافي',en:'Extra quarter loaf of bread',kcal:150}
+  ],
+  lose:[
+    {ar:'حصة زبادي يوناني إضافية',en:'Extra Greek yogurt serving',kcal:120},
+    {ar:'حفنة صغيرة لوز',en:'Small handful of almonds',kcal:110},
+    {ar:'تفاحة',en:'An apple',kcal:90},
+    {ar:'بيضة مسلوقة',en:'A boiled egg',kcal:70}
+  ]
+};
+function fillGapWithRealFood(gapKcal,goal,dietType){
+  if(gapKcal<150) return [];
+  let pool=[...EXTRA_ITEMS[goal]];
+  if(dietType==='lowCarb'){
+    const filtered=pool.filter(item=>!/خبز|عسل|تمر|bread|honey|dates/i.test(item.ar+item.en));
+    if(filtered.length) pool=filtered;
+  }
+  pool.sort((a,b)=>b.kcal-a.kcal);
+  const picked=[]; let remaining=gapKcal;
+  for(const item of pool){
+    if(picked.length>=2) break;
+    if(item.kcal<=remaining+80){ picked.push(item); remaining-=item.kcal; }
+    if(remaining<100) break;
+  }
+  return picked;
+}
+function getISOWeekNum(d){
+  const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dayNum=dt.getUTCDay()||7;
+  dt.setUTCDate(dt.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+  return Math.ceil((((dt-yearStart)/86400000)+1)/7);
+}
+const MEAL_COUNT_SLOTS={
+  5:['breakfast','snack1','lunch','snack2','dinner'],
+  4:['breakfast','lunch','snack2','dinner'],
+  3:['breakfast','lunch','dinner'],
+  2:['lunch','dinner']
+};
+function getDayMenu(weekdayIdx){
+  const goal=currentGoalKey();
+  const fs=P.foodSetup||{};
+  const dietType=fs.dietType||'balanced';
+  const isIF=dietType==='if168';
+  const mealCount=isIF?2:(fs.mealCount||5);
+  const activeSlotKeys=MEAL_COUNT_SLOTS[mealCount]||MEAL_COUNT_SLOTS[5];
+  const week=getISOWeekNum(new Date());
+  const isFriday=(weekdayIdx===6);
+  const meals=[];
+  SLOT_KEYS.forEach((key,slotIdx)=>{
+    if(!activeSlotKeys.includes(key)) return;
+    let pool = (dietType==='lowCarb' && (key==='breakfast'||key==='lunch')) ? MEAL_POOLS.lose[key] : MEAL_POOLS[goal][key];
+    if(dietType==='highProtein' && (key==='snack1'||key==='snack2')){
+      const filtered=pool.filter(item=>/بروتين|بيض|زبادي|جبن|protein|egg|yogurt|cheese/i.test(item.ar+item.en));
+      if(filtered.length) pool=filtered;
+    }
+    let idx;
+    if(key==='lunch'){
+      if(isFriday){
+        idx=pool.length-1;
+      } else {
+        idx=(weekdayIdx+week*(slotIdx+1))%Math.max(1,pool.length-1);
+      }
+    } else {
+      idx=(weekdayIdx+week*(slotIdx+1))%pool.length;
+    }
+    const item=pool[idx];
+    meals.push([SLOT_LABELS[slotIdx],{ar:item.ar,en:item.en},String(item.kcal)]);
+  });
+  const total=meals.reduce((s,m)=>s+parseInt(m[2],10),0);
+  return {tag:isFriday?'special':'', total:String(total), meals};
+}
+
+const ALLERGY_SWAPS={
+ eggs:{ ar:[[/بيض مقلي \([٢٣0-9-]+\)/g,'فول مدمس'],[/عجة بيض \(٣\)/g,'شوفان بالحليب'],[/أومليت بالخضار \(٣ بيضات\)/g,'فول مدمس بالخضار'],[/بيضتين مسلوقات/g,'زبادي بالفواكه'],[/\+ بيضة/g,''],[/بيض \+/g,'فول +']],
+        en:[[/Fried eggs \(2-3\)/g,'Foul medames'],[/3-egg omelet/g,'Oats with milk'],[/Veggie omelet \(3 eggs\)/g,'Veggie foul medames'],[/2 boiled eggs/g,'Fruit yogurt'],[/\+ egg/g,''],[/eggs \+/g,'foul +'],[/3 fried eggs/g,'Foul medames']] },
+ dairy:{ ar:[[/حليب كامل الدسم/g,'حليب نباتي'],[/كوب حليب/g,'كوب حليب نباتي'],[/بالحليب/g,'بحليب نباتي'],[/زبادي يوناني/g,'زبادي نباتي'],[/زبادي/g,'زبادي نباتي'],[/جبنة/g,'جبن نباتي'],[/جبن/g,'جبن نباتي'],[/لبنة/g,'لبنة نباتية']],
+        en:[[/full-fat milk/gi,'plant milk'],[/w\/ milk/g,'w/ plant milk'],[/\+ milk/g,'+ plant milk'],[/Greek yogurt/g,'plant yogurt'],[/Yogurt/g,'Plant yogurt'],[/yogurt/g,'plant yogurt'],[/cheese/g,'plant cheese'],[/labneh/g,'plant labneh']] },
+ nuts:{ ar:[[/حفنة مكسرات/g,'فواكه مجففة'],[/\+ مكسرات/g,'+ فواكه مجففة'],[/فول سوداني/g,'حمص محمص'],[/زبدة فول سوداني/g,'طحينة']],
+        en:[[/handful of nuts/g,'dried fruit'],[/\+ nuts/g,'+ dried fruit'],[/peanut butter/g,'tahini'],[/peanuts/g,'roasted chickpeas']] },
+ gluten:{ ar:[[/خبز تنور/g,'خبز خالي الجلوتين'],[/خبز توست/g,'توست خالي الجلوتين'],[/\+ خبز/g,'+ خبز خالي الجلوتين'],[/شوفان/g,'شوفان خالي الجلوتين']],
+          en:[[/bread/g,'gluten-free bread'],[/toast/g,'gluten-free toast'],[/Oats/g,'GF oats']] },
+ seafood:{ ar:[[/سمك مقلي \(قطعتين\)/g,'دجاج مشوي']], en:[[/fried fish \(2 pcs\)/g,'grilled chicken']] }
+};
+function transformMeal(text,lang){
+  let out=text, touched=false;
+  const fs=P.foodSetup||{};
+  (fs.allergies||[]).forEach(a=>{
+    const swaps=(ALLERGY_SWAPS[a]||{})[lang]||[];
+    swaps.forEach(([re,rep])=>{ if(re.test(out)){ out=out.replace(re,rep); touched=true; } re.lastIndex=0; });
+  });
+  return {text:out,touched};
+}
+
+/* ================= WORKOUT CONTENT ================= */
+const LEVEL_MAIN={
+ beginner:{
+  push:[
+   {ar:'١. ضغط على الحائط — ٣ × ١٢-١٥',en:'1. Wall push-ups — 3×12-15'},
+   {ar:'٢. ضغط منحدر (ايدينك على طاولة/كرسي) — ٣ × ١٠-١٢',en:'2. Incline push-ups (hands on table/chair) — 3×10-12'},
+   {ar:'٣. ضغط على الركب — ٣ × ٨-١٠',en:'3. Knee push-ups — 3×8-10'},
+   {ar:'٤. بلانك ثابت — ٣ × ٢٠-٣٠ ثانية',en:'4. Static plank hold — 3×20-30s'},
+   {ar:'٥. بايك بوش أب بمساعدة (ركبتك منحنية) — ٣ × ٦-٨',en:'5. Assisted pike push-up (bent knees) — 3×6-8'},
+   {ar:'٦. رفرفة كتف بمقاومة ذاتية — ٣ × ١٠',en:'6. Self-resisted shoulder raise — 3×10'}
+  ],
+  pull:[
+   {ar:'١. سحب بمنشفة أو حزام مربوط بشي ثابت — ٣ × ١٠',en:'1. Towel/belt anchored rows — 3×10'},
+   {ar:'٢. رفعات Y نايم على البطن — ٣ × ١٠',en:'2. Prone Y-raises (lying face down) — 3×10'},
+   {ar:'٣. سوبرمان — ٣ × ١٠ ثانية',en:'3. Superman hold — 3×10s'},
+   {ar:'٤. رفعات T نايم على البطن — ٣ × ١٠',en:'4. Prone T-raises (lying face down) — 3×10'},
+   {ar:'٥. شراغ بوزن الجسم — ٣ × ١٢',en:'5. Bodyweight shrugs — 3×12'},
+   {ar:'٦. سحب حبل مطاطي خفيف — ٣ × ١٠',en:'6. Light band pull — 3×10'}
+  ],
+  legs:[
+   {ar:'١. سكوات بمساعدة كرسي (تمسك الكرسي للتوازن) — ٤ × ١٢',en:'1. Chair-assisted squats (hold chair for balance) — 4×12'},
+   {ar:'٢. جلوس ووقوف من كرسي — ٣ × ١٠',en:'2. Sit-to-stand box squats — 3×10'},
+   {ar:'٣. جسر المؤخرة — ٣ × ١٢',en:'3. Glute bridges — 3×12'},
+   {ar:'٤. حائط جلسة — ٣ × ١٥-٢٠ ثانية',en:'4. Wall sit — 3×15-20s'},
+   {ar:'٥. سمانة واقف — ٣ × ١٥',en:'5. Calf raises — 3×15'},
+   {ar:'٦. رفعة ركبة واقف (مارش) — ٣ × ١٠/رجل',en:'6. Standing marching steps — 3×10/leg'}
+  ]
+ },
+ pro:{
+  push:[
+   {ar:'١. ضغط ماسي عميق — ٤ × ١٢-١٥',en:'1. Deep diamond push-ups — 4×12-15'},
+   {ar:'٢. ضغط آرتشر (وزن على جنب) — ٣ × ٨/جنب',en:'2. Archer push-ups — 3×8/side'},
+   {ar:'٣. ضغط منحدر عكسي (رجلينك مرفوعة) — ٣ × ١٠-١٢',en:'3. Decline push-ups (feet elevated) — 3×10-12'},
+   {ar:'٤. ديبس عميق بين كرسيين — ٤ × ١٠-١٢',en:'4. Deep dips between two chairs — 4×10-12'},
+   {ar:'٥. بايك بوش أب متقدم (رجلينك مرفوعة) — ٣ × ٨-١٠',en:'5. Advanced pike push-ups (feet elevated) — 3×8-10'},
+   {ar:'٦. ضغط متفجر (تصفيق لو تقدر) — ٣ × ٦-٨',en:'6. Explosive push-ups (clap if you can) — 3×6-8'}
+  ],
+  pull:[
+   {ar:'١. عقلة كاملة — ٤ × ٦-١٠',en:'1. Full pull-ups — 4×6-10'},
+   {ar:'٢. عقلة آرتشر — ٣ × ٤-٦',en:'2. Archer pull-ups — 3×4-6'},
+   {ar:'٣. سحب بمنشفة ورجلينك مرفوعة — ٣ × ١٠',en:'3. Towel rows with feet elevated — 3×10'},
+   {ar:'٤. تعليق مقلوب أطول وقت ممكن — ٣ محاولات',en:'4. Extended dead hang, max time — 3 attempts'},
+   {ar:'٥. سحب حبل مطاطي بشد قوي — ٣ × ١٢',en:'5. Heavy-tension band rows — 3×12'},
+   {ar:'٦. عقلة بوضعية L-sit — ٣ × ٤-٦',en:'6. L-sit pull-ups — 3×4-6'}
+  ],
+  legs:[
+   {ar:'١. بيستول سكوات بمساعدة (تمسك شي للتوازن) — ٣ × ٦/رجل',en:'1. Assisted pistol squats (hold support) — 3×6/leg'},
+   {ar:'٢. سكوات بلغاري عميق (رجلك الخلفية مرفوعة عالي) — ٤ × ١٠/رجل',en:'2. Deep Bulgarian split squats (rear foot elevated high) — 4×10/leg'},
+   {ar:'٣. قفز سكوات قوي — ٤ × ١٠',en:'3. Powerful jump squats — 4×10'},
+   {ar:'٤. رفعة رجل وحدة رومانية (توازن) — ٣ × ٨/رجل',en:'4. Single-leg RDL (balance) — 3×8/leg'},
+   {ar:'٥. نورديك كيرل بمساعدة — ٣ × ٦-٨',en:'5. Assisted Nordic curl — 3×6-8'},
+   {ar:'٦. ستيب أب عميق على سطح عالي — ٣ × ١٠/رجل',en:'6. Deep step-ups on a high surface — 3×10/leg'}
+  ]
+ }
+};
+
+const LEVEL_SMALL={
+ beginner:{
+  push:[
+   {ar:'٧. عصر يدين مع بعض (خفيف) — ٣ × ١٠',en:'7. Light hands-together press — 3×10'},
+   {ar:'٨. دوائر ذراع بسيطة — ٣ × ١٠ كل اتجاه',en:'8. Simple arm circles — 3×10 each direction'},
+   {ar:'٩. بلانك على الركب — ٣ × ١٥-٢٠ ثانية',en:'9. Knee plank — 3×15-20s'},
+   {ar:'١٠. تمديد ذراع بالحائط — ٣ × ١٠',en:'10. Wall-supported arm press — 3×10'}
+  ],
+  pull:[
+   {ar:'٧. عصر كرة أو منشفة — ٣ × ١٥ ثانية',en:'7. Towel/ball squeeze — 3×15s'},
+   {ar:'٨. دوران كتف للخلف — ٣ × ١٠',en:'8. Backward shoulder rolls — 3×10'},
+   {ar:'٩. تمديد ساعد بسيط — ٣ × ١٠ ثانية',en:'9. Simple forearm stretch hold — 3×10s'},
+   {ar:'١٠. رفعة ذراع جانبية خفيفة — ٣ × ١٠',en:'10. Light lateral arm raise — 3×10'}
+  ],
+  legs:[
+   {ar:'٧. بلانك على الركب — ٣ × ١٥-٢٠ ثانية',en:'7. Knee plank — 3×15-20s'},
+   {ar:'٨. رفعة ركبة بالجلوس — ٣ × ١٠',en:'8. Seated knee raise — 3×10'},
+   {ar:'٩. دوران كاحل — ٣ × ١٠ كل اتجاه',en:'9. Ankle rotations — 3×10 each direction'},
+   {ar:'١٠. تمديد ربلة بسيط — ٣ × ١٠ ثانية',en:'10. Simple calf stretch hold — 3×10s'}
+  ]
+ },
+ pro:{
+  push:[
+   {ar:'٧. ديبس ضيق مع رفع رجل — ٣ × ١٠',en:'7. Close-grip dips with leg raise — 3×10'},
+   {ar:'٨. رفرفة كتف بطيئة مع ثبات — ٣ × ١٢',en:'8. Slow paused lateral raise — 3×12'},
+   {ar:'٩. رفرفة أمامية بطيئة — ٣ × ١٢',en:'9. Slow controlled front raise — 3×12'},
+   {ar:'١٠. بلانك تو بوش أب متفجر — ٣ × ٨',en:'10. Explosive plank-to-push-up — 3×8'}
+  ],
+  pull:[
+   {ar:'٧. باي كيرل بحبل مطاطي بطيء جداً — ٣ × ١٠',en:'7. Very slow band bicep curl — 3×10'},
+   {ar:'٨. هامر كيرل بشد أقوى — ٣ × ١٠',en:'8. Heavier-tension hammer curl — 3×10'},
+   {ar:'٩. إكسنتريك رست كيرل بطيء جداً — ٣ × ١٥',en:'9. Extra-slow eccentric wrist curl — 3×15'},
+   {ar:'١٠. عصر كرة بأقصى قوة — ٣ × ٢٠ ثانية',en:'10. Max-effort ball squeeze — 3×20s'}
+  ],
+  legs:[
+   {ar:'٧. بلانك مع رفع رجل بالتبادل — ٣ × ٤٠-٦٠ ثانية',en:'7. Plank with alternating leg lifts — 3×40-60s'},
+   {ar:'٨. بلانك جانبي مع رفع رجل — ٣ × ٣٠ ثانية',en:'8. Side plank with leg raise — 3×30s'},
+   {ar:'٩. ديد بق بمقاومة خفيفة — ٣ × ١٠',en:'9. Lightly resisted dead bug — 3×10'},
+   {ar:'١٠. بيرد دوق بطيء مع ثبات — ٣ × ١٠',en:'10. Slow paused bird dog — 3×10'}
+  ]
+ }
+};
+
+const workoutTypes={
+ push:{icon:'🔴',name:{ar:'دفع — صدر + كتف + تراي',en:'Push — chest + shoulders + triceps'},
+  main:[{ar:'١. ضغط عادي — ٤ × ١٢-١٥',en:'1. Push-ups — 4×12-15'},{ar:'٢. ضغط واسع — ٣ × ١٠-١٢',en:'2. Wide push-ups — 3×10-12'},{ar:'٣. ضغط منحدر — ٣ × ٨-١٠',en:'3. Decline push-ups — 3×8-10'},{ar:'٤. ديبس على المتوازي — ٤ × ٨-١٢',en:'4. Dips — 4×8-12'},{ar:'٥. ضغط ماسي — ٣ × ٨-١٠',en:'5. Diamond push-ups — 3×8-10'},{ar:'٦. بايك بوش أب — ٣ × ٦-١٠',en:'6. Pike push-ups — 3×6-10'}],
+  small:[{ar:'٧. تراي إكستنشن — ٣ × ١٠',en:'7. Bench triceps extension — 3×10'},{ar:'٨. رفرفة كتف جانبي — ٣ × ١٢',en:'8. Lateral raises — 3×12'},{ar:'٩. رفرفة أمامية — ٣ × ١٢',en:'9. Front raises — 3×12'},{ar:'١٠. بلانك تو بوش أب — ٣ × ٨',en:'10. Plank-to-push-up — 3×8'}],
+  stretch:{ar:'🧘 استرتش صدر + كتف خلفي + تراي — ٥ دقايق',en:'🧘 Chest + rear delt + triceps stretch — 5 min'},
+  tierNotes:[{ar:'😌 خفف شوي: -٢ عدات على كل تمرين رئيسي',en:'😌 Lighter: -2 reps on each main exercise'},{ar:'المستوى ١: ثبّت الفورم بالعدات الأساسية',en:'Level 1: lock in form with base reps'},{ar:'المستوى ٢: زود عدة أو عدتين على كل تمرين رئيسي',en:'Level 2: add 1-2 reps to each main exercise'},{ar:'المستوى ٣: نزول أبطأ ٣ ثواني + راحة أقصر',en:'Level 3: 3s slower negatives + shorter rest'},{ar:'المستوى ٤: زود مجموعة خامسة، أو زود صعوبة الوضعية شوي',en:'Level 4: add a 5th set, or make your current position slightly harder'}],
+  tierBoost:[{ar:'⏱️ راحة ٤٥ ثانية بس بين المجموعات',en:'⏱️ Only 45s rest between sets'},{ar:'🔥 فينشر: ضغط حتى الفشل — مجموعة وحدة',en:'🔥 Finisher: push-ups to failure — one set'}]},
+ pull:{icon:'🔵',name:{ar:'سحب — ظهر + باي',en:'Pull — back + biceps'},color:'pull',
+  main:[{ar:'١. عقلة أستراليان — ٤ × ٨-١٢',en:'1. Australian rows — 4×8-12'},{ar:'٢. عقلة بقبضة عريضة — ٣ × ٥-٨',en:'2. Wide-grip pull-ups — 3×5-8'},{ar:'٣. سحب حبل أفقي — ٣ × ١٠',en:'3. Band rows — 3×10'},{ar:'٤. سوبرمان — ٣ × ١٢ ثانية',en:'4. Superman hold — 3×12s'},{ar:'٥. شراغ بدمبل — ٣ × ١٢',en:'5. DB shrugs — 3×12'},{ar:'٦. فيس بول بحبل مطاطي — ٣ × ١٢',en:'6. Band face pulls — 3×12'}],
+  small:[{ar:'٧. باي كيرل خفيف بطيء — ٣ × ١٠',en:'7. Slow light DB curls — 3×10'},{ar:'٨. هامر كيرل — ٣ × ١٠',en:'8. Hammer curls — 3×10'},{ar:'٩. إكسنتريك رست كيرل — ٣ × ١٥',en:'9. Eccentric wrist curls — 3×15'},{ar:'١٠. عصر كرة — ٣ × ٢٠ ثانية',en:'10. Ball squeeze — 3×20s'}],
+  stretch:{ar:'🧘 استرتش ساعد + ظهر علوي — ٥ دقايق',en:'🧘 Forearm + upper-back stretch — 5 min'},
+  tierNotes:[{ar:'😌 خفف شوي: -٢ عدات على كل تمرين رئيسي',en:'😌 Lighter: -2 reps on each main exercise'},{ar:'المستوى ١: ثبّت الأساس بالعدات المكتوبة',en:'Level 1: lock in the listed reps'},{ar:'المستوى ٢: زود ١-٢ عدة على أهم تمرينين',en:'Level 2: add 1-2 reps on your top two moves'},{ar:'المستوى ٣: نزول أبطأ + عدة إضافية على كل تمرين',en:'Level 3: slower negatives + 1 extra rep everywhere'},{ar:'المستوى ٤: زود مجموعة، وفكر تضيف وزن خفيف بشنطة ظهر',en:'Level 4: add a set; consider a light backpack for extra load'}],
+  tierBoost:[{ar:'🐢 نزول أبطأ ٣ ثواني على كل تمرين',en:'🐢 3s slow negatives on every exercise'},{ar:'🔥 فينشر: تعليق على العقلة (لو عندك بار) أو بلانك أطول وقت ممكن',en:'🔥 Finisher: dead hang (if you have a bar) or a max-time plank'}]},
+ legs:{icon:'🟢',name:{ar:'رجل + كور',en:'Legs + core'},color:'legs',
+  main:[{ar:'١. سكوات بوزن الجسم — ٤ × ١٥-٢٠',en:'1. Bodyweight squats — 4×15-20'},{ar:'٢. لنجز مشي — ٣ × ١٢/رجل',en:'2. Walking lunges — 3×12/leg'},{ar:'٣. سكوات بلغاري — ٣ × ٨-١٠',en:'3. Bulgarian split squats — 3×8-10'},{ar:'٤. جسر المؤخرة — ٤ × ١٥',en:'4. Glute bridges — 4×15'},{ar:'٥. سمانة واقف — ٤ × ٢٠',en:'5. Calf raises — 4×20'},{ar:'٦. قفز سكوات خفيف — ٣ × ٨',en:'6. Light jump squats — 3×8'}],
+  small:[{ar:'٧. بلانك — ٣ × ٤٠-٦٠ ثانية',en:'7. Plank — 3×40-60s'},{ar:'٨. بلانك جانبي — ٣ × ٣٠ ثانية',en:'8. Side plank — 3×30s'},{ar:'٩. ديد بق — ٣ × ١٠',en:'9. Dead bug — 3×10'},{ar:'١٠. بيرد دوق — ٣ × ١٠',en:'10. Bird dog — 3×10'}],
+  stretch:{ar:'🧘 استرتش هامسترنق + كواد + ورك — ٥ دقايق',en:'🧘 Hamstring + quad + hip stretch — 5 min'},
+  tierNotes:[{ar:'😌 خفف شوي: -٣ عدات على التمارين الرئيسية',en:'😌 Lighter: -3 reps on the main exercises'},{ar:'المستوى ١: ثبّت الأساس بوزن الجسم بس',en:'Level 1: bodyweight basics only'},{ar:'المستوى ٢: زود ٣-٥ عدات على التمارين الرئيسية',en:'Level 2: add 3-5 reps to the main exercises'},{ar:'المستوى ٣: نزول أعمق وأبطأ + راحة أقصر',en:'Level 3: deeper, slower reps + shorter rest'},{ar:'المستوى ٤: زود مجموعة رابعة',en:'Level 4: add a 4th set'}],
+  tierBoost:[{ar:'🦵 عمّق حركتك أكثر أو جرب وقفة توازن على رجل وحدة',en:'🦵 Go deeper on your reps, or try a single-leg balance hold'},{ar:'🔥 فينشر: سكوات نبضي — ٢٠ نبضة',en:'🔥 Finisher: 20 pulse squats'}]},
+ rest:{icon:'😴',name:{ar:'راحة (أو رياضة خارجية ⚽🎾)',en:'Rest (or outdoor sport ⚽🎾)'},
+  main:[{ar:'اليوم راحة!',en:'Rest today!'},{ar:'رياضة خارجية؟ العبها اليوم 👌',en:'Outdoor sport? Play it today 👌'},{ar:'مشي خفيف ٢٠-٣٠ دقيقة',en:'Light 20-30 min walk'}], small:[],
+  stretch:{ar:'🧘 استرتش خفيف قبل النوم',en:'🧘 Light stretch before bed'}}
+};
+/* video link for any exercise: strips numbering + rep/set info from the English
+   name and builds a YouTube search link — works for every exercise at every
+   level (beginner/amateur/pro) since it's generated from the text itself,
+   not a hand-picked list */
+function exerciseVideoUrl(enText){
+  if(!enText) return null;
+  let q=enText.replace(/^\d+\.\s*/,'').split('—')[0].trim();
+  if(!q) return null;
+  return 'https://www.youtube.com/results?search_query='+encodeURIComponent(q+' exercise proper form tutorial');
+}
+function videoIconHtml(enText){
+  const url=exerciseVideoUrl(enText);
+  if(!url) return '';
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="margin-inline-start:8px;text-decoration:none;font-size:0.85em;vertical-align:middle;" title="${LANG==='ar'?'شاهد فيديو الحركة':'Watch exercise video'}">🎥</a>`;
+}
+
+/* ---- REST TIMER: tap the ⏱️ next to any exercise to start a countdown with
+   a beep at the end (Web Audio API, no sound file needed). Global so the
+   inline onclick in the generated HTML string can reach it. ---- */
+let restTimerInterval=null;
+function playBeep(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value=880; gain.gain.value=0.25;
+    osc.start();
+    setTimeout(()=>{ osc.stop(); ctx.close(); },450);
+  }catch(e){}
+}
+function stopRestTimer(){
+  if(restTimerInterval){ clearInterval(restTimerInterval); restTimerInterval=null; }
+  const bar=document.getElementById('restTimerBar'); if(bar) bar.remove();
+}
+function startRestTimer(seconds){
+  seconds=seconds||60;
+  stopRestTimer();
+  let remaining=seconds;
+  const bar=document.createElement('div');
+  bar.id='restTimerBar';
+  bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:var(--accent-deep);color:#fff;padding:14px;text-align:center;font-family:var(--font-head);font-weight:800;font-size:1rem;z-index:9998;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 -4px 16px rgba(0,0,0,0.2);';
+  bar.innerHTML=`<span>⏱️ <span id="restTimerNum">${remaining}</span>s</span>
+    <button type="button" onclick="startRestTimer(60)" style="background:rgba(255,255,255,0.25);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-family:var(--font-head);font-weight:700;font-size:0.8rem;cursor:pointer;">+60</button>
+    <button type="button" onclick="stopRestTimer()" style="background:#fff;color:var(--accent-deep);border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-head);font-weight:800;cursor:pointer;">${LANG==='ar'?'إيقاف':'Stop'}</button>`;
+  document.body.appendChild(bar);
+  restTimerInterval=setInterval(()=>{
+    remaining--;
+    const numEl=document.getElementById('restTimerNum');
+    if(numEl) numEl.textContent=remaining;
+    if(remaining<=0){ playBeep(); stopRestTimer(); }
+  },1000);
+}
+function timerIconHtml(seconds){
+  seconds=seconds||60;
+  return `<button type="button" onclick="startRestTimer(${seconds})" style="margin-inline-start:6px;border:none;background:none;cursor:pointer;font-size:0.85em;vertical-align:middle;padding:0;" title="${LANG==='ar'?'مؤقت راحة ٦٠ ثانية':'60s rest timer'}">⏱️</button>`;
+}
+
+function currentTier(typeKey){
+  const level=(P.workoutCounts&&P.workoutCounts[typeKey])||0;
+  return Math.min(4,Math.max(0,level))+1;
+}
+const INJURY_MODS={
+ elbow:{ warn:{ar:'🦾 كوعك: تجنب الحمل الثقيل بوضعية الكف للأعلى. تمرين الإكسنتريك رقم ٩ علاجي — لا تطوفه.',en:'🦾 Elbow: avoid heavy palm-up loading. Eccentric wrist curls (#9) are therapeutic — never skip them.'},
+   applies:['pull'], swaps:{pull:[[{find:'عقلة'},{ar:'سحب بحبل مطاطي — ٣ × ١٢ (آمن للكوع)',en:'Band rows — 3×12 (elbow-safe)'}]]}},
+ shoulder:{ warn:{ar:'🙆 كتفك: وقف فوراً عند أي ألم، وخل مدى الحركة مريح.',en:'🙆 Shoulder: stop at any pain; keep range comfortable.'},
+   applies:['push'], swaps:{push:[[{find:'ديبس'},{ar:'ضغط على الركب — ٣ × ١٢ (آمن للكتف)',en:'Knee push-ups — 3×12 (shoulder-safe)'}]]}},
+ knee:{ warn:{ar:'🦵 ركبتك: لا تنزل بعمق يسبب ألم، والقفز ملغي.',en:'🦵 Knee: avoid painful depth; jumping removed.'},
+   applies:['legs'], swaps:{legs:[[{find:'قفز'},{ar:'جسر مؤخرة بثبات — ٣ × ١٥',en:'Glute bridge holds — 3×15'}]]}},
+ lowback:{ warn:{ar:'🔙 ظهرك: لا أوزان إضافية ولا انحناء ثقيل، ركز على الكور.',en:'🔙 Lower back: no added weight/heavy bending, focus core.'},
+   applies:['pull'], swaps:{pull:[[{find:'سوبرمان'},{ar:'بيرد دوق — ٣ × ١٠ (آمن للظهر)',en:'Bird dog — 3×10 (back-safe)'}]]}}
+};
+const EQUIPMENT_SWAPS={
+ pull:[
+   {find:'عقلة أستراليان',requires:'bar',
+     altBand:{ar:'١. سحب حبل مطاطي من نقطة عالية (تقليد حركة العقلة) — ٤ × ١٠-١٢',en:'1. Overhead band pulldown (mimics pull-up motion) — 4×10-12'},
+     altNone:{ar:'١. رفعات Y-T-I نايم على بطنك — ٣ × ١٠ لكل شكل',en:'1. Floor Y-T-I raises (lying face down) — 3×10 per shape'}},
+   {find:'عقلة بقبضة عريضة',requires:'bar',
+     altBand:{ar:'٢. سحب حبل مطاطي بقبضة عريضة — ٣ × ١٢',en:'2. Wide-grip band pulldown — 3×12'},
+     altNone:{ar:'٢. سنو أنجل عكسي نايم على بطنك — ٣ × ١٢',en:'2. Reverse snow angels (face down on floor) — 3×12'}},
+   {find:'شراغ بدمبل',requires:'dumbbells',
+     altBand:{ar:'٥. شراغ بالحبل المطاطي (تقف عليه وتشد لفوق) — ٣ × ١٥',en:'5. Band shrugs (stand on band, shrug up) — 3×15'},
+     altNone:{ar:'٥. شراغ بوزن الجسم (اضغط كتفك لفوق بقوة) — ٣ × ١٥',en:'5. Bodyweight shrugs (squeeze shoulders up hard) — 3×15'}},
+   {find:'باي كيرل خفيف بطيء',requires:'dumbbells',
+     altBand:{ar:'٧. باي كيرل بالحبل المطاطي (تقف عليه) — ٣ × ١٢',en:'7. Band bicep curls (stand on band) — 3×12'},
+     altNone:{ar:'٧. باي كيرل إيزومتري (اعصر قبضتك وانزل ببطء) — ٣ × ١٠',en:'7. Isometric bicep curl (clench fist, slow controlled curl) — 3×10'}},
+   {find:'سحب حبل أفقي',requires:'band',
+     altNone:{ar:'٣. سحب بمنشفة أو حزام مربوط بشي ثابت — ٣ × ١٢',en:'3. Towel/belt rows anchored to something sturdy — 3×12'}},
+   {find:'فيس بول بحبل مطاطي',requires:'band',
+     altNone:{ar:'٦. رفعات خلفية بوزن الجسم (نايم على بطنك وارفع ذراعك) — ٣ × ١٢',en:'6. Bodyweight rear-delt raises (face down, lift arms) — 3×12'}},
+   {find:'هامر كيرل',requires:'dumbbells',
+     altBand:{ar:'٨. هامر كيرل بالحبل المطاطي (قبضة محايدة) — ٣ × ١٢',en:'8. Band hammer curls (neutral grip) — 3×12'},
+     altNone:{ar:'٨. هامر كيرل إيزومتري بقبضة محايدة — ٣ × ١٠',en:'8. Isometric hammer-grip curl hold — 3×10'}},
+   {find:'عقلة كاملة',requires:'bar',
+     altBand:{ar:'١. سحب حبل مطاطي بشد قوي وبطيء (تقليد حركة العقلة الكاملة) — ٤ × ١٠',en:'1. Slow heavy-tension band pulldown (mimics full pull-up) — 4×10'},
+     altNone:{ar:'١. سحب بمنشفة عميق ومركز — ٤ × ١٢',en:'1. Deep, focused towel rows — 4×12'}},
+   {find:'عقلة آرتشر',requires:'bar',
+     altNone:{ar:'٢. سحب بمنشفة بيد وحدة أبعد (تقليد آرتشر) — ٣ × ٨/جنب',en:'2. Single-arm-emphasis towel row (archer-style) — 3×8/side'}},
+   {find:'تعليق مقلوب أطول وقت ممكن',requires:'bar',
+     altNone:{ar:'٤. بلانك ثابت أطول وقت ممكن (تحدي قبضة وكور) — ٣ محاولات',en:'4. Max-time plank hold (grip & core challenge) — 3 attempts'}},
+   {find:'عقلة بوضعية L-sit',requires:'bar',
+     altNone:{ar:'٦. بلانك مع رفع رجل بالتبادل (كور متقدم) — ٣ × ١٢',en:'6. Plank with alternating leg lifts (advanced core) — 3×12'}}
+ ],
+ push:[
+   {find:'رفرفة كتف جانبي',requires:'dumbbells',
+     altBand:{ar:'٨. رفرفة كتف بالحبل المطاطي (تقف عليه) — ٣ × ١٢',en:'8. Band lateral raises (stand on band) — 3×12'},
+     altNone:{ar:'٨. رفرفة كتف بمقاومة ذاتية (اضغط يدينك على بعض) — ٣ × ١٢',en:'8. Self-resisted lateral raise (press hands together) — 3×12'}},
+   {find:'رفرفة أمامية',requires:'dumbbells',
+     altBand:{ar:'٩. رفرفة أمامية بالحبل المطاطي — ٣ × ١٢',en:'9. Band front raises — 3×12'},
+     altNone:{ar:'٩. رفرفة أمامية بغرض خفيف بالبيت (قنينة مي) — ٣ × ١٢',en:'9. Front raise with a light household item (water bottle) — 3×12'}}
+ ],
+ legs:[]
+};
+const BAND_UPGRADES={
+ legs:[
+   {find:'سكوات بوزن الجسم',bandVersion:{ar:'١. سكوات بالحبل المطاطي (تحت القدمين) — ٤ × ١٥-٢٠',en:'1. Banded squats (band under feet) — 4×15-20'}},
+   {find:'جسر المؤخرة',bandVersion:{ar:'٤. جسر مؤخرة بالحبل المطاطي فوق الركب — ٤ × ١٥',en:'4. Banded glute bridges (band above knees) — 4×15'}},
+   {find:'سكوات بمساعدة كرسي',bandVersion:{ar:'١. سكوات بالحبل المطاطي بدل مساعدة الكرسي — ٤ × ١٢',en:'1. Banded squats instead of chair support — 4×12'}},
+   {find:'بيستول سكوات بمساعدة',bandVersion:{ar:'١. بيستول سكوات بمقاومة حبل مطاطي بدل اليد — ٣ × ٦/رجل',en:'1. Assisted pistol squats using band tension instead of hand support — 3×6/leg'}}
+ ],
+ push:[
+   {find:'ضغط عادي',bandVersion:{ar:'١. ضغط مع مقاومة حبل مطاطي خلف الظهر — ٤ × ١٢-١٥',en:'1. Resistance-band push-ups (band across back) — 4×12-15'}},
+   {find:'ضغط منحدر (ايدينك على طاولة/كرسي)',bandVersion:{ar:'٢. ضغط منحدر مع حبل مطاطي خلف الظهر — ٣ × ١٠-١٢',en:'2. Incline push-ups with a resistance band across your back — 3×10-12'}},
+   {find:'ضغط ماسي عميق',bandVersion:{ar:'١. ضغط ماسي مع مقاومة حبل مطاطي — ٤ × ١٠-١٢',en:'1. Diamond push-ups with band resistance — 4×10-12'}}
+ ],
+ pull:[
+   {find:'سحب حبل أفقي',bandVersion:{ar:'٣. سحب حبل مطاطي بشد قوي — ٣ × ١٢',en:'3. Strong-tension band rows — 3×12'}},
+   {find:'سحب بمنشفة أو حزام مربوط بشي ثابت',bandVersion:{ar:'١. سحب بالحبل المطاطي بدل المنشفة — ٣ × ١٢',en:'1. Band rows instead of a towel — 3×12'}}
+ ]
+};
+function applyBandUpgrades(day,typeKey){
+  const eq=(P.workoutSetup&&P.workoutSetup.equipment)||[];
+  if(!eq.includes('band')) return;
+  const rules=BAND_UPGRADES[typeKey]||[];
+  rules.forEach(rule=>{
+    const idx=day.main.findIndex(e=>e.ar.includes(rule.find));
+    if(idx>=0) day.main[idx]=rule.bandVersion;
+  });
+}
+function applyEquipmentSwaps(day,typeKey){
+  const eq=(P.workoutSetup&&P.workoutSetup.equipment)||[];
+  const rules=EQUIPMENT_SWAPS[typeKey]||[];
+  rules.forEach(rule=>{
+    if(eq.includes(rule.requires)) return;
+    const replacement=(eq.includes('band') && rule.altBand) ? rule.altBand : rule.altNone;
+    const idx=day.main.findIndex(e=>e.ar.includes(rule.find));
+    if(idx>=0) day.main[idx]=replacement;
+    const sidx=day.small.findIndex(e=>e.ar.includes(rule.find));
+    if(sidx>=0) day.small[sidx]=replacement;
+  });
+}
+function applyGoalAdditions(day,typeKey){
+  const goals=(P.workoutSetup&&P.workoutSetup.goals)||[];
+  if(goals.includes('mobility') && typeKey!=='rest'){
+    day.extraMobility=[
+      {ar:'🧘 استرتش إضافي: فتحة ورك عميقة — ٣٠ ثانية لكل جهة',en:'🧘 Extra: deep hip-opener stretch — 30s/side'},
+      {ar:'🧘 استرتش إضافي: دوران كتف كامل — دقيقة',en:'🧘 Extra: full shoulder circles — 1 min'}
+    ];
+  }
+  if(goals.includes('lose') && typeKey!=='rest'){
+    day.cardioFinisher={ar:'🔥 فينشر حرق: ٣٠ ثانية جامبينج جاك + ٣٠ ثانية مونتن كلايمبر — كرر ٣ جولات، راحة ٣٠ ثانية بينها',en:'🔥 Fat-burn finisher: 30s jumping jacks + 30s mountain climbers — 3 rounds, 30s rest between'};
+  }
+}
+function adaptDay(typeKey){
+  const base=workoutTypes[typeKey];
+  const level=(P.exerciseLevel&&P.exerciseLevel[typeKey])||'amateur';
+  const mainSource=(typeKey!=='rest'&&LEVEL_MAIN[level]&&LEVEL_MAIN[level][typeKey]) ? LEVEL_MAIN[level][typeKey] : base.main;
+  const smallSource=(typeKey!=='rest'&&LEVEL_SMALL[level]&&LEVEL_SMALL[level][typeKey]) ? LEVEL_SMALL[level][typeKey] : base.small;
+  const day={icon:base.icon,name:base.name,color:base.color,main:mainSource.map(x=>({...x})),small:smallSource.map(x=>({...x})),stretch:base.stretch,warns:[]};
+  const ws=P.workoutSetup||{};
+  applyEquipmentSwaps(day,typeKey);
+  applyBandUpgrades(day,typeKey);
+  (ws.injuries||[]).forEach(inj=>{
+    const mod=INJURY_MODS[inj]; if(!mod) return;
+    const swaps=(mod.swaps||{})[typeKey]||[];
+    swaps.forEach(([m,rep])=>{ const idx=day.main.findIndex(e=>e.ar.includes(m.find)); if(idx>=0) day.main[idx]=rep; });
+    if(typeKey!=='rest' && mod.applies.includes(typeKey)) day.warns.push(mod.warn);
+  });
+  (ws.injuryAnalysis||[]).forEach(a=>{
+    const unsafe=(typeKey==='push'&&a.avoidPush)||(typeKey==='pull'&&a.avoidPull)||(typeKey==='legs'&&a.avoidLegs);
+    if(unsafe && typeKey!=='rest'){
+      day.skippedByInjury={ar:a.noteAr,en:a.noteEn,text:a.text};
+      const typeNameAr=I18N.ar['type_'+typeKey], typeNameEn=I18N.en['type_'+typeKey];
+      day.main=[{ar:`⚠️ تخطينا تمارين ${typeNameAr} اليوم بسبب: ${a.text}`,en:`⚠️ Skipped ${typeNameEn} exercises today because of: ${a.text}`}];
+      day.small=[];
+    } else {
+      day.warns.push({ar:`📝 ${a.text}: ${a.noteAr}`,en:`📝 ${a.text}: ${a.noteEn}`});
+    }
+  });
+  applyGoalAdditions(day,typeKey);
+  return day;
+}
+function equipTip(typeKey){
+  const eq=(P.workoutSetup&&P.workoutSetup.equipment)||[];
+  const otherList=(P.workoutSetup&&(P.workoutSetup.equipOtherList||(P.workoutSetup.equipOther?[P.workoutSetup.equipOther]:[])))||[];
+  if(!eq.length||eq.includes('none')){
+    if(otherList.length) return {ar:`🎒 مسجل عندك: ${otherList.join('، ')}`,en:`🎒 Noted you have: ${otherList.join(', ')}`};
+    return {ar:'🎒 كل التمارين بوزن جسمك، ما تحتاج أداة 👍',en:'🎒 Everything is bodyweight — no equipment needed 👍'};
+  }
+  const has=x=>eq.includes(x);
+  if(typeKey==='pull'){
+    if(has('bar')) return {ar:'🎒 عندك بار — استخدمه للعقلة مباشرة.',en:'🎒 You have a bar — use it for pull-ups directly.'};
+    if(has('band')) return {ar:'🎒 استخدم الحبل المطاطي بالتمارين اللي تحتاج شد.',en:'🎒 Use your band for the pulling exercises.'};
+  }
+  if(typeKey==='legs'&&has('dumbbells')) return {ar:'🎒 امسك دمبلز وانت تسوي السكوات لزيادة الصعوبة.',en:'🎒 Hold dumbbells during squats for extra difficulty.'};
+  if(typeKey==='push'&&has('dumbbells')) return {ar:'🎒 استخدم دمبلزك بالرفرفات بدل البديل المكتوب.',en:'🎒 Use your dumbbells for the raises instead of the listed alternative.'};
+  return null;
+}
+
+/* ================= SECTION ENTRY (setup vs content) ================= */
+function enterSection(name){
+  if(name==='today') renderTodoSection();
+  if(name==='food') renderFoodSection();
+}
+document.querySelectorAll('#panel-home .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
+function openExerciseNested(){
+  const nested=document.getElementById('exerciseNested');
+  if(nested.classList.contains('hidden')){
+    nested.classList.remove('hidden');
+    renderWorkoutSection();
+  }
+  nested.scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.getElementById('exerciseToggleCard').addEventListener('click',openExerciseNested);
+document.getElementById('exercisePromptBanner').addEventListener('click',openExerciseNested);
+document.getElementById('dailyRoutineToggleCard').addEventListener('click',()=>{
+  const card=document.getElementById('todoSetupCard');
+  const opening=card.classList.contains('hidden');
+  card.classList.toggle('hidden');
+  if(opening) prefillTodoSetup();
+});
+document.getElementById('editFoodBtn').addEventListener('click',()=>{ document.getElementById('foodSetupCard').classList.remove('hidden'); document.getElementById('foodContent').classList.add('hidden'); prefillFoodSetup(); });
+document.getElementById('editWorkoutBtn').addEventListener('click',()=>{ document.getElementById('workoutSetupCard').classList.remove('hidden'); document.getElementById('workoutContent').classList.add('hidden'); prefillWorkoutSetup(); buildRestGrid(); });
+
+function buildCommitDaysGrid(){
+  const grid=document.getElementById('commitDaysGrid'); grid.innerHTML='';
+  const sel=P._commitDays||[];
+  DAY_NAMES[LANG].forEach((name,i)=>{
+    const el=document.createElement('div');
+    el.className='ob-choice'+(sel.includes(i)?' selected':'');
+    el.textContent=name;
+    el.addEventListener('click',()=>{
+      const cur=P._commitDays||[];
+      if(cur.includes(i)){ P._commitDays=cur.filter(x=>x!==i); }
+      else{ P._commitDays=[...cur,i]; }
+      buildCommitDaysGrid();
+    });
+    grid.appendChild(el);
+  });
+}
+function renderCommitList(){
+  const box=document.getElementById('commitListChips'); box.innerHTML='';
+  const sorted=(P._commitments||[]).map((c,i)=>({c,i})).sort((a,b)=>(b.c.pinned?1:0)-(a.c.pinned?1:0));
+  sorted.forEach(({c,i})=>{
+    const dayLabels=c.days.map(d=>DAY_NAMES[LANG][d]).join('،');
+    const rangeLabel=(c.fromDate||c.toDate) ? ` [${c.fromDate||'…'} → ${c.toDate||'…'}]` : '';
+    const chip=document.createElement('div'); chip.className='tag-chip commit-chip';
+    chip.innerHTML=`<span>📌 ${c.label} (${formatTime12h(c.from)}-${formatTime12h(c.to)}, ${dayLabels}${rangeLabel})</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
+    chip.querySelector('.pin-btn').addEventListener('click',()=>{ c.pinned=!c.pinned; renderCommitList(); });
+    chip.querySelector('button:last-child').addEventListener('click',()=>{ P._commitments.splice(i,1); renderCommitList(); });
+    box.appendChild(chip);
+  });
+}
+document.getElementById('commitAddBtn').addEventListener('click',()=>{
+  const label=document.getElementById('commitLabel').value.trim();
+  const from=document.getElementById('commitFrom').value;
+  const to=document.getElementById('commitTo').value;
+  const fromDate=document.getElementById('commitFromDate').value||null;
+  const toDate=document.getElementById('commitToDate').value||null;
+  const days=P._commitDays||[];
+  if(!label||!days.length) return;
+  P._commitments=[...(P._commitments||[]),{label,from,to,days,fromDate,toDate,pinned:false}];
+  document.getElementById('commitLabel').value='';
+  document.getElementById('commitFromDate').value='';
+  document.getElementById('commitToDate').value='';
+  P._commitDays=[];
+  buildCommitDaysGrid();
+  renderCommitList();
+});
+function prefillTodoSetup(){
+  const s=P.todoSetup||{};
+  P._commitments=(s.commitments||[]).map(c=>({...c,days:[...c.days]}));
+  P._commitDays=[];
+  document.getElementById('commitLabel').value='';
+  buildCommitDaysGrid();
+  renderCommitList();
+}
+document.getElementById('todoSetupSave').addEventListener('click',async()=>{
+  P.todoSetup={commitments:P._commitments||[]};
+  await storageSet('profile',JSON.stringify(P));
+  document.getElementById('todoSetupCard').classList.add('hidden');
+  renderTodoSection();
+});
+function parseHM(hhmm){ const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
+function formatTime12h(hhmm){
+  const [h,m]=hhmm.split(':').map(Number);
+  const period=h<12 ? (LANG==='ar'?'ص':'AM') : (LANG==='ar'?'م':'PM');
+  let h12=h%12; if(h12===0) h12=12;
+  const mm=String(m).padStart(2,'0');
+  return `${h12}:${mm} ${period}`;
+}
+function formatSlot12h(slot){ const [a,b]=slot.split('-'); return `${formatTime12h(a)} - ${formatTime12h(b)}`; }
+function commitmentsForWeekday(idx){
+  return ((P.todoSetup&&P.todoSetup.commitments)||[]).filter(c=>c.days.includes(idx));
+}
+function isoDateStr(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function commitmentsForDate(dateObj){
+  const weekdayIdx=(dateObj.getDay()+1)%7;
+  const dateStr=isoDateStr(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
+  return ((P.todoSetup&&P.todoSetup.commitments)||[]).filter(c=>{
+    if(!c.days.includes(weekdayIdx)) return false;
+    if(c.fromDate && dateStr<c.fromDate) return false;
+    if(c.toDate && dateStr>c.toDate) return false;
+    return true;
+  }).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+}
+function commitmentsForToday(){ return commitmentsForDate(new Date()); }
+function renderTodoSection(){
+  renderCalendar();
+}
+
+function wireSingle(gridSel,onPick){ document.querySelectorAll(gridSel+' .ob-choice').forEach(el=>el.addEventListener('click',()=>{ document.querySelectorAll(gridSel+' .ob-choice').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); onPick(el); })); }
+function wireMulti(gridSel,noneAttr,onChange){
+  document.querySelectorAll(gridSel+' .ob-choice').forEach(el=>el.addEventListener('click',()=>{
+    const attr=el.attributes[0]; const val=attr?attr.value:'';
+    const isNone=el.matches(`[${noneAttr}="none"]`);
+    if(isNone){ document.querySelectorAll(gridSel+' .ob-choice').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); }
+    else{ const noneEl=document.querySelector(gridSel+` [${noneAttr}="none"]`); if(noneEl) noneEl.classList.remove('selected'); el.classList.toggle('selected'); }
+    onChange();
+  }));
+}
+wireSingle('#foodGoalGrid',el=>{ P._foodGoal=el.dataset.goal; checkGoalTargetConflict(); });
+
+function goToFStep(n){
+  document.querySelectorAll('#foodSetupCard .ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('fStep'+n).classList.add('active');
+  document.querySelectorAll('#foodSetupCard .ob-progress .ob-dot').forEach(d=>d.classList.toggle('active',+d.dataset.fstep===n));
+  document.getElementById('foodSetupCard').scrollIntoView({block:'start'});
+}
+function scrollToEl(el){ if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); }
+function checkBodyStatsValid(){
+  const w=document.getElementById('bodyWeight').value;
+  const h=document.getElementById('bodyHeight').value;
+  const a=document.getElementById('bodyAge').value;
+  const msgEl=document.getElementById('bodyStatsValMsg');
+  const problems=[];
+  if(w!==''){ const wv=parseFloat(w); if(isNaN(wv)||wv<30||wv>300) problems.push(LANG==='ar'?'الوزن لازم يكون بين ٣٠ و٣٠٠ كيلو':'Weight must be between 30 and 300 kg'); }
+  if(h!==''){ const hv=parseFloat(h); if(isNaN(hv)||hv<100||hv>250) problems.push(LANG==='ar'?'الطول لازم يكون بين ١٠٠ و٢٥٠ سم':'Height must be between 100 and 250 cm'); }
+  if(a!==''){ const av=parseFloat(a); if(isNaN(av)||av<5||av>120) problems.push(LANG==='ar'?'العمر لازم يكون بين ٥ و١٢٠ سنة':'Age must be between 5 and 120 years'); }
+  msgEl.textContent=problems.join(' — ');
+  return problems.length===0;
+}
+function checkWaterValid(){
+  const w=document.getElementById('waterTargetInput').value;
+  const msgEl=document.getElementById('waterValMsg');
+  if(w===''){ msgEl.textContent=''; return true; }
+  const wv=parseFloat(w);
+  const ok=!isNaN(wv)&&wv>=0.5&&wv<=10;
+  msgEl.textContent = ok ? '' : (LANG==='ar'?'هدف الماء لازم يكون بين ٠.٥ و١٠ لتر':'Water goal must be between 0.5 and 10 liters');
+  return ok;
+}
+['bodyWeight','bodyHeight','bodyAge'].forEach(id=>document.getElementById(id).addEventListener('input',checkBodyStatsValid));
+document.getElementById('waterTargetInput').addEventListener('input',checkWaterValid);
+async function saveFoodDraft(){
+  const draft={
+    weight:document.getElementById('bodyWeight').value,
+    height:document.getElementById('bodyHeight').value,
+    age:document.getElementById('bodyAge').value,
+    sex:document.getElementById('bodySex').value,
+    goal:P._foodGoal||'',
+    dietType:P._dietType||'balanced',
+    mealCount:P._mealCount||5,
+    allergies:P._allergies||[],
+    noAllergies:document.querySelector('#obAllergyGrid [data-allergy="none"]').classList.contains('selected'),
+    allergyOtherList:P._allergyOtherList||[],
+    supplements:P._supplements||[],
+    supOtherList:P._supOtherList||[],
+    waterTarget:document.getElementById('waterTargetInput').value,
+    targetWeight:document.getElementById('targetWeightInput').value,
+    targetDate:document.getElementById('targetDateInput').value
+  };
+  await storageSet('food-draft',JSON.stringify(draft));
+  foodDraft=draft;
+}
+document.getElementById('fNext1').addEventListener('click',()=>{ if(!checkBodyStatsValid()){ scrollToEl(document.getElementById('bodyStatsValMsg')); return; } saveFoodDraft(); goToFStep(2); });
+document.getElementById('fNext2').addEventListener('click',()=>{ saveFoodDraft(); goToFStep(3); });
+document.getElementById('fNext3').addEventListener('click',()=>{ if(!checkAllergyPicked()){ scrollToEl(document.getElementById('allergyValMsg')); return; } if(!checkWaterValid()){ scrollToEl(document.getElementById('waterValMsg')); return; } saveFoodDraft(); goToFStep(4); });
+document.getElementById('fBack2').addEventListener('click',()=>goToFStep(1));
+document.getElementById('fBack3').addEventListener('click',()=>goToFStep(2));
+document.getElementById('fBack4').addEventListener('click',()=>goToFStep(3));
+
+const DIET_MACROS={
+  balanced:{ar:'🍽️ متوازن: ٥٠-٦٠٪ كارب، ١٥٪ بروتين، ٢٥-٣٥٪ دهون — نفس مكتبة الأكل الحالية بدون تغيير',en:'🍽️ Balanced: 50-60% carb, 15% protein, 25-35% fat — same food library, unchanged'},
+  highProtein:{ar:'🥩 عالي بروتين: هدفك ~{p}غ بروتين يومياً (١.٦-٢.٢غ/كج) — الوجبات الخفيفة بتكون بروتين بس (شيك، بيض، زبادي)',en:'🥩 High-protein: your target is ~{p}g protein/day (1.6-2.2g/kg) — snacks will be protein-only (shake, eggs, yogurt)'},
+  lowCarb:{ar:'🥗 قليل الكارب: الفطور والغدا بيصيرون خفاف (سلطة+بروتين مشوي) بدل الرز الثقيل، حتى لو هدفك زيادة وزن',en:'🥗 Low-carb: breakfast & lunch become lighter (salad+grilled protein) instead of heavy rice, even if your goal is gaining'},
+  if168:{ar:'⏱️ صيام متقطع ١٦:٨: نافذة الأكل ٨ ساعات بس — الفطور والسناك الأول بينشالون، وجبتين رئيسيتين بدل ٥',en:'⏱️ Intermittent fasting 16:8: 8-hour eating window only — breakfast & first snack are dropped, 2 main meals instead of 5'}
+};
+function updateDietTypeNote(){
+  const dietType=P._dietType||'balanced';
+  const weight=parseFloat(document.getElementById('bodyWeight').value)||null;
+  const height=parseFloat(document.getElementById('bodyHeight').value)||null;
+  let msg=DIET_MACROS[dietType][LANG];
+  if(dietType==='highProtein'&&weight){ msg=msg.replace('{p}',Math.round(weight*1.9)); }
+  else if(dietType==='highProtein'){ msg=msg.replace('{p}','...'); }
+  const noteEl=document.getElementById('dietTypeNote');
+  if(weight&&height){
+    const bmi=weight/((height/100)**2);
+    const bmiNote=LANG==='ar'?` — مؤشر كتلة جسمك ~${bmi.toFixed(1)}`:` — your BMI is ~${bmi.toFixed(1)}`;
+    msg+=bmiNote;
+  }
+  noteEl.textContent=msg;
+}
+wireSingle('#dietTypeGrid',el=>{
+  P._dietType=el.dataset.diet;
+  updateDietTypeNote();
+  const mealGrid=document.getElementById('mealCountGrid');
+  if(el.dataset.diet==='if168'){
+    P._mealCount=2;
+    mealGrid.style.opacity='0.4'; mealGrid.style.pointerEvents='none';
+    document.querySelectorAll('#mealCountGrid .ob-choice').forEach(c=>c.classList.remove('selected'));
+  } else {
+    mealGrid.style.opacity='1'; mealGrid.style.pointerEvents='auto';
+    if(P._mealCount===2) P._mealCount=5;
+    document.querySelectorAll('#mealCountGrid .ob-choice').forEach(c=>c.classList.toggle('selected',+c.dataset.mealcount===P._mealCount));
+  }
+});
+wireSingle('#mealCountGrid',el=>{ P._mealCount=parseInt(el.dataset.mealcount,10); });
+document.getElementById('bodyWeight').addEventListener('input',updateDietTypeNote);
+document.getElementById('bodyHeight').addEventListener('input',updateDietTypeNote);
+wireMulti('#obAllergyGrid','data-allergy',()=>{ P._allergies=[...document.querySelectorAll('#obAllergyGrid .ob-choice.selected')].map(c=>c.dataset.allergy).filter(x=>x!=='none'); checkAllergyPicked(); });
+function checkAllergyPicked(){
+  const anySelected=document.querySelectorAll('#obAllergyGrid .ob-choice.selected').length>0;
+  const anyOther=(P._allergyOtherList||[]).length>0;
+  const ok=anySelected||anyOther;
+  const msgEl=document.getElementById('allergyValMsg');
+  msgEl.textContent = ok ? '' : t('pick_something_allergy');
+  return ok;
+}
+wireMulti('#obSupGrid','data-sup',()=>{ P._supplements=[...document.querySelectorAll('#obSupGrid .ob-choice.selected')].map(c=>c.dataset.sup); });
+
+function checkGoalTargetConflict(){
+  const weight=parseFloat(document.getElementById('bodyWeight').value);
+  const targetWeight=parseFloat(document.getElementById('targetWeightInput').value);
+  const targetDate=document.getElementById('targetDateInput').value;
+  const goal=P._foodGoal;
+  const msgEl=document.getElementById('targetValMsg');
+  if(targetDate){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const td=new Date(targetDate+'T00:00:00');
+    if(td<=today){
+      msgEl.textContent = LANG==='ar'
+        ? '🚫 هذا التاريخ فات! اختر تاريخ بالمستقبل عشان نحسب المعدل الأسبوعي صح.'
+        : '🚫 That date has already passed! Pick a future date so we can calculate the weekly rate correctly.';
+      return false;
+    }
+  }
+  if(!weight||!targetWeight||!goal){ msgEl.textContent=''; return true; }
+  if(goal==='lose' && targetWeight>weight){
+    msgEl.textContent = LANG==='ar'
+      ? `🚫 تناقض: اخترت "إنقاص وزن" بس وزنك المستهدف (${targetWeight}) أكبر من وزنك الحالي (${weight}) — هذا يعتبر زيادة وزن! غيّر الهدف أو رقم الوزن المستهدف.`
+      : `🚫 Conflict: you picked "lose weight" but your target (${targetWeight}) is above your current weight (${weight}) — that's actually a gain! Change the goal or the target number.`;
+    return false;
+  }
+  if(goal==='gain' && targetWeight<weight){
+    msgEl.textContent = LANG==='ar'
+      ? `🚫 تناقض: اخترت "زيادة وزن" بس وزنك المستهدف (${targetWeight}) أقل من وزنك الحالي (${weight}) — هذا يعتبر إنقاص وزن! غيّر الهدف أو رقم الوزن المستهدف.`
+      : `🚫 Conflict: you picked "gain weight" but your target (${targetWeight}) is below your current weight (${weight}) — that's actually a loss! Change the goal or the target number.`;
+    return false;
+  }
+  msgEl.textContent='';
+  return true;
+}
+document.getElementById('bodyWeight').addEventListener('input',checkGoalTargetConflict);
+document.getElementById('targetWeightInput').addEventListener('input',checkGoalTargetConflict);
+document.getElementById('targetDateInput').addEventListener('input',checkGoalTargetConflict);
+
+function setupTagInput(fieldId,addBtnId,chipsId,getArr,setArr,onChange){
+  const field=document.getElementById(fieldId);
+  const btn=document.getElementById(addBtnId);
+  const chipsEl=document.getElementById(chipsId);
+  function render(){
+    const arr=getArr();
+    chipsEl.innerHTML='';
+    arr.forEach((val,i)=>{
+      const chip=document.createElement('div'); chip.className='tag-chip';
+      chip.innerHTML=`<span>${val}</span><button type="button">✕</button>`;
+      chip.querySelector('button').addEventListener('click',()=>{ const a=getArr().slice(); a.splice(i,1); setArr(a); render(); if(onChange) onChange(); });
+      chipsEl.appendChild(chip);
+    });
+  }
+  function add(){ const v=field.value.trim(); if(!v) return; const a=getArr().slice(); a.push(v); setArr(a); field.value=''; render(); field.focus(); if(onChange) onChange(); }
+  btn.addEventListener('click',add);
+  field.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } });
+  return render;
+}
+const renderAllergyOtherChips=setupTagInput('allergyOtherField','allergyOtherAdd','allergyOtherChips',()=>P._allergyOtherList||[],a=>P._allergyOtherList=a,()=>checkAllergyPicked());
+const renderSupOtherChips=setupTagInput('supOtherField','supOtherAdd','supOtherChips',()=>P._supOtherList||[],a=>P._supOtherList=a);
+
+function prefillFoodSetup(){
+  const s=P.foodSetup||foodDraft||{};
+  document.getElementById('bodyWeight').value=s.weight||'';
+  document.getElementById('bodyHeight').value=s.height||'';
+  document.getElementById('bodyAge').value=s.age||'';
+  document.getElementById('bodySex').value=s.sex||'male';
+  document.querySelectorAll('#foodGoalGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.goal===s.goal));
+  document.querySelectorAll('#dietTypeGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.diet===(s.dietType||'balanced')));
+  const mealGrid=document.getElementById('mealCountGrid');
+  if((s.dietType||'balanced')==='if168'){
+    mealGrid.style.opacity='0.4'; mealGrid.style.pointerEvents='none';
+    document.querySelectorAll('#mealCountGrid .ob-choice').forEach(c=>c.classList.remove('selected'));
+  } else {
+    mealGrid.style.opacity='1'; mealGrid.style.pointerEvents='auto';
+    document.querySelectorAll('#mealCountGrid .ob-choice').forEach(c=>c.classList.toggle('selected',+c.dataset.mealcount===(s.mealCount||5)));
+  }
+  document.querySelectorAll('#obAllergyGrid .ob-choice').forEach(c=>c.classList.toggle('selected', c.dataset.allergy==='none' ? !!s.noAllergies : (s.allergies||[]).includes(c.dataset.allergy)));
+  document.querySelectorAll('#obSupGrid .ob-choice').forEach(c=>c.classList.toggle('selected',(s.supplements||[]).includes(c.dataset.sup)));
+  document.getElementById('waterTargetInput').value=s.waterTarget||'';
+  document.getElementById('targetWeightInput').value=s.targetWeight||'';
+  document.getElementById('targetDateInput').value=s.targetDate||'';
+  P._foodGoal=s.goal||''; P._allergies=s.allergies||[]; P._supplements=s.supplements||[];
+  P._allergyOtherList=(s.allergyOtherList||[]).slice(); P._supOtherList=(s.supOtherList||[]).slice();
+  P._dietType=s.dietType||'balanced'; P._mealCount=s.mealCount||5;
+  renderAllergyOtherChips(); renderSupOtherChips();
+  updateDietTypeNote();
+  goToFStep(1);
+}
+document.getElementById('foodSetupSave').addEventListener('click',async()=>{
+  if(!checkGoalTargetConflict()){ scrollToEl(document.getElementById('targetValMsg')); return; }
+  if(!checkAllergyPicked()){ goToFStep(3); scrollToEl(document.getElementById('allergyValMsg')); return; }
+  const allergyOtherList=P._allergyOtherList||[];
+  const allergyAnalysis=allergyOtherList.map(text=>({text,...analyzeAllergyTextLocal(text)}));
+  P.foodSetup={
+    weight:parseFloat(document.getElementById('bodyWeight').value)||null,
+    height:parseFloat(document.getElementById('bodyHeight').value)||null,
+    age:parseInt(document.getElementById('bodyAge').value,10)||null,
+    sex:document.getElementById('bodySex').value||'male',
+    goal:P._foodGoal||'gain',
+    dietType:P._dietType||'balanced',
+    mealCount:P._mealCount||5,
+    allergies:P._allergies||[],
+    noAllergies:document.querySelector('#obAllergyGrid [data-allergy="none"]').classList.contains('selected'),
+    allergyOtherList,
+    allergyAnalysis,
+    supplements:P._supplements||[],
+    supOtherList:P._supOtherList||[],
+    waterTarget:parseFloat(document.getElementById('waterTargetInput').value)||3,
+    targetWeight:parseFloat(document.getElementById('targetWeightInput').value)||null,
+    targetDate:document.getElementById('targetDateInput').value||null
+  };
+  await storageSet('profile',JSON.stringify(P));
+  await storageDelete('food-draft');
+  foodDraft=null;
+  renderFoodSection();
+});
+function renderFoodSection(){
+  const has=P.foodSetup!==null;
+  document.getElementById('foodSetupCard').classList.toggle('hidden',has);
+  document.getElementById('foodContent').classList.toggle('hidden',!has);
+  if(!has){ prefillFoodSetup(); return; }
+  const exBanner=document.getElementById('exercisePromptBanner');
+  if(P.workoutSetup===null){
+    exBanner.textContent=LANG==='ar'?'🏋️ خلصت الأكل! تبي نسوي جدول تمارين لك بعد؟ اضغط هنا':'🏋️ Food is set! Want a workout schedule too? Tap here';
+    exBanner.classList.remove('hidden');
+  } else {
+    exBanner.classList.add('hidden');
+  }
+  const idx=todayWeekdayIndex();
+  const v=getDayMenu(idx);
+  const target=calorieTarget();
+  let planLabel=target ? t('calorie_target_note').replace('{n}',target) : t('calorie_no_body');
+  const plan=weeklyRatePlan();
+  if(plan){
+    const rate=Math.abs(plan.weeklyRateKg).toFixed(2);
+    planLabel += ' — ' + t('target_rate_note').replace('{n}',rate);
+    if(plan.capped) planLabel += ' ⚠️';
+  }
+  document.getElementById('todayPlanLabel').textContent=planLabel;
+  renderMealChecklist(idx,v);
+  renderSupChips();
+  document.getElementById('waterTitle').textContent=t('water_title').replace('{n}',P.foodSetup.waterTarget);
+  renderWater();
+  const lg=document.getElementById('foodLegend');
+  lg.innerHTML=`<span>🍳</span><span>🍇</span><span>🍚</span><span>🥤</span><span>🌙</span><span>🔥 ${t('kcal_total').split(':')[0]}</span>`;
+  buildFoodGrid(idx);
+  loadWeightLog();
+}
+
+wireMulti('#obExGoalGrid','data-exgoal',()=>{ P._exGoals=[...document.querySelectorAll('#obExGoalGrid .ob-choice.selected')].map(c=>c.dataset.exgoal); });
+wireSingle('#obFitnessLevelGrid',el=>{ P._fitnessLevel=el.dataset.fitlevel; checkFitnessLevelPicked(); });
+function checkFitnessLevelPicked(){
+  const ok=document.querySelectorAll('#obFitnessLevelGrid .ob-choice.selected').length>0;
+  const msgEl=document.getElementById('fitnessLevelValMsg');
+  if(msgEl) msgEl.textContent = ok ? '' : t('pick_something_fitlevel');
+  return ok;
+}
+wireMulti('#obEquipGrid','data-equip',()=>{ P._equipment=[...document.querySelectorAll('#obEquipGrid .ob-choice.selected')].map(c=>c.dataset.equip); });
+wireMulti('#obInjuryGrid','data-injury',()=>{ P._injuries=[...document.querySelectorAll('#obInjuryGrid .ob-choice.selected')].map(c=>c.dataset.injury).filter(x=>x!=='none'); checkInjuryPicked(); });
+function checkInjuryPicked(){
+  const anySelected=document.querySelectorAll('#obInjuryGrid .ob-choice.selected').length>0;
+  const anyOther=(P._injuryOtherList||[]).length>0;
+  const ok=anySelected||anyOther;
+  const msgEl=document.getElementById('injuryValMsg');
+  msgEl.textContent = ok ? '' : t('pick_something_injury');
+  return ok;
+}
+
+const renderEquipOtherChips=setupTagInput('equipOtherField','equipOtherAdd','equipOtherChips',()=>P._equipOtherList||[],a=>P._equipOtherList=a);
+const renderInjuryOtherChips=setupTagInput('injuryOtherField','injuryOtherAdd','injuryOtherChips',()=>P._injuryOtherList||[],a=>P._injuryOtherList=a,()=>checkInjuryPicked());
+
+function prefillWorkoutSetup(){
+  const s=P.workoutSetup||{};
+  document.querySelectorAll('#obExGoalGrid .ob-choice').forEach(c=>c.classList.toggle('selected',(s.goals||[]).includes(c.dataset.exgoal)));
+  document.querySelectorAll('#obFitnessLevelGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.fitlevel===(s.fitnessLevel||'')));
+  document.querySelectorAll('#obEquipGrid .ob-choice').forEach(c=>c.classList.toggle('selected',(s.equipment||[]).includes(c.dataset.equip)));
+  document.querySelectorAll('#obInjuryGrid .ob-choice').forEach(c=>c.classList.toggle('selected', c.dataset.injury==='none' ? !!s.noInjuries : (s.injuries||[]).includes(c.dataset.injury)));
+  P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
+  P._restDays=s.restDays||[];
+  P._equipOtherList=(s.equipOtherList||[]).slice(); P._injuryOtherList=(s.injuryOtherList||[]).slice();
+  renderEquipOtherChips(); renderInjuryOtherChips();
+}
+function buildRestGrid(){
+  const grid=document.getElementById('obRestGrid'); grid.innerHTML='';
+  const rd=P._restDays||[];
+  DAY_NAMES[LANG].forEach((name,i)=>{
+    const el=document.createElement('div');
+    el.className='ob-choice'+(rd.includes(i)?' selected':'');
+    el.textContent=name;
+    el.addEventListener('click',()=>{
+      const cur=P._restDays||[];
+      if(cur.includes(i)){ P._restDays=cur.filter(x=>x!==i); el.classList.remove('selected'); }
+      else{ if(cur.length>=3){ flashRestMsg(t('rest_val_max')); return; } P._restDays=[...cur,i]; el.classList.add('selected'); }
+      updateSplitPreview();
+    });
+    grid.appendChild(el);
+  });
+  updateSplitPreview();
+}
+function flashRestMsg(msg){ const el=document.getElementById('restValMsg'); el.textContent=msg; clearTimeout(flashRestMsg._t); flashRestMsg._t=setTimeout(()=>{el.textContent='';},2500); }
+function generateWeekPattern(restDays){ const cycle=['push','pull','legs']; let c=0; return DAY_NAMES.ar.map((_,i)=> restDays.includes(i)?'rest':cycle[(c++)%3]); }
+function updateSplitPreview(){
+  const prev=document.getElementById('splitPreview'); const btn=document.getElementById('workoutSetupSave');
+  const rd=P._restDays||[];
+  if(rd.length===0){ prev.textContent=''; btn.disabled=false; renderSplitPreviewFromPattern(generateWeekPattern([])); return; }
+  const pattern=generateWeekPattern(rd);
+  renderSplitPreviewFromPattern(pattern);
+  btn.disabled=false;
+}
+function renderSplitPreviewFromPattern(pattern){
+  const prev=document.getElementById('splitPreview');
+  const names={push:'🔴 '+t('type_push'),pull:'🔵 '+t('type_pull'),legs:'🟢 '+t('type_legs'),rest:'😴 '+t('rest_day_name')};
+  prev.innerHTML=DAY_NAMES[LANG].map((d,i)=>`<b>${d}</b>: ${names[pattern[i]]}`).join(' &nbsp;•&nbsp; ');
+}
+document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
+  if(!checkFitnessLevelPicked()){ scrollToEl(document.getElementById('fitnessLevelValMsg')); return; }
+  if(!checkInjuryPicked()){ scrollToEl(document.getElementById('injuryValMsg')); return; }
+  const restDays=P._restDays||[];
+  const injuryOtherList=P._injuryOtherList||[];
+  const injuryAnalysis=injuryOtherList.map(text=>({text,...analyzeInjuryTextLocal(text)}));
+  const previousFitnessLevel=P.workoutSetup ? P.workoutSetup.fitnessLevel : null;
+  const newFitnessLevel=P._fitnessLevel||'amateur';
+  P.workoutSetup={
+    goals:P._exGoals||[],
+    fitnessLevel:newFitnessLevel,
+    equipment:P._equipment||[],
+    equipOtherList:P._equipOtherList||[],
+    injuries:P._injuries||[],
+    noInjuries:document.querySelector('#obInjuryGrid [data-injury="none"]').classList.contains('selected'),
+    injuryOtherList,
+    injuryAnalysis,
+    restDays,
+    weekPattern:generateWeekPattern(restDays)
+  };
+  if(!P.exerciseLevel || previousFitnessLevel!==newFitnessLevel){
+    P.exerciseLevel={push:newFitnessLevel,pull:newFitnessLevel,legs:newFitnessLevel};
+    P.workoutCounts={push:1,pull:1,legs:1};
+  }
+  await storageSet('profile',JSON.stringify(P));
+  renderWorkoutSection();
+});
+function renderWorkoutSection(){
+  const has=P.workoutSetup!==null;
+  document.getElementById('workoutSetupCard').classList.toggle('hidden',has);
+  document.getElementById('workoutContent').classList.toggle('hidden',!has);
+  if(!has){ prefillWorkoutSetup(); buildRestGrid(); return; }
+  const lg=document.getElementById('workoutLegend');
+  lg.innerHTML=`<span>🔴 ${t('type_push')}</span><span>🔵 ${t('type_pull')}</span><span>🟢 ${t('type_legs')}</span><span>😴 ${t('rest_day_name')}</span>`;
+  buildWorkoutGrid();
+}
+
+function buildFoodGrid(todayIdx){
+  const grid=document.getElementById('foodGrid'); grid.innerHTML='';
+  DAY_NAMES[LANG].forEach((name,i)=>{
+    const v=getDayMenu(i);
+    const b=document.createElement('div');
+    b.className='day-btn'+(v.tag?' special':'')+(i===todayIdx?' today':'');
+    b.dataset.todayLabel=t('today_label');
+    b.innerHTML=`<div class="num">${name}</div><div class="preview">🍳🍚🌙</div>`;
+    b.addEventListener('click',()=>openFoodDay(name,v));
+    grid.appendChild(b);
+  });
+}
+function buildWorkoutGrid(){
+  const grid=document.getElementById('workoutGrid'); grid.innerHTML='';
+  const idx=todayWeekdayIndex();
+  const pattern=(P.workoutSetup&&P.workoutSetup.weekPattern)||['push','pull','legs','rest','push','pull','legs'];
+  DAY_NAMES[LANG].forEach((name,i)=>{
+    const typeKey=pattern[i]||'rest';
+    const type=workoutTypes[typeKey];
+    const b=document.createElement('div');
+    b.className='day-btn'+(typeKey==='rest'?' rest':'')+(i===idx?' today':'');
+    b.dataset.todayLabel=t('today_label');
+    b.innerHTML=`<div class="num">${name}</div><div class="preview">${type.icon}</div>`;
+    b.addEventListener('click',()=>openWorkoutDay(name,typeKey,i===idx));
+    grid.appendChild(b);
+  });
+}
+const overlay=document.getElementById('overlay');
+/* activity factor now reflects actual training days/week (7 - restDays) instead
+   of a flat 1.55 guess — standard Mifflin-St Jeor multiplier bands */
+function activityFactor(){
+  const ws=P.workoutSetup;
+  if(!ws || !ws.restDays) return 1.55; // no workout setup yet: moderate default
+  const trainingDays = 7 - ws.restDays.length;
+  if(trainingDays<=4) return 1.46;   // 3-4 days/week: light-moderate
+  if(trainingDays===5) return 1.55;  // 5 days/week: moderate
+  if(trainingDays===6) return 1.725; // 6 days/week: very active
+  return 1.9;                        // 7 days/week: extra active
+}
+function computeTDEE(){
+  const fs=P.foodSetup||{};
+  if(!fs.weight||!fs.height) return null;
+  const age=fs.age||25;
+  const bmr=(fs.sex==='female') ? (10*fs.weight+6.25*fs.height-5*age-161) : (10*fs.weight+6.25*fs.height-5*age+5);
+  return bmr*activityFactor();
+}
+function weeklyRatePlan(){
+  const fs=P.foodSetup||{};
+  if(!fs.weight||!fs.targetWeight||!fs.targetDate) return null;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const target=new Date(fs.targetDate+'T00:00:00');
+  const weeksLeft=(target-today)/(1000*60*60*24*7);
+  if(weeksLeft<=0) return null;
+  const totalChange=fs.targetWeight-fs.weight;
+  let weeklyRate=totalChange/weeksLeft;
+  const capped=Math.abs(weeklyRate)>1;
+  if(capped) weeklyRate = weeklyRate>0 ? 1 : -1;
+  return {weeklyRateKg:weeklyRate,capped};
+}
+function calorieTarget(){
+  const tdee=computeTDEE();
+  if(!tdee) return null;
+  const fs=P.foodSetup||{};
+  const plan=weeklyRatePlan();
+  if(plan){
+    const dailyKcalAdjust=(plan.weeklyRateKg*7700)/7;
+    return Math.max(1300,Math.round(tdee+dailyKcalAdjust));
+  }
+  return fs.goal==='lose' ? Math.max(1300,Math.round(tdee-450)) : Math.round(tdee+450);
+}
+function openFoodDay(label,v){
+  document.getElementById('dayTitle').textContent=`${label} 🍽️`;
+  document.getElementById('daySubtitle').textContent=v.tag==='special'?t('special_day'):'';
+  let anyTouched=false;
+  const target=calorieTarget();
+  const totalNum=parseInt(v.total,10);
+  const goal=currentGoalKey();
+  const gap=target?target-totalNum:0;
+  const extras=target?fillGapWithRealFood(gap,goal,(P.foodSetup&&P.foodSetup.dietType)||'balanced'):[];
+  const extrasKcal=extras.reduce((s,e)=>s+e.kcal,0);
+  const finalTotal=totalNum+extrasKcal;
+  let html='';
+  if(target){
+    html+=`<div class="total-kcal">🎯 ${LANG==='ar'?`هدفك اليوم: ~${target} سعرة`:`Your target today: ~${target} kcal`}</div>`;
+    const remainingGap=target-finalTotal;
+    let subMsg;
+    if(Math.abs(remainingGap)<100){
+      subMsg=LANG==='ar' ? `✅ الوجبات + الإضافات تحت قريبة من هدفك (~${finalTotal} سعرة)` : `✅ Meals + additions below are close to your target (~${finalTotal} kcal)`;
+    } else if(remainingGap>0){
+      subMsg=LANG==='ar' ? `🍽️ المجموع تحت ~${finalTotal} سعرة — لسا ناقصك ~${remainingGap}، زود حصة أكبر` : `🍽️ Total below is ~${finalTotal} kcal — still short ~${remainingGap}, add a bigger portion`;
+    } else {
+      subMsg=LANG==='ar' ? `🍽️ المجموع تحت ~${finalTotal} سعرة — زايد ~${Math.abs(remainingGap)}، قلل حصة الرز/الخبز شوي` : `🍽️ Total below is ~${finalTotal} kcal — trim ~${Math.abs(remainingGap)} by reducing rice/bread`;
+    }
+    html+=`<div style="text-align:center;font-size:0.8rem;color:var(--ink-soft);margin-bottom:14px;">${subMsg}</div>`;
+  } else {
+    html+=`<div class="total-kcal">${t('kcal_total').replace('{n}',v.total)}</div>`;
+    html+=`<div style="text-align:center;font-size:0.8rem;color:var(--ink-soft);margin-bottom:14px;">${t('calorie_no_body')}</div>`;
+  }
+  const analyses=(P.foodSetup&&P.foodSetup.allergyAnalysis)||[];
+  v.meals.forEach(m=>{
+    let tr=transformMeal(m[1][LANG],LANG);
+    if(tr.touched) anyTouched=true;
+    let mealDisplay=tr.text;
+    const hits=analyses.filter(a=>(a.avoidWords||[]).some(w=>w && mealDisplay.toLowerCase().includes(w.toLowerCase())));
+    hits.forEach(a=>{
+      (a.avoidWords||[]).forEach(w=>{
+        if(!w) return;
+        const re=new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+        mealDisplay=mealDisplay.replace(re, m0=>`<s style="opacity:0.6;">${m0}</s>`);
+      });
+      anyTouched=true;
+    });
+    html+=`<div class="meal"><div class="label"><span>${m[0][LANG]}</span><span class="kcal">🔥 ~${m[2]}</span></div><div class="content">${mealDisplay}</div>`;
+    hits.forEach(a=>{ html+=`<div style="margin-top:6px;font-size:0.78rem;color:#b06355;">⚠️ ${LANG==='ar'?a.subNoteAr||a.noteAr:a.subNoteEn||a.noteEn}</div>`; });
+    html+=`</div>`;
+  });
+  extras.forEach(ex=>{
+    html+=`<div class="meal" style="border-color:var(--gold);"><div class="label"><span>${LANG==='ar'?'➕ إضافة لهدفك':'➕ Goal top-up'}</span><span class="kcal">🔥 ~${ex.kcal}</span></div><div class="content">${ex[LANG]}</div></div>`;
+  });
+  if(anyTouched) html+=`<div class="info-chip">${t('allergy_note')}</div>`;
+  document.getElementById('cardBody').innerHTML=html;
+  overlay.classList.add('open');
+}
+function openWorkoutDay(label,typeKey,isToday){
+  const day=adaptDay(typeKey);
+  document.getElementById('dayTitle').textContent=`${label} ${day.icon}`;
+  document.getElementById('daySubtitle').textContent=day.name[LANG];
+  let html='';
+  if(isToday){
+    html+=`<div class="check-item${dailyTrack.workoutDone?' done':''}" id="workoutDoneToggle" style="margin-bottom:8px;"><div class="box">${dailyTrack.workoutDone?'✓':''}</div><div class="txt">${t('workout_today')}</div></div>`;
+    html+=`<div id="feedbackRow" style="margin-bottom:14px;"></div>`;
+  }
+  const base=workoutTypes[typeKey];
+  const TIER_SUFFIX=[
+    {ar:' 😌 -٢ عدات',en:' 😌 -2 reps'},
+    null,
+    {ar:' 🔼 +٢ عدات',en:' 🔼 +2 reps'},
+    {ar:' 🔼 نزول أبطأ ٣ث + عدة زيادة',en:' 🔼 3s slower negative + 1 more rep'},
+    {ar:' 🔥 +٢ عدات ونزول أبطأ',en:' 🔥 +2 reps & slower negative'}
+  ];
+  let tierSuffix=null;
+  if(base.tierNotes && !day.skippedByInjury){
+    const tier=currentTier(typeKey);
+    const completions=(P.workoutCompletions&&P.workoutCompletions[typeKey])||0;
+    tierSuffix=TIER_SUFFIX[tier-1];
+    html+=`<div class="total-kcal">${LANG==='ar'?`📈 ${base.tierNotes[tier-1].ar} (سويته ${completions} مرة)`:`📈 ${base.tierNotes[tier-1].en} (completed ${completions}×)`}</div>`;
+  }
+  const showVideoIcons = typeKey!=='rest' && !day.skippedByInjury;
+  html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div><div class="content">`;
+  day.main.forEach(e=>{
+    const suffix = tierSuffix ? `<b style="color:var(--gold);">${tierSuffix[LANG]}</b>` : '';
+    const vid = showVideoIcons ? videoIconHtml(e.en) : '';
+    const timer = showVideoIcons ? timerIconHtml(60) : '';
+    html+=`<div>${e[LANG]}${suffix}${vid}${timer}</div>`;
+  });
+  html+=`</div></div>`;
+  if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div><div class="content">`; day.small.forEach(e=>{ const vid = showVideoIcons ? videoIconHtml(e.en) : ''; const timer = showVideoIcons ? timerIconHtml(45) : ''; html+=`<div>${e[LANG]}${vid}${timer}</div>`; }); html+=`</div></div>`; }
+  if(base.tierNotes && !day.skippedByInjury && currentTier(typeKey)>=4){
+    html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 مستوى متقدم':'🔥 Advanced level'}</div><div class="content">`;
+    base.tierBoost.forEach(e=>{ const vid=videoIconHtml(e.en); html+=`<div>${e[LANG]}${vid}</div>`; });
+    html+=`</div></div>`;
+  }
+  if(day.cardioFinisher){ const vid=videoIconHtml(day.cardioFinisher.en); html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 فينشر حرق دهون':'🔥 Fat-burn finisher'}</div><div class="content"><div>${day.cardioFinisher[LANG]}${vid}</div></div></div>`; }
+  html+=`<div class="exercise"><div class="label">${t('closing')}</div><div class="content">${day.stretch[LANG]}${videoIconHtml(day.stretch.en)}</div></div>`;
+  if(day.extraMobility){ html+=`<div class="exercise"><div class="label">${LANG==='ar'?'🧘 مرونة إضافية':'🧘 Extra mobility'}</div><div class="content">`; day.extraMobility.forEach(e=>{ const vid=videoIconHtml(e.en); html+=`<div>${e[LANG]}${vid}</div>`; }); html+=`</div></div>`; }
+  day.warns.forEach(w=>html+=`<div class="warn-chip">${w[LANG]}</div>`);
+  const eqt=equipTip(typeKey);
+  if(eqt) html+=`<div class="info-chip">${eqt[LANG]}</div>`;
+  document.getElementById('cardBody').innerHTML=html;
+  if(isToday){
+    const toggle=document.getElementById('workoutDoneToggle');
+    toggle.addEventListener('click',async()=>{
+      dailyTrack.workoutDone=!dailyTrack.workoutDone;
+      toggle.classList.toggle('done',dailyTrack.workoutDone);
+      toggle.querySelector('.box').textContent=dailyTrack.workoutDone?'✓':'';
+      saveDailyTrack();
+      if(dailyTrack.workoutDone){
+        updateStreak();
+        if(!dailyTrack.completionCounted){
+          P.workoutCompletions=P.workoutCompletions||{push:0,pull:0,legs:0};
+          P.workoutCompletions[typeKey]=(P.workoutCompletions[typeKey]||0)+1;
+          dailyTrack.completionCounted=true;
+          await storageSet('profile',JSON.stringify(P));
+          await saveDailyTrack();
+        }
+        if(!dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
+      }
+    });
+    if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
+  }
+  overlay.classList.add('open');
+}
+function showFeedbackPrompt(typeKey){
+  const row=document.getElementById('feedbackRow'); if(!row) return;
+  row.innerHTML=`<div class="log-card" style="margin-top:10px;"><h3 style="font-size:0.85rem;">${LANG==='ar'?'شلون كان التمرين؟':'How was the workout?'}</h3>
+    <div style="display:flex;gap:8px;">
+      <button class="ob-choice" data-fb="easy" style="flex:1;">😅 ${LANG==='ar'?'سهل':'Easy'}</button>
+      <button class="ob-choice" data-fb="good" style="flex:1;">👍 ${LANG==='ar'?'تمام':'Good'}</button>
+      <button class="ob-choice" data-fb="hard" style="flex:1;">😩 ${LANG==='ar'?'صعب':'Hard'}</button>
+    </div></div>`;
+  row.querySelectorAll('[data-fb]').forEach(btn=>btn.addEventListener('click',async()=>{
+    let bump = btn.dataset.fb==='easy' ? 1 : (btn.dataset.fb==='hard' ? -1 : 0);
+    P.workoutCounts=P.workoutCounts||{push:1,pull:1,legs:1};
+    P.goodStreak=P.goodStreak||{push:0,pull:0,legs:0};
+    P.exerciseLevel=P.exerciseLevel||{push:'amateur',pull:'amateur',legs:'amateur'};
+    const current=P.workoutCounts[typeKey]!==undefined?P.workoutCounts[typeKey]:1;
+    let autoNudged=false, leveledUp=false, leveledDown=false;
+    if(btn.dataset.fb==='good'){
+      P.goodStreak[typeKey]=(P.goodStreak[typeKey]||0)+1;
+      if(P.goodStreak[typeKey]>=5){ bump=1; autoNudged=true; P.goodStreak[typeKey]=0; }
+    } else {
+      P.goodStreak[typeKey]=0;
+    }
+    const LEVELS=['beginner','amateur','pro'];
+    const curLevel=P.exerciseLevel[typeKey]||'amateur';
+    const curLevelIdx=LEVELS.indexOf(curLevel);
+    let atAbsoluteMax=false, atAbsoluteMin=false;
+    if(bump>0 && current>=4){
+      if(curLevelIdx<2){ P.exerciseLevel[typeKey]=LEVELS[curLevelIdx+1]; P.workoutCounts[typeKey]=1; leveledUp=true; }
+      else { P.workoutCounts[typeKey]=4; atAbsoluteMax=true; }
+    } else if(bump<0 && current<=0){
+      if(curLevelIdx>0){ P.exerciseLevel[typeKey]=LEVELS[curLevelIdx-1]; P.workoutCounts[typeKey]=3; leveledDown=true; }
+      else { P.workoutCounts[typeKey]=0; atAbsoluteMin=true; }
+    } else {
+      P.workoutCounts[typeKey]=Math.min(4,Math.max(0,current+bump));
+    }
+    dailyTrack.feedbackGiven=true;
+    await storageSet('profile',JSON.stringify(P));
+    await saveDailyTrack();
+    const levelNameAr={beginner:'مبتدئ',amateur:'متوسط',pro:'محترف'}, levelNameEn={beginner:'beginner',amateur:'amateur',pro:'pro'};
+    const msg = leveledUp
+      ? (LANG==='ar'?`🎉 ترقيت لمستوى "${levelNameAr[P.exerciseLevel[typeKey]]}"! التمارين نفسها بتتغير المرة الجاية`:`🎉 Leveled up to "${levelNameEn[P.exerciseLevel[typeKey]]}"! The exercises themselves change next time`)
+      : leveledDown
+      ? (LANG==='ar'?`📉 رجعناك لمستوى "${levelNameAr[P.exerciseLevel[typeKey]]}" عشان تبني الأساس صح — التمارين بتتغير المرة الجاية`:`📉 Dropped to "${levelNameEn[P.exerciseLevel[typeKey]]}" to build the right foundation — exercises change next time`)
+      : atAbsoluteMax
+      ? (LANG==='ar'?'🔥 تسجل — أنت عند أعلى مستوى وأصعب صعوبة أصلاً، ما فيه أصعب من كذا حالياً':"🔥 Logged — you're already at the highest level and hardest difficulty, nothing harder for now")
+      : atAbsoluteMin
+      ? (LANG==='ar'?'🌱 تسجل — أنت عند أخف مستوى وأسهل صعوبة أصلاً، خذ وقتك وابني الأساس':"🌱 Logged — you're already at the lightest level and easiest difficulty, take your time building the foundation")
+      : autoNudged
+      ? (LANG==='ar'?'📈 كملت ٥ مرات مريحة على التوالي — رفعناك مستوى تلقائياً!':'📈 5 comfortable sessions in a row — auto-leveled you up!')
+      : btn.dataset.fb==='hard'
+      ? (LANG==='ar'?'👍 تسجل — المرة الجاية بيكون أخف مباشرة':'👍 Logged — next time will be immediately lighter')
+      : btn.dataset.fb==='easy'
+      ? (LANG==='ar'?'👍 تسجل — المرة الجاية بيكون أصعب مباشرة':'👍 Logged — next time will be immediately harder')
+      : (LANG==='ar'?'👍 تسجل، بتضل بنفس المستوى':'👍 Logged — staying at the same level');
+    row.innerHTML=`<div class="info-chip">${msg}</div>`;
+  }));
+}
+document.getElementById('closeBtn').addEventListener('click',()=>overlay.classList.remove('open'));
+overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+
+const GOAL_WEIGHT=70, START_WEIGHT=61;
+let weightLog=[];
+let foodDraft=null;
+async function loadFoodDraft(){ try{ const v=await storageGet('food-draft'); foodDraft=v?JSON.parse(v):null; }catch(e){ foodDraft=null; } }
+async function loadWeightLog(){ try{ const v=await storageGet('weight-log'); weightLog=v?JSON.parse(v):[]; }catch(e){ weightLog=[]; } renderLog(); renderChart(); }
+function renderLog(){
+  const list=document.getElementById('logList'); if(!list) return;
+  if(!weightLog.length){ list.innerHTML=`<div class="log-empty">${t('log_empty')}</div>`; return; }
+  let html='';
+  weightLog.slice().reverse().forEach((e,idx)=>{
+    const ri=weightLog.length-1-idx; const prev=ri>0?weightLog[ri-1].kg:START_WEIGHT;
+    const diff=(e.kg-prev).toFixed(1);
+    html+=`<div class="log-row"><span>${e.date}</span><span class="kg">${e.kg} ${t('kg')}</span><span class="diff ${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff}</span></div>`;
+  });
+  list.innerHTML=html;
+}
+function renderChart(){
+  const svg=document.getElementById('weightChart'); if(!svg) return; svg.innerHTML='';
+  const w=320,h=140,pad=20;
+  if(weightLog.length<2){ svg.innerHTML=`<text x="${w/2}" y="${h/2}" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">${t('chart_need2')}</text>`; return; }
+  const vals=weightLog.map(e=>e.kg);
+  const minV=Math.min(...vals,START_WEIGHT)-0.5, maxV=Math.max(...vals,GOAL_WEIGHT)+0.5, range=maxV-minV||1;
+  const stepX=(w-pad*2)/(weightLog.length-1);
+  const yF=v=>h-pad-((v-minV)/range)*(h-pad*2), xF=i=>pad+i*stepX;
+  const gY=yF(GOAL_WEIGHT);
+  let s=`<line x1="${pad}" y1="${gY}" x2="${w-pad}" y2="${gY}" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+  s+=`<polyline points="${weightLog.map((e,i)=>`${xF(i)},${yF(e.kg)}`).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  weightLog.forEach((e,i)=>{ s+=`<circle cx="${xF(i)}" cy="${yF(e.kg)}" r="3.5" fill="var(--accent-deep)"/>`; });
+  svg.innerHTML=s;
+}
+document.getElementById('weightInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ e.preventDefault(); document.getElementById('saveWeightBtn').click(); }
+});
+document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
+  const inp=document.getElementById('weightInput'); const val=parseFloat(inp.value); if(!val||val<=0) return;
+  weightLog.push({kg:val,date:new Date().toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'})});
+  await storageSet('weight-log',JSON.stringify(weightLog));
+  inp.value='';
+  if(P.foodSetup){
+    P.foodSetup.weight=val;
+    await storageSet('profile',JSON.stringify(P));
+  }
+  renderFoodSection();
+});
+
+function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+let dailyTrack={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false};
+async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,...JSON.parse(v)}; } }catch(e){} }
+async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
+
+function strikeAllergyWords(text){
+  const analyses=(P.foodSetup&&P.foodSetup.allergyAnalysis)||[];
+  let out=text;
+  analyses.forEach(a=>{ (a.avoidWords||[]).forEach(w=>{
+    if(!w) return;
+    const re=new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+    out=out.replace(re, m0=>`<s style="opacity:0.6;">${m0}</s>`);
+  });});
+  return out;
+}
+function renderMealChecklist(idx,v){
+  const mc=document.getElementById('mealChecklist'); mc.innerHTML='';
+  v.meals.forEach((m,i)=>{
+    const tr=transformMeal(m[1][LANG],LANG);
+    const displayText=strikeAllergyWords(tr.text);
+    const item=document.createElement('div');
+    item.className='check-item'+(dailyTrack.meals[i]?' done':'');
+    item.innerHTML=`<div class="box">${dailyTrack.meals[i]?'✓':''}</div><div class="txt">${m[0][LANG]}: ${displayText}</div>`;
+    item.addEventListener('click',()=>{
+      dailyTrack.meals[i]=!dailyTrack.meals[i];
+      item.classList.toggle('done',dailyTrack.meals[i]);
+      item.querySelector('.box').textContent=dailyTrack.meals[i]?'✓':'';
+      saveDailyTrack();
+    });
+    mc.appendChild(item);
+  });
+}
+function renderSupChips(){
+  const row=document.getElementById('supChipsRow'); row.innerHTML='';
+  const fs=P.foodSetup||{};
+  const items=[];
+  (fs.supplements||[]).forEach(s=>items.push({key:s,label:t(s),icon:s==='protein'?'🥤':'💊'}));
+  (fs.supOtherList||[]).forEach((label,i)=>items.push({key:'other'+i,label,icon:'📝'}));
+  if(!items.length){ row.classList.add('hidden'); return; }
+  row.classList.remove('hidden');
+  items.forEach(it=>{
+    const chip=document.createElement('div');
+    chip.className='supp-chip'+(dailyTrack.supplements[it.key]?' done':'');
+    chip.innerHTML=`<span class="ic">${it.icon}</span>${it.label}`;
+    chip.addEventListener('click',()=>{
+      dailyTrack.supplements[it.key]=!dailyTrack.supplements[it.key];
+      chip.classList.toggle('done',dailyTrack.supplements[it.key]);
+      saveDailyTrack();
+    });
+    row.appendChild(chip);
+  });
+}
+function renderWater(){
+  const target=(P.foodSetup&&P.foodSetup.waterTarget)||3.5;
+  const c=dailyTrack.water||0;
+  document.getElementById('waterCount').textContent=`${c.toFixed(2)} / ${target} L`;
+  const step=0.25, total=Math.round(target/step), filled=Math.round(c/step);
+  let cups=''; for(let i=0;i<total;i++) cups+=i<filled?'💧':'🤍';
+  document.getElementById('waterCups').textContent=cups;
+}
+document.getElementById('waterPlus').addEventListener('click',()=>{ dailyTrack.water=Math.min(8,+((dailyTrack.water||0)+0.25).toFixed(2)); renderWater(); saveDailyTrack(); });
+document.getElementById('waterMinus').addEventListener('click',()=>{ dailyTrack.water=Math.max(0,+((dailyTrack.water||0)-0.25).toFixed(2)); renderWater(); saveDailyTrack(); });
+
+function dateKeyOf(d){ return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+async function updateStreak(){
+  const today=dateKeyOf(new Date());
+  if(P.lastStreakDate===today) return;
+  const y=new Date(); y.setDate(y.getDate()-1);
+  const yesterday=dateKeyOf(y);
+  P.streakCount = (P.lastStreakDate===yesterday) ? (P.streakCount||0)+1 : 1;
+  P.lastStreakDate=today;
+  await storageSet('profile',JSON.stringify(P));
+  renderStreakBadge();
+}
+function renderStreakBadge(){
+  const el=document.getElementById('streakBadge');
+  if(!el) return;
+  if(!P.streakCount||P.streakCount<2){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  el.textContent=`🔥 ${P.streakCount} ${LANG==='ar'?'يوم متتالي':'day streak'}`;
+}
+
+const AGENDA_SLOTS=['00:00-02:00','02:00-04:00','04:00-06:00','06:00-08:00','08:00-10:00','10:00-12:00','12:00-14:00','14:00-16:00','16:00-18:00','18:00-20:00','20:00-22:00','22:00-24:00'];
+
+let calViewYear, calViewMonth;
+(function initCalView(){ const d=new Date(); calViewYear=d.getFullYear(); calViewMonth=d.getMonth(); })();
+function renderCalendar(){
+  const grid=document.getElementById('calendarGrid'); if(!grid) return;
+  grid.innerHTML='';
+  const label=new Date(calViewYear,calViewMonth,1).toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{month:'long',year:'numeric'});
+  document.getElementById('calMonthLabel').textContent=label;
+  DAY_NAMES[LANG].forEach(name=>{
+    const h=document.createElement('div'); h.className='cal-dayname'; h.textContent=name;
+    grid.appendChild(h);
+  });
+  const firstOfMonth=new Date(calViewYear,calViewMonth,1);
+  const firstWeekday=(firstOfMonth.getDay()+1)%7;
+  const daysInMonth=new Date(calViewYear,calViewMonth+1,0).getDate();
+  for(let i=0;i<firstWeekday;i++){ const e=document.createElement('div'); e.className='cal-cell empty'; grid.appendChild(e); }
+  const today=new Date();
+  for(let d=1; d<=daysInMonth; d++){
+    const cell=document.createElement('div'); cell.className='cal-cell';
+    const isToday=(d===today.getDate()&&calViewMonth===today.getMonth()&&calViewYear===today.getFullYear());
+    if(isToday) cell.classList.add('today');
+    if(commitmentsForDate(new Date(calViewYear,calViewMonth,d)).length) cell.classList.add('has-commit');
+    cell.textContent=d;
+    cell.addEventListener('click',()=>openCalendarDay(calViewYear,calViewMonth,d));
+    grid.appendChild(cell);
+  }
+}
+document.getElementById('calPrevMonth').addEventListener('click',()=>{
+  calViewMonth--; if(calViewMonth<0){ calViewMonth=11; calViewYear--; }
+  renderCalendar();
+});
+document.getElementById('calNextMonth').addEventListener('click',()=>{
+  calViewMonth++; if(calViewMonth>11){ calViewMonth=0; calViewYear++; }
+  renderCalendar();
+});
+document.getElementById('calTodayBtn').addEventListener('click',()=>{
+  const d=new Date(); calViewYear=d.getFullYear(); calViewMonth=d.getMonth();
+  renderCalendar();
+});
+function calDateKey(y,m,d){ return `daily-track:${y}-${m+1}-${d}`; }
+async function openCalendarDay(y,m,d){
+  const dateObj=new Date(y,m,d);
+  const label=dateObj.toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('dayTitle').textContent=`📅 ${label}`;
+  document.getElementById('daySubtitle').textContent='';
+  const commitments=commitmentsForDate(dateObj);
+  const dateKey=calDateKey(y,m,d);
+  let dayTrack={agenda:{}};
+  try{ const v=await storageGet(dateKey); if(v) dayTrack={agenda:{},...JSON.parse(v)}; }catch(e){}
+  let html='';
+  if(commitments.length){
+    html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'📌 عندك':'📌 You have'}</div>`;
+    commitments.forEach(c=>{ html+=`<div class="meal"><div class="content">📌 ${c.label}</div></div>`; });
+  } else {
+    html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'✅ يوم فاضي، ما عندك التزامات':'✅ Free day, no commitments'}</div>`;
+  }
+  const noteEntries=Object.entries(dayTrack.agenda||{});
+  noteEntries.forEach(([slot,note])=>{ html+=`<div class="meal"><div class="content">📌 ${note}</div></div>`; });
+  html+=`<button class="setup-btn" id="calDetailBtn" style="margin-top:14px;">${LANG==='ar'?'🕐 عرض بالتفصيل (بالساعة)':'🕐 Show hour-by-hour detail'}</button>`;
+  html+=`<div id="calDetailArea" class="agenda-list" style="margin-top:14px;"></div>`;
+  document.getElementById('cardBody').innerHTML=html;
+  overlay.classList.add('open');
+  document.getElementById('calDetailBtn').addEventListener('click',()=>{
+    document.getElementById('calDetailBtn').classList.add('hidden');
+    renderCalDetail(dateKey,commitments,dayTrack);
+  });
+}
+function calAutoLabelForSlot(slot,commitments){
+  const [s0,s1]=slotRange(slot);
+  const hits=commitments.filter(c=>{
+    const c0=parseHM(c.from),c1=parseHM(c.to);
+    if(c1>c0) return s0<c1 && c0<s1;
+    return (c0<s1) || (s0<c1);
+  });
+  return hits.length ? hits.map(c=>c.label).join(' + ') : '';
+}
+function renderCalDetail(dateKey,commitments,dayTrack){
+  const area=document.getElementById('calDetailArea'); area.innerHTML='';
+  dayTrack.agenda=dayTrack.agenda||{};
+  AGENDA_SLOTS.forEach(slot=>{
+    const el=document.createElement('div'); el.className='agenda-slot';
+    const auto=calAutoLabelForSlot(slot,commitments);
+    const custom=dayTrack.agenda[slot];
+    const note=(custom!==undefined&&custom!==null&&custom!=='') ? custom : auto;
+    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note||t('no_note')}</div>`;
+    el.addEventListener('click',()=>openCalSlotEdit(el,slot,auto,dateKey,dayTrack));
+    area.appendChild(el);
+  });
+}
+function openCalSlotEdit(el,slot,auto,dateKey,dayTrack){
+  if(el.querySelector('.agenda-edit')) return;
+  const current=(dayTrack.agenda[slot]!==undefined) ? dayTrack.agenda[slot] : auto;
+  el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><input class="agenda-edit" value="${current.replace(/"/g,'&quot;')}" placeholder="${LANG==='ar'?'شنو عندك بهالوقت؟':"What's on?"}">`;
+  const input=el.querySelector('.agenda-edit');
+  input.focus();
+  async function commit(){
+    const val=input.value.trim();
+    if(val && val!==auto) dayTrack.agenda[slot]=val;
+    else delete dayTrack.agenda[slot];
+    await storageSet(dateKey,JSON.stringify(dayTrack));
+    const note=(dayTrack.agenda[slot]!==undefined) ? dayTrack.agenda[slot] : auto;
+    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note||t('no_note')}</div>`;
+  }
+  input.addEventListener('blur',commit);
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); input.blur(); } });
+}
+function slotRange(slot){ const [a,b]=slot.split('-'); return [parseHM(a),parseHM(b)]; }
+
+function refreshHome(){
+  applyI18n();
+  applyTheme(P.palette,P.mode,P.font);
+  document.getElementById('brandLabel').textContent=`🗓️ ${P.name}`;
+  document.getElementById('heroTitle').textContent=(LANG==='ar'?`هلا فيييييك ${P.name}! 👋`:`Hi ${P.name}! 👋`);
+  document.getElementById('heroSub').textContent='';
+  const idx=todayWeekdayIndex();
+  document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]}`;
+  renderStreakBadge();
+}
+function launchApp(){
+  LANG=P.lang||'ar';
+  document.getElementById('obOverlay').classList.add('hidden');
+  document.getElementById('mainNav').classList.remove('hidden');
+  document.getElementById('mainWrap').classList.remove('hidden');
+  document.getElementById('mainFooter').classList.remove('hidden');
+  const fv=document.getElementById('footerVersion'); if(fv) fv.textContent=APP_VERSION;
+  refreshHome();
+  showPanel('home');
+}
+
+(async()=>{
+  await loadDailyTrack();
+  await loadFoodDraft();
+  const pv=await storageGet('profile');
+  if(pv){ try{ P={...P,...JSON.parse(pv)}; launchApp(); return; }catch(e){} }
+  applyI18n();
+  applyTheme(P.palette,P.mode,P.font);
+})();
+</script>
+</body>
+</html>
