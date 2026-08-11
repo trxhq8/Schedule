@@ -241,6 +241,7 @@
       <button class="ob-btn" id="importBtn" type="button" style="flex:1;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);font-size:0.8rem;padding:10px;">⬆️ <span data-i18n="backup_import"></span></button>
     </div>
     <input type="file" id="importFileInput" accept="application/json" class="hidden">
+    <button class="ob-btn secondary" id="signOutBtn" type="button" data-i18n="auth_sign_out" style="margin-top:14px;"></button>
   </div>
 </div>
 
@@ -528,35 +529,108 @@
 
 <footer class="hidden" id="mainFooter">🌱<div style="font-size:0.6rem;opacity:0.4;margin-top:4px;" id="footerVersion"></div></footer>
 
+<!-- ============ SIGN IN (cross-device sync via Firebase) ============ -->
+<div class="ob-overlay" id="authOverlay">
+  <div class="ob-card">
+    <div class="ob-top">
+      <span></span>
+      <button class="lang-toggle" id="authLangToggle">EN</button>
+    </div>
+    <h2 data-i18n="auth_title" style="text-align:center;color:var(--accent-deep);font-size:1.15rem;margin:0 0 16px;"></h2>
+    <button class="ob-btn" id="googleSignInBtn" type="button" style="background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-bottom:14px;">🔵 <span data-i18n="auth_google"></span></button>
+    <div style="display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink-soft);font-size:0.78rem;">
+      <div style="flex:1;height:1px;background:var(--line);"></div>
+      <span data-i18n="auth_or"></span>
+      <div style="flex:1;height:1px;background:var(--line);"></div>
+    </div>
+    <input type="email" class="ob-input" id="authEmail" data-i18n-ph="auth_email_ph" autocomplete="email" style="margin-bottom:10px;">
+    <input type="password" class="ob-input" id="authPassword" data-i18n-ph="auth_password_ph" autocomplete="current-password">
+    <div class="val-msg" id="authValMsg"></div>
+    <button class="ob-btn" id="authSignInBtn" type="button" data-i18n="auth_sign_in" style="margin-bottom:8px;"></button>
+    <button class="ob-btn secondary" id="authSignUpBtn" type="button" data-i18n="auth_sign_up"></button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ================= FIREBASE (cross-device sync) ================= */
+const firebaseConfig={
+  apiKey:"AIzaSyD_fqnKR-tfkx-oXUnu2RpPTtY1S5dtv9g",
+  authDomain:"schedule-63420.firebaseapp.com",
+  projectId:"schedule-63420",
+  storageBucket:"schedule-63420.firebasestorage.app",
+  messagingSenderId:"562332234882",
+  appId:"1:562332234882:web:cb097fbb020bc2f6e9f09b",
+  measurementId:"G-VWRTCRXTW9"
+};
+let fbApp=null, fbAuth=null, fbDb=null, currentUser=null;
+try{
+  fbApp=firebase.initializeApp(firebaseConfig);
+  fbAuth=firebase.auth();
+  fbDb=firebase.firestore();
+  fbDb.enablePersistence({synchronizeTabs:true}).catch(()=>{}); // offline cache + auto-resync, best-effort
+}catch(e){ /* Firebase SDK failed to load (offline/blocked) — app still works locally-only */ }
+</script>
 <script>
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.1.0';
+const APP_VERSION='v1.2.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
   });
 }
 
-/* ================= STORAGE + ERRORS ================= */
+/* ================= STORAGE + ERRORS =================
+   When signed in, Firestore is the source of truth (synced across every
+   device on the account) and localStorage is kept as a write-through cache
+   for instant reads + offline resilience. Signed out, behavior is unchanged
+   from before (window.storage for the Artifact preview, else localStorage). */
 const _mem={};
+function fsDataRef(key){ return fbDb.collection('users').doc(currentUser.uid).collection('data').doc(key); }
 async function storageGet(key){
+  if(currentUser&&fbDb){
+    try{
+      const doc=await fsDataRef(key).get();
+      const v=doc.exists?doc.data().value:null;
+      if(v!==null){ try{ localStorage.setItem('planner_'+key,v); }catch(e){} }
+      return v;
+    }catch(e){ /* offline/blocked — fall through to the local cache below */ }
+  }
   try{ if(window.storage&&window.storage.get){ const r=await window.storage.get(key,false); return r?r.value:null; } }catch(e){}
   try{ const v=localStorage.getItem('planner_'+key); if(v!==null) return v; }catch(e){}
   return _mem[key]!==undefined?_mem[key]:null;
 }
 async function storageSet(key,value){
   _mem[key]=value;
-  try{ if(window.storage&&window.storage.set){ await window.storage.set(key,value,false); return; } }catch(e){}
   try{ localStorage.setItem('planner_'+key,value); }catch(e){}
+  if(currentUser&&fbDb){
+    try{ await fsDataRef(key).set({value}); }catch(e){ /* offline — Firestore's own queue retries when back online */ }
+    return;
+  }
+  try{ if(window.storage&&window.storage.set){ await window.storage.set(key,value,false); return; } }catch(e){}
 }
 async function storageDelete(key){
   delete _mem[key];
-  try{ if(window.storage&&window.storage.delete){ await window.storage.delete(key,false); return; } }catch(e){}
   try{ localStorage.removeItem('planner_'+key); }catch(e){}
+  if(currentUser&&fbDb){
+    try{ await fsDataRef(key).delete(); }catch(e){}
+    return;
+  }
+  try{ if(window.storage&&window.storage.delete){ await window.storage.delete(key,false); return; } }catch(e){}
 }
 async function storageListKeys(prefix){
+  if(currentUser&&fbDb){
+    try{
+      const snap=await fbDb.collection('users').doc(currentUser.uid).collection('data')
+        .orderBy(firebase.firestore.FieldPath.documentId())
+        .startAt(prefix).endAt(prefix+'').get();
+      return snap.docs.map(d=>d.id);
+    }catch(e){ /* fall through */ }
+  }
   try{
     if(window.storage&&window.storage.list){ const r=await window.storage.list(prefix,false); if(r&&r.keys) return r.keys; }
   }catch(e){}
@@ -568,6 +642,98 @@ async function storageListKeys(prefix){
     }
   }catch(e){}
   return found;
+}
+
+/* ================= AUTH (Google + email/password, cross-device sync) ================= */
+/* first time a browser's local data meets a freshly-signed-in account with no
+   cloud data yet, push everything up once so nobody's existing schedule gets
+   wiped just because they created an account */
+async function migrateLocalDataToCloud(uid){
+  const localProfile=localStorage.getItem('planner_profile');
+  if(!localProfile) return;
+  const dataCol=fbDb.collection('users').doc(uid).collection('data');
+  const existing=await dataCol.doc('profile').get().catch(()=>null);
+  if(existing&&existing.exists) return; // account already has cloud data — never overwrite
+  const singleKeys=['profile','weight-log','food-draft'];
+  for(const k of singleKeys){
+    const v=localStorage.getItem('planner_'+k);
+    if(v!==null){ try{ await dataCol.doc(k).set({value:v}); }catch(e){} }
+  }
+  for(let i=0;i<localStorage.length;i++){
+    const lk=localStorage.key(i);
+    if(lk&&lk.startsWith('planner_daily-track:')){
+      const key=lk.slice('planner_'.length);
+      const v=localStorage.getItem(lk);
+      try{ await dataCol.doc(key).set({value:v}); }catch(e){}
+    }
+  }
+}
+function authErrorMessage(e){
+  const code=(e&&e.code)||'';
+  const map={
+    'auth/invalid-email':{ar:'الإيميل مو صحيح',en:'Invalid email'},
+    'auth/user-not-found':{ar:'ما فيه حساب بهالإيميل',en:'No account with this email'},
+    'auth/wrong-password':{ar:'كلمة المرور غلط',en:'Wrong password'},
+    'auth/invalid-credential':{ar:'الإيميل أو كلمة المرور غلط',en:'Invalid email or password'},
+    'auth/email-already-in-use':{ar:'فيه حساب بهالإيميل من قبل — سجل دخول بدل إنشاء حساب',en:'An account already exists with this email — sign in instead'},
+    'auth/weak-password':{ar:'كلمة المرور لازم ٦ أحرف على الأقل',en:'Password must be at least 6 characters'}
+  };
+  return (map[code]&&map[code][LANG])||(e&&e.message)||String(e);
+}
+function showAuthError(msg){ const el=document.getElementById('authValMsg'); if(el) el.textContent=msg; }
+if(document.getElementById('googleSignInBtn')){
+  document.getElementById('googleSignInBtn').addEventListener('click',()=>{
+    if(!fbAuth) return;
+    const provider=new firebase.auth.GoogleAuthProvider();
+    fbAuth.signInWithRedirect(provider); // redirect (not popup) so it works on mobile/iPad too
+  });
+  document.getElementById('authSignInBtn').addEventListener('click',async()=>{
+    showAuthError('');
+    const email=document.getElementById('authEmail').value.trim();
+    const pw=document.getElementById('authPassword').value;
+    if(!email||!pw){ showAuthError(LANG==='ar'?'اكتب الإيميل وكلمة المرور':'Enter email and password'); return; }
+    try{ await fbAuth.signInWithEmailAndPassword(email,pw); }
+    catch(e){ showAuthError(authErrorMessage(e)); }
+  });
+  document.getElementById('authSignUpBtn').addEventListener('click',async()=>{
+    showAuthError('');
+    const email=document.getElementById('authEmail').value.trim();
+    const pw=document.getElementById('authPassword').value;
+    if(!email||!pw){ showAuthError(LANG==='ar'?'اكتب الإيميل وكلمة المرور':'Enter email and password'); return; }
+    if(pw.length<6){ showAuthError(LANG==='ar'?'كلمة المرور لازم ٦ أحرف على الأقل':'Password must be at least 6 characters'); return; }
+    try{ await fbAuth.createUserWithEmailAndPassword(email,pw); }
+    catch(e){ showAuthError(authErrorMessage(e)); }
+  });
+  document.getElementById('authLangToggle').addEventListener('click',()=>{ LANG=LANG==='ar'?'en':'ar'; applyI18n(); });
+}
+async function bootApp(){
+  await loadDailyTrack();
+  await loadFoodDraft();
+  const pv=await storageGet('profile');
+  if(pv){ try{ P={...P,...JSON.parse(pv)}; launchApp(); return; }catch(e){} }
+  applyI18n();
+  applyTheme(P.palette,P.mode,P.font);
+  document.getElementById('obOverlay').classList.remove('hidden');
+}
+if(fbAuth){
+  fbAuth.getRedirectResult().catch(e=>{ showAuthError(authErrorMessage(e)); });
+  fbAuth.onAuthStateChanged(async(user)=>{
+    if(user){
+      currentUser=user;
+      await migrateLocalDataToCloud(user.uid);
+      document.getElementById('authOverlay').classList.add('hidden');
+      await bootApp();
+    } else {
+      currentUser=null;
+      applyI18n();
+      applyTheme(P.palette,P.mode,P.font);
+      document.getElementById('authOverlay').classList.remove('hidden');
+      document.getElementById('obOverlay').classList.add('hidden');
+      document.getElementById('mainNav').classList.add('hidden');
+      document.getElementById('mainWrap').classList.add('hidden');
+      document.getElementById('mainFooter').classList.add('hidden');
+    }
+  });
 }
 const INJURY_KEYWORDS={
   avoidLegs:['رجل','رجلي','رجلك','ركبة','ركبتي','كاحل','قدم','قدمي','ساق','فخذ','عرقوب','كسر رجل','كسر قدم','مكسورة رجل','leg','legs','knee','ankle','foot','feet','calf','thigh'],
@@ -680,6 +846,9 @@ window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.messa
 /* ================= I18N ================= */
 const I18N={
  ar:{ next:'التالي',back:'رجوع',start:'ابدأ',save:'حفظ',back_home:'🏠 الرئيسية',edit_setup:'⚙️ عدّل الإعداد',
+  auth_title:'📅 سجّل دخول عشان جدولك يتزامن بين أجهزتك',auth_google:'تسجيل الدخول بـ Google',auth_or:'أو',
+  auth_email_ph:'الإيميل',auth_password_ph:'كلمة المرور',auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',
+  auth_sign_out:'🚪 تسجيل الخروج',
   q_name:'اسمك',
   mode_light:'فاتح',mode_dark:'داكن',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 لون الخلفية',backup_export:'تصدير',backup_import:'استيراد',
@@ -740,6 +909,9 @@ const I18N={
   no_note:'ما سجلت شي — اضغط تكتب',workout_progress_title:'📊 آخر ٧ أيام'
  },
  en:{ next:'Next',back:'Back',start:'Start',save:'Save',back_home:'🏠 Home',edit_setup:'⚙️ Edit setup',
+  auth_title:'📅 Sign in to sync your schedule across devices',auth_google:'Sign in with Google',auth_or:'or',
+  auth_email_ph:'Email',auth_password_ph:'Password',auth_sign_in:'Sign In',auth_sign_up:'Create new account',
+  auth_sign_out:'🚪 Sign out',
   q_name:'Your Name',
   mode_light:'Light',mode_dark:'Dark',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background color',backup_export:'Export',backup_import:'Import',
@@ -808,6 +980,7 @@ function applyI18n(){
   document.documentElement.lang=LANG; document.documentElement.dir=LANG==='ar'?'rtl':'ltr';
   document.getElementById('obLangToggle').textContent=LANG==='ar'?'EN':'ع';
   document.getElementById('mainLangToggle').textContent=LANG==='ar'?'EN':'ع';
+  const alt=document.getElementById('authLangToggle'); if(alt) alt.textContent=LANG==='ar'?'EN':'ع';
 }
 
 /* ================= THEMES ================= */
@@ -866,6 +1039,10 @@ document.getElementById('settingsBtn').addEventListener('click',()=>{
 });
 document.getElementById('settingsCloseBtn').addEventListener('click',()=>{
   document.getElementById('settingsOverlay').classList.remove('open');
+});
+document.getElementById('signOutBtn').addEventListener('click',async()=>{
+  document.getElementById('settingsOverlay').classList.remove('open');
+  if(fbAuth) await fbAuth.signOut();
 });
 /* each swatch carries a matched light+dark pair so switching modes later
    still looks intentional instead of reverting to plain gray */
@@ -2749,12 +2926,13 @@ function launchApp(){
 }
 
 (async()=>{
-  await loadDailyTrack();
-  await loadFoodDraft();
-  const pv=await storageGet('profile');
-  if(pv){ try{ P={...P,...JSON.parse(pv)}; launchApp(); return; }catch(e){} }
-  applyI18n();
-  applyTheme(P.palette,P.mode,P.font);
+  if(!fbAuth){
+    // Firebase SDK unavailable (offline/blocked, e.g. sandboxed preview) — behave exactly as before, local-only
+    document.getElementById('authOverlay').classList.add('hidden');
+    await bootApp();
+    return;
+  }
+  // otherwise onAuthStateChanged (registered above) drives showing the sign-in screen or booting the app
 })();
 </script>
 </body>
