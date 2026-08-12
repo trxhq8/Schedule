@@ -577,7 +577,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.2.0';
+const APP_VERSION='v1.2.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -847,7 +847,7 @@ window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.messa
 const I18N={
  ar:{ next:'التالي',back:'رجوع',start:'ابدأ',save:'حفظ',back_home:'🏠 الرئيسية',edit_setup:'⚙️ عدّل الإعداد',
   auth_title:'📅 سجّل دخول عشان جدولك يتزامن بين أجهزتك',auth_google:'تسجيل الدخول بـ Google',auth_or:'أو',
-  auth_email_ph:'الإيميل',auth_password_ph:'كلمة المرور',auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',
+  auth_email_ph:'Email',auth_password_ph:'Password',auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',
   auth_sign_out:'🚪 تسجيل الخروج',
   q_name:'اسمك',
   mode_light:'فاتح',mode_dark:'داكن',
