@@ -274,6 +274,51 @@
 
   .coll-dates-row{ display:flex; justify-content:space-around; text-align:center; font-size:0.72rem; color:var(--ink-soft); margin-bottom:16px; }
   .coll-dates-row b{ display:block; color:var(--ink); font-size:0.8rem; margin-top:2px; }
+
+  /* ---- rarity system ---- */
+  .coll-rarity-pill{ display:inline-flex; align-items:center; gap:4px; font-family:var(--font-head); font-weight:800; font-size:0.68rem; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+  .coll-rarity-common{ background:#eef6f0; color:#3f8a58; }
+  .coll-rarity-uncommon{ background:#eaf2fb; color:#2f6fb0; }
+  .coll-rarity-epic{ background:#f3ecfb; color:#7d3fbf; }
+  .coll-rarity-mythic{ background:#fdecea; color:#c0392b; }
+  .coll-rarity-legendary{ background:linear-gradient(135deg,#fff6dd,#ffe4a3); color:#8a6a12; }
+  .coll-conservation-pill{ display:inline-flex; align-items:center; font-family:var(--font-head); font-weight:700; font-size:0.66rem; padding:3px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); white-space:nowrap; }
+  .coll-pill-row{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+
+  .coll-species-card .rarity-tag{ position:absolute; top:6px; inset-inline-start:6px; font-size:0.6rem; z-index:1; }
+  .coll-species-card.collected.tier-epic{ box-shadow:0 0 0 1.5px #a875d1 inset, var(--shadow); }
+  .coll-species-card.collected.tier-mythic{ box-shadow:0 0 0 1.5px #e0685a inset, var(--shadow); }
+  .coll-species-card.collected.tier-legendary{ box-shadow:0 0 0 2px #e0a458 inset, 0 4px 18px rgba(224,164,88,0.4); background:linear-gradient(160deg,var(--card),#fff8ea); }
+
+  .coll-detail-photo.tier-epic{ box-shadow:0 0 0 2px #a875d1, var(--shadow); }
+  .coll-detail-photo.tier-mythic{ box-shadow:0 0 0 2px #e0685a, var(--shadow); }
+  .coll-detail-photo.tier-legendary{ box-shadow:0 0 0 3px #e0a458, 0 6px 24px rgba(224,164,88,0.45); animation:legendaryGlow 2.4s ease-in-out infinite; }
+  @keyframes legendaryGlow{ 0%,100%{ box-shadow:0 0 0 3px #e0a458, 0 6px 24px rgba(224,164,88,0.45); } 50%{ box-shadow:0 0 0 3px #f0c07a, 0 8px 30px rgba(224,164,88,0.65); } }
+
+  .coll-rarity-breakdown{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:14px; }
+  .coll-rarity-mini{ font-family:var(--font-head); font-weight:800; font-size:0.68rem; padding:3px 9px; border-radius:999px; }
+
+  .coll-stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0 18px; }
+  @media(min-width:520px){ .coll-stats-grid{grid-template-columns:repeat(3,1fr);} }
+  .coll-stat-chip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; font-size:0.78rem; box-shadow:var(--shadow); }
+  .coll-stat-chip b{ display:block; font-family:var(--font-head); font-size:1.1rem; color:var(--accent-deep); }
+  .coll-stat-chip.legendary{ background:linear-gradient(160deg,var(--card),#fff8ea); border-color:#e0c88a; }
+  .coll-stat-chip.legendary b{ color:#8a6a12; }
+
+  .coll-variants-section{ margin-bottom:16px; }
+  .coll-variants-section h3{ font-size:0.9rem; color:var(--accent-deep); margin:0 0 10px; }
+  .coll-variants-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .coll-variant-card{ background:var(--bg); border:1.5px solid var(--line); border-radius:14px; padding:8px 4px; text-align:center; cursor:pointer; position:relative; }
+  .coll-variant-card.done{ border-color:var(--accent-deep); background:var(--card); }
+  .coll-variant-card .thumb{ width:44px; height:44px; margin:0 auto 6px; border-radius:50%; overflow:hidden; background:var(--card); display:flex; align-items:center; justify-content:center; }
+  .coll-variant-card .thumb img{ width:100%; height:100%; object-fit:cover; }
+  .coll-variant-card .name{ font-size:0.68rem; font-weight:700; color:var(--ink); }
+  .coll-variant-card .check{ position:absolute; top:2px; inset-inline-end:4px; font-size:0.7rem; }
+
+  .coll-sources-box{ font-size:0.7rem; color:var(--ink-soft); background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; line-height:1.7; margin-bottom:16px; }
+  .coll-sources-box summary{ cursor:pointer; font-family:var(--font-head); font-weight:700; color:var(--ink-soft); }
+
+  .coll-toolbar-secondary{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 </style>
 </head>
 <body>
@@ -580,6 +625,7 @@
 
     <!-- level 1: animal categories -->
     <div class="coll-view" id="collView-animals">
+      <div class="coll-stats-grid" id="collStatsBar"></div>
       <div class="coll-grid coll-grid-2" id="collAnimalsGrid"></div>
     </div>
 
@@ -590,10 +636,16 @@
         <div class="coll-progress-label" id="collProgressLabel"></div>
         <div class="coll-progress-bar"><div class="coll-progress-fill" id="collProgressFill"></div></div>
       </div>
+      <div class="coll-rarity-breakdown" id="collRarityBreakdown"></div>
       <div class="coll-toolbar">
         <input type="text" class="setup-input coll-search" id="collSearchInput" style="margin-bottom:0;">
         <select class="coll-select" id="collFilterSelect"></select>
         <select class="coll-select" id="collSortSelect"></select>
+      </div>
+      <div class="coll-toolbar-secondary">
+        <select class="coll-select" id="collRarityFilterSelect"></select>
+        <select class="coll-select" id="collConservationFilterSelect"></select>
+        <select class="coll-select" id="collRegionFilterSelect"></select>
       </div>
       <div class="coll-species-grid" id="collSpeciesGrid"></div>
       <p class="coll-empty hidden" id="collEmptyMsg"></p>
@@ -688,7 +740,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.4.0';
+const APP_VERSION='v1.5.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3107,7 +3159,50 @@ function launchApp(){
 
    "Collected" and "times caught" are never stored fields — both are always
    derived from catches[], so a plain +/- tap and a future detailed catch
-   record are the SAME data, never two sources of truth that can drift. */
+   record are the SAME data, never two sources of truth that can drift.
+
+   ---- Rarity vs. conservation status (two separate, unrelated axes) ----
+   RARITY is a game/collection concept: how hard would it be for an ordinary
+   person in Kuwait/the Gulf (or worldwide, for non-regional species) to
+   personally encounter, catch, or document this species themselves? It is
+   assessed on encounter frequency + effort/skill/equipment required +
+   regional accessibility + how special the moment feels — NOT on population
+   size or extinction risk. A species can be Legendary rarity and Least
+   Concern conservation at the same time (e.g. a globally iconic pelagic
+   fish that's simply out of reach of an ordinary angler) — that's correct,
+   not a contradiction.
+     🟢 Common    — encountered incidentally, no special effort
+     🔵 Uncommon  — needs some timing/technique/local knowledge
+     🟣 Epic      — real skill/gear/season/location, a genuine "nice catch"
+     🔴 Mythic    — seriously difficult even for dedicated hobbyists
+     🟡 Legendary — the "holy grail"; most people never personally get this
+   CONSERVATION STATUS is the real IUCN Red List assessment where one
+   exists (LC/NT/VU/EN/CR/EW/EX/DD), sourced from Wikipedia/IUCN/GBIF and
+   never guessed — null means "not evaluated / not independently verified"
+   rather than a fabricated guess. */
+const RARITY_TIERS={
+  common:    {icon:'🟢', nameAr:'شائع',    nameEn:'Common',    order:1},
+  uncommon:  {icon:'🔵', nameAr:'غير شائع', nameEn:'Uncommon',  order:2},
+  epic:      {icon:'🟣', nameAr:'ملحمي',    nameEn:'Epic',      order:3},
+  mythic:    {icon:'🔴', nameAr:'خرافي',    nameEn:'Mythic',    order:4},
+  legendary: {icon:'🟡', nameAr:'أسطوري',   nameEn:'Legendary', order:5}
+};
+const RARITY_ORDER=['common','uncommon','epic','mythic','legendary'];
+const CONSERVATION_STATUS={
+  LC:{nameAr:'أقل قلق', nameEn:'Least Concern'},
+  NT:{nameAr:'قريب من التهديد', nameEn:'Near Threatened'},
+  VU:{nameAr:'عرضة للخطر', nameEn:'Vulnerable'},
+  EN:{nameAr:'مهدد بالانقراض', nameEn:'Endangered'},
+  CR:{nameAr:'مهدد بالانقراض بشدة', nameEn:'Critically Endangered'},
+  EW:{nameAr:'منقرض في البرية', nameEn:'Extinct in the Wild'},
+  EX:{nameAr:'منقرض', nameEn:'Extinct'},
+  DD:{nameAr:'بيانات غير كافية', nameEn:'Data Deficient'}
+};
+function collConservationLabel(code){
+  const c=code&&CONSERVATION_STATUS[code];
+  if(!c) return LANG==='ar'?'غير مقيّم':'Not evaluated';
+  return LANG==='ar'?c.nameAr:c.nameEn;
+}
 const ANIMAL_CATEGORIES=[
   {id:'fish', icon:'🐟', nameAr:'أسماك', nameEn:'Fish',
     countLabelAr:'مرات الصيد', countLabelEn:'times caught',
@@ -3136,48 +3231,69 @@ const ANIMAL_CATEGORIES=[
       {key:'length', unit:'mm', labelAr:'أطول طول', labelEn:'Longest length'}
     ]}
 ];
-/* starter reference data — a small, real, easily-expandable list per
-   category; add more by appending objects here, no other code changes needed */
+/* Every image below is a real, verified Wikimedia Commons file (checked via
+   Wikipedia's REST summary API), never generated/guessed. Conservation codes
+   are the actual IUCN Red List assessment where one was found and verified
+   this pass; null means genuinely not evaluated/not independently confirmed
+   rather than a guess. This is a curated first expansion (40 species + 5
+   cat breed variants) — a real research-backed base, not the full "hundreds"
+   vision yet, structured so more can be appended safely category by category. */
+function img(url,attribution){ return {url, attribution:attribution+', via Wikimedia Commons', source:'Wikimedia Commons'}; }
 const SPECIES_DB={
   fish:[
-    {id:'hamour', nameAr:'هامور', nameEn:'Hamour', sci:'Epinephelus coioides', icon:'🐟'},
-    {id:'sbeiti', nameAr:'صبيتي', nameEn:'Sbeiti', sci:'Siganus canaliculatus', icon:'🐟'},
-    {id:'newaibi', nameAr:'نويبي', nameEn:'Newaibi', sci:'Acanthopagrus latus', icon:'🐟'},
-    {id:'zubaidi', nameAr:'زبيدي', nameEn:'Zubaidi', sci:'Pampus argenteus', icon:'🐟'},
-    {id:'shaari', nameAr:'شعري', nameEn:'Shaari', sci:'Lethrinus nebulosus', icon:'🐟'},
-    {id:'kanaad', nameAr:'كنعد', nameEn:'Kanaad', sci:'Scomberomorus commerson', icon:'🐟', rare:true},
-    {id:'sultan_ibrahim', nameAr:'سلطان إبراهيم', nameEn:'Sultan Ibrahim', sci:'Parupeneus sp.', icon:'🐟'},
-    {id:'safi', nameAr:'صافي', nameEn:'Safi', sci:'Siganus javus', icon:'🐟'}
+    {id:'hamour', nameAr:'هامور', nameEn:'Hamour', altNames:['Orange-spotted grouper'], sci:'Epinephelus coioides', family:'Serranidae', genus:'Epinephelus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/61/Epinephelus_coioides_Thailand.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'sbeiti', nameAr:'صبيتي', nameEn:'Sbeiti', altNames:['White-spotted spinefoot','White-spotted rabbitfish'], sci:'Siganus canaliculatus', family:'Siganidae', genus:'Siganus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/d/d9/Siganus_canaliculatus%2C_Kampuan.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'newaibi', nameAr:'نويبي', nameEn:'Newaibi', altNames:['Yellowfin seabream'], sci:'Acanthopagrus latus', family:'Sparidae', genus:'Acanthopagrus', rarity:'common', conservation:'DD', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c1/Acanthopagrus_latus_01.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia, GBIF'},
+    {id:'zubaidi', nameAr:'زبيدي', nameEn:'Zubaidi', altNames:['Silver pomfret'], sci:'Pampus argenteus', family:'Stromateidae', genus:'Pampus', rarity:'uncommon', conservation:'VU', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/66/Pampus_argenteus_1.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'shaari', nameAr:'شعري', nameEn:'Shaari', altNames:['Spangled emperor'], sci:'Lethrinus nebulosus', family:'Lethrinidae', genus:'Lethrinus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/d/d7/Lethrinus_nebulosus_287497294_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'kanaad', nameAr:'كنعد', nameEn:'Kanaad', altNames:['Narrow-barred Spanish mackerel'], sci:'Scomberomorus commerson', family:'Scombridae', genus:'Scomberomorus', rarity:'epic', conservation:'NT', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/60/Narrow-barred_spanish_mackerel_%28Scomberomorus_commerson%29.jpg','Photo by Rickard Zerpe, CC BY 2.0'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'sultan_ibrahim', nameAr:'سلطان إبراهيم', nameEn:'Sultan Ibrahim', altNames:['Red mullet','Goatfish'], sci:'Mullidae sp.', family:'Mullidae', genus:null, rarity:'common', conservation:null, region:['kuwait','gulf'], image:null, icon:'🐟', sourceNote:'Vernacular Gulf market name applied to more than one goatfish species across sources — exact species-level ID left unresolved rather than guessed'},
+    {id:'safi', nameAr:'صافي', nameEn:'Safi', altNames:['Streaked spinefoot','Java rabbitfish'], sci:'Siganus javus', family:'Siganidae', genus:'Siganus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/7/78/Siganus_javus.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'yellowfin_tuna', nameAr:'تونة صفراء الزعانف', nameEn:'Yellowfin Tuna', altNames:[], sci:'Thunnus albacares', family:'Scombridae', genus:'Thunnus', rarity:'legendary', conservation:'LC', region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c3/Thunnus_albacares.png','Illustration via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'great_barracuda', nameAr:'باراكودا', nameEn:'Great Barracuda', altNames:[], sci:'Sphyraena barracuda', family:'Sphyraenidae', genus:'Sphyraena', rarity:'epic', conservation:'LC', region:['gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/64/Gran_barracuda_%28Sphyraena_barracuda%29%2C_Yeda%2C_Arabia_Saudita%2C_2025-05-20%2C_DD_118.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'clownfish', nameAr:'سمكة المهرج', nameEn:'Clownfish', altNames:['Ocellaris clownfish','Anemonefish'], sci:'Amphiprion ocellaris', family:'Pomacentridae', genus:'Amphiprion', rarity:'mythic', conservation:null, region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/a/ad/Amphiprion_ocellaris_%28Clown_anemonefish%29_by_Nick_Hobgood.jpg','Photo by Nick Hobgood'), icon:'🐟', sourceNote:'Wikipedia, FishBase'}
   ],
   birds:[
-    {id:'hudhud', nameAr:'هدهد', nameEn:'Hoopoe', sci:'Upupa epops', icon:'🐦'},
-    {id:'saqr_alharr', nameAr:'الصقر الحر', nameEn:'Saker Falcon', sci:'Falco cherrug', icon:'🦅', rare:true},
-    {id:'hamam', nameAr:'حمام', nameEn:'Rock Pigeon', sci:'Columba livia', icon:'🐦'},
-    {id:'waraawir', nameAr:'الوروار', nameEn:'Little Green Bee-eater', sci:'Merops orientalis', icon:'🐦'},
-    {id:'ghurab', nameAr:'غراب', nameEn:'House Crow', sci:'Corvus splendens', icon:'🐦'},
-    {id:'flamingo', nameAr:'فلامنجو', nameEn:'Greater Flamingo', sci:'Phoenicopterus roseus', icon:'🦩'},
-    {id:'asfour', nameAr:'عصفور دوري', nameEn:'House Sparrow', sci:'Passer domesticus', icon:'🐦'},
-    {id:'nawras', nameAr:'نورس', nameEn:'Black-headed Gull', sci:'Chroicocephalus ridibundus', icon:'🐦'}
+    {id:'hudhud', nameAr:'هدهد', nameEn:'Hoopoe', altNames:['Eurasian hoopoe'], sci:'Upupa epops', family:'Upupidae', genus:'Upupa', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/06/Upupa_epops_Madrid_01.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'saqr_alharr', nameAr:'الصقر الحر', nameEn:'Saker Falcon', altNames:[], sci:'Falco cherrug', family:'Falconidae', genus:'Falco', rarity:'legendary', conservation:'EN', region:['kuwait','gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/0c/Falco_cherrug_%28Marek_Szczepanek%29.jpg','Photo by Marek Szczepanek, CC BY-SA'), icon:'🦅', sourceNote:'Wikipedia (IUCN-sourced), BirdLife DataZone'},
+    {id:'hamam', nameAr:'حمام', nameEn:'Rock Pigeon', altNames:['Rock dove','Common pigeon'], sci:'Columba livia', family:'Columbidae', genus:'Columba', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/1/10/Columba_livia_%28Rock_Dove%2C_wild%29%2C_Duncansby_Head%2C_Caithness%2C_Scotland_1.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'waraawir', nameAr:'الوروار', nameEn:'Little Green Bee-eater', altNames:['Asian green bee-eater'], sci:'Merops orientalis', family:'Meropidae', genus:'Merops', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/f/f8/Green_bee-eater_%28Merops_orientalis%29_with_blue_pansy_4_Jojawar.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'ghurab', nameAr:'غراب', nameEn:'House Crow', altNames:[], sci:'Corvus splendens', family:'Corvidae', genus:'Corvus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c9/Corvus_splendens.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'flamingo', nameAr:'فلامنجو', nameEn:'Greater Flamingo', altNames:[], sci:'Phoenicopterus roseus', family:'Phoenicopteridae', genus:'Phoenicopterus', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/8/81/010_Greater_flamingos_male_and_female_in_the_Camargue_during_mating_season_Photo_by_Giles_Laurent.jpg','Photo by Giles Laurent, CC BY-SA'), icon:'🦩', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'asfour', nameAr:'عصفور دوري', nameEn:'House Sparrow', altNames:[], sci:'Passer domesticus', family:'Passeridae', genus:'Passer', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/9/9b/House_sparrow_male_in_Prospect_Park_%2853532%29.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'nawras', nameAr:'نورس', nameEn:'Black-headed Gull', altNames:[], sci:'Chroicocephalus ridibundus', family:'Laridae', genus:'Chroicocephalus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/29/Chroicocephalus_ridibundus_%28summer%29.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'eurasian_collared_dove', nameAr:'يمام مطوق', nameEn:'Eurasian Collared Dove', altNames:[], sci:'Streptopelia decaocto', family:'Columbidae', genus:'Streptopelia', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/f/fa/2022-04-06_Streptopelia_decaocto%2C_Plovdiv%2C_Bulgaria_1.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'common_kestrel', nameAr:'باشق', nameEn:'Common Kestrel', altNames:[], sci:'Falco tinnunculus', family:'Falconidae', genus:'Falco', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/24/Common_kestrel_falco_tinnunculus.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'}
   ],
   mammals:[
-    {id:'red_fox', nameAr:'ثعلب أحمر', nameEn:'Red Fox', sci:'Vulpes vulpes', icon:'🦊'},
-    {id:'gazelle', nameAr:'غزال', nameEn:'Mountain Gazelle', sci:'Gazella gazella', icon:'🦌', rare:true},
-    {id:'camel', nameAr:'جمل', nameEn:'Dromedary Camel', sci:'Camelus dromedarius', icon:'🐪'},
-    {id:'cat', nameAr:'قطة', nameEn:'Domestic Cat', sci:'Felis catus', icon:'🐱'},
-    {id:'hedgehog', nameAr:'قنفذ', nameEn:'Long-eared Hedgehog', sci:'Hemiechinus auritus', icon:'🦔'},
-    {id:'bat', nameAr:'خفاش', nameEn:'Bat', sci:'Chiroptera', icon:'🦇'},
-    {id:'dolphin', nameAr:'دلفين', nameEn:'Indo-Pacific Bottlenose Dolphin', sci:'Tursiops aduncus', icon:'🐬'},
-    {id:'jerboa', nameAr:'يربوع', nameEn:'Lesser Egyptian Jerboa', sci:'Jaculus jaculus', icon:'🐭'}
+    {id:'red_fox', nameAr:'ثعلب أحمر', nameEn:'Red Fox', altNames:[], sci:'Vulpes vulpes', family:'Canidae', genus:'Vulpes', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/d/d2/Portrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🦊', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'gazelle', nameAr:'غزال جبلي', nameEn:'Mountain Gazelle', altNames:['Arabian gazelle'], sci:'Gazella gazella', family:'Bovidae', genus:'Gazella', rarity:'epic', conservation:'EN', region:['arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/7/79/Gazella_gazella.jpg','Photo via Wikipedia'), icon:'🦌', sourceNote:'Wikipedia (IUCN-sourced) — corrected from Vulnerable to Endangered after this pass\'s verification'},
+    {id:'camel', nameAr:'جمل', nameEn:'Dromedary Camel', altNames:['Arabian camel'], sci:'Camelus dromedarius', family:'Camelidae', genus:'Camelus', rarity:'common', conservation:null, region:['kuwait','gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c4/Camelus_dromedarius_in_Nuweiba.jpg','Photo via Wikipedia'), icon:'🐪', sourceNote:'Domesticated species — IUCN does not assess it in the wild sense'},
+    {id:'cat', nameAr:'قطة', nameEn:'Domestic Cat', altNames:[], sci:'Felis catus', family:'Felidae', genus:'Felis', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg','Photo via Wikipedia'), icon:'🐱', sourceNote:'Domesticated species — IUCN does not assess it in the wild sense',
+      variants:[
+        {id:'scottish_fold', nameAr:'سكوتش فولد', nameEn:'Scottish Fold', description:'A breed defined by a cartilage mutation that folds the ears forward and down.', image:img('https://upload.wikimedia.org/wikipedia/commons/b/ba/Scottish_Fold_-_CFF_cat_show_Heinola_2008-05-03_IMG_7882.JPG','Photo via Wikipedia')},
+        {id:'persian', nameAr:'شيرازي', nameEn:'Persian', description:'A long-haired traditional breed known for its round face and petite muzzle.', image:img('https://upload.wikimedia.org/wikipedia/commons/8/81/Persialainen.jpg','Photo via Wikipedia')},
+        {id:'siamese', nameAr:'سيامي', nameEn:'Siamese', description:'One of the first recognized cat breeds, known for blue almond eyes and a colorpoint coat.', image:img('https://upload.wikimedia.org/wikipedia/commons/1/16/Siamese_cat_Vaillante.JPG','Photo via Wikipedia')},
+        {id:'maine_coon', nameAr:'ماين كون', nameEn:'Maine Coon', description:'A large, long-haired breed nicknamed "the gentle giant."', image:img('https://upload.wikimedia.org/wikipedia/commons/8/87/M%C3%A2le_Black_Silver_Blotched_Tabby.jpeg','Photo via Wikipedia')},
+        {id:'bengal', nameAr:'بنغالي', nameEn:'Bengal', description:'A spotted breed created by crossbreeding an Asian leopard cat with domestic cats.', image:img('https://upload.wikimedia.org/wikipedia/commons/b/ba/Paintedcats_Red_Star_standing.jpg','Photo via Wikipedia')}
+      ]},
+    {id:'hedgehog', nameAr:'قنفذ', nameEn:'Long-eared Hedgehog', altNames:[], sci:'Hemiechinus auritus', family:'Erinaceidae', genus:'Hemiechinus', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/a/a9/Hedgehog_cyprus_hg.jpg','Photo via Wikipedia'), icon:'🦔', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'bat', nameAr:'خفاش مصري', nameEn:'Egyptian Fruit Bat', altNames:['Egyptian rousette'], sci:'Rousettus aegyptiacus', family:'Pteropodidae', genus:'Rousettus', rarity:'uncommon', conservation:'LC', region:['gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/4/4c/Skraidantis_egipto_%C5%A1uo_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🦇', sourceNote:'Wikipedia (IUCN-sourced) — narrowed from a generic "bat" placeholder to a real, verifiable regional species'},
+    {id:'dolphin', nameAr:'دلفين', nameEn:'Indo-Pacific Bottlenose Dolphin', altNames:[], sci:'Tursiops aduncus', family:'Delphinidae', genus:'Tursiops', rarity:'epic', conservation:'NT', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/8/87/Tursiops_aduncus%2C_Port_River%2C_Adelaide%2C_Australia_-_2003.jpg','Photo via Wikipedia'), icon:'🐬', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'jerboa', nameAr:'يربوع', nameEn:'Lesser Egyptian Jerboa', altNames:[], sci:'Jaculus jaculus', family:'Dipodidae', genus:'Jaculus', rarity:'epic', conservation:'LC', region:['gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/66/Jaculus_jaculus.jpg','Photo via Wikipedia'), icon:'🐭', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'arabian_oryx', nameAr:'المها العربي', nameEn:'Arabian Oryx', altNames:['White oryx'], sci:'Oryx leucoryx', family:'Bovidae', genus:'Oryx', rarity:'legendary', conservation:'VU', region:['arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/4/43/Arabian_oryx_%28oryx_leucoryx%29.jpg','Photo via Wikipedia'), icon:'🦌', sourceNote:'Wikipedia, IUCN — the first species ever upgraded from Extinct in the Wild to Vulnerable, after a reintroduction program'},
+    {id:'arabian_wolf', nameAr:'ذئب عربي', nameEn:'Arabian Wolf', altNames:[], sci:'Canis lupus arabs', family:'Canidae', genus:'Canis', rarity:'legendary', conservation:null, region:['arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/7/72/Arabian_wolf_in_Jordan.jpg','Photo via Wikipedia'), icon:'🐺', sourceNote:'A subspecies of grey wolf — IUCN assesses Canis lupus at species level (Least Concern) rather than this subspecies individually; regional sources describe it as heavily persecuted and rarely seen'},
+    {id:'cape_hare', nameAr:'أرنب بري', nameEn:'Cape Hare', altNames:['Desert hare','Brown hare'], sci:'Lepus capensis', family:'Leporidae', genus:'Lepus', rarity:'uncommon', conservation:'LC', region:['gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/23/Lepus_capensis_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🐇', sourceNote:'Wikipedia (IUCN-sourced)'}
   ],
   insects:[
-    {id:'honeybee', nameAr:'نحلة', nameEn:'Honeybee', sci:'Apis mellifera', icon:'🐝'},
-    {id:'ladybug', nameAr:'دعسوقة', nameEn:'Ladybird Beetle', sci:'Coccinellidae', icon:'🐞'},
-    {id:'dragonfly', nameAr:'يعسوب', nameEn:'Dragonfly', sci:'Anisoptera', icon:'🐉'},
-    {id:'butterfly', nameAr:'فراشة', nameEn:'Painted Lady Butterfly', sci:'Vanessa cardui', icon:'🦋'},
-    {id:'ant', nameAr:'نملة', nameEn:'Ant', sci:'Formicidae', icon:'🐜'},
-    {id:'locust', nameAr:'جراد', nameEn:'Desert Locust', sci:'Schistocerca gregaria', icon:'🦗'},
-    {id:'mantis', nameAr:'فرس النبي', nameEn:'Praying Mantis', sci:'Mantodea', icon:'🦗', rare:true},
-    {id:'beetle', nameAr:'خنفساء', nameEn:'Scarab Beetle', sci:'Scarabaeidae', icon:'🪲'}
+    {id:'honeybee', nameAr:'نحلة', nameEn:'Honeybee', altNames:['Western honey bee'], sci:'Apis mellifera', family:'Apidae', genus:'Apis', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/4/4d/Apis_mellifera_Western_honey_bee.jpg','Photo via Wikipedia'), icon:'🐝', sourceNote:'Wikipedia, GBIF'},
+    {id:'ladybug', nameAr:'دعسوقة', nameEn:'Seven-spot Ladybird', altNames:['Ladybug'], sci:'Coccinella septempunctata', family:'Coccinellidae', genus:'Coccinella', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/08/7-Spotted-Ladybug-Coccinella-septempunctata-sq1.jpg','Photo via Wikipedia'), icon:'🐞', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'},
+    {id:'dragonfly', nameAr:'يعسوب', nameEn:'Common Green Darner', altNames:['Dragonfly'], sci:'Anax junius', family:'Aeshnidae', genus:'Anax', rarity:'common', conservation:null, region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c6/Common_Green_Darner_Anax_junius_JG.jpg','Photo via Wikipedia'), icon:'🐉', sourceNote:'Wikipedia — narrowed from a generic suborder-level placeholder to a specific, verifiable species'},
+    {id:'butterfly', nameAr:'فراشة', nameEn:'Painted Lady Butterfly', altNames:[], sci:'Vanessa cardui', family:'Nymphalidae', genus:'Vanessa', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c8/0_Belle-dame_%28Vanessa_cardui%29_-_Echinacea_purpurea_-_Havr%C3%A9_%283%29.jpg','Photo via Wikipedia'), icon:'🦋', sourceNote:'Wikipedia, GBIF'},
+    {id:'ant', nameAr:'نملة سوداء', nameEn:'Black Garden Ant', altNames:['Ant'], sci:'Lasius niger', family:'Formicidae', genus:'Lasius', rarity:'common', conservation:null, region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/b/b1/Black_Garden_Ant_tending_Citrus_Mealybug_%2816063538972%29.jpg','Photo via Wikipedia'), icon:'🐜', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'},
+    {id:'locust', nameAr:'جراد الصحراء', nameEn:'Desert Locust', altNames:[], sci:'Schistocerca gregaria', family:'Acrididae', genus:'Schistocerca', rarity:'uncommon', conservation:null, region:['gulf','arabian_peninsula','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/f/f2/SGR_laying.jpg','Photo via Wikipedia'), icon:'🦗', sourceNote:'Wikipedia, GBIF'},
+    {id:'mantis', nameAr:'فرس النبي', nameEn:'European Mantis', altNames:['Praying mantis'], sci:'Mantis religiosa', family:'Mantidae', genus:'Mantis', rarity:'epic', conservation:null, region:['gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/62/European_praying_mantis_%28Mantis_religiosa%29_green_female_Dobruja.jpg','Photo via Wikipedia'), icon:'🦗', sourceNote:'Wikipedia — narrowed from a generic order-level placeholder to a specific, verifiable species'},
+    {id:'beetle', nameAr:'جعران مقدس', nameEn:'Sacred Scarab', altNames:['Scarab beetle'], sci:'Scarabaeus sacer', family:'Scarabaeidae', genus:'Scarabaeus', rarity:'uncommon', conservation:null, region:['gulf','arabian_peninsula','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/0c/Scarabaeus.sacer.jpg','Photo via Wikipedia'), icon:'🪲', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'}
   ]
 };
 
@@ -3200,7 +3316,7 @@ async function collLoadCategory(catId){
   return collCatData;
 }
 async function collSaveCategory(catId){ await storageSet('collections:animals:'+catId, JSON.stringify(collCatData)); }
-function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false}; }
+function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false,variantState:{}}; }
 function collIsCollected(record){ return !!(record.catches&&record.catches.length>0); }
 function collBest(record,key){
   if(!record.catches||!record.catches.length) return null;
@@ -3222,7 +3338,13 @@ function collGoTo(name){ collStack.push(name); collShowView(name); }
 function collBack(){
   if(collStack.length<=1){ showPanel('home'); return; }
   collStack.pop();
-  collShowView(collStack[collStack.length-1]);
+  const target=collStack[collStack.length-1];
+  collShowView(target);
+  /* the view being returned to may be stale — e.g. collecting a species and
+     going back should immediately show it as collected in the grid, not
+     wait for a fresh visit to re-trigger the render */
+  if(target==='category') renderCollSpeciesGrid();
+  else if(target==='animals') renderCollAnimals();
 }
 document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
 function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); }
@@ -3248,34 +3370,79 @@ async function renderCollAnimals(){
       renderCollCategory();
     });
   });
+  let totalCollected=0, legendaryCount=0;
+  const catchSums={};
   for(const cat of ANIMAL_CATEGORIES){
     const raw=await storageGet('collections:animals:'+cat.id);
     const data=raw?JSON.parse(raw):{};
     const total=collSpeciesList(cat.id).length;
     const got=Object.values(data).filter(collIsCollected).length;
+    totalCollected+=got;
+    let catchSum=0;
+    collSpeciesList(cat.id).forEach(sp=>{
+      const rec=data[sp.id];
+      if(rec&&collIsCollected(rec)) catchSum+=rec.catches.length;
+      if(rec&&collIsCollected(rec)&&sp.rarity==='legendary') legendaryCount++;
+    });
+    catchSums[cat.id]=catchSum;
     const elp=document.getElementById('collCatProgress-'+cat.id);
     if(elp) elp.textContent=`${got} / ${total}`;
   }
+  const statsBar=document.getElementById('collStatsBar');
+  if(statsBar){
+    statsBar.innerHTML=`
+      <div class="coll-stat-chip"><b>🏆 ${totalCollected}</b>${LANG==='ar'?'نوع مجموع':'species collected'}</div>
+      <div class="coll-stat-chip"><b>🎣 ${catchSums.fish||0}</b>${LANG==='ar'?'سمكة مصيدة':'fish caught'}</div>
+      <div class="coll-stat-chip"><b>🐦 ${catchSums.birds||0}</b>${LANG==='ar'?'طير موثق':'birds documented'}</div>
+      <div class="coll-stat-chip"><b>🐻 ${catchSums.mammals||0}</b>${LANG==='ar'?'ثديي موثق':'mammals documented'}</div>
+      <div class="coll-stat-chip"><b>🐜 ${catchSums.insects||0}</b>${LANG==='ar'?'حشرة موثقة':'insects documented'}</div>
+      <div class="coll-stat-chip legendary"><b>${RARITY_TIERS.legendary.icon} ${legendaryCount}</b>${LANG==='ar'?'اكتشاف أسطوري':'Legendary discoveries'}</div>
+    `;
+  }
 }
 
+const REGION_LABELS={
+  kuwait:{ar:'🇰🇼 الكويت',en:'🇰🇼 Kuwait'},
+  gulf:{ar:'🌊 الخليج',en:'🌊 Gulf'},
+  arabian_peninsula:{ar:'🏜️ الجزيرة العربية',en:'🏜️ Arabian Peninsula'},
+  global:{ar:'🌍 عالمي',en:'🌍 Worldwide'}
+};
+let collRarityFilter='all';
+let collConservationFilter='all';
+let collRegionFilter='all';
 function renderCollCategory(){
   const cat=collCategoryConfig(collCurrentCat);
   document.getElementById('collCatTitle').textContent=`${cat.icon} ${collCatName(cat)}`;
   const search=document.getElementById('collSearchInput');
-  search.placeholder=LANG==='ar'?'ابحث عن نوع...':'Search species...';
+  search.placeholder=LANG==='ar'?'ابحث بالاسم أو الاسم العلمي أو الفصيلة...':'Search name, scientific name, family...';
   search.value=collSearch;
   const filterSel=document.getElementById('collFilterSelect');
   filterSel.innerHTML=`<option value="all">${LANG==='ar'?'الكل':'All'}</option><option value="collected">${LANG==='ar'?'✅ مجموع':'✅ Collected'}</option><option value="uncollected">${LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected'}</option>`;
   filterSel.value=collFilter;
   const sortSel=document.getElementById('collSortSelect');
-  sortSel.innerHTML=`<option value="alpha">${LANG==='ar'?'أبجدي':'A–Z'}</option><option value="count">${LANG==='ar'?'الأكثر جمعاً':'Most caught'}</option><option value="best">${LANG==='ar'?'أفضل رقم':'Best record'}</option>`;
+  sortSel.innerHTML=`<option value="alpha">${LANG==='ar'?'أبجدي':'A–Z'}</option><option value="count">${LANG==='ar'?'الأكثر جمعاً':'Most caught'}</option><option value="best">${LANG==='ar'?'أفضل رقم':'Best record'}</option><option value="rarity">${LANG==='ar'?'الندرة':'Rarity'}</option>`;
   sortSel.value=collSort;
+  const raritySel=document.getElementById('collRarityFilterSelect');
+  raritySel.innerHTML=`<option value="all">${LANG==='ar'?'كل الندرات':'All rarities'}</option>`+RARITY_ORDER.map(r=>`<option value="${r}">${RARITY_TIERS[r].icon} ${LANG==='ar'?RARITY_TIERS[r].nameAr:RARITY_TIERS[r].nameEn}</option>`).join('');
+  raritySel.value=collRarityFilter;
+  const consSel=document.getElementById('collConservationFilterSelect');
+  consSel.innerHTML=`<option value="all">${LANG==='ar'?'كل حالات الحفظ':'All conservation'}</option>`+Object.keys(CONSERVATION_STATUS).map(code=>`<option value="${code}">${collConservationLabel(code)}</option>`).join('');
+  consSel.value=collConservationFilter;
+  const regionSel=document.getElementById('collRegionFilterSelect');
+  regionSel.innerHTML=`<option value="all">${LANG==='ar'?'كل المناطق':'All regions'}</option>`+Object.keys(REGION_LABELS).map(r=>`<option value="${r}">${REGION_LABELS[r][LANG]}</option>`).join('');
+  regionSel.value=collRegionFilter;
   search.oninput=()=>{ collSearch=search.value; renderCollSpeciesGrid(); };
   filterSel.onchange=()=>{ collFilter=filterSel.value; renderCollSpeciesGrid(); };
   sortSel.onchange=()=>{ collSort=sortSel.value; renderCollSpeciesGrid(); };
+  raritySel.onchange=()=>{ collRarityFilter=raritySel.value; renderCollSpeciesGrid(); };
+  consSel.onchange=()=>{ collConservationFilter=consSel.value; renderCollSpeciesGrid(); };
+  regionSel.onchange=()=>{ collRegionFilter=regionSel.value; renderCollSpeciesGrid(); };
   renderCollSpeciesGrid();
 }
 
+function collSearchHaystack(sp){
+  return [sp.nameAr, sp.nameEn, ...(sp.altNames||[]), sp.sci, sp.family, sp.genus].filter(Boolean).join(' ').toLowerCase();
+}
 function renderCollSpeciesGrid(){
   const cat=collCategoryConfig(collCurrentCat);
   const list=collSpeciesList(collCurrentCat);
@@ -3284,6 +3451,16 @@ function renderCollSpeciesGrid(){
   document.getElementById('collProgressLabel').textContent=`${collectedCount} / ${total} ${LANG==='ar'?'مجموع':'Collected'}`;
   document.getElementById('collProgressFill').style.width=(total?Math.round(collectedCount/total*100):0)+'%';
 
+  const breakdownEl=document.getElementById('collRarityBreakdown');
+  if(breakdownEl){
+    breakdownEl.innerHTML=RARITY_ORDER.map(tier=>{
+      const inTier=list.filter(sp=>sp.rarity===tier);
+      if(!inTier.length) return '';
+      const got=inTier.filter(sp=>collIsCollected(collRecord(sp.id))).length;
+      return `<span class="coll-rarity-mini coll-rarity-${tier}">${RARITY_TIERS[tier].icon} ${got}/${inTier.length}</span>`;
+    }).join('');
+  }
+
   const primaryKey=cat.measurements[0]&&cat.measurements[0].key;
   let bestHolderId=null, bestVal=-Infinity;
   if(primaryKey){ list.forEach(sp=>{ const v=collBest(collRecord(sp.id),primaryKey); if(v!==null&&v>bestVal){ bestVal=v; bestHolderId=sp.id; } }); }
@@ -3291,16 +3468,20 @@ function renderCollSpeciesGrid(){
   let filtered=list.filter(sp=>{
     if(collSearch){
       const q=collSearch.trim().toLowerCase();
-      if(!sp.nameAr.includes(collSearch.trim()) && !sp.nameEn.toLowerCase().includes(q)) return false;
+      if(!collSearchHaystack(sp).includes(q)) return false;
     }
     const rec=collRecord(sp.id);
     if(collFilter==='collected' && !collIsCollected(rec)) return false;
     if(collFilter==='uncollected' && collIsCollected(rec)) return false;
+    if(collRarityFilter!=='all' && sp.rarity!==collRarityFilter) return false;
+    if(collConservationFilter!=='all' && sp.conservation!==collConservationFilter) return false;
+    if(collRegionFilter!=='all' && !(sp.region||[]).includes(collRegionFilter)) return false;
     return true;
   });
   filtered=filtered.slice().sort((a,b)=>{
     if(collSort==='alpha') return collName(a).localeCompare(collName(b),LANG==='ar'?'ar':'en');
     if(collSort==='count') return collRecord(b.id).catches.length-collRecord(a.id).catches.length;
+    if(collSort==='rarity') return RARITY_TIERS[b.rarity].order-RARITY_TIERS[a.rarity].order;
     if(collSort==='best'){
       const bv=primaryKey?(collBest(collRecord(b.id),primaryKey)||0):0;
       const av=primaryKey?(collBest(collRecord(a.id),primaryKey)||0):0;
@@ -3321,12 +3502,14 @@ function renderCollSpeciesGrid(){
   grid.innerHTML=filtered.map(sp=>{
     const rec=collRecord(sp.id);
     const collected=collIsCollected(rec);
+    const tier=RARITY_TIERS[sp.rarity];
     let badge='';
-    if(sp.rare) badge='<span class="coll-corner-badge" title="rare">⭐</span>';
     if(collected && bestHolderId===sp.id) badge='<span class="coll-corner-badge" title="best">🏆</span>';
-    return `<div class="coll-species-card ${collected?'collected':'locked'}" data-sp="${sp.id}">
+    const thumbImg=(collected && sp.image) ? `<img src="${sp.image.url}" alt="" onerror="this.parentElement.textContent='${sp.icon}';">` : sp.icon;
+    return `<div class="coll-species-card ${collected?'collected tier-'+sp.rarity:'locked'}" data-sp="${sp.id}">
+      <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
       ${badge}
-      <div class="thumb">${collected?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
+      <div class="thumb">${collected?thumbImg:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
       <div class="name">${collName(sp)}</div>
       <div class="meta">${collected?(rec.catches.length+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):(LANG==='ar'?'غير مجموع':'Not collected')}</div>
     </div>`;
@@ -3345,6 +3528,7 @@ async function renderCollSpeciesDetail(){
   const sp=collSpeciesInfo(collCurrentCat,collCurrentSpecies);
   const rec=collRecord(sp.id);
   const collected=collIsCollected(rec);
+  const tier=RARITY_TIERS[sp.rarity];
   const photoCacheKey=collCurrentCat+':'+sp.id;
   let photo=null;
   if(rec.hasPhoto){
@@ -3360,15 +3544,42 @@ async function renderCollSpeciesDetail(){
   }).join('')+`<div class="coll-record-chip"><div class="rv">${cat.countIcon} ${rec.catches.length}</div><div class="rl">${LANG==='ar'?cat.countAchLabelAr:cat.countAchLabelEn}</div></div>`;
   const logInputsHtml=cat.measurements.map(m=>`<input type="number" step="0.01" inputmode="decimal" id="collLogInput-${m.key}" placeholder="${(LANG==='ar'?m.labelAr:m.labelEn)+' ('+m.unit+')'}">`).join('');
 
+  const taxonomyLine=[sp.family,sp.genus].filter(Boolean).join(' · ');
+  const variantsHtml=(sp.variants&&sp.variants.length) ? `
+    <div class="coll-variants-section">
+      <h3>${LANG==='ar'?'الأنواع الفرعية / السلالات':'Types / Breeds'}</h3>
+      <div class="coll-variants-grid">
+        ${sp.variants.map(v=>{
+          const done=!!(rec.variantState&&rec.variantState[v.id]&&rec.variantState[v.id].collected);
+          return `<div class="coll-variant-card ${done?'done':''}" data-variant="${v.id}" title="${(LANG==='ar'?v.nameAr:v.nameEn)}${v.description?' — '+v.description:''}">
+            ${done?'<span class="check">✅</span>':''}
+            <div class="thumb">${v.image?`<img src="${v.image.url}" alt="" onerror="this.style.display='none';">`:'🐾'}</div>
+            <div class="name">${LANG==='ar'?v.nameAr:v.nameEn}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+  const sourcesHtml=sp.sourceNote ? `
+    <details class="coll-sources-box">
+      <summary>${LANG==='ar'?'المصادر':'Sources / References'}</summary>
+      <div style="margin-top:6px;">${sp.sourceNote}</div>
+    </details>` : '';
+
   const el=document.getElementById('collSpeciesDetail');
   el.innerHTML=`
-    <div class="coll-detail-photo ${photo?'':'is-reference'}">
-      ${photo?`<img src="${photo.dataUrl}" alt="">`:sp.icon}
+    <div class="coll-detail-photo ${photo?'':'is-reference'} ${collected?'tier-'+sp.rarity:''}">
+      ${photo?`<img src="${photo.dataUrl}" alt="">`:(sp.image?`<img src="${sp.image.url}" alt="" onerror="this.parentElement.textContent='${sp.icon}';">`:sp.icon)}
       <span class="coll-photo-tag ${photo?'mine':'reference'}">${photo?(LANG==='ar'?'📷 صورتي':'📷 My photo'):(LANG==='ar'?'صورة مرجعية':'Reference image')}</span>
     </div>
-    <span class="coll-status-pill ${collected?'collected':'locked'}">${collected?(LANG==='ar'?'✅ مجموع':'✅ Collected'):(LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected')}</span>
+    <div class="coll-pill-row">
+      <span class="coll-status-pill ${collected?'collected':'locked'}">${collected?(LANG==='ar'?'✅ مجموع':'✅ Collected'):(LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected')}</span>
+      <span class="coll-rarity-pill coll-rarity-${sp.rarity}">${tier.icon} ${LANG==='ar'?tier.nameAr:tier.nameEn}</span>
+      <span class="coll-conservation-pill">${collConservationLabel(sp.conservation)}</span>
+    </div>
     <h2 style="text-align:center;margin:0 0 2px;color:var(--accent-deep);">${collName(sp)}</h2>
-    <div class="coll-sci-name">${sp.sci}</div>
+    <div class="coll-sci-name">${sp.sci}${taxonomyLine?' · '+taxonomyLine:''}</div>
+
+    ${variantsHtml}
 
     <div class="coll-counter-row">
       <button class="coll-counter-btn" id="collDecBtn" ${rec.catches.length<=0?'disabled':''}>−</button>
@@ -3394,7 +3605,9 @@ async function renderCollSpeciesDetail(){
     </div>
 
     <input type="file" accept="image/*" class="hidden" id="collPhotoInput">
-    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
+    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);margin-bottom:14px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
+
+    ${sourcesHtml}
   `;
   document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
   document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
@@ -3408,6 +3621,19 @@ async function renderCollSpeciesDetail(){
   });
   document.getElementById('collUploadBtn').addEventListener('click',()=>document.getElementById('collPhotoInput').click());
   document.getElementById('collPhotoInput').addEventListener('change',collHandlePhotoUpload);
+  el.querySelectorAll('.coll-variant-card').forEach(vc=>{
+    vc.addEventListener('click',()=>collToggleVariant(vc.dataset.variant));
+  });
+}
+
+function collToggleVariant(variantId){
+  const rec=collRecord(collCurrentSpecies);
+  if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
+  rec.variantState=rec.variantState||{};
+  const wasDone=!!(rec.variantState[variantId]&&rec.variantState[variantId].collected);
+  rec.variantState[variantId]={collected:!wasDone};
+  renderCollSpeciesDetail();
+  collSaveCategory(collCurrentCat);
 }
 
 function collAddCatch(measurements){
