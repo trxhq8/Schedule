@@ -584,7 +584,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.3.0';
+const APP_VERSION='v1.3.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -656,24 +656,33 @@ async function storageListKeys(prefix){
    cloud data yet, push everything up once so nobody's existing schedule gets
    wiped just because they created an account */
 async function migrateLocalDataToCloud(uid){
-  const localProfile=localStorage.getItem('planner_profile');
-  if(!localProfile) return;
-  const dataCol=fbDb.collection('users').doc(uid).collection('data');
-  const existing=await dataCol.doc('profile').get().catch(()=>null);
-  if(existing&&existing.exists) return; // account already has cloud data — never overwrite
-  const singleKeys=['profile','weight-log','food-draft'];
-  for(const k of singleKeys){
-    const v=localStorage.getItem('planner_'+k);
-    if(v!==null){ try{ await dataCol.doc(k).set({value:v}); }catch(e){} }
-  }
-  for(let i=0;i<localStorage.length;i++){
-    const lk=localStorage.key(i);
-    if(lk&&lk.startsWith('planner_daily-track:')){
-      const key=lk.slice('planner_'.length);
-      const v=localStorage.getItem(lk);
-      try{ await dataCol.doc(key).set({value:v}); }catch(e){}
+  /* localStorage can throw outright (not just return null) in restricted
+     contexts — sandboxed/data: URL previews, some private-browsing modes —
+     and this whole function runs synchronously in the middle of the
+     sign-in callback, so an uncaught throw here used to abort sign-in
+     entirely: the auth overlay never hid and the user looked "stuck" on
+     the login screen with no real error explaining why. Migration is a
+     nice-to-have, never allowed to block getting into the app. */
+  try{
+    const localProfile=localStorage.getItem('planner_profile');
+    if(!localProfile) return;
+    const dataCol=fbDb.collection('users').doc(uid).collection('data');
+    const existing=await dataCol.doc('profile').get().catch(()=>null);
+    if(existing&&existing.exists) return; // account already has cloud data — never overwrite
+    const singleKeys=['profile','weight-log','food-draft'];
+    for(const k of singleKeys){
+      const v=localStorage.getItem('planner_'+k);
+      if(v!==null){ try{ await dataCol.doc(k).set({value:v}); }catch(e){} }
     }
-  }
+    for(let i=0;i<localStorage.length;i++){
+      const lk=localStorage.key(i);
+      if(lk&&lk.startsWith('planner_daily-track:')){
+        const key=lk.slice('planner_'.length);
+        const v=localStorage.getItem(lk);
+        try{ await dataCol.doc(key).set({value:v}); }catch(e){}
+      }
+    }
+  }catch(e){ console.error('Local data migration skipped (storage unavailable):',e.message); }
 }
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /* Sign-in and sign-up get DIFFERENT error maps on purpose: Firebase can
