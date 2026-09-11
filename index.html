@@ -659,7 +659,7 @@
       <p class="coll-empty hidden" id="collEmptyMsg"></p>
     </div>
 
-    <!-- level 3: species detail -->
+    <!-- level 4: species detail -->
     <div class="coll-view" id="collView-species">
       <div id="collSpeciesDetail"></div>
     </div>
@@ -748,7 +748,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.7.0';
+const APP_VERSION='v1.7.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
