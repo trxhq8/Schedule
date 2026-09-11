@@ -544,10 +544,17 @@
       <div style="flex:1;height:1px;background:var(--line);"></div>
     </div>
     <input type="email" class="ob-input" id="authEmail" data-i18n-ph="auth_email_ph" autocomplete="email" style="margin-bottom:10px;">
-    <input type="password" class="ob-input" id="authPassword" data-i18n-ph="auth_password_ph" autocomplete="current-password">
+    <input type="password" class="ob-input" id="authPassword" data-i18n-ph="auth_password_ph" autocomplete="current-password" style="margin-bottom:10px;">
+    <input type="password" class="ob-input" id="authPasswordConfirm" data-i18n-ph="auth_password_confirm_ph" autocomplete="new-password" style="margin-bottom:10px;">
     <div class="val-msg" id="authValMsg"></div>
     <button class="ob-btn" id="authSignInBtn" type="button" data-i18n="auth_sign_in" style="margin-bottom:8px;"></button>
     <button class="ob-btn secondary" id="authSignUpBtn" type="button" data-i18n="auth_sign_up"></button>
+    <div style="display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--ink-soft);font-size:0.78rem;">
+      <div style="flex:1;height:1px;background:var(--line);"></div>
+      <span data-i18n="auth_or"></span>
+      <div style="flex:1;height:1px;background:var(--line);"></div>
+    </div>
+    <button class="ob-btn secondary" id="guestSignInBtn" type="button" data-i18n="auth_guest"></button>
   </div>
 </div>
 
@@ -577,7 +584,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.2.1';
+const APP_VERSION='v1.3.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -668,41 +675,104 @@ async function migrateLocalDataToCloud(uid){
     }
   }
 }
-function authErrorMessage(e){
+const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/* Sign-in and sign-up get DIFFERENT error maps on purpose: Firebase can
+   return the same ambiguous code (e.g. invalid-credential, which Google's
+   "email enumeration protection" now returns for both "no such account" and
+   "wrong password" to avoid leaking which emails are registered) in contexts
+   that mean totally different things depending on which action the user
+   took — showing a sign-in-flavored "wrong password" message while someone
+   is trying to CREATE an account is confusing and wrong. */
+function authErrorMessage(e){ return signInErrorMessage(e); }
+function signInErrorMessage(e){
   const code=(e&&e.code)||'';
   const map={
     'auth/invalid-email':{ar:'الإيميل مو صحيح',en:'Invalid email'},
-    'auth/user-not-found':{ar:'ما فيه حساب بهالإيميل',en:'No account with this email'},
+    'auth/user-not-found':{ar:'ما فيه حساب بهالإيميل — سوي حساب جديد',en:'No account with this email — create a new account instead'},
     'auth/wrong-password':{ar:'كلمة المرور غلط',en:'Wrong password'},
     'auth/invalid-credential':{ar:'الإيميل أو كلمة المرور غلط',en:'Invalid email or password'},
-    'auth/email-already-in-use':{ar:'فيه حساب بهالإيميل من قبل — سجل دخول بدل إنشاء حساب',en:'An account already exists with this email — sign in instead'},
-    'auth/weak-password':{ar:'كلمة المرور لازم ٦ أحرف على الأقل',en:'Password must be at least 6 characters'}
+    'auth/too-many-requests':{ar:'محاولات كثيرة غلط — جرب بعد شوي',en:'Too many attempts — try again in a bit'}
   };
-  return (map[code]&&map[code][LANG])||(e&&e.message)||String(e);
+  if(map[code]) return map[code][LANG];
+  console.error('Sign-in error:',code,e&&e.message);
+  return LANG==='ar'?'ما قدرنا نسجل دخولك — حاول مرة ثانية':"Couldn't sign you in — please try again";
+}
+function signUpErrorMessage(e){
+  const code=(e&&e.code)||'';
+  const map={
+    'auth/invalid-email':{ar:'الإيميل مو صحيح',en:'Invalid email'},
+    'auth/email-already-in-use':{ar:'فيه حساب بهالإيميل من قبل — سجل دخول بدل إنشاء حساب',en:'An account already exists with this email — please sign in instead'},
+    'auth/weak-password':{ar:'كلمة المرور لازم ٦ أحرف على الأقل',en:'Password must be at least 6 characters'},
+    'auth/too-many-requests':{ar:'محاولات كثيرة غلط — جرب بعد شوي',en:'Too many attempts — try again in a bit'}
+  };
+  if(map[code]) return map[code][LANG];
+  // any ambiguous/unexpected code during account CREATION must never imply
+  // "your existing credentials are wrong" — that's a sign-in-only concept
+  console.error('Sign-up error:',code,e&&e.message);
+  return LANG==='ar'?'ما قدرنا ننشئ الحساب — تأكد من الإيميل وحاول مرة ثانية':"Couldn't create the account — check your email and try again";
 }
 function showAuthError(msg){ const el=document.getElementById('authValMsg'); if(el) el.textContent=msg; }
 if(document.getElementById('googleSignInBtn')){
-  document.getElementById('googleSignInBtn').addEventListener('click',()=>{
+  document.getElementById('googleSignInBtn').addEventListener('click',async()=>{
     if(!fbAuth) return;
+    showAuthError('');
     const provider=new firebase.auth.GoogleAuthProvider();
-    fbAuth.signInWithRedirect(provider); // redirect (not popup) so it works on mobile/iPad too
+    /* signInWithRedirect relies on the browser remembering "a sign-in was
+       started" across a full-page navigation away to accounts.google.com and
+       back. Safari/iOS (and other browsers with storage partitioning) can
+       drop that state on the cross-origin bounce through the Firebase
+       authDomain, so getRedirectResult() silently resolves with no user and
+       the app just lands back on the login screen with no error at all —
+       that was the actual bug. signInWithPopup keeps the whole exchange in
+       one page's lifetime (postMessage to the opener) so it doesn't depend
+       on that persisted state, which is why it's the primary path here;
+       redirect is only a fallback for when the popup itself is blocked. */
+    try{
+      await fbAuth.signInWithPopup(provider);
+    }catch(e){
+      console.error('Google sign-in error:',e.code,e.message);
+      if(e.code==='auth/popup-blocked'){
+        try{ await fbAuth.signInWithRedirect(provider); }
+        catch(e2){ console.error('Google redirect fallback error:',e2.code,e2.message); showAuthError(authErrorMessage(e2)); }
+      } else if(e.code==='auth/cancelled-popup-request'||e.code==='auth/popup-closed-by-user'){
+        // user closed the popup themselves — not an error worth showing
+      } else {
+        showAuthError(authErrorMessage(e));
+      }
+    }
   });
   document.getElementById('authSignInBtn').addEventListener('click',async()=>{
     showAuthError('');
     const email=document.getElementById('authEmail').value.trim();
     const pw=document.getElementById('authPassword').value;
     if(!email||!pw){ showAuthError(LANG==='ar'?'اكتب الإيميل وكلمة المرور':'Enter email and password'); return; }
+    if(!EMAIL_RE.test(email)){ showAuthError(LANG==='ar'?'صيغة الإيميل غلط':'That email address looks invalid'); return; }
     try{ await fbAuth.signInWithEmailAndPassword(email,pw); }
-    catch(e){ showAuthError(authErrorMessage(e)); }
+    catch(e){ showAuthError(signInErrorMessage(e)); }
   });
   document.getElementById('authSignUpBtn').addEventListener('click',async()=>{
     showAuthError('');
     const email=document.getElementById('authEmail').value.trim();
     const pw=document.getElementById('authPassword').value;
+    const pwConfirm=document.getElementById('authPasswordConfirm').value;
     if(!email||!pw){ showAuthError(LANG==='ar'?'اكتب الإيميل وكلمة المرور':'Enter email and password'); return; }
+    if(!EMAIL_RE.test(email)){ showAuthError(LANG==='ar'?'صيغة الإيميل غلط':'That email address looks invalid'); return; }
     if(pw.length<6){ showAuthError(LANG==='ar'?'كلمة المرور لازم ٦ أحرف على الأقل':'Password must be at least 6 characters'); return; }
+    if(pwConfirm!==pw){ showAuthError(LANG==='ar'?'كلمتا المرور مو متطابقتين':'Passwords do not match'); return; }
     try{ await fbAuth.createUserWithEmailAndPassword(email,pw); }
-    catch(e){ showAuthError(authErrorMessage(e)); }
+    catch(e){ showAuthError(signUpErrorMessage(e)); }
+  });
+  /* Guest mode: a real (but anonymous) Firebase account, so guest data goes
+     through the exact same Firestore-backed storage layer as any other
+     account and persists on this device/browser. It's tied to this browser
+     only — there's no email/password to sign back in with elsewhere, so
+     signing out of a guest session (or clearing site data) loses access to
+     that data since a fresh anonymous sign-in gets a brand new identity. */
+  document.getElementById('guestSignInBtn').addEventListener('click',async()=>{
+    showAuthError('');
+    if(!fbAuth) return;
+    try{ await fbAuth.signInAnonymously(); }
+    catch(e){ console.error('Guest sign-in error:',e.code,e.message); showAuthError(signInErrorMessage(e)); }
   });
   document.getElementById('authLangToggle').addEventListener('click',()=>{ LANG=LANG==='ar'?'en':'ar'; applyI18n(); });
 }
@@ -716,7 +786,7 @@ async function bootApp(){
   document.getElementById('obOverlay').classList.remove('hidden');
 }
 if(fbAuth){
-  fbAuth.getRedirectResult().catch(e=>{ showAuthError(authErrorMessage(e)); });
+  fbAuth.getRedirectResult().catch(e=>{ console.error('Redirect sign-in result error:',e.code,e.message); showAuthError(signInErrorMessage(e)); });
   fbAuth.onAuthStateChanged(async(user)=>{
     if(user){
       currentUser=user;
@@ -847,7 +917,8 @@ window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.messa
 const I18N={
  ar:{ next:'التالي',back:'رجوع',start:'ابدأ',save:'حفظ',back_home:'🏠 الرئيسية',edit_setup:'⚙️ عدّل الإعداد',
   auth_title:'📅 سجّل دخول عشان جدولك يتزامن بين أجهزتك',auth_google:'تسجيل الدخول بـ Google',auth_or:'أو',
-  auth_email_ph:'Email',auth_password_ph:'Password',auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',
+  auth_email_ph:'Email',auth_password_ph:'Password',auth_password_confirm_ph:'تأكيد كلمة المرور (لإنشاء حساب فقط)',
+  auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   q_name:'اسمك',
   mode_light:'فاتح',mode_dark:'داكن',
@@ -910,7 +981,8 @@ const I18N={
  },
  en:{ next:'Next',back:'Back',start:'Start',save:'Save',back_home:'🏠 Home',edit_setup:'⚙️ Edit setup',
   auth_title:'📅 Sign in to sync your schedule across devices',auth_google:'Sign in with Google',auth_or:'or',
-  auth_email_ph:'Email',auth_password_ph:'Password',auth_sign_in:'Sign In',auth_sign_up:'Create new account',
+  auth_email_ph:'Email',auth_password_ph:'Password',auth_password_confirm_ph:'Confirm password (sign up only)',
+  auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   q_name:'Your Name',
   mode_light:'Light',mode_dark:'Dark',
