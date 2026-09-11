@@ -208,6 +208,72 @@
   .cal-cell.today{ background:var(--accent); color:#fff; border-color:var(--accent); }
   .cal-cell.has-commit::after{ content:''; position:absolute; bottom:5px; width:5px; height:5px; border-radius:50%; background:var(--gold); }
   .cal-cell.today.has-commit::after{ background:#fff; }
+
+  /* ---- collections ---- */
+  .coll-view{ display:none; } .coll-view.active{ display:block; animation:fadeUp .3s ease; }
+  .coll-grid{ display:grid; gap:12px; margin-top:8px; }
+  .coll-grid-2{ grid-template-columns:1fr 1fr; }
+  .coll-cat-card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:26px 14px; text-align:center; cursor:pointer; transition:transform .15s ease; box-shadow:var(--shadow); position:relative; }
+  .coll-cat-card:hover{ transform:translateY(-4px); }
+  .coll-cat-card.disabled{ opacity:0.5; cursor:default; }
+  .coll-cat-card.disabled:hover{ transform:none; }
+  .coll-cat-card .ic{ font-size:2.4rem; display:block; margin-bottom:8px; }
+  .coll-cat-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; }
+  .coll-cat-card .sub{ font-size:0.72rem; color:var(--ink-soft); margin-top:5px; font-variant-numeric:tabular-nums; }
+  .coll-cat-card .soon-tag{ position:absolute; top:10px; inset-inline-end:10px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); font-size:0.6rem; font-family:var(--font-head); font-weight:700; padding:2px 8px; border-radius:999px; }
+
+  .coll-cat-title{ text-align:center; color:var(--accent-deep); font-size:1.1rem; margin:10px 0 14px; }
+  .coll-progress-wrap{ margin-bottom:14px; }
+  .coll-progress-label{ text-align:center; font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:0.85rem; margin-bottom:6px; }
+  .coll-progress-bar{ background:var(--line); border-radius:999px; height:8px; overflow:hidden; }
+  .coll-progress-fill{ background:var(--accent-deep); height:100%; border-radius:999px; transition:width .3s ease; }
+  .coll-toolbar{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .coll-search{ flex:2; min-width:120px; }
+  .coll-select{ flex:1; min-width:90px; border:1px solid var(--line); border-radius:12px; padding:10px 8px; font-family:var(--font-body); font-size:0.8rem; background:var(--bg); color:var(--ink); }
+  .coll-empty{ text-align:center; color:var(--ink-soft); font-size:0.85rem; padding:24px 0; }
+
+  .coll-species-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  @media(min-width:520px){ .coll-species-grid{grid-template-columns:repeat(3,1fr);} }
+  .coll-species-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 8px 10px; text-align:center; cursor:pointer; box-shadow:var(--shadow); transition:transform .15s ease; position:relative; }
+  .coll-species-card:hover{ transform:translateY(-3px); }
+  .coll-species-card .thumb{ width:64px; height:64px; margin:0 auto 8px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:var(--bg); border:2px solid var(--line); overflow:hidden; position:relative; }
+  .coll-species-card .thumb img{ width:100%; height:100%; object-fit:cover; }
+  .coll-species-card.locked .thumb{ filter:grayscale(1); opacity:0.55; }
+  .coll-species-card.collected .thumb{ border-color:var(--accent-deep); }
+  .coll-species-card .lock-ic{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:rgba(0,0,0,0.15); border-radius:50%; }
+  .coll-species-card .name{ font-family:var(--font-head); font-weight:800; font-size:0.8rem; color:var(--ink); }
+  .coll-species-card.locked .name{ color:var(--ink-soft); }
+  .coll-species-card .meta{ font-size:0.68rem; color:var(--ink-soft); margin-top:2px; font-variant-numeric:tabular-nums; }
+  .coll-corner-badge{ position:absolute; top:4px; inset-inline-end:4px; font-size:0.8rem; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
+
+  .coll-detail-photo{ width:100%; max-width:280px; aspect-ratio:1; margin:0 auto 12px; border-radius:22px; overflow:hidden; position:relative; background:var(--bg); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:var(--shadow); }
+  .coll-detail-photo img{ width:100%; height:100%; object-fit:cover; }
+  .coll-detail-photo.is-reference{ filter:grayscale(0.85); opacity:0.7; border-style:dashed; }
+  .coll-photo-tag{ position:absolute; bottom:8px; left:50%; transform:translateX(-50%); font-family:var(--font-head); font-weight:800; font-size:0.62rem; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+  .coll-photo-tag.mine{ background:var(--accent-deep); color:#fff; }
+  .coll-photo-tag.reference{ background:var(--card); color:var(--ink-soft); border:1px solid var(--line); }
+  .coll-status-pill{ display:block; width:fit-content; margin:0 auto 14px; font-family:var(--font-head); font-weight:800; font-size:0.8rem; padding:6px 16px; border-radius:999px; }
+  .coll-status-pill.collected{ background:var(--accent-deep); color:#fff; }
+  .coll-status-pill.locked{ background:var(--bg); color:var(--ink-soft); border:1px solid var(--line); }
+  .coll-sci-name{ text-align:center; font-style:italic; color:var(--ink-soft); font-size:0.78rem; margin-top:-6px; margin-bottom:14px; }
+
+  .coll-counter-row{ display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:6px; }
+  .coll-counter-btn{ width:42px; height:42px; border-radius:50%; border:none; background:var(--accent-deep); color:#fff; font-size:1.3rem; cursor:pointer; line-height:1; }
+  .coll-counter-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .coll-counter-num{ font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--ink); min-width:40px; text-align:center; font-variant-numeric:tabular-nums; }
+  .coll-counter-label{ text-align:center; font-size:0.75rem; color:var(--ink-soft); margin-bottom:18px; }
+
+  .coll-records-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .coll-record-chip{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; }
+  .coll-record-chip .rv{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; }
+  .coll-record-chip .rl{ font-size:0.68rem; color:var(--ink-soft); margin-top:2px; }
+
+  .coll-log-form{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .coll-log-form input{ flex:1; min-width:80px; border:1px solid var(--line); border-radius:12px; padding:9px 10px; font-family:var(--font-body); font-size:0.85rem; background:var(--bg); color:var(--ink); }
+  .coll-log-form button{ flex:0 0 auto; font-family:var(--font-head); font-weight:700; font-size:0.8rem; background:var(--accent-deep); color:#fff; border:none; border-radius:12px; padding:0 16px; cursor:pointer; }
+
+  .coll-dates-row{ display:flex; justify-content:space-around; text-align:center; font-size:0.72rem; color:var(--ink-soft); margin-bottom:16px; }
+  .coll-dates-row b{ display:block; color:var(--ink); font-size:0.8rem; margin-top:2px; }
 </style>
 </head>
 <body>
@@ -264,6 +330,7 @@
       <div class="home-card" data-goto="today"><span class="ic">✅</span><div class="ttl" data-i18n="card_todo"></div></div>
       <div class="home-card" data-goto="food"><span class="ic">🍽️</span><div class="ttl" data-i18n="card_food"></div></div>
       <div class="home-card" data-goto="workout"><span class="ic">🏋️</span><div class="ttl" data-i18n="card_workout"></div></div>
+      <div class="home-card" data-goto="collections"><span class="ic">🐾</span><div class="ttl" data-i18n="card_collections"></div></div>
     </div>
   </section>
 
@@ -501,6 +568,42 @@
       <div class="grid" id="workoutGrid"></div>
     </div>
   </section>
+
+  <!-- COLLECTIONS -->
+  <section class="panel" id="panel-collections">
+    <div class="back-row"><button class="back-btn" id="collectionsBackBtn" data-i18n="back_home"></button><span></span></div>
+
+    <!-- level 0: Animals / Plants -->
+    <div class="coll-view active" id="collView-root">
+      <div class="coll-grid coll-grid-2" id="collRootGrid"></div>
+    </div>
+
+    <!-- level 1: animal categories -->
+    <div class="coll-view" id="collView-animals">
+      <div class="coll-grid coll-grid-2" id="collAnimalsGrid"></div>
+    </div>
+
+    <!-- level 2: species grid for one category -->
+    <div class="coll-view" id="collView-category">
+      <h2 class="coll-cat-title" id="collCatTitle"></h2>
+      <div class="coll-progress-wrap">
+        <div class="coll-progress-label" id="collProgressLabel"></div>
+        <div class="coll-progress-bar"><div class="coll-progress-fill" id="collProgressFill"></div></div>
+      </div>
+      <div class="coll-toolbar">
+        <input type="text" class="setup-input coll-search" id="collSearchInput" style="margin-bottom:0;">
+        <select class="coll-select" id="collFilterSelect"></select>
+        <select class="coll-select" id="collSortSelect"></select>
+      </div>
+      <div class="coll-species-grid" id="collSpeciesGrid"></div>
+      <p class="coll-empty hidden" id="collEmptyMsg"></p>
+    </div>
+
+    <!-- level 3: species detail -->
+    <div class="coll-view" id="collView-species">
+      <div id="collSpeciesDetail"></div>
+    </div>
+  </section>
 </div>
 
 <div class="overlay" id="overlay">
@@ -585,7 +688,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.3.3';
+const APP_VERSION='v1.4.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -670,18 +773,14 @@ async function migrateLocalDataToCloud(uid){
     const dataCol=fbDb.collection('users').doc(uid).collection('data');
     const existing=await dataCol.doc('profile').get().catch(()=>null);
     if(existing&&existing.exists) return; // account already has cloud data — never overwrite
-    const singleKeys=['profile','weight-log','food-draft'];
-    for(const k of singleKeys){
-      const v=localStorage.getItem('planner_'+k);
-      if(v!==null){ try{ await dataCol.doc(k).set({value:v}); }catch(e){} }
-    }
+    /* generic — every planner_-prefixed key migrates automatically, so new
+       key patterns (like Collections) never need this function touched again */
     for(let i=0;i<localStorage.length;i++){
       const lk=localStorage.key(i);
-      if(lk&&lk.startsWith('planner_daily-track:')){
-        const key=lk.slice('planner_'.length);
-        const v=localStorage.getItem(lk);
-        try{ await dataCol.doc(key).set({value:v}); }catch(e){}
-      }
+      if(!lk||!lk.startsWith('planner_')) continue;
+      const key=lk.slice('planner_'.length);
+      const v=localStorage.getItem(lk);
+      if(v!==null){ try{ await dataCol.doc(key).set({value:v}); }catch(e){} }
     }
   }catch(e){ console.error('Local data migration skipped (storage unavailable):',e.message); }
 }
@@ -940,6 +1039,7 @@ const I18N={
   card_todo:'الجدول',
   card_food:'نظام غذائي',
   card_workout:'التمارين',
+  card_collections:'المقتنيات',
   q_commit:'📌 عندك التزام يومي ثابت؟',q_commit_sub:'مثل دوام أو كلية — تقدر تضيف أكثر من التزام',
   commit_label_ph:'مثلاً: كلية، دوام، نادي...',q_commit_days:'أي أيام؟',add_commit:'➕ ضيف الالتزام',
   q_commit_range:'من أي تاريخ لأي تاريخ؟ (اختياري — اتركه فاضي لو دائم للأبد)',
@@ -1003,6 +1103,7 @@ const I18N={
   card_todo:"Schedule",
   card_food:'Diet',
   card_workout:'Workout',
+  card_collections:'Collections',
   q_commit:'📌 Any daily fixed commitment?',q_commit_sub:'Like work or college — add more than one if needed',
   commit_label_ph:'e.g. College, Work, Gym...',q_commit_days:'Which days?',add_commit:'➕ Add commitment',
   q_commit_range:'From which date to which? (optional — leave blank if it runs forever)',
@@ -1218,7 +1319,10 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
 });
 
 document.getElementById('homeBtn').addEventListener('click',()=>showPanel('home'));
-document.querySelectorAll('.back-btn').forEach(b=>b.addEventListener('click',()=>showPanel('home')));
+/* Collections has its own back-stack (species → category → animals → home)
+   instead of always jumping straight to home like every other section's
+   back button, so it's wired separately below and skipped here. */
+document.querySelectorAll('.back-btn').forEach(b=>{ if(b.id!=='collectionsBackBtn') b.addEventListener('click',()=>showPanel('home')); });
 function showPanel(name){ document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0}); }
 
 /* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
@@ -1822,6 +1926,7 @@ function enterSection(name){
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
+  if(name==='collections') enterCollections();
 }
 document.querySelectorAll('#panel-home .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
 document.getElementById('exercisePromptBanner').addEventListener('click',()=>{ showPanel('workout'); enterSection('workout'); });
@@ -2990,6 +3095,387 @@ function launchApp(){
   const fv=document.getElementById('footerVersion'); if(fv) fv.textContent=APP_VERSION;
   refreshHome();
   showPanel('home');
+}
+
+/* ================= COLLECTIONS =================
+   A personal wildlife collection/achievement system on top of the exact
+   same storageGet/storageSet key-value layer as Diet/Exercise/Schedule —
+   one Firestore doc per animal subcategory (fish/birds/mammals/insects)
+   holding {[speciesId]: record}, plus one small doc per uploaded photo so
+   the subcategory doc stays light. Guest mode and cross-device sync come
+   for free since it's the same storage layer everything else already uses.
+
+   "Collected" and "times caught" are never stored fields — both are always
+   derived from catches[], so a plain +/- tap and a future detailed catch
+   record are the SAME data, never two sources of truth that can drift. */
+const ANIMAL_CATEGORIES=[
+  {id:'fish', icon:'🐟', nameAr:'أسماك', nameEn:'Fish',
+    countLabelAr:'مرات الصيد', countLabelEn:'times caught',
+    countIcon:'🎣', countAchLabelAr:'أكثر صيد', countAchLabelEn:'Most catches',
+    measurements:[
+      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'},
+      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'}
+    ]},
+  {id:'birds', icon:'🐦', nameAr:'طيور', nameEn:'Birds',
+    countLabelAr:'مرات المشاهدة', countLabelEn:'times sighted',
+    countIcon:'👁️', countAchLabelAr:'أكثر مشاهدة', countAchLabelEn:'Most sightings',
+    measurements:[
+      {key:'wingspan', unit:'cm', labelAr:'أكبر باع', labelEn:'Biggest wingspan'}
+    ]},
+  {id:'mammals', icon:'🐻', nameAr:'ثدييات', nameEn:'Mammals',
+    countLabelAr:'مرات المشاهدة', countLabelEn:'times sighted',
+    countIcon:'👁️', countAchLabelAr:'أكثر مشاهدة', countAchLabelEn:'Most sightings',
+    measurements:[
+      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'},
+      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'}
+    ]},
+  {id:'insects', icon:'🐜', nameAr:'حشرات', nameEn:'Insects',
+    countLabelAr:'مرات التوثيق', countLabelEn:'times documented',
+    countIcon:'📸', countAchLabelAr:'أكثر توثيق', countAchLabelEn:'Most documented',
+    measurements:[
+      {key:'length', unit:'mm', labelAr:'أطول طول', labelEn:'Longest length'}
+    ]}
+];
+/* starter reference data — a small, real, easily-expandable list per
+   category; add more by appending objects here, no other code changes needed */
+const SPECIES_DB={
+  fish:[
+    {id:'hamour', nameAr:'هامور', nameEn:'Hamour', sci:'Epinephelus coioides', icon:'🐟'},
+    {id:'sbeiti', nameAr:'صبيتي', nameEn:'Sbeiti', sci:'Siganus canaliculatus', icon:'🐟'},
+    {id:'newaibi', nameAr:'نويبي', nameEn:'Newaibi', sci:'Acanthopagrus latus', icon:'🐟'},
+    {id:'zubaidi', nameAr:'زبيدي', nameEn:'Zubaidi', sci:'Pampus argenteus', icon:'🐟'},
+    {id:'shaari', nameAr:'شعري', nameEn:'Shaari', sci:'Lethrinus nebulosus', icon:'🐟'},
+    {id:'kanaad', nameAr:'كنعد', nameEn:'Kanaad', sci:'Scomberomorus commerson', icon:'🐟', rare:true},
+    {id:'sultan_ibrahim', nameAr:'سلطان إبراهيم', nameEn:'Sultan Ibrahim', sci:'Parupeneus sp.', icon:'🐟'},
+    {id:'safi', nameAr:'صافي', nameEn:'Safi', sci:'Siganus javus', icon:'🐟'}
+  ],
+  birds:[
+    {id:'hudhud', nameAr:'هدهد', nameEn:'Hoopoe', sci:'Upupa epops', icon:'🐦'},
+    {id:'saqr_alharr', nameAr:'الصقر الحر', nameEn:'Saker Falcon', sci:'Falco cherrug', icon:'🦅', rare:true},
+    {id:'hamam', nameAr:'حمام', nameEn:'Rock Pigeon', sci:'Columba livia', icon:'🐦'},
+    {id:'waraawir', nameAr:'الوروار', nameEn:'Little Green Bee-eater', sci:'Merops orientalis', icon:'🐦'},
+    {id:'ghurab', nameAr:'غراب', nameEn:'House Crow', sci:'Corvus splendens', icon:'🐦'},
+    {id:'flamingo', nameAr:'فلامنجو', nameEn:'Greater Flamingo', sci:'Phoenicopterus roseus', icon:'🦩'},
+    {id:'asfour', nameAr:'عصفور دوري', nameEn:'House Sparrow', sci:'Passer domesticus', icon:'🐦'},
+    {id:'nawras', nameAr:'نورس', nameEn:'Black-headed Gull', sci:'Chroicocephalus ridibundus', icon:'🐦'}
+  ],
+  mammals:[
+    {id:'red_fox', nameAr:'ثعلب أحمر', nameEn:'Red Fox', sci:'Vulpes vulpes', icon:'🦊'},
+    {id:'gazelle', nameAr:'غزال', nameEn:'Mountain Gazelle', sci:'Gazella gazella', icon:'🦌', rare:true},
+    {id:'camel', nameAr:'جمل', nameEn:'Dromedary Camel', sci:'Camelus dromedarius', icon:'🐪'},
+    {id:'cat', nameAr:'قطة', nameEn:'Domestic Cat', sci:'Felis catus', icon:'🐱'},
+    {id:'hedgehog', nameAr:'قنفذ', nameEn:'Long-eared Hedgehog', sci:'Hemiechinus auritus', icon:'🦔'},
+    {id:'bat', nameAr:'خفاش', nameEn:'Bat', sci:'Chiroptera', icon:'🦇'},
+    {id:'dolphin', nameAr:'دلفين', nameEn:'Indo-Pacific Bottlenose Dolphin', sci:'Tursiops aduncus', icon:'🐬'},
+    {id:'jerboa', nameAr:'يربوع', nameEn:'Lesser Egyptian Jerboa', sci:'Jaculus jaculus', icon:'🐭'}
+  ],
+  insects:[
+    {id:'honeybee', nameAr:'نحلة', nameEn:'Honeybee', sci:'Apis mellifera', icon:'🐝'},
+    {id:'ladybug', nameAr:'دعسوقة', nameEn:'Ladybird Beetle', sci:'Coccinellidae', icon:'🐞'},
+    {id:'dragonfly', nameAr:'يعسوب', nameEn:'Dragonfly', sci:'Anisoptera', icon:'🐉'},
+    {id:'butterfly', nameAr:'فراشة', nameEn:'Painted Lady Butterfly', sci:'Vanessa cardui', icon:'🦋'},
+    {id:'ant', nameAr:'نملة', nameEn:'Ant', sci:'Formicidae', icon:'🐜'},
+    {id:'locust', nameAr:'جراد', nameEn:'Desert Locust', sci:'Schistocerca gregaria', icon:'🦗'},
+    {id:'mantis', nameAr:'فرس النبي', nameEn:'Praying Mantis', sci:'Mantodea', icon:'🦗', rare:true},
+    {id:'beetle', nameAr:'خنفساء', nameEn:'Scarab Beetle', sci:'Scarabaeidae', icon:'🪲'}
+  ]
+};
+
+let collStack=['root'];
+let collCurrentCat=null;
+let collCurrentSpecies=null;
+let collCatData={};    // in-memory cache of the currently-open subcategory's {speciesId:record}
+let collFilter='all';  // all | collected | uncollected
+let collSort='alpha';  // alpha | count | best
+let collSearch='';
+
+function collCategoryConfig(catId){ return ANIMAL_CATEGORIES.find(c=>c.id===catId); }
+function collSpeciesList(catId){ return SPECIES_DB[catId]||[]; }
+function collSpeciesInfo(catId,speciesId){ return collSpeciesList(catId).find(s=>s.id===speciesId); }
+function collName(sp){ return LANG==='ar'?sp.nameAr:sp.nameEn; }
+function collCatName(cat){ return LANG==='ar'?cat.nameAr:cat.nameEn; }
+async function collLoadCategory(catId){
+  const raw=await storageGet('collections:animals:'+catId);
+  collCatData=raw?JSON.parse(raw):{};
+  return collCatData;
+}
+async function collSaveCategory(catId){ await storageSet('collections:animals:'+catId, JSON.stringify(collCatData)); }
+function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false}; }
+function collIsCollected(record){ return !!(record.catches&&record.catches.length>0); }
+function collBest(record,key){
+  if(!record.catches||!record.catches.length) return null;
+  const vals=record.catches.map(c=>c.measurements&&c.measurements[key]).filter(v=>typeof v==='number'&&!isNaN(v));
+  return vals.length?Math.max(...vals):null;
+}
+function collFirstDate(record){ return (record.catches&&record.catches.length)?record.catches.reduce((min,c)=>(!min||c.date<min)?c.date:min,null):null; }
+function collLastDate(record){ return (record.catches&&record.catches.length)?record.catches.reduce((max,c)=>(!max||c.date>max)?c.date:max,null):null; }
+function collFmtDate(iso){ if(!iso) return '—'; return new Date(iso).toLocaleDateString(LANG==='ar'?'ar':'en',{year:'numeric',month:'short',day:'numeric'}); }
+function collGenId(){ return 'c'+Date.now()+Math.random().toString(36).slice(2,7); }
+const collPhotoCache={};   // avoids re-fetching an already-loaded photo on every +/- re-render
+
+function collShowView(name){
+  document.querySelectorAll('.coll-view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('collView-'+name).classList.add('active');
+  window.scrollTo({top:0});
+}
+function collGoTo(name){ collStack.push(name); collShowView(name); }
+function collBack(){
+  if(collStack.length<=1){ showPanel('home'); return; }
+  collStack.pop();
+  collShowView(collStack[collStack.length-1]);
+}
+document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
+function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); }
+
+function renderCollRoot(){
+  const grid=document.getElementById('collRootGrid');
+  grid.innerHTML=`
+    <div class="coll-cat-card" id="collGoAnimals"><span class="ic">🐾</span><div class="ttl">${LANG==='ar'?'حيوانات':'Animals'}</div></div>
+    <div class="coll-cat-card disabled" id="collGoPlants"><span class="soon-tag">${LANG==='ar'?'قريباً':'Soon'}</span><span class="ic">🌱</span><div class="ttl">${LANG==='ar'?'نباتات':'Plants'}</div></div>
+  `;
+  document.getElementById('collGoAnimals').addEventListener('click',()=>{ collGoTo('animals'); renderCollAnimals(); });
+  document.getElementById('collGoPlants').addEventListener('click',()=>{ showToast(LANG==='ar'?'قسم النباتات قادم قريباً 🌱':'Plants section is coming soon 🌱'); });
+}
+
+async function renderCollAnimals(){
+  const grid=document.getElementById('collAnimalsGrid');
+  grid.innerHTML=ANIMAL_CATEGORIES.map(cat=>`<div class="coll-cat-card" data-cat="${cat.id}"><span class="ic">${cat.icon}</span><div class="ttl">${collCatName(cat)}</div><div class="sub" id="collCatProgress-${cat.id}">…</div></div>`).join('');
+  grid.querySelectorAll('.coll-cat-card').forEach(el=>{
+    el.addEventListener('click',async()=>{
+      collCurrentCat=el.dataset.cat;
+      await collLoadCategory(collCurrentCat);
+      collGoTo('category');
+      renderCollCategory();
+    });
+  });
+  for(const cat of ANIMAL_CATEGORIES){
+    const raw=await storageGet('collections:animals:'+cat.id);
+    const data=raw?JSON.parse(raw):{};
+    const total=collSpeciesList(cat.id).length;
+    const got=Object.values(data).filter(collIsCollected).length;
+    const elp=document.getElementById('collCatProgress-'+cat.id);
+    if(elp) elp.textContent=`${got} / ${total}`;
+  }
+}
+
+function renderCollCategory(){
+  const cat=collCategoryConfig(collCurrentCat);
+  document.getElementById('collCatTitle').textContent=`${cat.icon} ${collCatName(cat)}`;
+  const search=document.getElementById('collSearchInput');
+  search.placeholder=LANG==='ar'?'ابحث عن نوع...':'Search species...';
+  search.value=collSearch;
+  const filterSel=document.getElementById('collFilterSelect');
+  filterSel.innerHTML=`<option value="all">${LANG==='ar'?'الكل':'All'}</option><option value="collected">${LANG==='ar'?'✅ مجموع':'✅ Collected'}</option><option value="uncollected">${LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected'}</option>`;
+  filterSel.value=collFilter;
+  const sortSel=document.getElementById('collSortSelect');
+  sortSel.innerHTML=`<option value="alpha">${LANG==='ar'?'أبجدي':'A–Z'}</option><option value="count">${LANG==='ar'?'الأكثر جمعاً':'Most caught'}</option><option value="best">${LANG==='ar'?'أفضل رقم':'Best record'}</option>`;
+  sortSel.value=collSort;
+  search.oninput=()=>{ collSearch=search.value; renderCollSpeciesGrid(); };
+  filterSel.onchange=()=>{ collFilter=filterSel.value; renderCollSpeciesGrid(); };
+  sortSel.onchange=()=>{ collSort=sortSel.value; renderCollSpeciesGrid(); };
+  renderCollSpeciesGrid();
+}
+
+function renderCollSpeciesGrid(){
+  const cat=collCategoryConfig(collCurrentCat);
+  const list=collSpeciesList(collCurrentCat);
+  const total=list.length;
+  const collectedCount=list.filter(sp=>collIsCollected(collRecord(sp.id))).length;
+  document.getElementById('collProgressLabel').textContent=`${collectedCount} / ${total} ${LANG==='ar'?'مجموع':'Collected'}`;
+  document.getElementById('collProgressFill').style.width=(total?Math.round(collectedCount/total*100):0)+'%';
+
+  const primaryKey=cat.measurements[0]&&cat.measurements[0].key;
+  let bestHolderId=null, bestVal=-Infinity;
+  if(primaryKey){ list.forEach(sp=>{ const v=collBest(collRecord(sp.id),primaryKey); if(v!==null&&v>bestVal){ bestVal=v; bestHolderId=sp.id; } }); }
+
+  let filtered=list.filter(sp=>{
+    if(collSearch){
+      const q=collSearch.trim().toLowerCase();
+      if(!sp.nameAr.includes(collSearch.trim()) && !sp.nameEn.toLowerCase().includes(q)) return false;
+    }
+    const rec=collRecord(sp.id);
+    if(collFilter==='collected' && !collIsCollected(rec)) return false;
+    if(collFilter==='uncollected' && collIsCollected(rec)) return false;
+    return true;
+  });
+  filtered=filtered.slice().sort((a,b)=>{
+    if(collSort==='alpha') return collName(a).localeCompare(collName(b),LANG==='ar'?'ar':'en');
+    if(collSort==='count') return collRecord(b.id).catches.length-collRecord(a.id).catches.length;
+    if(collSort==='best'){
+      const bv=primaryKey?(collBest(collRecord(b.id),primaryKey)||0):0;
+      const av=primaryKey?(collBest(collRecord(a.id),primaryKey)||0):0;
+      return bv-av;
+    }
+    return 0;
+  });
+
+  const grid=document.getElementById('collSpeciesGrid');
+  const emptyMsg=document.getElementById('collEmptyMsg');
+  if(!filtered.length){
+    grid.innerHTML='';
+    emptyMsg.textContent=LANG==='ar'?'ما فيه نتائج':'No species match';
+    emptyMsg.classList.remove('hidden');
+    return;
+  }
+  emptyMsg.classList.add('hidden');
+  grid.innerHTML=filtered.map(sp=>{
+    const rec=collRecord(sp.id);
+    const collected=collIsCollected(rec);
+    let badge='';
+    if(sp.rare) badge='<span class="coll-corner-badge" title="rare">⭐</span>';
+    if(collected && bestHolderId===sp.id) badge='<span class="coll-corner-badge" title="best">🏆</span>';
+    return `<div class="coll-species-card ${collected?'collected':'locked'}" data-sp="${sp.id}">
+      ${badge}
+      <div class="thumb">${collected?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
+      <div class="name">${collName(sp)}</div>
+      <div class="meta">${collected?(rec.catches.length+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):(LANG==='ar'?'غير مجموع':'Not collected')}</div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.coll-species-card').forEach(cardEl=>{
+    cardEl.addEventListener('click',()=>{
+      collCurrentSpecies=cardEl.dataset.sp;
+      collGoTo('species');
+      renderCollSpeciesDetail();
+    });
+  });
+}
+
+async function renderCollSpeciesDetail(){
+  const cat=collCategoryConfig(collCurrentCat);
+  const sp=collSpeciesInfo(collCurrentCat,collCurrentSpecies);
+  const rec=collRecord(sp.id);
+  const collected=collIsCollected(rec);
+  const photoCacheKey=collCurrentCat+':'+sp.id;
+  let photo=null;
+  if(rec.hasPhoto){
+    if(collPhotoCache[photoCacheKey]!==undefined){ photo=collPhotoCache[photoCacheKey]; }
+    else{
+      try{ const raw=await storageGet('collection-photo:'+collCurrentCat+':'+sp.id); photo=raw?JSON.parse(raw):null; }catch(e){}
+      collPhotoCache[photoCacheKey]=photo;
+    }
+  }
+  const recordsHtml=cat.measurements.map(m=>{
+    const v=collBest(rec,m.key);
+    return `<div class="coll-record-chip"><div class="rv">${v!==null?('🏆 '+v+' '+m.unit):'—'}</div><div class="rl">${LANG==='ar'?m.labelAr:m.labelEn}</div></div>`;
+  }).join('')+`<div class="coll-record-chip"><div class="rv">${cat.countIcon} ${rec.catches.length}</div><div class="rl">${LANG==='ar'?cat.countAchLabelAr:cat.countAchLabelEn}</div></div>`;
+  const logInputsHtml=cat.measurements.map(m=>`<input type="number" step="0.01" inputmode="decimal" id="collLogInput-${m.key}" placeholder="${(LANG==='ar'?m.labelAr:m.labelEn)+' ('+m.unit+')'}">`).join('');
+
+  const el=document.getElementById('collSpeciesDetail');
+  el.innerHTML=`
+    <div class="coll-detail-photo ${photo?'':'is-reference'}">
+      ${photo?`<img src="${photo.dataUrl}" alt="">`:sp.icon}
+      <span class="coll-photo-tag ${photo?'mine':'reference'}">${photo?(LANG==='ar'?'📷 صورتي':'📷 My photo'):(LANG==='ar'?'صورة مرجعية':'Reference image')}</span>
+    </div>
+    <span class="coll-status-pill ${collected?'collected':'locked'}">${collected?(LANG==='ar'?'✅ مجموع':'✅ Collected'):(LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected')}</span>
+    <h2 style="text-align:center;margin:0 0 2px;color:var(--accent-deep);">${collName(sp)}</h2>
+    <div class="coll-sci-name">${sp.sci}</div>
+
+    <div class="coll-counter-row">
+      <button class="coll-counter-btn" id="collDecBtn" ${rec.catches.length<=0?'disabled':''}>−</button>
+      <div class="coll-counter-num" id="collCounterNum">${rec.catches.length}</div>
+      <button class="coll-counter-btn" id="collIncBtn">+</button>
+    </div>
+    <div class="coll-counter-label">${LANG==='ar'?cat.countLabelAr:cat.countLabelEn}</div>
+
+    <div class="coll-records-grid">${recordsHtml}</div>
+
+    <div class="coll-dates-row">
+      <div>${LANG==='ar'?'أول مرة':'First collected'}<b>${collFmtDate(collFirstDate(rec))}</b></div>
+      <div>${LANG==='ar'?'آخر مرة':'Most recent'}<b>${collFmtDate(collLastDate(rec))}</b></div>
+    </div>
+
+    <div class="setup-card">
+      <h3 style="font-size:0.85rem;">${LANG==='ar'?'📝 سجّل تفاصيل هالمرة (اختياري)':'📝 Log details for this time (optional)'}</h3>
+      <div class="coll-log-form">
+        ${logInputsHtml}
+        <button id="collLogSaveBtn">${LANG==='ar'?'حفظ':'Save'}</button>
+      </div>
+      <p class="sub" style="margin:0;">${LANG==='ar'?'يسوي زيادة تلقائية بالعداد':'This also adds one to the counter above'}</p>
+    </div>
+
+    <input type="file" accept="image/*" class="hidden" id="collPhotoInput">
+    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
+  `;
+  document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
+  document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
+  document.getElementById('collLogSaveBtn').addEventListener('click',()=>{
+    const measurements={};
+    cat.measurements.forEach(m=>{
+      const raw=document.getElementById('collLogInput-'+m.key).value;
+      if(raw!==''&&!isNaN(parseFloat(raw))) measurements[m.key]=parseFloat(raw);
+    });
+    collAddCatch(measurements);
+  });
+  document.getElementById('collUploadBtn').addEventListener('click',()=>document.getElementById('collPhotoInput').click());
+  document.getElementById('collPhotoInput').addEventListener('change',collHandlePhotoUpload);
+}
+
+function collAddCatch(measurements){
+  const rec=collRecord(collCurrentSpecies);
+  if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
+  rec.catches=rec.catches||[];
+  rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:measurements||{}});
+  renderCollSpeciesDetail();     // instant feedback — never block the tap on a network round-trip
+  collSaveCategory(collCurrentCat);
+}
+function collRemoveLastCatch(){
+  const rec=collRecord(collCurrentSpecies);
+  if(!rec.catches||!rec.catches.length) return;
+  rec.catches.pop();
+  const nowEmpty=rec.catches.length===0;
+  renderCollSpeciesDetail();
+  collSaveCategory(collCurrentCat);
+  if(nowEmpty) showToast(LANG==='ar'?'رجع لغير مجموع — صورك ومعلوماتك محفوظة':'Marked as not collected — your photo & info are kept');
+}
+async function collHandlePhotoUpload(e){
+  const file=e.target.files[0];
+  e.target.value='';
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ showToast(LANG==='ar'?'اختر صورة':'Please choose an image','error'); return; }
+  try{
+    const dataUrl=await collCompressImage(file);
+    const photoRecord={dataUrl, uploadedAt:new Date().toISOString()};
+    collPhotoCache[collCurrentCat+':'+collCurrentSpecies]=photoRecord;
+    const rec=collRecord(collCurrentSpecies);
+    if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
+    rec.hasPhoto=true;
+    if(!rec.catches||!rec.catches.length){ rec.catches=[{id:collGenId(), date:new Date().toISOString(), measurements:{}}]; }
+    renderCollSpeciesDetail();   // instant — show the photo before the network write finishes
+    storageSet('collection-photo:'+collCurrentCat+':'+collCurrentSpecies, JSON.stringify(photoRecord));
+    collSaveCategory(collCurrentCat);
+    showToast(LANG==='ar'?'انحفظت صورتك 📷':'Your photo was saved 📷');
+  }catch(err){ showToast((LANG==='ar'?'فشل رفع الصورة: ':'Photo upload failed: ')+err.message,'error'); }
+}
+/* resize+compress client-side so a photo fits comfortably inside one
+   Firestore document (1MiB limit) — Firebase Storage now requires the paid
+   Blaze plan, so this keeps photo uploads working on the free Spark plan */
+function collCompressImage(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error(LANG==='ar'?'ما قدرنا نقرأ الملف':'Could not read the file'));
+    reader.onload=()=>{
+      img.onerror=()=>reject(new Error(LANG==='ar'?'الملف مو صورة صالحة':'That file is not a valid image'));
+      img.onload=()=>{
+        const maxDim=900;
+        let {width,height}=img;
+        if(width>maxDim||height>maxDim){
+          if(width>height){ height=Math.round(height*maxDim/width); width=maxDim; }
+          else{ width=Math.round(width*maxDim/height); height=maxDim; }
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=width; canvas.height=height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        let quality=0.72;
+        let dataUrl=canvas.toDataURL('image/jpeg',quality);
+        while(dataUrl.length>700000 && quality>0.3){ quality-=0.1; dataUrl=canvas.toDataURL('image/jpeg',quality); }
+        if(dataUrl.length>900000){ reject(new Error(LANG==='ar'?'الصورة كبيرة جداً':'That image is too large')); return; }
+        resolve(dataUrl);
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 (async()=>{
