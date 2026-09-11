@@ -578,13 +578,29 @@ try{
   fbAuth=firebase.auth();
   fbDb=firebase.firestore();
   fbDb.enablePersistence({synchronizeTabs:true}).catch(()=>{}); // offline cache + auto-resync, best-effort
+  /* Firebase Auth's default (LOCAL) persistence writes the session to
+     localStorage internally, deep inside the SDK — not through any call of
+     ours, so our own try/catches around sign-in never see it. In storage-
+     restricted contexts (data: URLs, some private-browsing modes) that
+     internal write throws as an UNHANDLED promise rejection even though
+     sign-in itself succeeds, which our global error banner then surfaced as
+     a scary, misleading "storage disabled" message. Explicitly probing
+     persistence up front — with our own awaited try/catch and a graceful
+     fallback chain — moves that failure somewhere we control instead. */
+  (async()=>{
+    try{ await fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }
+    catch(e){
+      try{ await fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION); }
+      catch(e2){ try{ await fbAuth.setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e3){} }
+    }
+  })();
 }catch(e){ /* Firebase SDK failed to load (offline/blocked) — app still works locally-only */ }
 </script>
 <script>
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.3.1';
+const APP_VERSION='v1.3.2';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -907,6 +923,13 @@ function analyzeAllergyTextLocal(text){
     subNoteEn:`⚠️ Removed "${text}" — substitute: ${subText.en}`};
 }
 function showErr(msg){
+  /* Known-benign noise: browsers with storage disabled/partitioned (data:
+     URLs, some private-browsing modes) throw the moment ANY code touches
+     localStorage/sessionStorage — including inside the Firebase SDK's own
+     internals, well outside our try/catches. Sign-in and the app itself
+     still work fine in that case, so surfacing this as a scary red banner
+     would be misleading rather than helpful. */
+  if(/storage is disabled/i.test(msg||'')) return;
   let el=document.getElementById('errBanner');
   if(!el){ el=document.createElement('div'); el.id='errBanner'; el.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;padding:10px;font-size:12px;z-index:9999;text-align:center;'; document.body.appendChild(el); }
   el.textContent='⚠️ '+msg;
