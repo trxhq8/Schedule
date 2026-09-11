@@ -8,7 +8,7 @@
 
    BUMP APP_VERSION every time you deploy a real update — it changes the cache
    name, which makes the old cache get deleted automatically on activate. */
-const APP_VERSION = 'v1.3.2';
+const APP_VERSION = 'v1.3.3';
 const CACHE_NAME = `my-planner-${APP_VERSION}`;
 const PRECACHE_URLS = [
   './',
