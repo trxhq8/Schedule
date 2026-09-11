@@ -629,7 +629,13 @@
       <div class="coll-grid coll-grid-2" id="collAnimalsGrid"></div>
     </div>
 
-    <!-- level 2: species grid for one category -->
+    <!-- level 2: groups within a category (pure navigation, no collection state) -->
+    <div class="coll-view" id="collView-groups">
+      <h2 class="coll-cat-title" id="collGroupsTitle"></h2>
+      <div class="coll-grid coll-grid-2" id="collGroupsGrid"></div>
+    </div>
+
+    <!-- level 3: species grid for one group -->
     <div class="coll-view" id="collView-category">
       <h2 class="coll-cat-title" id="collCatTitle"></h2>
       <div class="coll-progress-wrap">
@@ -740,7 +746,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.5.0';
+const APP_VERSION='v1.6.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3238,67 +3244,98 @@ const ANIMAL_CATEGORIES=[
    rather than a guess. This is a curated first expansion (40 species + 5
    cat breed variants) — a real research-backed base, not the full "hundreds"
    vision yet, structured so more can be appended safely category by category. */
-function img(url,attribution){ return {url, attribution:attribution+', via Wikimedia Commons', source:'Wikimedia Commons'}; }
-const SPECIES_DB={
+/* Groups are pure navigation/organization — they carry no collection state
+   of their own. Every collectible below still gets its own independent
+   record keyed by its id; entering or opening a group never touches any
+   collectible's data, it only filters what's shown. */
+const ANIMAL_GROUPS={
   fish:[
-    {id:'hamour', nameAr:'هامور', nameEn:'Hamour', altNames:['Orange-spotted grouper'], sci:'Epinephelus coioides', family:'Serranidae', genus:'Epinephelus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/61/Epinephelus_coioides_Thailand.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
-    {id:'sbeiti', nameAr:'صبيتي', nameEn:'Sbeiti', altNames:['White-spotted spinefoot','White-spotted rabbitfish'], sci:'Siganus canaliculatus', family:'Siganidae', genus:'Siganus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/d/d9/Siganus_canaliculatus%2C_Kampuan.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
-    {id:'newaibi', nameAr:'نويبي', nameEn:'Newaibi', altNames:['Yellowfin seabream'], sci:'Acanthopagrus latus', family:'Sparidae', genus:'Acanthopagrus', rarity:'common', conservation:'DD', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c1/Acanthopagrus_latus_01.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia, GBIF'},
-    {id:'zubaidi', nameAr:'زبيدي', nameEn:'Zubaidi', altNames:['Silver pomfret'], sci:'Pampus argenteus', family:'Stromateidae', genus:'Pampus', rarity:'uncommon', conservation:'VU', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/66/Pampus_argenteus_1.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
-    {id:'shaari', nameAr:'شعري', nameEn:'Shaari', altNames:['Spangled emperor'], sci:'Lethrinus nebulosus', family:'Lethrinidae', genus:'Lethrinus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/d/d7/Lethrinus_nebulosus_287497294_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
-    {id:'kanaad', nameAr:'كنعد', nameEn:'Kanaad', altNames:['Narrow-barred Spanish mackerel'], sci:'Scomberomorus commerson', family:'Scombridae', genus:'Scomberomorus', rarity:'epic', conservation:'NT', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/60/Narrow-barred_spanish_mackerel_%28Scomberomorus_commerson%29.jpg','Photo by Rickard Zerpe, CC BY 2.0'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
-    {id:'sultan_ibrahim', nameAr:'سلطان إبراهيم', nameEn:'Sultan Ibrahim', altNames:['Red mullet','Goatfish'], sci:'Mullidae sp.', family:'Mullidae', genus:null, rarity:'common', conservation:null, region:['kuwait','gulf'], image:null, icon:'🐟', sourceNote:'Vernacular Gulf market name applied to more than one goatfish species across sources — exact species-level ID left unresolved rather than guessed'},
-    {id:'safi', nameAr:'صافي', nameEn:'Safi', altNames:['Streaked spinefoot','Java rabbitfish'], sci:'Siganus javus', family:'Siganidae', genus:'Siganus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/7/78/Siganus_javus.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
-    {id:'yellowfin_tuna', nameAr:'تونة صفراء الزعانف', nameEn:'Yellowfin Tuna', altNames:[], sci:'Thunnus albacares', family:'Scombridae', genus:'Thunnus', rarity:'legendary', conservation:'LC', region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c3/Thunnus_albacares.png','Illustration via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
-    {id:'great_barracuda', nameAr:'باراكودا', nameEn:'Great Barracuda', altNames:[], sci:'Sphyraena barracuda', family:'Sphyraenidae', genus:'Sphyraena', rarity:'epic', conservation:'LC', region:['gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/64/Gran_barracuda_%28Sphyraena_barracuda%29%2C_Yeda%2C_Arabia_Saudita%2C_2025-05-20%2C_DD_118.jpg','Photo via Wikipedia'), icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
-    {id:'clownfish', nameAr:'سمكة المهرج', nameEn:'Clownfish', altNames:['Ocellaris clownfish','Anemonefish'], sci:'Amphiprion ocellaris', family:'Pomacentridae', genus:'Amphiprion', rarity:'mythic', conservation:null, region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/a/ad/Amphiprion_ocellaris_%28Clown_anemonefish%29_by_Nick_Hobgood.jpg','Photo by Nick Hobgood'), icon:'🐟', sourceNote:'Wikipedia, FishBase'}
+    {id:'gulf_market', icon:'🎣', nameAr:'أسماك الخليج', nameEn:'Gulf Market Fish'},
+    {id:'pelagic_global', icon:'🌊', nameAr:'أسماك مفتوحة وعالمية', nameEn:'Pelagic & Global'},
+    {id:'reef', icon:'🐠', nameAr:'أسماك الشعاب', nameEn:'Reef Fish'}
   ],
   birds:[
-    {id:'hudhud', nameAr:'هدهد', nameEn:'Hoopoe', altNames:['Eurasian hoopoe'], sci:'Upupa epops', family:'Upupidae', genus:'Upupa', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/06/Upupa_epops_Madrid_01.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
-    {id:'saqr_alharr', nameAr:'الصقر الحر', nameEn:'Saker Falcon', altNames:[], sci:'Falco cherrug', family:'Falconidae', genus:'Falco', rarity:'legendary', conservation:'EN', region:['kuwait','gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/0c/Falco_cherrug_%28Marek_Szczepanek%29.jpg','Photo by Marek Szczepanek, CC BY-SA'), icon:'🦅', sourceNote:'Wikipedia (IUCN-sourced), BirdLife DataZone'},
-    {id:'hamam', nameAr:'حمام', nameEn:'Rock Pigeon', altNames:['Rock dove','Common pigeon'], sci:'Columba livia', family:'Columbidae', genus:'Columba', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/1/10/Columba_livia_%28Rock_Dove%2C_wild%29%2C_Duncansby_Head%2C_Caithness%2C_Scotland_1.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'waraawir', nameAr:'الوروار', nameEn:'Little Green Bee-eater', altNames:['Asian green bee-eater'], sci:'Merops orientalis', family:'Meropidae', genus:'Merops', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/f/f8/Green_bee-eater_%28Merops_orientalis%29_with_blue_pansy_4_Jojawar.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'ghurab', nameAr:'غراب', nameEn:'House Crow', altNames:[], sci:'Corvus splendens', family:'Corvidae', genus:'Corvus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c9/Corvus_splendens.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'flamingo', nameAr:'فلامنجو', nameEn:'Greater Flamingo', altNames:[], sci:'Phoenicopterus roseus', family:'Phoenicopteridae', genus:'Phoenicopterus', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/8/81/010_Greater_flamingos_male_and_female_in_the_Camargue_during_mating_season_Photo_by_Giles_Laurent.jpg','Photo by Giles Laurent, CC BY-SA'), icon:'🦩', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'asfour', nameAr:'عصفور دوري', nameEn:'House Sparrow', altNames:[], sci:'Passer domesticus', family:'Passeridae', genus:'Passer', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/9/9b/House_sparrow_male_in_Prospect_Park_%2853532%29.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'nawras', nameAr:'نورس', nameEn:'Black-headed Gull', altNames:[], sci:'Chroicocephalus ridibundus', family:'Laridae', genus:'Chroicocephalus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/29/Chroicocephalus_ridibundus_%28summer%29.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'eurasian_collared_dove', nameAr:'يمام مطوق', nameEn:'Eurasian Collared Dove', altNames:[], sci:'Streptopelia decaocto', family:'Columbidae', genus:'Streptopelia', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/f/fa/2022-04-06_Streptopelia_decaocto%2C_Plovdiv%2C_Bulgaria_1.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'common_kestrel', nameAr:'باشق', nameEn:'Common Kestrel', altNames:[], sci:'Falco tinnunculus', family:'Falconidae', genus:'Falco', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/24/Common_kestrel_falco_tinnunculus.jpg','Photo via Wikipedia'), icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'}
+    {id:'raptors', icon:'🦅', nameAr:'جوارح', nameEn:'Raptors'},
+    {id:'garden_urban', icon:'🐦', nameAr:'طيور الحدائق والمدن', nameEn:'Garden & Urban Birds'},
+    {id:'waterbirds', icon:'🦩', nameAr:'طيور مائية', nameEn:'Waterbirds'}
   ],
   mammals:[
-    {id:'red_fox', nameAr:'ثعلب أحمر', nameEn:'Red Fox', altNames:[], sci:'Vulpes vulpes', family:'Canidae', genus:'Vulpes', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/d/d2/Portrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🦊', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
-    {id:'gazelle', nameAr:'غزال جبلي', nameEn:'Mountain Gazelle', altNames:['Arabian gazelle'], sci:'Gazella gazella', family:'Bovidae', genus:'Gazella', rarity:'epic', conservation:'EN', region:['arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/7/79/Gazella_gazella.jpg','Photo via Wikipedia'), icon:'🦌', sourceNote:'Wikipedia (IUCN-sourced) — corrected from Vulnerable to Endangered after this pass\'s verification'},
-    {id:'camel', nameAr:'جمل', nameEn:'Dromedary Camel', altNames:['Arabian camel'], sci:'Camelus dromedarius', family:'Camelidae', genus:'Camelus', rarity:'common', conservation:null, region:['kuwait','gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c4/Camelus_dromedarius_in_Nuweiba.jpg','Photo via Wikipedia'), icon:'🐪', sourceNote:'Domesticated species — IUCN does not assess it in the wild sense'},
-    {id:'cat', nameAr:'قطة', nameEn:'Domestic Cat', altNames:[], sci:'Felis catus', family:'Felidae', genus:'Felis', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg','Photo via Wikipedia'), icon:'🐱', sourceNote:'Domesticated species — IUCN does not assess it in the wild sense',
-      variants:[
-        {id:'scottish_fold', nameAr:'سكوتش فولد', nameEn:'Scottish Fold', description:'A breed defined by a cartilage mutation that folds the ears forward and down.', image:img('https://upload.wikimedia.org/wikipedia/commons/b/ba/Scottish_Fold_-_CFF_cat_show_Heinola_2008-05-03_IMG_7882.JPG','Photo via Wikipedia')},
-        {id:'persian', nameAr:'شيرازي', nameEn:'Persian', description:'A long-haired traditional breed known for its round face and petite muzzle.', image:img('https://upload.wikimedia.org/wikipedia/commons/8/81/Persialainen.jpg','Photo via Wikipedia')},
-        {id:'siamese', nameAr:'سيامي', nameEn:'Siamese', description:'One of the first recognized cat breeds, known for blue almond eyes and a colorpoint coat.', image:img('https://upload.wikimedia.org/wikipedia/commons/1/16/Siamese_cat_Vaillante.JPG','Photo via Wikipedia')},
-        {id:'maine_coon', nameAr:'ماين كون', nameEn:'Maine Coon', description:'A large, long-haired breed nicknamed "the gentle giant."', image:img('https://upload.wikimedia.org/wikipedia/commons/8/87/M%C3%A2le_Black_Silver_Blotched_Tabby.jpeg','Photo via Wikipedia')},
-        {id:'bengal', nameAr:'بنغالي', nameEn:'Bengal', description:'A spotted breed created by crossbreeding an Asian leopard cat with domestic cats.', image:img('https://upload.wikimedia.org/wikipedia/commons/b/ba/Paintedcats_Red_Star_standing.jpg','Photo via Wikipedia')}
-      ]},
-    {id:'hedgehog', nameAr:'قنفذ', nameEn:'Long-eared Hedgehog', altNames:[], sci:'Hemiechinus auritus', family:'Erinaceidae', genus:'Hemiechinus', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/a/a9/Hedgehog_cyprus_hg.jpg','Photo via Wikipedia'), icon:'🦔', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'bat', nameAr:'خفاش مصري', nameEn:'Egyptian Fruit Bat', altNames:['Egyptian rousette'], sci:'Rousettus aegyptiacus', family:'Pteropodidae', genus:'Rousettus', rarity:'uncommon', conservation:'LC', region:['gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/4/4c/Skraidantis_egipto_%C5%A1uo_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🦇', sourceNote:'Wikipedia (IUCN-sourced) — narrowed from a generic "bat" placeholder to a real, verifiable regional species'},
-    {id:'dolphin', nameAr:'دلفين', nameEn:'Indo-Pacific Bottlenose Dolphin', altNames:[], sci:'Tursiops aduncus', family:'Delphinidae', genus:'Tursiops', rarity:'epic', conservation:'NT', region:['kuwait','gulf'], image:img('https://upload.wikimedia.org/wikipedia/commons/8/87/Tursiops_aduncus%2C_Port_River%2C_Adelaide%2C_Australia_-_2003.jpg','Photo via Wikipedia'), icon:'🐬', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'jerboa', nameAr:'يربوع', nameEn:'Lesser Egyptian Jerboa', altNames:[], sci:'Jaculus jaculus', family:'Dipodidae', genus:'Jaculus', rarity:'epic', conservation:'LC', region:['gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/66/Jaculus_jaculus.jpg','Photo via Wikipedia'), icon:'🐭', sourceNote:'Wikipedia (IUCN-sourced)'},
-    {id:'arabian_oryx', nameAr:'المها العربي', nameEn:'Arabian Oryx', altNames:['White oryx'], sci:'Oryx leucoryx', family:'Bovidae', genus:'Oryx', rarity:'legendary', conservation:'VU', region:['arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/4/43/Arabian_oryx_%28oryx_leucoryx%29.jpg','Photo via Wikipedia'), icon:'🦌', sourceNote:'Wikipedia, IUCN — the first species ever upgraded from Extinct in the Wild to Vulnerable, after a reintroduction program'},
-    {id:'arabian_wolf', nameAr:'ذئب عربي', nameEn:'Arabian Wolf', altNames:[], sci:'Canis lupus arabs', family:'Canidae', genus:'Canis', rarity:'legendary', conservation:null, region:['arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/7/72/Arabian_wolf_in_Jordan.jpg','Photo via Wikipedia'), icon:'🐺', sourceNote:'A subspecies of grey wolf — IUCN assesses Canis lupus at species level (Least Concern) rather than this subspecies individually; regional sources describe it as heavily persecuted and rarely seen'},
-    {id:'cape_hare', nameAr:'أرنب بري', nameEn:'Cape Hare', altNames:['Desert hare','Brown hare'], sci:'Lepus capensis', family:'Leporidae', genus:'Lepus', rarity:'uncommon', conservation:'LC', region:['gulf','arabian_peninsula'], image:img('https://upload.wikimedia.org/wikipedia/commons/2/23/Lepus_capensis_%28cropped%29.jpg','Photo via Wikipedia'), icon:'🐇', sourceNote:'Wikipedia (IUCN-sourced)'}
+    {id:'cats', icon:'🐱', nameAr:'قططيات', nameEn:'Cats'},
+    {id:'canines', icon:'🐺', nameAr:'كلبيات', nameEn:'Canines'},
+    {id:'antelope_gazelles', icon:'🦌', nameAr:'غزلان ومها', nameEn:'Antelope & Gazelles'},
+    {id:'camels', icon:'🐪', nameAr:'إبل', nameEn:'Camels'},
+    {id:'small_mammals', icon:'🐭', nameAr:'ثدييات صغيرة', nameEn:'Small Mammals'},
+    {id:'marine_mammals', icon:'🐬', nameAr:'ثدييات بحرية', nameEn:'Marine Mammals'}
   ],
   insects:[
-    {id:'honeybee', nameAr:'نحلة', nameEn:'Honeybee', altNames:['Western honey bee'], sci:'Apis mellifera', family:'Apidae', genus:'Apis', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/4/4d/Apis_mellifera_Western_honey_bee.jpg','Photo via Wikipedia'), icon:'🐝', sourceNote:'Wikipedia, GBIF'},
-    {id:'ladybug', nameAr:'دعسوقة', nameEn:'Seven-spot Ladybird', altNames:['Ladybug'], sci:'Coccinella septempunctata', family:'Coccinellidae', genus:'Coccinella', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/08/7-Spotted-Ladybug-Coccinella-septempunctata-sq1.jpg','Photo via Wikipedia'), icon:'🐞', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'},
-    {id:'dragonfly', nameAr:'يعسوب', nameEn:'Common Green Darner', altNames:['Dragonfly'], sci:'Anax junius', family:'Aeshnidae', genus:'Anax', rarity:'common', conservation:null, region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c6/Common_Green_Darner_Anax_junius_JG.jpg','Photo via Wikipedia'), icon:'🐉', sourceNote:'Wikipedia — narrowed from a generic suborder-level placeholder to a specific, verifiable species'},
-    {id:'butterfly', nameAr:'فراشة', nameEn:'Painted Lady Butterfly', altNames:[], sci:'Vanessa cardui', family:'Nymphalidae', genus:'Vanessa', rarity:'common', conservation:null, region:['kuwait','gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/c/c8/0_Belle-dame_%28Vanessa_cardui%29_-_Echinacea_purpurea_-_Havr%C3%A9_%283%29.jpg','Photo via Wikipedia'), icon:'🦋', sourceNote:'Wikipedia, GBIF'},
-    {id:'ant', nameAr:'نملة سوداء', nameEn:'Black Garden Ant', altNames:['Ant'], sci:'Lasius niger', family:'Formicidae', genus:'Lasius', rarity:'common', conservation:null, region:['global'], image:img('https://upload.wikimedia.org/wikipedia/commons/b/b1/Black_Garden_Ant_tending_Citrus_Mealybug_%2816063538972%29.jpg','Photo via Wikipedia'), icon:'🐜', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'},
-    {id:'locust', nameAr:'جراد الصحراء', nameEn:'Desert Locust', altNames:[], sci:'Schistocerca gregaria', family:'Acrididae', genus:'Schistocerca', rarity:'uncommon', conservation:null, region:['gulf','arabian_peninsula','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/f/f2/SGR_laying.jpg','Photo via Wikipedia'), icon:'🦗', sourceNote:'Wikipedia, GBIF'},
-    {id:'mantis', nameAr:'فرس النبي', nameEn:'European Mantis', altNames:['Praying mantis'], sci:'Mantis religiosa', family:'Mantidae', genus:'Mantis', rarity:'epic', conservation:null, region:['gulf','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/6/62/European_praying_mantis_%28Mantis_religiosa%29_green_female_Dobruja.jpg','Photo via Wikipedia'), icon:'🦗', sourceNote:'Wikipedia — narrowed from a generic order-level placeholder to a specific, verifiable species'},
-    {id:'beetle', nameAr:'جعران مقدس', nameEn:'Sacred Scarab', altNames:['Scarab beetle'], sci:'Scarabaeus sacer', family:'Scarabaeidae', genus:'Scarabaeus', rarity:'uncommon', conservation:null, region:['gulf','arabian_peninsula','global'], image:img('https://upload.wikimedia.org/wikipedia/commons/0/0c/Scarabaeus.sacer.jpg','Photo via Wikipedia'), icon:'🪲', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'}
+    {id:'pollinators', icon:'🐝', nameAr:'ملقّحات', nameEn:'Pollinators'},
+    {id:'beetles', icon:'🪲', nameAr:'خنافس', nameEn:'Beetles'},
+    {id:'other_insects', icon:'🦗', nameAr:'حشرات أخرى', nameEn:'Other Insects'}
+  ]
+};
+/* No internet/AI-generated images — every visual here is an emoji, on
+   purpose, until a proper reference-image system is designed later. */
+const SPECIES_DB={
+  fish:[
+    {id:'hamour', group:'gulf_market', nameAr:'هامور', nameEn:'Hamour', altNames:['Orange-spotted grouper'], sci:'Epinephelus coioides', family:'Serranidae', genus:'Epinephelus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'sbeiti', group:'gulf_market', nameAr:'صبيتي', nameEn:'Sbeiti', altNames:['White-spotted spinefoot','White-spotted rabbitfish'], sci:'Siganus canaliculatus', family:'Siganidae', genus:'Siganus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'newaibi', group:'gulf_market', nameAr:'نويبي', nameEn:'Newaibi', altNames:['Yellowfin seabream'], sci:'Acanthopagrus latus', family:'Sparidae', genus:'Acanthopagrus', rarity:'common', conservation:'DD', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia, GBIF'},
+    {id:'zubaidi', group:'gulf_market', nameAr:'زبيدي', nameEn:'Zubaidi', altNames:['Silver pomfret'], sci:'Pampus argenteus', family:'Stromateidae', genus:'Pampus', rarity:'uncommon', conservation:'VU', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'shaari', group:'gulf_market', nameAr:'شعري', nameEn:'Shaari', altNames:['Spangled emperor'], sci:'Lethrinus nebulosus', family:'Lethrinidae', genus:'Lethrinus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'kanaad', group:'gulf_market', nameAr:'كنعد', nameEn:'Kanaad', altNames:['Narrow-barred Spanish mackerel'], sci:'Scomberomorus commerson', family:'Scombridae', genus:'Scomberomorus', rarity:'epic', conservation:'NT', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'sultan_ibrahim', group:'gulf_market', nameAr:'سلطان إبراهيم', nameEn:'Sultan Ibrahim', altNames:['Red mullet','Goatfish'], sci:'Mullidae sp.', family:'Mullidae', genus:null, rarity:'common', conservation:null, region:['kuwait','gulf'], icon:'🐟', sourceNote:'Vernacular Gulf market name applied to more than one goatfish species across sources — exact species-level ID left unresolved rather than guessed'},
+    {id:'safi', group:'gulf_market', nameAr:'صافي', nameEn:'Safi', altNames:['Streaked spinefoot','Java rabbitfish'], sci:'Siganus javus', family:'Siganidae', genus:'Siganus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'yellowfin_tuna', group:'pelagic_global', nameAr:'تونة صفراء الزعانف', nameEn:'Yellowfin Tuna', altNames:[], sci:'Thunnus albacares', family:'Scombridae', genus:'Thunnus', rarity:'legendary', conservation:'LC', region:['global'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'great_barracuda', group:'pelagic_global', nameAr:'باراكودا', nameEn:'Great Barracuda', altNames:[], sci:'Sphyraena barracuda', family:'Sphyraenidae', genus:'Sphyraena', rarity:'epic', conservation:'LC', region:['gulf','global'], icon:'🐟', sourceNote:'Wikipedia (IUCN-sourced), FishBase'},
+    {id:'clownfish', group:'reef', nameAr:'سمكة المهرج', nameEn:'Clownfish', altNames:['Ocellaris clownfish','Anemonefish'], sci:'Amphiprion ocellaris', family:'Pomacentridae', genus:'Amphiprion', rarity:'mythic', conservation:null, region:['global'], icon:'🐠', sourceNote:'Wikipedia, FishBase'}
+  ],
+  birds:[
+    {id:'hudhud', group:'garden_urban', nameAr:'هدهد', nameEn:'Hoopoe', altNames:['Eurasian hoopoe'], sci:'Upupa epops', family:'Upupidae', genus:'Upupa', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'saqr_alharr', group:'raptors', nameAr:'الصقر الحر', nameEn:'Saker Falcon', altNames:[], sci:'Falco cherrug', family:'Falconidae', genus:'Falco', rarity:'legendary', conservation:'EN', region:['kuwait','gulf','arabian_peninsula'], icon:'🦅', sourceNote:'Wikipedia (IUCN-sourced), BirdLife DataZone'},
+    {id:'hamam', group:'garden_urban', nameAr:'حمام', nameEn:'Rock Pigeon', altNames:['Rock dove','Common pigeon'], sci:'Columba livia', family:'Columbidae', genus:'Columba', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'waraawir', group:'garden_urban', nameAr:'الوروار', nameEn:'Little Green Bee-eater', altNames:['Asian green bee-eater'], sci:'Merops orientalis', family:'Meropidae', genus:'Merops', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'ghurab', group:'garden_urban', nameAr:'غراب', nameEn:'House Crow', altNames:[], sci:'Corvus splendens', family:'Corvidae', genus:'Corvus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'flamingo', group:'waterbirds', nameAr:'فلامنجو', nameEn:'Greater Flamingo', altNames:[], sci:'Phoenicopterus roseus', family:'Phoenicopteridae', genus:'Phoenicopterus', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf'], icon:'🦩', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'asfour', group:'garden_urban', nameAr:'عصفور دوري', nameEn:'House Sparrow', altNames:[], sci:'Passer domesticus', family:'Passeridae', genus:'Passer', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'nawras', group:'waterbirds', nameAr:'نورس', nameEn:'Black-headed Gull', altNames:[], sci:'Chroicocephalus ridibundus', family:'Laridae', genus:'Chroicocephalus', rarity:'common', conservation:'LC', region:['kuwait','gulf'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'eurasian_collared_dove', group:'garden_urban', nameAr:'يمام مطوق', nameEn:'Eurasian Collared Dove', altNames:[], sci:'Streptopelia decaocto', family:'Columbidae', genus:'Streptopelia', rarity:'common', conservation:'LC', region:['kuwait','gulf','global'], icon:'🐦', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'common_kestrel', group:'raptors', nameAr:'باشق', nameEn:'Common Kestrel', altNames:[], sci:'Falco tinnunculus', family:'Falconidae', genus:'Falco', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','global'], icon:'🦅', sourceNote:'Wikipedia (IUCN-sourced)'}
+  ],
+  mammals:[
+    {id:'red_fox', group:'canines', nameAr:'ثعلب أحمر', nameEn:'Red Fox', altNames:[], sci:'Vulpes vulpes', family:'Canidae', genus:'Vulpes', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','global'], icon:'🦊', sourceNote:'Wikipedia (IUCN-sourced), GBIF'},
+    {id:'gazelle', group:'antelope_gazelles', nameAr:'غزال جبلي', nameEn:'Mountain Gazelle', altNames:['Arabian gazelle'], sci:'Gazella gazella', family:'Bovidae', genus:'Gazella', rarity:'epic', conservation:'EN', region:['arabian_peninsula'], icon:'🦌', sourceNote:'Wikipedia (IUCN-sourced) — corrected from Vulnerable to Endangered after verification'},
+    {id:'camel', group:'camels', nameAr:'جمل', nameEn:'Dromedary Camel', altNames:['Arabian camel'], sci:'Camelus dromedarius', family:'Camelidae', genus:'Camelus', rarity:'common', conservation:null, region:['kuwait','gulf','arabian_peninsula'], icon:'🐪', sourceNote:'Domesticated species — IUCN does not assess it in the wild sense'},
+    {id:'cat', group:'cats', nameAr:'قطة', nameEn:'Domestic Cat', altNames:[], sci:'Felis catus', family:'Felidae', genus:'Felis', rarity:'common', conservation:null, region:['kuwait','gulf','global'], icon:'🐱', sourceNote:'Domesticated species — IUCN does not assess it in the wild sense',
+      variants:[
+        {id:'scottish_fold', nameAr:'سكوتش فولد', nameEn:'Scottish Fold', description:'A breed defined by a cartilage mutation that folds the ears forward and down.', icon:'🐱'},
+        {id:'persian', nameAr:'شيرازي', nameEn:'Persian', description:'A long-haired traditional breed known for its round face and petite muzzle.', icon:'🐱'},
+        {id:'siamese', nameAr:'سيامي', nameEn:'Siamese', description:'One of the first recognized cat breeds, known for blue almond eyes and a colorpoint coat.', icon:'🐱'},
+        {id:'maine_coon', nameAr:'ماين كون', nameEn:'Maine Coon', description:'A large, long-haired breed nicknamed "the gentle giant."', icon:'🐱'},
+        {id:'bengal', nameAr:'بنغالي', nameEn:'Bengal', description:'A spotted breed created by crossbreeding an Asian leopard cat with domestic cats.', icon:'🐱'}
+      ]},
+    {id:'hedgehog', group:'small_mammals', nameAr:'قنفذ', nameEn:'Long-eared Hedgehog', altNames:[], sci:'Hemiechinus auritus', family:'Erinaceidae', genus:'Hemiechinus', rarity:'uncommon', conservation:'LC', region:['kuwait','gulf','arabian_peninsula'], icon:'🦔', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'bat', group:'small_mammals', nameAr:'خفاش مصري', nameEn:'Egyptian Fruit Bat', altNames:['Egyptian rousette'], sci:'Rousettus aegyptiacus', family:'Pteropodidae', genus:'Rousettus', rarity:'uncommon', conservation:'LC', region:['gulf','arabian_peninsula'], icon:'🦇', sourceNote:'Wikipedia (IUCN-sourced) — narrowed from a generic "bat" placeholder to a real, verifiable regional species'},
+    {id:'dolphin', group:'marine_mammals', nameAr:'دلفين', nameEn:'Indo-Pacific Bottlenose Dolphin', altNames:[], sci:'Tursiops aduncus', family:'Delphinidae', genus:'Tursiops', rarity:'epic', conservation:'NT', region:['kuwait','gulf'], icon:'🐬', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'jerboa', group:'small_mammals', nameAr:'يربوع', nameEn:'Lesser Egyptian Jerboa', altNames:[], sci:'Jaculus jaculus', family:'Dipodidae', genus:'Jaculus', rarity:'epic', conservation:'LC', region:['gulf','arabian_peninsula'], icon:'🐭', sourceNote:'Wikipedia (IUCN-sourced)'},
+    {id:'arabian_oryx', group:'antelope_gazelles', nameAr:'المها العربي', nameEn:'Arabian Oryx', altNames:['White oryx'], sci:'Oryx leucoryx', family:'Bovidae', genus:'Oryx', rarity:'legendary', conservation:'VU', region:['arabian_peninsula'], icon:'🦌', sourceNote:'Wikipedia, IUCN — the first species ever upgraded from Extinct in the Wild to Vulnerable, after a reintroduction program'},
+    {id:'arabian_wolf', group:'canines', nameAr:'ذئب عربي', nameEn:'Arabian Wolf', altNames:[], sci:'Canis lupus arabs', family:'Canidae', genus:'Canis', rarity:'legendary', conservation:null, region:['arabian_peninsula'], icon:'🐺', sourceNote:'A subspecies of grey wolf — IUCN assesses Canis lupus at species level (Least Concern) rather than this subspecies individually; regional sources describe it as heavily persecuted and rarely seen'},
+    {id:'cape_hare', group:'small_mammals', nameAr:'أرنب بري', nameEn:'Cape Hare', altNames:['Desert hare','Brown hare'], sci:'Lepus capensis', family:'Leporidae', genus:'Lepus', rarity:'uncommon', conservation:'LC', region:['gulf','arabian_peninsula'], icon:'🐇', sourceNote:'Wikipedia (IUCN-sourced)'}
+  ],
+  insects:[
+    {id:'honeybee', group:'pollinators', nameAr:'نحلة', nameEn:'Honeybee', altNames:['Western honey bee'], sci:'Apis mellifera', family:'Apidae', genus:'Apis', rarity:'common', conservation:null, region:['kuwait','gulf','global'], icon:'🐝', sourceNote:'Wikipedia, GBIF'},
+    {id:'ladybug', group:'beetles', nameAr:'دعسوقة', nameEn:'Seven-spot Ladybird', altNames:['Ladybug'], sci:'Coccinella septempunctata', family:'Coccinellidae', genus:'Coccinella', rarity:'common', conservation:null, region:['kuwait','gulf','global'], icon:'🐞', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'},
+    {id:'dragonfly', group:'other_insects', nameAr:'يعسوب', nameEn:'Common Green Darner', altNames:['Dragonfly'], sci:'Anax junius', family:'Aeshnidae', genus:'Anax', rarity:'common', conservation:null, region:['global'], icon:'🐉', sourceNote:'Wikipedia — narrowed from a generic suborder-level placeholder to a specific, verifiable species'},
+    {id:'butterfly', group:'pollinators', nameAr:'فراشة', nameEn:'Painted Lady Butterfly', altNames:[], sci:'Vanessa cardui', family:'Nymphalidae', genus:'Vanessa', rarity:'common', conservation:null, region:['kuwait','gulf','global'], icon:'🦋', sourceNote:'Wikipedia, GBIF'},
+    {id:'ant', group:'other_insects', nameAr:'نملة سوداء', nameEn:'Black Garden Ant', altNames:['Ant'], sci:'Lasius niger', family:'Formicidae', genus:'Lasius', rarity:'common', conservation:null, region:['global'], icon:'🐜', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'},
+    {id:'locust', group:'other_insects', nameAr:'جراد الصحراء', nameEn:'Desert Locust', altNames:[], sci:'Schistocerca gregaria', family:'Acrididae', genus:'Schistocerca', rarity:'uncommon', conservation:null, region:['gulf','arabian_peninsula','global'], icon:'🦗', sourceNote:'Wikipedia, GBIF'},
+    {id:'mantis', group:'other_insects', nameAr:'فرس النبي', nameEn:'European Mantis', altNames:['Praying mantis'], sci:'Mantis religiosa', family:'Mantidae', genus:'Mantis', rarity:'epic', conservation:null, region:['gulf','global'], icon:'🦗', sourceNote:'Wikipedia — narrowed from a generic order-level placeholder to a specific, verifiable species'},
+    {id:'beetle', group:'beetles', nameAr:'جعران مقدس', nameEn:'Sacred Scarab', altNames:['Scarab beetle'], sci:'Scarabaeus sacer', family:'Scarabaeidae', genus:'Scarabaeus', rarity:'uncommon', conservation:null, region:['gulf','arabian_peninsula','global'], icon:'🪲', sourceNote:'Wikipedia — narrowed from a generic family-level placeholder to a specific, verifiable species'}
   ]
 };
 
 let collStack=['root'];
 let collCurrentCat=null;
+let collCurrentGroup=null;
 let collCurrentSpecies=null;
 let collCatData={};    // in-memory cache of the currently-open subcategory's {speciesId:record}
 let collFilter='all';  // all | collected | uncollected
@@ -3306,6 +3343,9 @@ let collSort='alpha';  // alpha | count | best
 let collSearch='';
 
 function collCategoryConfig(catId){ return ANIMAL_CATEGORIES.find(c=>c.id===catId); }
+function collGroupList(catId){ return ANIMAL_GROUPS[catId]||[]; }
+function collGroupConfig(catId,groupId){ return collGroupList(catId).find(g=>g.id===groupId); }
+function collGroupName(g){ return LANG==='ar'?g.nameAr:g.nameEn; }
 function collSpeciesList(catId){ return SPECIES_DB[catId]||[]; }
 function collSpeciesInfo(catId,speciesId){ return collSpeciesList(catId).find(s=>s.id===speciesId); }
 function collName(sp){ return LANG==='ar'?sp.nameAr:sp.nameEn; }
@@ -3344,6 +3384,7 @@ function collBack(){
      going back should immediately show it as collected in the grid, not
      wait for a fresh visit to re-trigger the render */
   if(target==='category') renderCollSpeciesGrid();
+  else if(target==='groups') renderCollGroups();
   else if(target==='animals') renderCollAnimals();
 }
 document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
@@ -3366,8 +3407,8 @@ async function renderCollAnimals(){
     el.addEventListener('click',async()=>{
       collCurrentCat=el.dataset.cat;
       await collLoadCategory(collCurrentCat);
-      collGoTo('category');
-      renderCollCategory();
+      collGoTo('groups');
+      renderCollGroups();
     });
   });
   let totalCollected=0, legendaryCount=0;
@@ -3410,9 +3451,33 @@ const REGION_LABELS={
 let collRarityFilter='all';
 let collConservationFilter='all';
 let collRegionFilter='all';
+
+/* Groups are pure navigation — this only reads collCatData to show counts,
+   it never writes to it. Opening/entering a group cannot create or change
+   any collectible's record. */
+function renderCollGroups(){
+  const cat=collCategoryConfig(collCurrentCat);
+  document.getElementById('collGroupsTitle').textContent=`${cat.icon} ${collCatName(cat)}`;
+  const groups=collGroupList(collCurrentCat);
+  const grid=document.getElementById('collGroupsGrid');
+  grid.innerHTML=groups.map(g=>{
+    const speciesInGroup=collSpeciesList(collCurrentCat).filter(sp=>sp.group===g.id);
+    const collectedInGroup=speciesInGroup.filter(sp=>collIsCollected(collRecord(sp.id))).length;
+    return `<div class="coll-cat-card" data-group="${g.id}"><span class="ic">${g.icon}</span><div class="ttl">${collGroupName(g)}</div><div class="sub">${collectedInGroup} / ${speciesInGroup.length}</div></div>`;
+  }).join('');
+  grid.querySelectorAll('.coll-cat-card').forEach(el=>{
+    el.addEventListener('click',()=>{
+      collCurrentGroup=el.dataset.group;
+      collGoTo('category');
+      renderCollCategory();
+    });
+  });
+}
+
 function renderCollCategory(){
   const cat=collCategoryConfig(collCurrentCat);
-  document.getElementById('collCatTitle').textContent=`${cat.icon} ${collCatName(cat)}`;
+  const group=collGroupConfig(collCurrentCat,collCurrentGroup);
+  document.getElementById('collCatTitle').textContent=`${group.icon} ${collGroupName(group)}`;
   const search=document.getElementById('collSearchInput');
   search.placeholder=LANG==='ar'?'ابحث بالاسم أو الاسم العلمي أو الفصيلة...':'Search name, scientific name, family...';
   search.value=collSearch;
@@ -3445,7 +3510,7 @@ function collSearchHaystack(sp){
 }
 function renderCollSpeciesGrid(){
   const cat=collCategoryConfig(collCurrentCat);
-  const list=collSpeciesList(collCurrentCat);
+  const list=collSpeciesList(collCurrentCat).filter(sp=>sp.group===collCurrentGroup);
   const total=list.length;
   const collectedCount=list.filter(sp=>collIsCollected(collRecord(sp.id))).length;
   document.getElementById('collProgressLabel').textContent=`${collectedCount} / ${total} ${LANG==='ar'?'مجموع':'Collected'}`;
@@ -3505,11 +3570,10 @@ function renderCollSpeciesGrid(){
     const tier=RARITY_TIERS[sp.rarity];
     let badge='';
     if(collected && bestHolderId===sp.id) badge='<span class="coll-corner-badge" title="best">🏆</span>';
-    const thumbImg=(collected && sp.image) ? `<img src="${sp.image.url}" alt="" onerror="this.parentElement.textContent='${sp.icon}';">` : sp.icon;
     return `<div class="coll-species-card ${collected?'collected tier-'+sp.rarity:'locked'}" data-sp="${sp.id}">
       <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
       ${badge}
-      <div class="thumb">${collected?thumbImg:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
+      <div class="thumb">${collected?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
       <div class="name">${collName(sp)}</div>
       <div class="meta">${collected?(rec.catches.length+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):(LANG==='ar'?'غير مجموع':'Not collected')}</div>
     </div>`;
@@ -3553,7 +3617,7 @@ async function renderCollSpeciesDetail(){
           const done=!!(rec.variantState&&rec.variantState[v.id]&&rec.variantState[v.id].collected);
           return `<div class="coll-variant-card ${done?'done':''}" data-variant="${v.id}" title="${(LANG==='ar'?v.nameAr:v.nameEn)}${v.description?' — '+v.description:''}">
             ${done?'<span class="check">✅</span>':''}
-            <div class="thumb">${v.image?`<img src="${v.image.url}" alt="" onerror="this.style.display='none';">`:'🐾'}</div>
+            <div class="thumb">${v.icon||'🐾'}</div>
             <div class="name">${LANG==='ar'?v.nameAr:v.nameEn}</div>
           </div>`;
         }).join('')}
@@ -3568,7 +3632,7 @@ async function renderCollSpeciesDetail(){
   const el=document.getElementById('collSpeciesDetail');
   el.innerHTML=`
     <div class="coll-detail-photo ${photo?'':'is-reference'} ${collected?'tier-'+sp.rarity:''}">
-      ${photo?`<img src="${photo.dataUrl}" alt="">`:(sp.image?`<img src="${sp.image.url}" alt="" onerror="this.parentElement.textContent='${sp.icon}';">`:sp.icon)}
+      ${photo?`<img src="${photo.dataUrl}" alt="">`:sp.icon}
       <span class="coll-photo-tag ${photo?'mine':'reference'}">${photo?(LANG==='ar'?'📷 صورتي':'📷 My photo'):(LANG==='ar'?'صورة مرجعية':'Reference image')}</span>
     </div>
     <div class="coll-pill-row">
