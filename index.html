@@ -625,6 +625,10 @@
 
     <!-- level 1: animal categories -->
     <div class="coll-view" id="collView-animals">
+      <div class="coll-progress-wrap">
+        <div class="coll-progress-label" id="collAnimalsProgressLabel"></div>
+        <div class="coll-progress-bar"><div class="coll-progress-fill" id="collAnimalsProgressFill"></div></div>
+      </div>
       <div class="coll-stats-grid" id="collStatsBar"></div>
       <div class="coll-grid coll-grid-2" id="collAnimalsGrid"></div>
     </div>
@@ -744,7 +748,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.6.1';
+const APP_VERSION='v1.7.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1262,6 +1266,7 @@ document.getElementById('mainLangToggle').addEventListener('click',async()=>{
   renderCalendar();
   if(P.foodSetup) buildFoodGrid(todayWeekdayIndex());
   if(P.workoutSetup) buildWorkoutGrid();
+  refreshCollectionsCurrentView();
 });
 
 document.getElementById('settingsBtn').addEventListener('click',()=>{
@@ -3212,21 +3217,23 @@ const ANIMAL_CATEGORIES=[
     countLabelAr:'مرات الصيد', countLabelEn:'times caught',
     countIcon:'🎣', countAchLabelAr:'أكثر صيد', countAchLabelEn:'Most catches',
     measurements:[
-      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'},
-      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'}
+      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'},
+      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'}
     ]},
   {id:'birds', icon:'🐦', nameAr:'طيور', nameEn:'Birds',
     countLabelAr:'مرات المشاهدة', countLabelEn:'times sighted',
     countIcon:'👁️', countAchLabelAr:'أكثر مشاهدة', countAchLabelEn:'Most sightings',
     measurements:[
-      {key:'wingspan', unit:'cm', labelAr:'أكبر باع', labelEn:'Biggest wingspan'}
+      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'},
+      {key:'wingspan', unit:'cm', labelAr:'أكبر باع', labelEn:'Biggest wingspan'},
+      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'}
     ]},
   {id:'mammals', icon:'🐻', nameAr:'ثدييات', nameEn:'Mammals',
     countLabelAr:'مرات المشاهدة', countLabelEn:'times sighted',
     countIcon:'👁️', countAchLabelAr:'أكثر مشاهدة', countAchLabelEn:'Most sightings',
     measurements:[
-      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'},
-      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'}
+      {key:'length', unit:'cm', labelAr:'أطول طول', labelEn:'Longest length'},
+      {key:'weight', unit:'kg', labelAr:'أثقل وزن', labelEn:'Biggest weight'}
     ]},
   {id:'insects', icon:'🐜', nameAr:'حشرات', nameEn:'Insects',
     countLabelAr:'مرات التوثيق', countLabelEn:'times documented',
@@ -3387,6 +3394,18 @@ function collBack(){
 }
 document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
 function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); }
+/* Every Collections render function reads LANG live, but nothing re-ran
+   them on a language switch — so whatever screen was already drawn just
+   stayed in its old language until the user re-entered it. Re-render
+   whichever screen is currently on top of the stack instead. */
+function refreshCollectionsCurrentView(){
+  const top=collStack[collStack.length-1];
+  if(top==='root') renderCollRoot();
+  else if(top==='animals') renderCollAnimals();
+  else if(top==='groups') renderCollGroups();
+  else if(top==='category') renderCollCategory();
+  else if(top==='species') renderCollSpeciesDetail();
+}
 
 function renderCollRoot(){
   const grid=document.getElementById('collRootGrid');
@@ -3409,7 +3428,7 @@ async function renderCollAnimals(){
       renderCollGroups();
     });
   });
-  let totalCollected=0, legendaryCount=0;
+  let totalCollected=0, totalSpeciesAll=0, legendaryCount=0;
   const catchSums={};
   for(const cat of ANIMAL_CATEGORIES){
     const raw=await storageGet('collections:animals:'+cat.id);
@@ -3417,6 +3436,7 @@ async function renderCollAnimals(){
     const total=collSpeciesList(cat.id).length;
     const got=Object.values(data).filter(collIsCollected).length;
     totalCollected+=got;
+    totalSpeciesAll+=total;
     let catchSum=0;
     collSpeciesList(cat.id).forEach(sp=>{
       const rec=data[sp.id];
@@ -3427,6 +3447,10 @@ async function renderCollAnimals(){
     const elp=document.getElementById('collCatProgress-'+cat.id);
     if(elp) elp.textContent=`${got} / ${total}`;
   }
+  const progLabel=document.getElementById('collAnimalsProgressLabel');
+  const progFill=document.getElementById('collAnimalsProgressFill');
+  if(progLabel) progLabel.textContent=`${LANG==='ar'?'🐾 حيوانات':'🐾 Animals'}: ${totalCollected} / ${totalSpeciesAll}`;
+  if(progFill) progFill.style.width=(totalSpeciesAll?Math.round(totalCollected/totalSpeciesAll*100):0)+'%';
   const statsBar=document.getElementById('collStatsBar');
   if(statsBar){
     statsBar.innerHTML=`
@@ -3596,6 +3620,12 @@ async function renderCollSpeciesDetail(){
     }
   }
 
+  const recordsHtml=cat.measurements.map(m=>{
+    const v=collBest(rec,m.key);
+    return `<div class="coll-record-chip"><div class="rv">${v!==null?('🏆 '+v+' '+m.unit):'—'}</div><div class="rl">${LANG==='ar'?m.labelAr:m.labelEn}</div></div>`;
+  }).join('');
+  const logInputsHtml=cat.measurements.map(m=>`<input type="number" step="0.01" inputmode="decimal" id="collLogInput-${m.key}" placeholder="${(LANG==='ar'?m.labelAr:m.labelEn)+' ('+m.unit+')'}">`).join('');
+
   const el=document.getElementById('collSpeciesDetail');
   el.innerHTML=`
     <div class="coll-detail-photo ${photo?'':'is-reference'} ${collected?'tier-'+sp.rarity:''}">
@@ -3615,11 +3645,30 @@ async function renderCollSpeciesDetail(){
     </div>
     <div class="coll-counter-label">${LANG==='ar'?cat.countLabelAr:cat.countLabelEn}</div>
 
+    <div class="coll-records-grid">${recordsHtml}</div>
+
+    <div class="setup-card">
+      <h3 style="font-size:0.85rem;">${LANG==='ar'?'📝 سجّل القياسات هالمرة (اختياري)':'📝 Log measurements for this time (optional)'}</h3>
+      <div class="coll-log-form">
+        ${logInputsHtml}
+        <button id="collLogSaveBtn">${LANG==='ar'?'حفظ':'Save'}</button>
+      </div>
+      <p class="sub" style="margin:0;">${LANG==='ar'?'يسوي زيادة تلقائية بالعداد':'This also adds one to the counter above'}</p>
+    </div>
+
     <input type="file" accept="image/*" class="hidden" id="collPhotoInput">
     <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);margin-top:16px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
   `;
   document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
   document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
+  document.getElementById('collLogSaveBtn').addEventListener('click',()=>{
+    const measurements={};
+    cat.measurements.forEach(m=>{
+      const raw=document.getElementById('collLogInput-'+m.key).value;
+      if(raw!==''&&!isNaN(parseFloat(raw))) measurements[m.key]=parseFloat(raw);
+    });
+    collAddCatch(measurements);
+  });
   document.getElementById('collUploadBtn').addEventListener('click',()=>document.getElementById('collPhotoInput').click());
   document.getElementById('collPhotoInput').addEventListener('change',collHandlePhotoUpload);
 }
