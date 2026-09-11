@@ -650,8 +650,6 @@
       </div>
       <div class="coll-toolbar-secondary">
         <select class="coll-select" id="collRarityFilterSelect"></select>
-        <select class="coll-select" id="collConservationFilterSelect"></select>
-        <select class="coll-select" id="collRegionFilterSelect"></select>
       </div>
       <div class="coll-species-grid" id="collSpeciesGrid"></div>
       <p class="coll-empty hidden" id="collEmptyMsg"></p>
@@ -746,7 +744,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.6.0';
+const APP_VERSION='v1.6.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3490,18 +3488,10 @@ function renderCollCategory(){
   const raritySel=document.getElementById('collRarityFilterSelect');
   raritySel.innerHTML=`<option value="all">${LANG==='ar'?'كل الندرات':'All rarities'}</option>`+RARITY_ORDER.map(r=>`<option value="${r}">${RARITY_TIERS[r].icon} ${LANG==='ar'?RARITY_TIERS[r].nameAr:RARITY_TIERS[r].nameEn}</option>`).join('');
   raritySel.value=collRarityFilter;
-  const consSel=document.getElementById('collConservationFilterSelect');
-  consSel.innerHTML=`<option value="all">${LANG==='ar'?'كل حالات الحفظ':'All conservation'}</option>`+Object.keys(CONSERVATION_STATUS).map(code=>`<option value="${code}">${collConservationLabel(code)}</option>`).join('');
-  consSel.value=collConservationFilter;
-  const regionSel=document.getElementById('collRegionFilterSelect');
-  regionSel.innerHTML=`<option value="all">${LANG==='ar'?'كل المناطق':'All regions'}</option>`+Object.keys(REGION_LABELS).map(r=>`<option value="${r}">${REGION_LABELS[r][LANG]}</option>`).join('');
-  regionSel.value=collRegionFilter;
   search.oninput=()=>{ collSearch=search.value; renderCollSpeciesGrid(); };
   filterSel.onchange=()=>{ collFilter=filterSel.value; renderCollSpeciesGrid(); };
   sortSel.onchange=()=>{ collSort=sortSel.value; renderCollSpeciesGrid(); };
   raritySel.onchange=()=>{ collRarityFilter=raritySel.value; renderCollSpeciesGrid(); };
-  consSel.onchange=()=>{ collConservationFilter=consSel.value; renderCollSpeciesGrid(); };
-  regionSel.onchange=()=>{ collRegionFilter=regionSel.value; renderCollSpeciesGrid(); };
   renderCollSpeciesGrid();
 }
 
@@ -3539,8 +3529,6 @@ function renderCollSpeciesGrid(){
     if(collFilter==='collected' && !collIsCollected(rec)) return false;
     if(collFilter==='uncollected' && collIsCollected(rec)) return false;
     if(collRarityFilter!=='all' && sp.rarity!==collRarityFilter) return false;
-    if(collConservationFilter!=='all' && sp.conservation!==collConservationFilter) return false;
-    if(collRegionFilter!=='all' && !(sp.region||[]).includes(collRegionFilter)) return false;
     return true;
   });
   filtered=filtered.slice().sort((a,b)=>{
@@ -3587,6 +3575,11 @@ function renderCollSpeciesGrid(){
   });
 }
 
+/* Kept deliberately simple per current direction: emoji + name + rarity +
+   collected/count only. Richer fields (taxonomy, conservation, breeds,
+   personal-best measurements, sources) still exist on the species objects
+   and in helper functions below — nothing was deleted from the data model —
+   they're just not rendered here until that layer is asked for again. */
 async function renderCollSpeciesDetail(){
   const cat=collCategoryConfig(collCurrentCat);
   const sp=collSpeciesInfo(collCurrentCat,collCurrentSpecies);
@@ -3602,32 +3595,6 @@ async function renderCollSpeciesDetail(){
       collPhotoCache[photoCacheKey]=photo;
     }
   }
-  const recordsHtml=cat.measurements.map(m=>{
-    const v=collBest(rec,m.key);
-    return `<div class="coll-record-chip"><div class="rv">${v!==null?('🏆 '+v+' '+m.unit):'—'}</div><div class="rl">${LANG==='ar'?m.labelAr:m.labelEn}</div></div>`;
-  }).join('')+`<div class="coll-record-chip"><div class="rv">${cat.countIcon} ${rec.catches.length}</div><div class="rl">${LANG==='ar'?cat.countAchLabelAr:cat.countAchLabelEn}</div></div>`;
-  const logInputsHtml=cat.measurements.map(m=>`<input type="number" step="0.01" inputmode="decimal" id="collLogInput-${m.key}" placeholder="${(LANG==='ar'?m.labelAr:m.labelEn)+' ('+m.unit+')'}">`).join('');
-
-  const taxonomyLine=[sp.family,sp.genus].filter(Boolean).join(' · ');
-  const variantsHtml=(sp.variants&&sp.variants.length) ? `
-    <div class="coll-variants-section">
-      <h3>${LANG==='ar'?'الأنواع الفرعية / السلالات':'Types / Breeds'}</h3>
-      <div class="coll-variants-grid">
-        ${sp.variants.map(v=>{
-          const done=!!(rec.variantState&&rec.variantState[v.id]&&rec.variantState[v.id].collected);
-          return `<div class="coll-variant-card ${done?'done':''}" data-variant="${v.id}" title="${(LANG==='ar'?v.nameAr:v.nameEn)}${v.description?' — '+v.description:''}">
-            ${done?'<span class="check">✅</span>':''}
-            <div class="thumb">${v.icon||'🐾'}</div>
-            <div class="name">${LANG==='ar'?v.nameAr:v.nameEn}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>` : '';
-  const sourcesHtml=sp.sourceNote ? `
-    <details class="coll-sources-box">
-      <summary>${LANG==='ar'?'المصادر':'Sources / References'}</summary>
-      <div style="margin-top:6px;">${sp.sourceNote}</div>
-    </details>` : '';
 
   const el=document.getElementById('collSpeciesDetail');
   el.innerHTML=`
@@ -3638,12 +3605,8 @@ async function renderCollSpeciesDetail(){
     <div class="coll-pill-row">
       <span class="coll-status-pill ${collected?'collected':'locked'}">${collected?(LANG==='ar'?'✅ مجموع':'✅ Collected'):(LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected')}</span>
       <span class="coll-rarity-pill coll-rarity-${sp.rarity}">${tier.icon} ${LANG==='ar'?tier.nameAr:tier.nameEn}</span>
-      <span class="coll-conservation-pill">${collConservationLabel(sp.conservation)}</span>
     </div>
-    <h2 style="text-align:center;margin:0 0 2px;color:var(--accent-deep);">${collName(sp)}</h2>
-    <div class="coll-sci-name">${sp.sci}${taxonomyLine?' · '+taxonomyLine:''}</div>
-
-    ${variantsHtml}
+    <h2 style="text-align:center;margin:0 0 16px;color:var(--accent-deep);">${collName(sp)}</h2>
 
     <div class="coll-counter-row">
       <button class="coll-counter-btn" id="collDecBtn" ${rec.catches.length<=0?'disabled':''}>−</button>
@@ -3652,42 +3615,13 @@ async function renderCollSpeciesDetail(){
     </div>
     <div class="coll-counter-label">${LANG==='ar'?cat.countLabelAr:cat.countLabelEn}</div>
 
-    <div class="coll-records-grid">${recordsHtml}</div>
-
-    <div class="coll-dates-row">
-      <div>${LANG==='ar'?'أول مرة':'First collected'}<b>${collFmtDate(collFirstDate(rec))}</b></div>
-      <div>${LANG==='ar'?'آخر مرة':'Most recent'}<b>${collFmtDate(collLastDate(rec))}</b></div>
-    </div>
-
-    <div class="setup-card">
-      <h3 style="font-size:0.85rem;">${LANG==='ar'?'📝 سجّل تفاصيل هالمرة (اختياري)':'📝 Log details for this time (optional)'}</h3>
-      <div class="coll-log-form">
-        ${logInputsHtml}
-        <button id="collLogSaveBtn">${LANG==='ar'?'حفظ':'Save'}</button>
-      </div>
-      <p class="sub" style="margin:0;">${LANG==='ar'?'يسوي زيادة تلقائية بالعداد':'This also adds one to the counter above'}</p>
-    </div>
-
     <input type="file" accept="image/*" class="hidden" id="collPhotoInput">
-    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);margin-bottom:14px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
-
-    ${sourcesHtml}
+    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);margin-top:16px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
   `;
   document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
   document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
-  document.getElementById('collLogSaveBtn').addEventListener('click',()=>{
-    const measurements={};
-    cat.measurements.forEach(m=>{
-      const raw=document.getElementById('collLogInput-'+m.key).value;
-      if(raw!==''&&!isNaN(parseFloat(raw))) measurements[m.key]=parseFloat(raw);
-    });
-    collAddCatch(measurements);
-  });
   document.getElementById('collUploadBtn').addEventListener('click',()=>document.getElementById('collPhotoInput').click());
   document.getElementById('collPhotoInput').addEventListener('change',collHandlePhotoUpload);
-  el.querySelectorAll('.coll-variant-card').forEach(vc=>{
-    vc.addEventListener('click',()=>collToggleVariant(vc.dataset.variant));
-  });
 }
 
 function collToggleVariant(variantId){
