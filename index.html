@@ -844,7 +844,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.9';
+const APP_VERSION='v1.9.10';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1363,6 +1363,25 @@ document.getElementById('mainLangToggle').addEventListener('click',async()=>{
   if(P.foodSetup) buildFoodGrid(todayWeekdayIndex());
   if(P.workoutSetup) buildWorkoutGrid();
   refreshCollectionsCurrentView();
+  // same class of bug as the duration grid below: these bake DAY_NAMES[LANG]
+  // in at build time and never redraw on their own when the language flips.
+  // Both re-derive selection from P state internally, so a plain rebuild is safe.
+  if(document.getElementById('commitDaysGrid')) buildCommitDaysGrid();
+  if(document.getElementById('obRestGrid')) buildRestGrid();
+  if(document.getElementById('commitListChips')) renderCommitList();
+  // the target-duration options (1/2/4/8/12 months, 2 years) bake their
+  // label text in at build time instead of using data-i18n, so they need
+  // an explicit rebuild here or they're stuck showing the old language —
+  // reapply whichever one was selected since rebuilding clears the grid
+  if(document.getElementById('targetDurationGrid')){
+    const prevSelected=document.querySelector('#targetDurationGrid .ob-choice.selected');
+    const prevMonths=prevSelected&&prevSelected.dataset.months;
+    buildTargetDurationGrid();
+    if(prevMonths){
+      const match=document.querySelector(`#targetDurationGrid .ob-choice[data-months="${prevMonths}"]`);
+      if(match) match.classList.add('selected');
+    }
+  }
 });
 
 document.getElementById('settingsBtn').addEventListener('click',()=>{
@@ -2164,7 +2183,7 @@ function renderCommitList(){
   const box=document.getElementById('commitListChips'); box.innerHTML='';
   const sorted=(P._commitments||[]).map((c,i)=>({c,i})).sort((a,b)=>(b.c.pinned?1:0)-(a.c.pinned?1:0));
   sorted.forEach(({c,i})=>{
-    const dayLabels=c.days.map(d=>DAY_NAMES[LANG][d]).join('،');
+    const dayLabels=c.days.map(d=>DAY_NAMES[LANG][d]).join(LANG==='ar'?'،':', ');
     const rangeLabel=(c.fromDate||c.toDate) ? ` [${c.fromDate||'…'} → ${c.toDate||'…'}]` : '';
     const chip=document.createElement('div'); chip.className='tag-chip commit-chip';
     chip.innerHTML=`<span>📌 ${c.label} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
