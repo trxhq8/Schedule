@@ -748,7 +748,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.1';
+const APP_VERSION='v1.9.2';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3592,10 +3592,12 @@ function renderCollSpeciesGrid(){
     const tier=RARITY_TIERS[sp.rarity];
     let badge='';
     if(collected && bestHolderId===sp.id) badge='<span class="coll-corner-badge" title="best">🏆</span>';
+    const cachedPhoto=rec.hasPhoto?collPhotoCache[collCurrentCat+':'+sp.id]:null;
+    const thumbInner=cachedPhoto?`<img src="${cachedPhoto.dataUrl}" alt="">`:(collected?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon));
     return `<div class="coll-species-card ${collected?'collected tier-'+sp.rarity:'locked'}" data-sp="${sp.id}">
       <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
       ${badge}
-      <div class="thumb">${collected?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
+      <div class="thumb">${thumbInner}</div>
       <div class="name">${collName(sp)}</div>
       <div class="meta">${collected?(rec.catches.length+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):(LANG==='ar'?'غير مجموع':'Not collected')}</div>
     </div>`;
@@ -3606,6 +3608,26 @@ function renderCollSpeciesGrid(){
       collGoTo('species');
       renderCollSpeciesDetail();
     });
+  });
+
+  // Species that have a photo but aren't cached yet: fetch in the background
+  // and patch just that card's thumbnail in place once it arrives — avoids
+  // re-rendering the whole grid and avoids a network round-trip per render
+  // once a species' photo has been loaded once.
+  filtered.forEach(sp=>{
+    const rec=collRecord(sp.id);
+    if(!rec.hasPhoto) return;
+    const photoCacheKey=collCurrentCat+':'+sp.id;
+    if(collPhotoCache[photoCacheKey]!==undefined) return;
+    storageGet('collection-photo:'+collCurrentCat+':'+sp.id).then(raw=>{
+      let photo=null;
+      try{ photo=raw?JSON.parse(raw):null; }catch(e){}
+      collPhotoCache[photoCacheKey]=photo;
+      if(!photo) return;
+      const cardEl=grid.querySelector('.coll-species-card[data-sp="'+sp.id+'"]');
+      const thumbEl=cardEl&&cardEl.querySelector('.thumb');
+      if(thumbEl) thumbEl.innerHTML=`<img src="${photo.dataUrl}" alt="">`;
+    }).catch(()=>{ collPhotoCache[photoCacheKey]=null; });
   });
 }
 
