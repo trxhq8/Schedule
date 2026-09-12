@@ -844,7 +844,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.10';
+const APP_VERSION='v1.9.11';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3919,7 +3919,7 @@ function renderBossModalBody(sp, justCaught){
     </div>
     ${collected?`<div class="boss-achievement">🏅 ${achievement}</div>`:''}
     ${collected?'':`<button class="boss-catch-btn" id="bossCatchBtn">${LANG==='ar'?'✓ سجّل كصيد (هزيمة الرئيس)':'✓ Mark as Defeated / Caught'}</button>`}
-    <button class="boss-continue-btn" id="bossContinueBtn">${LANG==='ar'?'فتح صفحة النوع الكاملة →':'Open Full Species Page →'}</button>
+    <button class="boss-continue-btn" id="bossContinueBtn">${LANG==='ar'?'← فتح صفحة النوع الكاملة':'Open Full Species Page →'}</button>
   `;
   document.getElementById('bossCloseBtn').addEventListener('click',closeBossModal);
   document.getElementById('bossContinueBtn').addEventListener('click',()=>{
