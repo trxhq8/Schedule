@@ -234,7 +234,7 @@
 
   .coll-species-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
   @media(min-width:520px){ .coll-species-grid{grid-template-columns:repeat(3,1fr);} }
-  .coll-species-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 8px 10px; text-align:center; cursor:pointer; box-shadow:var(--shadow); transition:transform .15s ease; position:relative; }
+  .coll-species-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 8px 10px; text-align:center; cursor:pointer; box-shadow:var(--shadow); transition:transform .15s ease; position:relative; overflow:hidden; }
   .coll-species-card:hover{ transform:translateY(-3px); }
   .coll-species-card .thumb{ width:64px; height:64px; margin:0 auto 8px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:var(--bg); border:2px solid var(--line); overflow:hidden; position:relative; }
   .coll-species-card .thumb img{ width:100%; height:100%; object-fit:cover; }
@@ -244,7 +244,23 @@
   .coll-species-card .name{ font-family:var(--font-head); font-weight:800; font-size:0.8rem; color:var(--ink); }
   .coll-species-card.locked .name{ color:var(--ink-soft); }
   .coll-species-card .meta{ font-size:0.68rem; color:var(--ink-soft); margin-top:2px; font-variant-numeric:tabular-nums; }
-  .coll-corner-badge{ position:absolute; top:4px; inset-inline-end:4px; font-size:0.8rem; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
+  .coll-corner-badge{ position:absolute; top:4px; inset-inline-end:4px; font-size:0.8rem; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25)); z-index:2; }
+  /* faint rarity-tinted hint on locked cards, so the trophy shelf reads rarity
+     distribution before anything is collected */
+  .coll-species-card.locked.tier-uncommon{ box-shadow:0 0 0 1px rgba(47,111,176,0.25) inset, var(--shadow); }
+  .coll-species-card.locked.tier-epic{ box-shadow:0 0 0 1px rgba(168,117,209,0.3) inset, var(--shadow); }
+  .coll-species-card.locked.tier-mythic{ box-shadow:0 0 0 1px rgba(224,104,90,0.32) inset, var(--shadow); }
+  .coll-species-card.locked.tier-legendary{ box-shadow:0 0 0 1.5px rgba(224,164,88,0.4) inset, var(--shadow); }
+  /* animated glow for collected epic/mythic cards, matching legendary's existing pulse */
+  .coll-species-card.collected.tier-epic{ animation:epicGlowCard 2.8s ease-in-out infinite; }
+  .coll-species-card.collected.tier-mythic{ animation:mythicGlowCard 2.4s ease-in-out infinite; }
+  .coll-species-card.collected.tier-legendary{ animation:legendaryGlowCard 2.2s ease-in-out infinite; }
+  @keyframes epicGlowCard{ 0%,100%{ box-shadow:0 0 0 1.5px #a875d1 inset, var(--shadow); } 50%{ box-shadow:0 0 0 1.5px #c19ee0 inset, 0 3px 14px rgba(168,117,209,0.35); } }
+  @keyframes mythicGlowCard{ 0%,100%{ box-shadow:0 0 0 1.5px #e0685a inset, var(--shadow); } 50%{ box-shadow:0 0 0 1.5px #ea8a7d inset, 0 3px 16px rgba(224,104,90,0.4); } }
+  @keyframes legendaryGlowCard{ 0%,100%{ box-shadow:0 0 0 2px #e0a458 inset, 0 4px 18px rgba(224,164,88,0.4); } 50%{ box-shadow:0 0 0 2px #f0c07a inset, 0 6px 26px rgba(224,164,88,0.6); } }
+  /* diagonal foil shine sweeping across collected legendary cards, trophy-case feel */
+  .coll-species-card.collected.tier-legendary::after{ content:''; position:absolute; inset:0; background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,0.55) 50%,transparent 60%); background-size:220% 220%; background-position:130% 130%; animation:legendaryShine 3.6s ease-in-out infinite; pointer-events:none; }
+  @keyframes legendaryShine{ 0%,60%,100%{ background-position:130% 130%; } 80%{ background-position:-30% -30%; } }
 
   .coll-detail-photo{ width:100%; max-width:280px; aspect-ratio:1; margin:0 auto 12px; border-radius:22px; overflow:hidden; position:relative; background:var(--bg); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:var(--shadow); }
   .coll-detail-photo img{ width:100%; height:100%; object-fit:cover; }
@@ -295,8 +311,26 @@
   .coll-detail-photo.tier-legendary{ box-shadow:0 0 0 3px #e0a458, 0 6px 24px rgba(224,164,88,0.45); animation:legendaryGlow 2.4s ease-in-out infinite; }
   @keyframes legendaryGlow{ 0%,100%{ box-shadow:0 0 0 3px #e0a458, 0 6px 24px rgba(224,164,88,0.45); } 50%{ box-shadow:0 0 0 3px #f0c07a, 0 8px 30px rgba(224,164,88,0.65); } }
 
-  .coll-rarity-breakdown{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:14px; }
+  .coll-rarity-breakdown{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
   .coll-rarity-mini{ font-family:var(--font-head); font-weight:800; font-size:0.68rem; padding:3px 9px; border-radius:999px; }
+  .coll-rarity-row{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:8px; }
+  .coll-rarity-row .lbl{ font-family:var(--font-head); font-weight:800; font-size:0.68rem; white-space:nowrap; padding:3px 9px; border-radius:999px; }
+  .coll-rarity-row .track{ height:7px; border-radius:999px; background:var(--bg); border:1px solid var(--line); overflow:hidden; }
+  .coll-rarity-row .fill{ height:100%; border-radius:999px; transition:width .3s ease; }
+  .coll-rarity-row .fill.common{ background:#3f8a58; }
+  .coll-rarity-row .fill.uncommon{ background:#2f6fb0; }
+  .coll-rarity-row .fill.epic{ background:#a875d1; }
+  .coll-rarity-row .fill.mythic{ background:#e0685a; }
+  .coll-rarity-row .fill.legendary{ background:linear-gradient(90deg,#e0a458,#f0c07a); }
+  .coll-rarity-row .count{ font-size:0.68rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .coll-rarity-row .mastered{ font-size:0.7rem; }
+
+  .coll-completion-wrap{ display:flex; align-items:center; gap:14px; margin-bottom:12px; }
+  .coll-completion-ring{ width:64px; height:64px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center; position:relative; }
+  .coll-completion-ring::before{ content:''; position:absolute; inset:5px; border-radius:50%; background:var(--card); }
+  .coll-completion-ring span{ position:relative; font-family:var(--font-head); font-weight:800; font-size:0.85rem; color:var(--ink); }
+  .coll-completion-title{ font-family:var(--font-head); font-weight:800; font-size:0.95rem; color:var(--ink); }
+  .coll-completion-sub{ font-size:0.72rem; color:var(--ink-soft); margin-top:2px; }
 
   .coll-stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0 18px; }
   @media(min-width:520px){ .coll-stats-grid{grid-template-columns:repeat(3,1fr);} }
@@ -642,9 +676,12 @@
     <!-- level 3: species grid for one group -->
     <div class="coll-view" id="collView-category">
       <h2 class="coll-cat-title" id="collCatTitle"></h2>
-      <div class="coll-progress-wrap">
-        <div class="coll-progress-label" id="collProgressLabel"></div>
-        <div class="coll-progress-bar"><div class="coll-progress-fill" id="collProgressFill"></div></div>
+      <div class="coll-completion-wrap">
+        <div class="coll-completion-ring" id="collCompletionRing"><span id="collCompletionPct"></span></div>
+        <div>
+          <div class="coll-completion-title" id="collProgressLabel"></div>
+          <div class="coll-completion-sub" id="collCompletionSub"></div>
+        </div>
       </div>
       <div class="coll-rarity-breakdown" id="collRarityBreakdown"></div>
       <div class="coll-toolbar">
@@ -748,7 +785,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.4';
+const APP_VERSION='v1.9.5';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3537,8 +3574,12 @@ function renderCollSpeciesGrid(){
   const list=collSpeciesList(collCurrentCat).filter(sp=>sp.group===collCurrentGroup);
   const total=list.length;
   const collectedCount=list.filter(sp=>collIsCollected(collRecord(sp.id))).length;
+  const pct=total?Math.round(collectedCount/total*100):0;
   document.getElementById('collProgressLabel').textContent=`${collectedCount} / ${total} ${LANG==='ar'?'مجموع':'Collected'}`;
-  document.getElementById('collProgressFill').style.width=(total?Math.round(collectedCount/total*100):0)+'%';
+  document.getElementById('collCompletionSub').textContent=LANG==='ar'?'نسبة الإكمال':'Completion';
+  const ring=document.getElementById('collCompletionRing');
+  ring.style.background=`conic-gradient(var(--accent-deep) ${pct}%, var(--line) 0)`;
+  document.getElementById('collCompletionPct').textContent=pct+'%';
 
   const breakdownEl=document.getElementById('collRarityBreakdown');
   if(breakdownEl){
@@ -3546,7 +3587,14 @@ function renderCollSpeciesGrid(){
       const inTier=list.filter(sp=>sp.rarity===tier);
       if(!inTier.length) return '';
       const got=inTier.filter(sp=>collIsCollected(collRecord(sp.id))).length;
-      return `<span class="coll-rarity-mini coll-rarity-${tier}">${RARITY_TIERS[tier].icon} ${got}/${inTier.length}</span>`;
+      const tierPct=Math.round(got/inTier.length*100);
+      const mastered=got===inTier.length;
+      const label=LANG==='ar'?RARITY_TIERS[tier].nameAr:RARITY_TIERS[tier].nameEn;
+      return `<div class="coll-rarity-row">
+        <span class="lbl coll-rarity-${tier}">${RARITY_TIERS[tier].icon} ${label}</span>
+        <span class="track"><span class="fill ${tier}" style="width:${tierPct}%"></span></span>
+        <span class="count">${got}/${inTier.length}${mastered?` <span class="mastered" title="${LANG==='ar'?'اكتمل!':'Mastered!'}">🏅</span>`:''}</span>
+      </div>`;
     }).join('');
   }
 
@@ -3594,7 +3642,7 @@ function renderCollSpeciesGrid(){
     if(collected && bestHolderId===sp.id) badge='<span class="coll-corner-badge" title="best">🏆</span>';
     const cachedPhoto=rec.hasPhoto?collPhotoCache[collCurrentCat+':'+sp.id]:null;
     const thumbInner=cachedPhoto?`<img src="${cachedPhoto.dataUrl}" alt="">`:(collected?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon));
-    return `<div class="coll-species-card ${collected?'collected tier-'+sp.rarity:'locked'}" data-sp="${sp.id}">
+    return `<div class="coll-species-card tier-${sp.rarity} ${collected?'collected':'locked'}" data-sp="${sp.id}">
       <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
       ${badge}
       <div class="thumb">${thumbInner}</div>
