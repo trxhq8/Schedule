@@ -252,9 +252,11 @@
   .coll-species-card.locked.tier-mythic{ box-shadow:0 0 0 1px rgba(224,104,90,0.32) inset, var(--shadow); }
   .coll-species-card.locked.tier-legendary{ box-shadow:0 0 0 1.5px rgba(224,164,88,0.4) inset, var(--shadow); }
   /* animated glow for collected epic/mythic cards, matching legendary's existing pulse */
+  .coll-species-card.collected.tier-uncommon{ animation:uncommonGlowCard 3.2s ease-in-out infinite; }
   .coll-species-card.collected.tier-epic{ animation:epicGlowCard 2.8s ease-in-out infinite; }
   .coll-species-card.collected.tier-mythic{ animation:mythicGlowCard 2.4s ease-in-out infinite; }
   .coll-species-card.collected.tier-legendary{ animation:legendaryGlowCard 2.2s ease-in-out infinite; }
+  @keyframes uncommonGlowCard{ 0%,100%{ box-shadow:0 0 0 1px #2f6fb0 inset, var(--shadow); } 50%{ box-shadow:0 0 0 1px #6fa3d8 inset, 0 2px 10px rgba(47,111,176,0.28); } }
   @keyframes epicGlowCard{ 0%,100%{ box-shadow:0 0 0 1.5px #a875d1 inset, var(--shadow); } 50%{ box-shadow:0 0 0 1.5px #c19ee0 inset, 0 3px 14px rgba(168,117,209,0.35); } }
   @keyframes mythicGlowCard{ 0%,100%{ box-shadow:0 0 0 1.5px #e0685a inset, var(--shadow); } 50%{ box-shadow:0 0 0 1.5px #ea8a7d inset, 0 3px 16px rgba(224,104,90,0.4); } }
   @keyframes legendaryGlowCard{ 0%,100%{ box-shadow:0 0 0 2px #e0a458 inset, 0 4px 18px rgba(224,164,88,0.4); } 50%{ box-shadow:0 0 0 2px #f0c07a inset, 0 6px 26px rgba(224,164,88,0.6); } }
@@ -785,7 +787,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.5';
+const APP_VERSION='v1.9.6';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
