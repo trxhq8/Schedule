@@ -844,7 +844,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.11';
+const APP_VERSION='v1.9.12';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2231,7 +2231,8 @@ document.getElementById('todoSetupSave').addEventListener('click',async()=>{
 function parseHM(hhmm){ const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
 function formatTime12h(hhmm){
   if(!hhmm) return '';
-  const [h,m]=hhmm.split(':').map(Number);
+  let [h,m]=hhmm.split(':').map(Number);
+  h=h%24; // "24:00" means midnight (end of day), same as "00:00"
   const period=h<12 ? (LANG==='ar'?'ص':'AM') : (LANG==='ar'?'م':'PM');
   let h12=h%12; if(h12===0) h12=12;
   const mm=String(m).padStart(2,'0');
@@ -3144,7 +3145,10 @@ function renderStreakBadge(){
   el.textContent=`🔥 ${P.streakCount} ${LANG==='ar'?'يوم متتالي':'day streak'}`;
 }
 
-const AGENDA_SLOTS=['00:00-02:00','02:00-04:00','04:00-06:00','06:00-08:00','08:00-10:00','10:00-12:00','12:00-14:00','14:00-16:00','16:00-18:00','18:00-20:00','20:00-22:00','22:00-24:00'];
+const AGENDA_SLOTS=Array.from({length:24},(_,h)=>{
+  const pad=n=>String(n).padStart(2,'0');
+  return `${pad(h)}:00-${pad((h+1)%24===0?24:h+1)}:00`;
+});
 
 let calViewYear, calViewMonth;
 (function initCalView(){ const d=new Date(); calViewYear=d.getFullYear(); calViewMonth=d.getMonth(); })();
