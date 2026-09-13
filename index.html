@@ -844,7 +844,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.12';
+const APP_VERSION='v1.9.13';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3684,7 +3684,7 @@ function renderCollSpeciesGrid(){
 
   const breakdownEl=document.getElementById('collRarityBreakdown');
   if(breakdownEl){
-    breakdownEl.innerHTML=RARITY_ORDER.map(tier=>{
+    breakdownEl.innerHTML=RARITY_ORDER.slice().reverse().map(tier=>{
       const inTier=list.filter(sp=>sp.rarity===tier);
       if(!inTier.length) return '';
       const got=inTier.filter(sp=>collIsCollected(collRecord(sp.id))).length;
