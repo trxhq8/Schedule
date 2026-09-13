@@ -21,10 +21,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Tajawal:wght@400;500;700&family=Rubik:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    color-scheme:light dark;
     --bg:#f6f5ee; --card:#ffffff; --ink:#2f3d33; --ink-soft:#5b6a5f;
-    --accent:#7c9473; --accent-deep:#4c6350; --gold:#e0a458; --line:#e7e3d5;
+    --accent:#7c9473; --accent-deep:#4c6350; --heading:#4c6350; --gold:#e0a458; --line:#e7e3d5;
     --blue:#6a8caf; --water:#6fa3c9; --shadow:0 10px 30px rgba(0,0,0,0.10);
+    --err:#c0392b; --warn-text:#b8860b; --diff-up:#5a8a5f; --diff-down:#c15b4a; --warn-chip-text:#b06355; --warn-chip-border:#d9a79e;
     --font-head:'Cairo',sans-serif; --font-body:'Tajawal',sans-serif;
+  }
+  /* --heading = prominent text/titles directly on --bg/--card (must stay
+     readable against the page background in both themes). --accent-deep
+     stays reserved for FILLED button/badge backgrounds paired with white
+     text, so it's tuned for that contrast instead — the two roles need
+     different lightness in dark mode, which is why they're separate vars. */
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#171b18; --card:#242b25; --ink:#edf1e9; --ink-soft:#a7b2a1;
+      --accent:#7fa571; --accent-deep:#5c7c53; --heading:#bcd6ac; --gold:#e6b06e; --line:#3a4137;
+      --blue:#8fb3d6; --water:#7fbde0; --shadow:0 10px 30px rgba(0,0,0,0.45);
+      --err:#e3695a; --warn-text:#e0b04a; --diff-up:#8fc98a; --diff-down:#e08a76; --warn-chip-text:#e0a394; --warn-chip-border:#7a4a42;
+    }
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -43,31 +58,31 @@
   .ob-dot.active{ background:var(--accent-deep); width:20px; border-radius:5px; }
   .lang-toggle{ font-family:var(--font-head); font-weight:700; font-size:0.75rem; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:999px; padding:5px 12px; cursor:pointer; }
   .ob-step{display:none;} .ob-step.active{display:block; animation:fadeUp .3s ease;}
-  .ob-card h2{ color:var(--accent-deep); font-size:1.15rem; text-align:center; margin:0 0 6px; }
+  .ob-card h2{ color:var(--heading); font-size:1.15rem; text-align:center; margin:0 0 6px; }
   .ob-card p.sub{ text-align:center; color:var(--ink-soft); font-size:0.83rem; margin:0 0 16px; }
   .ob-input{ width:100%; border:1.5px solid var(--line); border-radius:14px; padding:13px 16px; font-family:var(--font-body); font-size:1rem; background:var(--bg); color:var(--ink); text-align:center; margin-bottom:16px; }
-  .ob-input:focus{ outline:none; border-color:var(--accent-deep); }
+  .ob-input:focus{ outline:none; border-color:var(--heading); }
   .ob-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
   .ob-choice{ border:1.5px solid var(--line); border-radius:14px; padding:14px 8px; text-align:center; cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.82rem; background:var(--bg); transition:all .15s ease; color:var(--ink); }
   .ob-choice .ic{ font-size:1.5rem; display:block; margin-bottom:5px; }
-  .ob-choice.selected{ border-color:var(--accent-deep); background:var(--card); box-shadow:var(--shadow); outline:2px solid var(--accent-deep); }
+  .ob-choice.selected{ border-color:var(--heading); background:var(--card); box-shadow:var(--shadow); outline:2px solid var(--heading); }
   .ob-choice.unrealistic{ opacity:0.4; filter:blur(0.3px); cursor:not-allowed; border-color:#e0685a; background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,rgba(224,104,90,0.08) 6px,rgba(224,104,90,0.08) 12px); }
   .ob-btn{ width:100%; font-family:var(--font-head); font-weight:800; font-size:0.95rem; background:var(--accent-deep); color:#fff; border:none; border-radius:14px; padding:13px; cursor:pointer; }
   .ob-btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .ob-btn.secondary{ background:transparent; color:var(--ink-soft); font-weight:700; margin-top:8px; font-size:0.8rem; }
-  .val-msg{ color:#c0392b; font-size:0.76rem; text-align:center; margin-bottom:10px; min-height:15px; }
-  .val-msg.warn{ color:#b8860b; }
+  .val-msg{ color:var(--err); font-size:0.76rem; text-align:center; margin-bottom:10px; min-height:15px; }
+  .val-msg.warn{ color:var(--warn-text); }
 
   /* ---- topnav ---- */
   .topnav{ position:sticky; top:0; z-index:40; backdrop-filter:blur(10px); background:color-mix(in srgb, var(--bg) 85%, transparent); border-bottom:1px solid var(--line); padding:10px 14px; padding-top:calc(10px + env(safe-area-inset-top)); }
   .topnav-inner{ max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .brand{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:0.9rem; }
+  .brand{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:0.9rem; }
   .nav-actions{ display:flex; gap:6px; }
   .icon-btn{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; color:var(--ink); }
 
   /* ---- home ---- */
   .hero{ text-align:center; padding:22px 0 8px; animation:fadeUp .5s ease; }
-  .hero h1{ font-weight:800; font-size:1.3rem; color:var(--accent-deep); margin:0 0 6px; }
+  .hero h1{ font-weight:800; font-size:1.3rem; color:var(--heading); margin:0 0 6px; }
   .hero p{ margin:0; color:var(--ink-soft); font-size:0.85rem; }
   .day-badge{ display:inline-block; margin-top:12px; font-family:var(--font-head); font-weight:800; background:var(--accent-deep); color:#fff; padding:8px 18px; border-radius:999px; font-size:0.86rem; box-shadow:var(--shadow); }
   .home-cards{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:22px; }
@@ -75,7 +90,7 @@
   .home-card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px 16px; text-align:center; cursor:pointer; transition:transform .15s ease; box-shadow:var(--shadow); }
   .home-card:hover{ transform:translateY(-4px); }
   .home-card .ic{ font-size:2.2rem; display:block; margin-bottom:8px; }
-  .home-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; }
+  .home-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1rem; }
   .home-card .dsc{ font-size:0.75rem; color:var(--ink-soft); margin-top:4px; }
 
   .back-row{ margin:14px 0 4px; display:flex; justify-content:space-between; align-items:center; }
@@ -85,7 +100,7 @@
   section.panel{ display:none; padding-top:6px; } section.panel.active{ display:block; animation:fadeUp .3s ease; }
 
   .setup-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px 16px; box-shadow:var(--shadow); margin-bottom:16px; }
-  .setup-card h3{ color:var(--accent-deep); font-size:1rem; margin:0 0 4px; }
+  .setup-card h3{ color:var(--heading); font-size:1rem; margin:0 0 4px; }
   .setup-card p.sub{ color:var(--ink-soft); font-size:0.8rem; margin:0 0 14px; }
   .setup-btn{ width:100%; font-family:var(--font-head); font-weight:800; font-size:0.9rem; background:var(--accent-deep); color:#fff; border:none; border-radius:12px; padding:12px; cursor:pointer; margin-top:6px; }
   .setup-input{ width:100%; border:1px solid var(--line); border-radius:12px; padding:10px 14px; font-family:var(--font-body); font-size:0.88rem; background:var(--bg); color:var(--ink); margin-bottom:12px; }
@@ -111,40 +126,40 @@
   .legend span{ background:var(--card); border:1px solid var(--line); padding:4px 10px; border-radius:999px; }
 
   .log-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:18px; box-shadow:var(--shadow); }
-  .log-card h3{ color:var(--accent-deep); font-size:0.95rem; margin:0 0 10px; }
+  .log-card h3{ color:var(--heading); font-size:0.95rem; margin:0 0 10px; }
   .log-form{ display:flex; gap:8px; margin-bottom:12px; }
   .log-form input{ flex:1; border:1px solid var(--line); border-radius:12px; padding:9px 12px; font-family:var(--font-body); font-size:0.88rem; background:var(--bg); color:var(--ink); }
   .log-form button{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; background:var(--accent-deep); color:#fff; border:none; border-radius:12px; padding:9px 18px; cursor:pointer; }
   .chart-box{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px; margin-bottom:12px; }
   .log-list{ display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto; }
   .log-row{ display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:7px 12px; font-size:0.82rem; }
-  .log-row .kg{ font-weight:800; color:var(--accent-deep); font-family:var(--font-head); }
+  .log-row .kg{ font-weight:800; color:var(--heading); font-family:var(--font-head); }
   .log-row .diff{ font-size:0.72rem; font-weight:700; }
-  .log-row .diff.up{ color:#5a8a5f; } .log-row .diff.down{ color:#c15b4a; }
+  .log-row .diff.up{ color:var(--diff-up); } .log-row .diff.down{ color:var(--diff-down); }
   .log-empty{ text-align:center; color:var(--ink-soft); font-size:0.8rem; padding:10px 0; }
 
   .week-cards{ display:flex; flex-wrap:wrap; justify-content:center; gap:12px; overflow-x:auto; padding:8px 4px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
   .week-card{ flex:0 0 108px; scroll-snap-align:center; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px 10px; text-align:center; cursor:pointer; box-shadow:var(--shadow); transition:transform .15s ease; font-family:var(--font-head); }
   .week-card:hover{ transform:translateY(-3px); }
   .week-card .wc-icon{ font-size:1.8rem; display:block; margin-bottom:8px; }
-  .week-card .wc-day{ font-weight:800; color:var(--accent-deep); font-size:0.95rem; }
-  .week-card.wc-today{ flex:0 0 128px; transform:scale(1.05); border-color:var(--accent-deep); outline:2px solid var(--accent-deep); outline-offset:2px; }
+  .week-card .wc-day{ font-weight:800; color:var(--heading); font-size:0.95rem; }
+  .week-card.wc-today{ flex:0 0 128px; transform:scale(1.05); border-color:var(--heading); outline:2px solid var(--heading); outline-offset:2px; }
   .week-card.wc-special{ border-color:var(--gold); }
-  .today-square{ background:var(--card); border:2px solid var(--accent-deep); border-radius:20px; padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
+  .today-square{ background:var(--card); border:2px solid var(--heading); border-radius:20px; padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
   .today-square-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-  .today-square-day{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1.1rem; }
+  .today-square-day{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1.1rem; }
   .today-square-kcal{ font-family:var(--font-head); font-weight:700; color:var(--gold); font-size:0.85rem; }
   .meal-swap-btn{ border:none; background:none; cursor:pointer; font-size:1rem; padding:0; flex-shrink:0; }
   .meal-macro-line{ font-size:0.72rem; color:var(--ink-soft); margin-top:3px; font-variant-numeric:tabular-nums; }
   .meal-ingredients{ font-size:0.7rem; color:var(--ink-soft); margin-top:2px; font-style:italic; }
   .color-swatch-grid{ display:flex; flex-wrap:wrap; gap:12px; }
   .color-swatch{ width:38px; height:38px; border-radius:50%; cursor:pointer; border:2px solid var(--line); position:relative; }
-  .color-swatch.selected{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+  .color-swatch.selected{ outline:2px solid var(--heading); outline-offset:2px; }
   .color-swatch.selected::after{ content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; text-shadow:0 0 2px rgba(0,0,0,0.6); }
   .time-picker{ display:flex; gap:4px; }
   .time-picker select{ flex:1; min-width:0; border:1px solid var(--line); border-radius:10px; padding:8px 4px; font-family:var(--font-body); font-size:0.85rem; background:var(--bg); color:var(--ink); }
   .ex-table{ width:100%; border-collapse:collapse; font-size:0.82rem; margin-bottom:6px; }
-  .ex-table th{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); text-align:start; padding:6px 4px; border-bottom:2px solid var(--line); }
+  .ex-table th{ font-family:var(--font-head); font-weight:800; color:var(--heading); text-align:start; padding:6px 4px; border-bottom:2px solid var(--line); }
   .ex-table td{ padding:7px 4px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; }
   .ex-table tr.ex-done td{ opacity:0.55; text-decoration:line-through; }
   .ex-table input[type="checkbox"]{ width:18px; height:18px; }
@@ -152,31 +167,31 @@
   @media(max-width:480px){ .grid{grid-template-columns:repeat(4,1fr);} }
   .day-btn{ aspect-ratio:1; background:var(--card); border:1px solid var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:transform .15s ease; font-family:var(--font-head); position:relative; padding:4px; }
   .day-btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow); }
-  .day-btn .num{ font-weight:800; font-size:0.82rem; color:var(--accent-deep); }
+  .day-btn .num{ font-weight:800; font-size:0.82rem; color:var(--heading); }
   .day-btn .preview{ font-size:0.78rem; margin-top:2px; }
   .day-btn.special{ border-color:var(--gold); }
   .day-btn.rest{ opacity:0.65; }
-  .day-btn.today{ outline:2px solid var(--accent-deep); outline-offset:2px; }
+  .day-btn.today{ outline:2px solid var(--heading); outline-offset:2px; }
   .day-btn.today::before{ content:attr(data-today-label); position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:var(--accent-deep); color:#fff; font-size:0.55rem; padding:1px 6px; border-radius:999px; }
 
   .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px; backdrop-filter:blur(2px); }
   .overlay.open{ display:flex; }
   .card{ background:var(--card); border-radius:20px; max-width:430px; width:100%; max-height:88vh; overflow-y:auto; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.3); padding:26px 20px 22px; animation:popIn .2s ease; }
   @keyframes popIn{ from{opacity:0; transform:scale(.95);} to{opacity:1; transform:scale(1);} }
-  .card h2{ text-align:center; color:var(--accent-deep); font-size:1.1rem; margin:6px 0 2px; }
+  .card h2{ text-align:center; color:var(--heading); font-size:1.1rem; margin:6px 0 2px; }
   .card .subtitle{ text-align:center; color:var(--ink-soft); font-size:0.8rem; margin-bottom:14px; }
   .total-kcal{ text-align:center; border:1px solid var(--gold); border-radius:999px; padding:8px 16px; font-family:var(--font-head); font-weight:800; color:var(--gold); font-size:0.9rem; margin-bottom:14px; }
   .meal,.exercise{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px 14px; margin-bottom:10px; }
-  .meal .label{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; color:var(--accent-deep); margin-bottom:3px; display:flex; justify-content:space-between; }
+  .meal .label{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; color:var(--heading); margin-bottom:3px; display:flex; justify-content:space-between; }
   .meal .label .kcal{ font-size:0.7rem; color:var(--gold); border:1px solid var(--line); border-radius:999px; padding:1px 8px; }
   .meal .content,.exercise .content{ font-size:0.86rem; line-height:1.7; color:var(--ink); }
   .exercise .label{ font-family:var(--font-head); font-weight:700; font-size:0.85rem; color:var(--blue); margin-bottom:4px; }
   .exercise .content div{ padding:2px 0; }
-  .warn-chip{ background:var(--bg); border:1px solid #d9a79e; color:#b06355; border-radius:12px; padding:8px 12px; font-size:0.77rem; line-height:1.6; margin-top:6px; }
+  .warn-chip{ background:var(--bg); border:1px solid var(--warn-chip-border); color:var(--warn-chip-text); border-radius:12px; padding:8px 12px; font-size:0.77rem; line-height:1.6; margin-top:6px; }
   .info-chip{ background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); border-radius:12px; padding:8px 12px; font-size:0.77rem; line-height:1.6; margin-top:6px; }
   .close-btn{ position:absolute; top:10px; left:10px; background:var(--accent); color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-size:1rem; cursor:pointer; }
 
-  .today-date{ text-align:center; font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; margin-bottom:4px; }
+  .today-date{ text-align:center; font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1rem; margin-bottom:4px; }
   .today-plan{ text-align:center; color:var(--ink-soft); font-size:0.8rem; margin-bottom:16px; }
   .checklist{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
   .check-item{ display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; transition:all .15s ease; box-shadow:var(--shadow); }
@@ -187,8 +202,10 @@
   .check-item.done .txt{ text-decoration:line-through; color:var(--ink-soft); }
   .supp-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
   .supp-chip{ flex:1; min-width:100px; text-align:center; padding:14px 10px; border-radius:14px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.85rem; box-shadow:var(--shadow); color:var(--ink); }
-  .supp-chip.done{ border-color:var(--gold); color:var(--gold); }
-  .supp-chip .ic{ font-size:1.3rem; display:block; margin-bottom:4px; }
+  .supp-chip.done{ border-color:var(--gold); color:var(--gold); opacity:0.7; }
+  .supp-chip.done .label-text{ text-decoration:line-through; }
+  .supp-chip .ic{ font-size:1.3rem; display:block; margin-bottom:4px; cursor:pointer; border-radius:8px; }
+  .supp-chip .ic:hover{ background:var(--bg); }
   .water-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; text-align:center; box-shadow:var(--shadow); margin-bottom:18px; }
   .water-card h3{ color:var(--water); font-size:0.95rem; margin:0 0 10px; }
   .water-cups{ font-size:1.4rem; letter-spacing:2px; margin-bottom:10px; min-height:28px; }
@@ -202,14 +219,14 @@
   .commit-banner{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:16px; font-size:0.85rem; text-align:center; box-shadow:var(--shadow); }
   .agenda-list{ display:flex; flex-direction:column; gap:8px; }
   .agenda-slot{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; box-shadow:var(--shadow); }
-  .agenda-slot .time{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:0.82rem; }
+  .agenda-slot .time{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:0.82rem; }
   .agenda-slot .note{ font-size:0.83rem; color:var(--ink); margin-top:4px; }
   .agenda-slot .note.empty{ color:var(--ink-soft); opacity:0.6; font-style:italic; }
   .agenda-edit{ width:100%; border:1px solid var(--accent); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.83rem; margin-top:6px; background:var(--bg); color:var(--ink); }
   /* calendar */
   .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .cal-header button{ background:var(--card); border:1px solid var(--line); border-radius:10px; width:38px; height:38px; font-size:1.2rem; cursor:pointer; color:var(--accent-deep); box-shadow:var(--shadow); }
-  .cal-month-label{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1.05rem; }
+  .cal-header button{ background:var(--card); border:1px solid var(--line); border-radius:10px; width:38px; height:38px; font-size:1.2rem; cursor:pointer; color:var(--heading); box-shadow:var(--shadow); }
+  .cal-month-label{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1.05rem; }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px; }
   .cal-dayname{ text-align:center; font-size:0.58rem; color:var(--ink-soft); font-weight:700; padding-bottom:4px; overflow:hidden; white-space:nowrap; }
   .cal-cell{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:12px; background:var(--card); border:1px solid var(--line); cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--ink); position:relative; box-shadow:var(--shadow); transition:transform 0.1s; }
@@ -240,13 +257,13 @@
   .coll-cat-card.disabled{ opacity:0.5; cursor:default; }
   .coll-cat-card.disabled:hover{ transform:none; }
   .coll-cat-card .ic{ font-size:2.4rem; display:block; margin-bottom:8px; }
-  .coll-cat-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; }
+  .coll-cat-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1rem; }
   .coll-cat-card .sub{ font-size:0.72rem; color:var(--ink-soft); margin-top:5px; font-variant-numeric:tabular-nums; }
   .coll-cat-card .soon-tag{ position:absolute; top:10px; inset-inline-end:10px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); font-size:0.6rem; font-family:var(--font-head); font-weight:700; padding:2px 8px; border-radius:999px; }
 
-  .coll-cat-title{ text-align:center; color:var(--accent-deep); font-size:1.1rem; margin:10px 0 14px; }
+  .coll-cat-title{ text-align:center; color:var(--heading); font-size:1.1rem; margin:10px 0 14px; }
   .coll-progress-wrap{ margin-bottom:14px; }
-  .coll-progress-label{ text-align:center; font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:0.85rem; margin-bottom:6px; }
+  .coll-progress-label{ text-align:center; font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:0.85rem; margin-bottom:6px; }
   .coll-progress-bar{ background:var(--line); border-radius:999px; height:8px; overflow:hidden; }
   .coll-progress-fill{ background:var(--accent-deep); height:100%; border-radius:999px; transition:width .3s ease; }
   .coll-toolbar{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
@@ -261,7 +278,7 @@
   .coll-species-card .thumb{ width:64px; height:64px; margin:0 auto 8px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:var(--bg); border:2px solid var(--line); overflow:hidden; position:relative; }
   .coll-species-card .thumb img{ width:100%; height:100%; object-fit:cover; }
   .coll-species-card.locked .thumb{ filter:grayscale(1); opacity:0.55; }
-  .coll-species-card.collected .thumb{ border-color:var(--accent-deep); }
+  .coll-species-card.collected .thumb{ border-color:var(--heading); }
   .coll-species-card .lock-ic{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:rgba(0,0,0,0.15); border-radius:50%; }
   .coll-species-card .name{ font-family:var(--font-head); font-weight:800; font-size:0.8rem; color:var(--ink); }
   .coll-species-card.locked .name{ color:var(--ink-soft); }
@@ -343,7 +360,7 @@
 
   .coll-records-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
   .coll-record-chip{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; }
-  .coll-record-chip .rv{ font-family:var(--font-head); font-weight:800; color:var(--accent-deep); font-size:1rem; }
+  .coll-record-chip .rv{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1rem; }
   .coll-record-chip .rl{ font-size:0.68rem; color:var(--ink-soft); margin-top:2px; }
 
   .coll-log-form{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
@@ -394,15 +411,15 @@
   .coll-stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0 18px; }
   @media(min-width:520px){ .coll-stats-grid{grid-template-columns:repeat(3,1fr);} }
   .coll-stat-chip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; font-size:0.78rem; box-shadow:var(--shadow); }
-  .coll-stat-chip b{ display:block; font-family:var(--font-head); font-size:1.1rem; color:var(--accent-deep); }
+  .coll-stat-chip b{ display:block; font-family:var(--font-head); font-size:1.1rem; color:var(--heading); }
   .coll-stat-chip.legendary{ background:linear-gradient(160deg,var(--card),#fff8ea); border-color:#e0c88a; }
   .coll-stat-chip.legendary b{ color:#8a6a12; }
 
   .coll-variants-section{ margin-bottom:16px; }
-  .coll-variants-section h3{ font-size:0.9rem; color:var(--accent-deep); margin:0 0 10px; }
+  .coll-variants-section h3{ font-size:0.9rem; color:var(--heading); margin:0 0 10px; }
   .coll-variants-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .coll-variant-card{ background:var(--bg); border:1.5px solid var(--line); border-radius:14px; padding:8px 4px; text-align:center; cursor:pointer; position:relative; }
-  .coll-variant-card.done{ border-color:var(--accent-deep); background:var(--card); }
+  .coll-variant-card.done{ border-color:var(--heading); background:var(--card); }
   .coll-variant-card .thumb{ width:44px; height:44px; margin:0 auto 6px; border-radius:50%; overflow:hidden; background:var(--card); display:flex; align-items:center; justify-content:center; }
   .coll-variant-card .thumb img{ width:100%; height:100%; object-fit:cover; }
   .coll-variant-card .name{ font-size:0.68rem; font-weight:700; color:var(--ink); }
@@ -415,7 +432,7 @@
 
   .coll-mode-toggle{ display:flex; gap:8px; margin-bottom:14px; }
   .coll-mode-btn{ flex:1; font-family:var(--font-head); font-weight:700; font-size:0.78rem; padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); cursor:pointer; transition:background .15s ease,color .15s ease; }
-  .coll-mode-btn.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .coll-mode-btn.active{ background:var(--accent-deep); color:#fff; border-color:var(--heading); }
 </style>
 </head>
 <body>
@@ -430,8 +447,8 @@
       <div class="color-swatch-grid" id="colorSwatchGrid"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:14px;">
-      <button class="ob-btn" id="exportBtn" type="button" style="flex:1;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);font-size:0.8rem;padding:10px;">⬇️ <span data-i18n="backup_export"></span></button>
-      <button class="ob-btn" id="importBtn" type="button" style="flex:1;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);font-size:0.8rem;padding:10px;">⬆️ <span data-i18n="backup_import"></span></button>
+      <button class="ob-btn" id="exportBtn" type="button" style="flex:1;background:var(--card);color:var(--heading);border:1px solid var(--heading);font-size:0.8rem;padding:10px;">⬇️ <span data-i18n="backup_export"></span></button>
+      <button class="ob-btn" id="importBtn" type="button" style="flex:1;background:var(--card);color:var(--heading);border:1px solid var(--heading);font-size:0.8rem;padding:10px;">⬆️ <span data-i18n="backup_import"></span></button>
     </div>
     <input type="file" id="importFileInput" accept="application/json" class="hidden">
     <button class="ob-btn secondary" id="signOutBtn" type="button" data-i18n="auth_sign_out" style="margin-top:14px;"></button>
@@ -506,7 +523,7 @@
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="commit_from_date"></label><input type="date" class="setup-input" id="commitFromDate"></div>
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="commit_to_date"></label><input type="date" class="setup-input" id="commitToDate"></div>
         </div>
-        <button class="setup-btn" id="commitAddBtn" type="button" data-i18n="add_commit" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);"></button>
+        <button class="setup-btn" id="commitAddBtn" type="button" data-i18n="add_commit" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);"></button>
         <button class="setup-btn" id="todoSetupSave" data-i18n="save" style="margin-top:14px;"></button>
       </div>
 
@@ -515,7 +532,7 @@
         <div class="cal-month-label" id="calMonthLabel"></div>
         <button id="calNextMonth" type="button">›</button>
       </div>
-      <button class="setup-btn" id="calTodayBtn" type="button" data-i18n="cal_today_btn" style="margin-bottom:12px;background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);"></button>
+      <button class="setup-btn" id="calTodayBtn" type="button" data-i18n="cal_today_btn" style="margin-bottom:12px;background:var(--card);color:var(--heading);border:1px solid var(--heading);"></button>
       <div class="cal-grid" id="calendarGrid"></div>
     </div>
   </section>
@@ -650,7 +667,7 @@
       </div>
       <div class="log-card">
         <h3 data-i18n="weight_log_title"></h3>
-        <button type="button" class="setup-btn" id="weightChartBox" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);">📈 <span data-i18n="chart_btn"></span></button>
+        <button type="button" class="setup-btn" id="weightChartBox" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">📈 <span data-i18n="chart_btn"></span></button>
         <div class="log-form">
           <input type="number" step="0.1" id="weightInput">
           <button id="saveWeightBtn" data-i18n="save"></button>
@@ -679,17 +696,30 @@
         <div class="ob-choice" data-fitlevel="pro"><span class="ic">🔥</span><span data-i18n="fitlevel_pro"></span></div>
       </div>
       <div class="val-msg" id="fitnessLevelValMsg"></div>
+      <h3 data-i18n="q_train_location"></h3>
+      <div class="ob-grid" id="obTrainLocGrid" style="grid-template-columns:1fr 1fr;">
+        <div class="ob-choice" data-trainloc="gym"><span class="ic">🏋️</span><span data-i18n="trainloc_gym"></span></div>
+        <div class="ob-choice" data-trainloc="home"><span class="ic">🏠</span><span data-i18n="trainloc_home"></span></div>
+      </div>
+      <div id="homeEquipSection">
       <h3 data-i18n="q_equip"></h3>
       <div class="ob-grid" id="obEquipGrid">
         <div class="ob-choice" data-equip="dumbbells"><span class="ic">🏋️</span><span data-i18n="eq_db"></span></div>
         <div class="ob-choice" data-equip="band"><span class="ic">🎗️</span><span data-i18n="eq_band"></span></div>
         <div class="ob-choice" data-equip="bar"><span class="ic">🧗</span><span data-i18n="eq_bar"></span></div>
+        <div class="ob-choice" data-equip="barbell"><span class="ic">🏋️‍♂️</span><span data-i18n="eq_barbell"></span></div>
+        <div class="ob-choice" data-equip="bench"><span class="ic">🪑</span><span data-i18n="eq_bench"></span></div>
+        <div class="ob-choice" data-equip="kettlebell"><span class="ic">🔔</span><span data-i18n="eq_kettlebell"></span></div>
+        <div class="ob-choice" data-equip="dipbars"><span class="ic">🤸</span><span data-i18n="eq_dipbars"></span></div>
+        <div class="ob-choice" data-equip="mat"><span class="ic">🧘</span><span data-i18n="eq_mat"></span></div>
         <div class="ob-choice" data-equip="none"><span class="ic">🚫</span><span data-i18n="eq_none"></span></div>
       </div>
       <div class="tag-chips" id="equipOtherChips"></div>
       <div class="tag-add-row">
         <input type="text" class="setup-input" id="equipOtherField" data-i18n-ph="equip_other_ph">
         <button class="setup-btn" id="equipOtherAdd" type="button">➕</button>
+      </div>
+      </div>
       </div>
       <h3 data-i18n="q_injury"></h3>
       <div class="ob-grid" id="obInjuryGrid">
@@ -799,7 +829,7 @@
       <span></span>
       <button class="lang-toggle" id="authLangToggle">EN</button>
     </div>
-    <h2 data-i18n="auth_title" style="text-align:center;color:var(--accent-deep);font-size:1.15rem;margin:0 0 16px;"></h2>
+    <h2 data-i18n="auth_title" style="text-align:center;color:var(--heading);font-size:1.15rem;margin:0 0 16px;"></h2>
     <button class="ob-btn" id="googleSignInBtn" type="button" style="background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-bottom:14px;">🔵 <span data-i18n="auth_google"></span></button>
     <div style="display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink-soft);font-size:0.78rem;">
       <div style="flex:1;height:1px;background:var(--line);"></div>
@@ -863,7 +893,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.11.1';
+const APP_VERSION='v1.12.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1254,7 +1284,8 @@ const I18N={
   fitlevel_beginner:'مبتدئ',fitlevel_amateur:'متوسط',fitlevel_pro:'محترف',
   pick_something_fitlevel:'🚫 لازم تختار مستواك عشان نعطيك تمارين مناسبة لك',
   ex_goal_muscle:'بناء عضل',ex_goal_lose:'حرق دهون',ex_goal_mobility:'مرونة',
-  q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_none:'ولا شي',
+  q_train_location:'📍 وين تتمرن؟',trainloc_gym:'جيم',trainloc_home:'بيت',
+  q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_barbell:'بار حديد (باربل)',eq_bench:'بنش',eq_kettlebell:'كيتل بيل',eq_dipbars:'متوازي ديبس',eq_mat:'مسطبة يوقا',eq_none:'ولا شي',
   equip_other_ph:'أداة ثانية؟ اكتبها هنا (اختياري)',
   q_injury:'🩹 عندك إصابات؟',inj_elbow:'الكوع',inj_shoulder:'الكتف',inj_knee:'الركبة',inj_back:'أسفل الظهر',inj_none:'ما عندي',
   injury_other_ph:'إصابة ثانية؟ اكتبها هنا (اختياري)',
@@ -1320,7 +1351,8 @@ const I18N={
   fitlevel_beginner:'Beginner',fitlevel_amateur:'Amateur',fitlevel_pro:'Pro',
   pick_something_fitlevel:'🚫 Pick your level so we can give you the right exercises',
   ex_goal_muscle:'Build muscle',ex_goal_lose:'Fat loss',ex_goal_mobility:'Mobility',
-  q_equip:'🎒 What equipment do you have?',eq_db:'Dumbbells',eq_band:'Resistance band',eq_bar:'Pull-up bar',eq_none:'None',
+  q_train_location:'📍 Where do you train?',trainloc_gym:'Gym',trainloc_home:'Home',
+  q_equip:'🎒 What equipment do you have?',eq_db:'Dumbbells',eq_band:'Resistance band',eq_bar:'Pull-up bar',eq_barbell:'Barbell',eq_bench:'Bench',eq_kettlebell:'Kettlebell',eq_dipbars:'Dip bars',eq_mat:'Yoga mat',eq_none:'No equipment',
   equip_other_ph:'Other equipment? Type it here (optional)',
   q_injury:'🩹 Any injuries?',inj_elbow:'Elbow',inj_shoulder:'Shoulder',inj_knee:'Knee',inj_back:'Lower back',inj_none:'None',
   injury_other_ph:'Other injury? Type it here (optional)',
@@ -2140,6 +2172,47 @@ const workoutTypes={
   main:[{ar:'اليوم راحة!',en:'Rest today!'},{ar:'رياضة خارجية؟ العبها اليوم 👌',en:'Outdoor sport? Play it today 👌'},{ar:'مشي خفيف ٢٠-٣٠ دقيقة',en:'Light 20-30 min walk'}], small:[],
   stretch:{ar:'🧘 استرتش خفيف قبل النوم',en:'🧘 Light stretch before bed'}}
 };
+/* full gym exercise pool — barbells, dumbbells, machines and cables, used
+   only when the user selected 🏋️ Gym as their training location (never
+   mixed with the bodyweight/home pool, and never subjected to the home
+   equipment swaps below — a gym is assumed to have everything). */
+const GYM_WORKOUT_TYPES={
+ push:{icon:'🔴',name:{ar:'دفع — صدر + كتف + تراي (جيم)',en:'Push — chest + shoulders + triceps (gym)'},
+  main:[{ar:'١. بنش برس بار — ٤ × ٨-١٠',en:'1. Barbell bench press — 4×8-10'},{ar:'٢. بنش دمبل مائل — ٣ × ١٠-١٢',en:'2. Incline dumbbell press — 3×10-12'},{ar:'٣. شولدر برس دمبل جالس — ٣ × ١٠-١٢',en:'3. Seated dumbbell shoulder press — 3×10-12'},{ar:'٤. رفرفة جانبية كيبل/دمبل — ٣ × ١٢-١٥',en:'4. Cable/dumbbell lateral raises — 3×12-15'},{ar:'٥. ترايسبس بوشداون كيبل — ٣ × ١٢',en:'5. Cable triceps pushdown — 3×12'},{ar:'٦. ديبس على المتوازي (بوزن إضافي لو تقدر) — ٣ × ٨-١٢',en:'6. Chest dips (weighted if you can) — 3×8-12'}],
+  small:[{ar:'٧. باي فلاي كيبل — ٣ × ١٢',en:'7. Cable chest fly — 3×12'},{ar:'٨. ترايسبس إكستنشن فوق الراس — ٣ × ١٢',en:'8. Overhead triceps extension — 3×12'},{ar:'٩. رفرفة أمامية دمبل — ٣ × ١٢',en:'9. Dumbbell front raise — 3×12'}],
+  stretch:{ar:'🧘 استرتش صدر + كتف خلفي + تراي — ٥ دقايق',en:'🧘 Chest + rear delt + triceps stretch — 5 min'}},
+ pull:{icon:'🔵',name:{ar:'سحب — ظهر + باي (جيم)',en:'Pull — back + biceps (gym)'},color:'pull',
+  main:[{ar:'١. لات بولداون — ٤ × ١٠-١٢',en:'1. Lat pulldown — 4×10-12'},{ar:'٢. تجديف بار/دمبل — ٤ × ٨-١٠',en:'2. Barbell/dumbbell row — 4×8-10'},{ar:'٣. سيتد كيبل رو — ٣ × ١٠-١٢',en:'3. Seated cable row — 3×10-12'},{ar:'٤. فيس بول كيبل — ٣ × ١٥',en:'4. Cable face pulls — 3×15'},{ar:'٥. باي كيرل بار/دمبل — ٣ × ١٠-١٢',en:'5. Barbell/dumbbell bicep curl — 3×10-12'},{ar:'٦. عقلة (بمساعدة لو تحتاج) — ٣ × ٦-١٠',en:'6. Pull-ups (assisted if needed) — 3×6-10'}],
+  small:[{ar:'٧. هامر كيرل دمبل — ٣ × ١٠',en:'7. Dumbbell hammer curl — 3×10'},{ar:'٨. رفرفة كتف خلفي — ٣ × ١٢',en:'8. Rear delt fly — 3×12'},{ar:'٩. شراغ بار/دمبل — ٣ × ١٢',en:'9. Barbell/dumbbell shrugs — 3×12'}],
+  stretch:{ar:'🧘 استرتش ساعد + ظهر علوي — ٥ دقايق',en:'🧘 Forearm + upper-back stretch — 5 min'}},
+ legs:{icon:'🟢',name:{ar:'رجل + كور (جيم)',en:'Legs + core (gym)'},color:'legs',
+  main:[{ar:'١. سكوات بار خلفي — ٤ × ٨-١٠',en:'1. Barbell back squat — 4×8-10'},{ar:'٢. ليج برس — ٣ × ١٠-١٢',en:'2. Leg press — 3×10-12'},{ar:'٣. رومانيان ديدلفت — ٣ × ١٠',en:'3. Romanian deadlift — 3×10'},{ar:'٤. ليج كيرل ماكينة — ٣ × ١٢',en:'4. Leg curl machine — 3×12'},{ar:'٥. ليج إكستنشن ماكينة — ٣ × ١٢',en:'5. Leg extension machine — 3×12'},{ar:'٦. سمانة واقف — ٤ × ١٥-٢٠',en:'6. Standing calf raise — 4×15-20'}],
+  small:[{ar:'٧. لنجز مشي بدمبل — ٣ × ١٢/رجل',en:'7. Walking lunges (dumbbells) — 3×12/leg'},{ar:'٨. رفع رجل معلق — ٣ × ١٢',en:'8. Hanging leg raise — 3×12'},{ar:'٩. كرنش كيبل — ٣ × ١٥',en:'9. Cable crunch — 3×15'}],
+  stretch:{ar:'🧘 استرتش هامسترنق + كواد + ورك — ٥ دقايق',en:'🧘 Hamstring + quad + hip stretch — 5 min'}},
+ rest:{icon:'😴',name:{ar:'راحة (أو رياضة خارجية ⚽🎾)',en:'Rest (or outdoor sport ⚽🎾)'},
+  main:[{ar:'اليوم راحة!',en:'Rest today!'},{ar:'رياضة خارجية؟ العبها اليوم 👌',en:'Outdoor sport? Play it today 👌'},{ar:'مشي خفيف ٢٠-٣٠ دقيقة',en:'Light 20-30 min walk'}], small:[],
+  stretch:{ar:'🧘 استرتش خفيف قبل النوم',en:'🧘 Light stretch before bed'}}
+};
+const GYM_LEVEL_MAIN={
+ beginner:{
+  push:[{ar:'١. ماكينة ضغط صدر — ٣ × ١٠-١٢',en:'1. Machine chest press — 3×10-12'},{ar:'٢. شولدر برس دمبل — ٣ × ١٠',en:'2. Dumbbell shoulder press — 3×10'},{ar:'٣. ترايسبس بوشداون كيبل — ٣ × ١٢',en:'3. Cable triceps pushdown — 3×12'},{ar:'٤. ماكينة ضغط مائل — ٣ × ١٠',en:'4. Incline machine press — 3×10'}],
+  pull:[{ar:'١. لات بولداون — ٣ × ١٠-١٢',en:'1. Lat pulldown — 3×10-12'},{ar:'٢. سيتد كيبل رو — ٣ × ١٠-١٢',en:'2. Seated cable row — 3×10-12'},{ar:'٣. باي كيرل دمبل — ٣ × ١٠',en:'3. Dumbbell bicep curl — 3×10'},{ar:'٤. ماكينة عقلة بمساعدة — ٣ × ٨',en:'4. Assisted pull-up machine — 3×8'}],
+  legs:[{ar:'١. ليج برس — ٣ × ١٠-١٢',en:'1. Leg press — 3×10-12'},{ar:'٢. ليج إكستنشن — ٣ × ١٢',en:'2. Leg extension — 3×12'},{ar:'٣. ليج كيرل — ٣ × ١٢',en:'3. Leg curl — 3×12'},{ar:'٤. سمانة جالس — ٣ × ١٥',en:'4. Seated calf raise — 3×15'}]
+ },
+ pro:{
+  push:[{ar:'١. بنش برس بار — ٥ × ٦-٨',en:'1. Barbell bench press — 5×6-8'},{ar:'٢. بنش مائل بار — ٤ × ٨-١٠',en:'2. Incline barbell press — 4×8-10'},{ar:'٣. ديبس بوزن إضافي — ٤ × ٨-١٠',en:'3. Weighted dips — 4×8-10'},{ar:'٤. أرنولد برس — ٣ × ١٠',en:'4. Arnold press — 3×10'},{ar:'٥. كيبل كروس أوفر — ٣ × ١٢',en:'5. Cable crossover — 3×12'},{ar:'٦. بنش قبضة ضيقة — ٣ × ٨',en:'6. Close-grip bench press — 3×8'}],
+  pull:[{ar:'١. عقلة بوزن إضافي — ٤ × ٦-٨',en:'1. Weighted pull-ups — 4×6-8'},{ar:'٢. بندلاي رو — ٤ × ٦-٨',en:'2. Pendlay rows — 4×6-8'},{ar:'٣. لات بولداون قبضة ضيقة — ٣ × ١٠',en:'3. Close-grip lat pulldown — 3×10'},{ar:'٤. تي بار رو — ٣ × ١٠',en:'4. T-bar row — 3×10'},{ar:'٥. بريتشر كيرل — ٣ × ١٠',en:'5. Preacher curl — 3×10'},{ar:'٦. فيس بول كيبل — ٣ × ١٥',en:'6. Cable face pulls — 3×15'}],
+  legs:[{ar:'١. سكوات أمامي — ٤ × ٦-٨',en:'1. Front squat — 4×6-8'},{ar:'٢. سكوات بلغاري بدمبل — ٣ × ٨-١٠/رجل',en:'2. Bulgarian split squat (dumbbell) — 3×8-10/leg'},{ar:'٣. رومانيان ديدلفت بار — ٤ × ٨',en:'3. Barbell Romanian deadlift — 4×8'},{ar:'٤. نورديك كيرل — ٣ × ٦-٨',en:'4. Nordic curl — 3×6-8'},{ar:'٥. ليج برس ثقيل — ٤ × ١٠',en:'5. Heavy leg press — 4×10'},{ar:'٦. سمانة واقف ثقيل — ٤ × ١٥',en:'6. Heavy standing calf raise — 4×15'}]
+ }
+};
+const GYM_LEVEL_SMALL={
+ beginner:{ push:[], pull:[], legs:[] },
+ pro:{
+  push:[{ar:'٧. رفرفة جانبية دمبل — ٣ × ١٥',en:'7. Dumbbell lateral raise — 3×15'},{ar:'٨. ترايسبس اوفرهيد دمبل — ٣ × ١٢',en:'8. Overhead dumbbell triceps extension — 3×12'},{ar:'٩. باي فلاي بار منخفض — ٣ × ١٢',en:'9. Low-cable fly — 3×12'}],
+  pull:[{ar:'٧. هامر كيرل — ٣ × ١٢',en:'7. Hammer curl — 3×12'},{ar:'٨. رفرفة كتف خلفي دمبل — ٣ × ١٥',en:'8. Dumbbell rear delt fly — 3×15'},{ar:'٩. شراغ بار ثقيل — ٣ × ١٢',en:'9. Heavy barbell shrugs — 3×12'}],
+  legs:[{ar:'٧. لنجز بلغاري بدمبل ثقيل — ٣ × ١٠/رجل',en:'7. Heavy Bulgarian split squat — 3×10/leg'},{ar:'٨. رفع رجل معلق — ٣ × ١٥',en:'8. Hanging leg raise — 3×15'},{ar:'٩. كرنش كيبل ثقيل — ٣ × ١٥',en:'9. Heavy cable crunch — 3×15'}]
+ }
+};
 /* video link for any exercise: strips numbering + rep/set info from the English
    name and builds a YouTube search link — works for every exercise at every
    level (beginner/amateur/pro) since it's generated from the text itself,
@@ -2183,7 +2256,7 @@ function startRestTimer(seconds){
   bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:var(--accent-deep);color:#fff;padding:14px;text-align:center;font-family:var(--font-head);font-weight:800;font-size:1rem;z-index:9998;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 -4px 16px rgba(0,0,0,0.2);';
   bar.innerHTML=`<span>⏱️ <span id="restTimerNum">${remaining}</span>s</span>
     <button type="button" onclick="startRestTimer(60)" style="background:rgba(255,255,255,0.25);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-family:var(--font-head);font-weight:700;font-size:0.8rem;cursor:pointer;">+60</button>
-    <button type="button" onclick="stopRestTimer()" style="background:#fff;color:var(--accent-deep);border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-head);font-weight:800;cursor:pointer;">${LANG==='ar'?'إيقاف':'Stop'}</button>`;
+    <button type="button" onclick="stopRestTimer()" style="background:#fff;color:#4c6350;border:none;border-radius:8px;padding:6px 14px;font-family:var(--font-head);font-weight:800;cursor:pointer;">${LANG==='ar'?'إيقاف':'Stop'}</button>`;
   document.body.appendChild(bar);
   restTimerInterval=setInterval(()=>{
     remaining--;
@@ -2296,6 +2369,37 @@ const BAND_UPGRADES={
    {find:'سحب بمنشفة أو حزام مربوط بشي ثابت',bandVersion:{ar:'١. سحب بالحبل المطاطي بدل المنشفة — ٣ × ١٢',en:'1. Band rows instead of a towel — 3×12'}}
  ]
 };
+/* stronger free-weight upgrades — applied AFTER band upgrades so kettlebell/
+   barbell (a bigger jump in stimulus than a resistance band) wins when the
+   user has both. Each rule only fires when its OWN required equipment is
+   selected, so e.g. a barbell bench press can never appear unless the user
+   actually picked both barbell AND bench. */
+const TOOL_UPGRADES={
+ legs:[
+  {find:'سكوات بوزن الجسم',requires:['kettlebell'],version:{ar:'١. سكوات كيتل بيل (جوبلت) — ٤ × ١٢-١٥',en:'1. Kettlebell goblet squat — 4×12-15'}},
+  {find:'سكوات بوزن الجسم',requires:['barbell'],version:{ar:'١. سكوات بار خلفي — ٤ × ٨-١٠',en:'1. Barbell back squat — 4×8-10'}},
+  {find:'جسر المؤخرة',requires:['barbell','bench'],version:{ar:'٤. هيب ثرست بار — ٤ × ١٠-١٢',en:'4. Barbell hip thrust — 4×10-12'}},
+  {find:'جسر المؤخرة',requires:['kettlebell'],version:{ar:'٤. سوينج كيتل بيل — ٤ × ١٥',en:'4. Kettlebell swings — 4×15'}}
+ ],
+ push:[
+  {find:'ضغط عادي',requires:['barbell','bench'],version:{ar:'١. بنش برس بار — ٤ × ٨-١٠',en:'1. Barbell bench press — 4×8-10'}},
+  {find:'ضغط منحدر (ايدينك على طاولة/كرسي)',requires:['barbell','bench'],version:{ar:'٢. بنش برس مائل بار — ٣ × ٨-١٠',en:'2. Incline barbell bench press — 3×8-10'}},
+  {find:'ديبس على المتوازي',requires:['dipbars'],version:{ar:'٤. ديبس على متوازي حقيقي — ٤ × ٨-١٢',en:'4. Dips on real parallel bars — 4×8-12'}}
+ ],
+ pull:[
+  {find:'شراغ بدمبل',requires:['kettlebell'],version:{ar:'٥. شراغ كيتل بيل — ٣ × ١٥',en:'5. Kettlebell shrugs — 3×15'}},
+  {find:'عقلة أستراليان',requires:['barbell','bench'],version:{ar:'١. تجديف بار منحني — ٤ × ٨-١٠',en:'1. Barbell bent-over row — 4×8-10'}}
+ ]
+};
+function applyToolUpgrades(day,typeKey){
+  const eq=(P.workoutSetup&&P.workoutSetup.equipment)||[];
+  const rules=TOOL_UPGRADES[typeKey]||[];
+  rules.forEach(rule=>{
+    if(!rule.requires.every(r=>eq.includes(r))) return;
+    const idx=day.main.findIndex(e=>e.ar.includes(rule.find));
+    if(idx>=0) day.main[idx]=rule.version;
+  });
+}
 function applyBandUpgrades(day,typeKey){
   const eq=(P.workoutSetup&&P.workoutSetup.equipment)||[];
   if(!eq.includes('band')) return;
@@ -2330,14 +2434,22 @@ function applyGoalAdditions(day,typeKey){
   }
 }
 function adaptDay(typeKey){
-  const base=workoutTypes[typeKey];
-  const level=(P.exerciseLevel&&P.exerciseLevel[typeKey])||'amateur';
-  const mainSource=(typeKey!=='rest'&&LEVEL_MAIN[level]&&LEVEL_MAIN[level][typeKey]) ? LEVEL_MAIN[level][typeKey] : base.main;
-  const smallSource=(typeKey!=='rest'&&LEVEL_SMALL[level]&&LEVEL_SMALL[level][typeKey]) ? LEVEL_SMALL[level][typeKey] : base.small;
-  const day={icon:base.icon,name:base.name,color:base.color,main:mainSource.map(x=>({...x})),small:smallSource.map(x=>({...x})),stretch:base.stretch,warns:[]};
   const ws=P.workoutSetup||{};
-  applyEquipmentSwaps(day,typeKey);
-  applyBandUpgrades(day,typeKey);
+  const isGym=ws.trainLocation==='gym';
+  const base=(isGym?GYM_WORKOUT_TYPES:workoutTypes)[typeKey];
+  const level=(P.exerciseLevel&&P.exerciseLevel[typeKey])||'amateur';
+  const levelMain=isGym?GYM_LEVEL_MAIN:LEVEL_MAIN;
+  const levelSmall=isGym?GYM_LEVEL_SMALL:LEVEL_SMALL;
+  const mainSource=(typeKey!=='rest'&&levelMain[level]&&levelMain[level][typeKey]) ? levelMain[level][typeKey] : base.main;
+  const smallSource=(typeKey!=='rest'&&levelSmall[level]&&levelSmall[level][typeKey]) ? levelSmall[level][typeKey] : base.small;
+  const day={icon:base.icon,name:base.name,color:base.color,main:mainSource.map(x=>({...x})),small:smallSource.map(x=>({...x})),stretch:base.stretch,warns:[]};
+  if(!isGym){
+    // gym exercises already assume full equipment — the bodyweight→equipment
+    // swap/upgrade tables only make sense for the home pool
+    applyEquipmentSwaps(day,typeKey);
+    applyBandUpgrades(day,typeKey);
+    applyToolUpgrades(day,typeKey);
+  }
   (ws.injuries||[]).forEach(inj=>{
     const mod=INJURY_MODS[inj]; if(!mod) return;
     const swaps=(mod.swaps||{})[typeKey]||[];
@@ -2359,8 +2471,12 @@ function adaptDay(typeKey){
   return day;
 }
 function equipTip(typeKey){
-  const eq=(P.workoutSetup&&P.workoutSetup.equipment)||[];
-  const otherList=(P.workoutSetup&&(P.workoutSetup.equipOtherList||(P.workoutSetup.equipOther?[P.workoutSetup.equipOther]:[])))||[];
+  const ws=P.workoutSetup||{};
+  if(ws.trainLocation==='gym'){
+    return {ar:'🏋️ جدول جيم — كل الأدوات متاحة (بار، دمبل، كيبل، ماكينات).',en:'🏋️ Gym schedule — full equipment assumed (barbell, dumbbells, cables, machines).'};
+  }
+  const eq=ws.equipment||[];
+  const otherList=(ws.equipOtherList||(ws.equipOther?[ws.equipOther]:[]))||[];
   if(!eq.length||eq.includes('none')){
     if(otherList.length) return {ar:`🎒 مسجل عندك: ${otherList.join('، ')}`,en:`🎒 Noted you have: ${otherList.join(', ')}`};
     return {ar:'🎒 كل التمارين بوزن جسمك، ما تحتاج أداة 👍',en:'🎒 Everything is bodyweight — no equipment needed 👍'};
@@ -2675,25 +2791,18 @@ function estimateCalorieTargetFromDraft(){
   }
   return {kcal:Math.round(tdee), dailyAdjust:0};
 }
-/* meal count is fully system-determined — driven by the SIZE of the daily
-   surplus/deficit (not the absolute calorie target). A tiny surplus (e.g.
-   gaining 5kg over a year, ~100-150 kcal/day) is easy to hit in 2-3 meals;
-   a large surplus/deficit needs more meals to distribute comfortably. */
-function suggestedMealCount(dailyAdjust){
-  const size=Math.abs(dailyAdjust);
-  if(size<150) return 2;
-  if(size<350) return 3;
-  if(size<600) return 4;
-  return 5;
-}
+/* meal count: always the full 3 meals + 2 real snacks (5 slots) so snacks
+   are never optional filler that quietly disappears for smaller calorie
+   adjustments — the only exception is 16:8 intermittent fasting, which is
+   an explicit different eating SCHEDULE the user chose, not an automatic
+   meal-count shrink. */
 function applyMealCountSuggestion(){
-  const {dailyAdjust}=estimateCalorieTargetFromDraft();
-  const n = P._schedule==='if168' ? 2 : suggestedMealCount(dailyAdjust);
+  const n = P._schedule==='if168' ? 2 : 5;
   P._mealCount=n;
   const noteEl=document.getElementById('mealCountAutoNote');
   noteEl.textContent = LANG==='ar'
-    ? `🍽️ ${n} وجبات — محسوبة حسب حجم الفائض/العجز اليومي (~${Math.round(Math.abs(dailyAdjust))} سعرة عن معدل الحرق)`
-    : `🍽️ ${n} meals — computed from your daily surplus/deficit size (~${Math.round(Math.abs(dailyAdjust))} kcal vs. maintenance)`;
+    ? (n===5 ? '🍽️ 5 وجبات يوميًا: فطور + سناك + غدا + سناك + عشا' : '🍽️ وجبتين يوميًا (صيام متقطع ١٦:٨)')
+    : (n===5 ? '🍽️ 5 meals a day: breakfast + snack + lunch + snack + dinner' : '🍽️ 2 meals a day (16:8 intermittent fasting)');
 }
 document.getElementById('fNext1').addEventListener('click',()=>{ if(!checkBodyStatsValid()){ scrollToEl(document.getElementById('bodyStatsValMsg')); return; } saveFoodDraft(); goToFStep(2); });
 document.getElementById('fNext2').addEventListener('click',()=>{ if(!checkGoalTargetConflict()){ scrollToEl(document.getElementById('targetValMsg')); return; } saveFoodDraft(); applyMealCountSuggestion(); goToFStep(3); });
@@ -3065,9 +3174,10 @@ function renderFoodSection(){
   }
   const idx=todayWeekdayIndex();
   const v=getTodayMenu(idx);
-  const target=calorieTarget();
   document.getElementById('todaySquareDay').textContent=`📍 ${DAY_NAMES[LANG][idx]}`;
-  document.getElementById('todaySquareKcal').textContent = target ? `🎯 ~${target} ${LANG==='ar'?'سعرة':'kcal'}` : `~${Math.round(v.calories)} ${LANG==='ar'?'سعرة':'kcal'}`;
+  // always the real sum of today's current meals — never the target/goal,
+  // which can silently diverge from what's actually on the plate after a swap
+  document.getElementById('todaySquareKcal').textContent = `~${Math.round(v.calories)} ${LANG==='ar'?'سعرة':'kcal'}`;
   renderMealChecklist(idx,v);
   renderSupChips();
   document.getElementById('waterTitle').textContent=t('water_title').replace('{n}',P.foodSetup.waterTarget);
@@ -3083,6 +3193,10 @@ function checkFitnessLevelPicked(){
   const msgEl=document.getElementById('fitnessLevelValMsg');
   if(msgEl) msgEl.textContent = ok ? '' : t('pick_something_fitlevel');
   return ok;
+}
+wireSingle('#obTrainLocGrid',el=>{ P._trainLocation=el.dataset.trainloc; updateHomeEquipVisibility(); });
+function updateHomeEquipVisibility(){
+  document.getElementById('homeEquipSection').classList.toggle('hidden', P._trainLocation==='gym');
 }
 wireMulti('#obEquipGrid','data-equip',()=>{ P._equipment=[...document.querySelectorAll('#obEquipGrid .ob-choice.selected')].map(c=>c.dataset.equip); });
 wireMulti('#obInjuryGrid','data-injury',()=>{ P._injuries=[...document.querySelectorAll('#obInjuryGrid .ob-choice.selected')].map(c=>c.dataset.injury).filter(x=>x!=='none'); checkInjuryPicked(); });
@@ -3102,12 +3216,15 @@ function prefillWorkoutSetup(){
   const s=P.workoutSetup||{};
   document.querySelectorAll('#obExGoalGrid .ob-choice').forEach(c=>c.classList.toggle('selected',(s.goals||[]).includes(c.dataset.exgoal)));
   document.querySelectorAll('#obFitnessLevelGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.fitlevel===(s.fitnessLevel||'')));
+  const trainLoc=s.trainLocation||'home';
+  document.querySelectorAll('#obTrainLocGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.trainloc===trainLoc));
   document.querySelectorAll('#obEquipGrid .ob-choice').forEach(c=>c.classList.toggle('selected',(s.equipment||[]).includes(c.dataset.equip)));
   document.querySelectorAll('#obInjuryGrid .ob-choice').forEach(c=>c.classList.toggle('selected', c.dataset.injury==='none' ? !!s.noInjuries : (s.injuries||[]).includes(c.dataset.injury)));
-  P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
+  P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._trainLocation=trainLoc; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
   P._restDays=s.restDays||[];
   P._equipOtherList=(s.equipOtherList||[]).slice(); P._injuryOtherList=(s.injuryOtherList||[]).slice();
   renderEquipOtherChips(); renderInjuryOtherChips();
+  updateHomeEquipVisibility();
 }
 function buildRestGrid(){
   const grid=document.getElementById('obRestGrid'); grid.innerHTML='';
@@ -3186,6 +3303,7 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
   P.workoutSetup={
     goals:P._exGoals||[],
     fitnessLevel:newFitnessLevel,
+    trainLocation:P._trainLocation||'home',
     equipment:P._equipment||[],
     equipOtherList:P._equipOtherList||[],
     injuries:P._injuries||[],
@@ -3285,20 +3403,28 @@ function calorieTarget(){
 function openFoodDay(label,v){
   document.getElementById('dayTitle').textContent=`${label} 🍽️`;
   document.getElementById('daySubtitle').textContent=v.tag==='special'?t('special_day'):'';
-  let html='';
-  const supKcal=getSupplementCalorieContribution();
-  const mealsKcalLabel=`~${Math.round(v.calories)} ${LANG==='ar'?'سعرة':'kcal'}`;
-  const supLabel=supKcal>0?` + ${Math.round(supKcal)} ${LANG==='ar'?'سعرة مكملات':'kcal supplements'} = ~${Math.round(v.calories+supKcal)} ${LANG==='ar'?'سعرة إجمالي':'kcal total'}`:'';
-  html+=`<div class="total-kcal">${mealsKcalLabel}${supLabel} · 🥩${Math.round(v.protein)}${LANG==='ar'?'غ':'g'} · 🍞${Math.round(v.carbs)}${LANG==='ar'?'غ':'g'} · 🧈${Math.round(v.fat)}${LANG==='ar'?'غ':'g'}</div>`;
   currentDayMeals=v.meals.map(m=>({...m}));
   currentDaySwapHistory={};
-  html+=`<div id="mealBlocks"></div>`;
-  document.getElementById('cardBody').innerHTML=html;
+  document.getElementById('cardBody').innerHTML=`<div class="total-kcal" id="dayTotalKcal"></div><div id="mealBlocks"></div>`;
+  renderDayTotals();
   currentDayMeals.forEach((_,i)=>renderMealBlock(i));
   overlay.classList.add('open');
 }
 let currentDayMeals=[];
 let currentDaySwapHistory={};
+/* single source of truth for the day-detail header: ALWAYS recomputed from
+   whatever is currently in currentDayMeals (never a value captured once at
+   open-time), so a swap that changes one meal's calories is immediately
+   reflected in the total — there is no separate cached "day total" that can
+   drift out of sync with the meals actually shown. */
+function renderDayTotals(){
+  const el=document.getElementById('dayTotalKcal'); if(!el) return;
+  const totals=calculateDailyNutrition(currentDayMeals);
+  const supKcal=getSupplementCalorieContribution();
+  const mealsKcalLabel=`~${Math.round(totals.calories)} ${LANG==='ar'?'سعرة':'kcal'}`;
+  const supLabel=supKcal>0?` + ${Math.round(supKcal)} ${LANG==='ar'?'سعرة مكملات':'kcal supplements'} = ~${Math.round(totals.calories+supKcal)} ${LANG==='ar'?'سعرة إجمالي':'kcal total'}`:'';
+  el.textContent=`${mealsKcalLabel}${supLabel} · 🥩${Math.round(totals.protein)}${LANG==='ar'?'غ':'g'} · 🍞${Math.round(totals.carbs)}${LANG==='ar'?'غ':'g'} · 🧈${Math.round(totals.fat)}${LANG==='ar'?'غ':'g'}`;
+}
 /* real swap: pulls from the actual food database via getSwapOptions, which
    applies the exact same allergen/dislike/diet filtering as generation —
    a swap can never bypass a restriction. Recently-shown foods for this slot
@@ -3316,6 +3442,7 @@ function swapMealAt(i){
   currentDayMeals[i]=next;
   currentDaySwapHistory[cur.slotKey]=[...shown, mealIdentity(next)].slice(-30);
   renderMealBlock(i);
+  renderDayTotals();
 }
 function renderMealBlock(i){
   const m=currentDayMeals[i];
@@ -3338,20 +3465,6 @@ function openWorkoutDay(label,typeKey,isToday){
     html+=`<div id="feedbackRow" style="margin-bottom:14px;"></div>`;
   }
   const base=workoutTypes[typeKey];
-  const TIER_SUFFIX=[
-    {ar:' 😌 -٢ عدات',en:' 😌 -2 reps'},
-    null,
-    {ar:' 🔼 +٢ عدات',en:' 🔼 +2 reps'},
-    {ar:' 🔼 نزول أبطأ ٣ث + عدة زيادة',en:' 🔼 3s slower negative + 1 more rep'},
-    {ar:' 🔥 +٢ عدات ونزول أبطأ',en:' 🔥 +2 reps & slower negative'}
-  ];
-  let tierSuffix=null;
-  if(base.tierNotes && !day.skippedByInjury){
-    const tier=currentTier(typeKey);
-    const completions=(P.workoutCompletions&&P.workoutCompletions[typeKey])||0;
-    tierSuffix=TIER_SUFFIX[tier-1];
-    html+=`<div class="total-kcal">${LANG==='ar'?`📈 ${base.tierNotes[tier-1].ar} (سويته ${completions} مرة)`:`📈 ${base.tierNotes[tier-1].en} (completed ${completions}×)`}</div>`;
-  }
   const showVideoIcons = typeKey!=='rest' && !day.skippedByInjury;
   html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons)}</div>`;
   if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons)}</div>`; }
@@ -3548,13 +3661,23 @@ function renderSupChips(){
   const row=document.getElementById('supChipsRow'); row.innerHTML='';
   const fs=P.foodSetup||{};
   const items=[];
-  (fs.supOtherList||[]).forEach((s,i)=>items.push({key:'other'+i,label:s.text,icon:s.emoji||'💊'}));
+  (fs.supOtherList||[]).forEach((s,i)=>items.push({key:'other'+i,label:s.text,icon:s.emoji||'💊',listIdx:i}));
   if(!items.length){ row.classList.add('hidden'); return; }
   row.classList.remove('hidden');
   items.forEach(it=>{
     const chip=document.createElement('div');
     chip.className='supp-chip'+(dailyTrack.supplements[it.key]?' done':'');
-    chip.innerHTML=`<span class="ic">${it.icon}</span>${it.label}`;
+    chip.innerHTML=`<span class="ic" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Tap to change icon'}">${it.icon}</span><span class="label-text">${it.label}</span>`;
+    chip.querySelector('.ic').addEventListener('click',(e)=>{
+      e.stopPropagation();
+      openEmojiPicker(e.currentTarget,async(picked)=>{
+        const list=(P.foodSetup.supOtherList||[]).slice();
+        list[it.listIdx]={...list[it.listIdx],emoji:picked};
+        P.foodSetup.supOtherList=list;
+        await storageSet('profile',JSON.stringify(P));
+        renderSupChips();
+      });
+    });
     chip.addEventListener('click',()=>{
       dailyTrack.supplements[it.key]=!dailyTrack.supplements[it.key];
       chip.classList.toggle('done',dailyTrack.supplements[it.key]);
@@ -4283,7 +4406,7 @@ async function renderCollSpeciesDetail(){
       <span class="coll-status-pill ${collected?'collected':'locked'}">${collected?(LANG==='ar'?'✅ مجموع':'✅ Collected'):(LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected')}</span>
       <span class="coll-rarity-pill coll-rarity-${sp.rarity}">${tier.icon} ${LANG==='ar'?tier.nameAr:tier.nameEn}</span>
     </div>
-    <h2 style="text-align:center;margin:0 0 16px;color:var(--accent-deep);">${collName(sp)}</h2>
+    <h2 style="text-align:center;margin:0 0 16px;color:var(--heading);">${collName(sp)}</h2>
 
     <div class="coll-counter-row">
       <button class="coll-counter-btn" id="collDecBtn" ${rec.catches.length<=0?'disabled':''}>−</button>
@@ -4304,7 +4427,7 @@ async function renderCollSpeciesDetail(){
     </div>
 
     <input type="file" accept="image/*" class="hidden" id="collPhotoInput">
-    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--accent-deep);border:1px solid var(--accent-deep);margin-top:16px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
+    <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-top:16px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
   `;
   document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
   document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
