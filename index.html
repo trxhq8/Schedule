@@ -98,6 +98,37 @@
   .home-card .ttl{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1rem; }
   .home-card .dsc{ font-size:0.75rem; color:var(--ink-soft); margin-top:4px; }
 
+  /* ---- home dashboard (Daily Summary) ---- */
+  #dashboardSummary{ margin-top:18px; display:flex; flex-direction:column; gap:12px; }
+  .dash-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); }
+  .dash-card-title{ font-family:var(--font-head); font-weight:800; font-size:0.85rem; color:var(--heading); display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .dash-empty{ color:var(--ink-soft); font-size:0.8rem; text-align:center; padding:6px 0; }
+  .dash-cal-row{ display:flex; justify-content:space-between; gap:8px; }
+  .dash-stat{ flex:1; text-align:center; display:flex; flex-direction:column; gap:2px; }
+  .dash-stat b{ font-family:var(--font-head); font-size:1.15rem; font-variant-numeric:tabular-nums; }
+  .dash-stat span{ font-size:0.68rem; color:var(--ink-soft); }
+  .dash-row-mini{ display:flex; gap:10px; }
+  .dash-mini{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 10px; text-align:center; font-size:0.8rem; font-weight:700; box-shadow:var(--shadow); cursor:pointer; }
+  .dash-mini .n{ display:block; font-family:var(--font-head); font-size:1.05rem; margin-top:2px; }
+  .dash-workout-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .dash-workout-name{ font-size:0.85rem; }
+  .dash-toggle{ width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:var(--bg); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-weight:800; }
+  .dash-toggle.done{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .dash-water-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .dash-water-btns{ display:flex; gap:6px; }
+  .dash-water-btn{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:5px 10px; font-size:0.75rem; font-weight:700; cursor:pointer; }
+  .habit-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+  .habit-row:last-child{ border-bottom:none; }
+  .habit-box{ width:22px; height:22px; border-radius:7px; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.75rem; }
+  .habit-row.done .habit-box{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .habit-row.done .habit-label{ text-decoration:line-through; color:var(--ink-soft); }
+  .habit-label{ flex:1; font-size:0.85rem; }
+  .habit-streak{ font-size:0.72rem; color:var(--ink-soft); white-space:nowrap; }
+  .habit-remove{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:0.85rem; padding:2px; }
+  .habit-add-row{ display:flex; gap:8px; margin-top:10px; }
+  .habit-add-row input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.82rem; background:var(--bg); color:var(--ink); }
+  .habit-add-row button{ border:none; background:var(--accent-deep); color:#fff; border-radius:10px; padding:0 14px; cursor:pointer; font-weight:700; }
+
   .back-row{ margin:14px 0 4px; display:flex; justify-content:space-between; align-items:center; }
   .back-btn{ font-family:var(--font-head); font-weight:700; font-size:0.8rem; background:var(--card); border:1px solid var(--line); color:var(--ink-soft); border-radius:999px; padding:7px 16px; cursor:pointer; }
   .edit-btn{ font-family:var(--font-head); font-weight:700; font-size:0.75rem; background:none; border:none; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
@@ -167,6 +198,13 @@
   .ex-table th{ font-family:var(--font-head); font-weight:800; color:var(--heading); text-align:start; padding:6px 4px; border-bottom:2px solid var(--line); }
   .ex-table td{ padding:7px 4px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; }
   .ex-table tr.ex-done td{ opacity:0.55; text-decoration:line-through; }
+  .set-log-tr td{ padding:0 4px 10px; border-bottom:1px solid var(--line); }
+  .set-log-block{ background:var(--bg); border-radius:12px; padding:8px 10px; }
+  .set-log-last{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:6px; }
+  .set-log-row{ display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+  .set-log-row:last-child{ margin-bottom:0; }
+  .set-log-num{ font-size:0.7rem; color:var(--ink-soft); width:14px; flex-shrink:0; }
+  .set-log-input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-family:var(--font-body); font-size:0.8rem; background:var(--card); color:var(--ink); }
   .ex-table input[type="checkbox"]{ width:18px; height:18px; }
   .grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
   @media(max-width:480px){ .grid{grid-template-columns:repeat(4,1fr);} }
@@ -490,10 +528,57 @@
       <div class="day-badge" id="dayBadge"></div>
       <div class="day-badge hidden" id="streakBadge" style="background:var(--gold);margin-inline-start:8px;"></div>
     </div>
+
+    <div id="dashboardSummary">
+      <div class="dash-card" id="dashCalCard">
+        <div class="dash-card-title" id="dashCalTitle"></div>
+        <div class="dash-cal-row" id="dashCalRow">
+          <div class="dash-stat"><b id="dashCalPlanned">–</b><span id="dashCalPlannedLbl"></span></div>
+          <div class="dash-stat"><b id="dashCalConsumed">–</b><span id="dashCalConsumedLbl"></span></div>
+          <div class="dash-stat"><b id="dashCalRemaining">–</b><span id="dashCalRemainingLbl"></span></div>
+        </div>
+        <div class="dash-empty hidden" id="dashCalEmpty"></div>
+      </div>
+
+      <div class="dash-card hidden" id="dashWorkoutCard">
+        <div class="dash-card-title" id="dashWorkoutTitle"></div>
+        <div class="dash-workout-row">
+          <div class="dash-workout-name" id="dashWorkoutName"></div>
+          <div class="dash-toggle" id="dashWorkoutToggle"></div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title" id="dashWaterTitle"></div>
+        <div class="dash-water-row">
+          <div class="water-count" id="dashWaterCount" style="font-size:1rem;"></div>
+          <div class="dash-water-btns">
+            <button type="button" class="dash-water-btn" id="dashWaterMinus">−0.25L</button>
+            <button type="button" class="dash-water-btn" id="dashWaterPlus">+0.25L</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-row-mini">
+        <div class="dash-mini" data-goto="food" id="dashSuppMini"></div>
+        <div class="dash-mini" data-goto="today" id="dashCommitMini"></div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title" id="dashHabitsTitle"></div>
+        <div id="dashHabitsList"></div>
+        <div class="habit-add-row">
+          <input type="text" id="dashHabitAdd" data-i18n-ph="habit_add_ph">
+          <button type="button" id="dashHabitAddBtn">➕</button>
+        </div>
+      </div>
+    </div>
+
     <div class="home-cards">
       <div class="home-card" data-goto="today"><span class="ic">✅</span><div class="ttl" data-i18n="card_todo"></div></div>
       <div class="home-card" data-goto="food"><span class="ic">🍽️</span><div class="ttl" data-i18n="card_food"></div></div>
       <div class="home-card" data-goto="workout"><span class="ic">🏋️</span><div class="ttl" data-i18n="card_workout"></div></div>
+      <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
       <div class="home-card" data-goto="collections"><span class="ic">🐾</span><div class="ttl" data-i18n="card_collections"></div></div>
     </div>
   </section>
@@ -755,6 +840,28 @@
     </div>
   </section>
 
+  <!-- PROGRESS (read-only view over real logged history, no charts beyond the existing weight trend line) -->
+  <section class="panel" id="panel-progress">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="setup-card">
+      <h3 id="progressWeightTitle"></h3>
+      <div class="chart-box"><svg id="progressWeightChart" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"></svg></div>
+      <div class="dash-empty" id="progressWeightEmpty"></div>
+      <div id="progressWeightStats" style="text-align:center;font-size:0.82rem;color:var(--ink-soft);margin-top:8px;"></div>
+    </div>
+    <div class="setup-card">
+      <h3 id="progressMonthTitle"></h3>
+      <div style="text-align:center;">
+        <span style="font-family:var(--font-head);font-weight:800;font-size:1.8rem;" id="progressMonthCount">–</span>
+        <div style="font-size:0.75rem;color:var(--ink-soft);" id="progressMonthSub"></div>
+      </div>
+    </div>
+    <div class="setup-card">
+      <h3 id="progressExerciseTitle"></h3>
+      <div id="progressExerciseList"></div>
+    </div>
+  </section>
+
   <!-- COLLECTIONS -->
   <section class="panel" id="panel-collections">
     <div class="back-row"><button class="back-btn" id="collectionsBackBtn" data-i18n="back_home"></button><span></span></div>
@@ -898,7 +1005,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.12.1';
+const APP_VERSION='v1.13.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1249,7 +1356,16 @@ const I18N={
   card_todo:'الجدول',
   card_food:'نظام غذائي',
   card_workout:'التمارين',
+  card_progress:'التقدم',
   card_collections:'المقتنيات',
+  dash_cal_title:'🍽️ السعرات اليوم',dash_cal_planned:'مخطط',dash_cal_consumed:'مستهلك',dash_cal_remaining:'متبقي',
+  dash_cal_empty:'أعد إعداد نظامك الغذائي عشان نحسب سعراتك',
+  dash_workout_title:'🏋️ تمرين اليوم',
+  dash_water_title:'💧 الماء',
+  dash_habits_title:'✅ عاداتي',
+  habit_add_ph:'عادة جديدة... مثل قراءة، تمرين',
+  dash_supp_mini:'💊 مكملات',dash_commit_mini:'📌 التزامات اليوم',
+  dash_no_workout_setup:'أعد إعداد جدول تمارينك',
   q_commit:'📌 عندك التزام يومي ثابت؟',q_commit_sub:'مثل دوام أو كلية — تقدر تضيف أكثر من التزام',
   commit_label_ph:'مثلاً: كلية، دوام، نادي...',q_commit_days:'أي أيام؟',add_commit:'➕ ضيف الالتزام',
   q_commit_range:'من أي تاريخ لأي تاريخ؟ (اختياري — اتركه فاضي لو دائم للأبد)',
@@ -1284,6 +1400,10 @@ const I18N={
   water_target_label:'هدف الماء (لتر)',
   q_disliked:'🚫 أطعمة ما تحبها؟',disliked_ph:'اكتب أكلة ما تحبها (اختياري)',
   weight_log_title:'⚖️ سجل وزنك الأسبوعي',chart_btn:'الرسم البياني',
+  progress_weight_title:'⚖️ اتجاه الوزن',progress_weight_empty:'سجل وزنك من صفحة الأكل عشان يبان الاتجاه هنا',
+  progress_month_title:'🏋️ تمارين هالشهر',progress_month_sub:'تمرين مكتمل هالشهر',
+  progress_exercise_title:'📈 أقوى أوزانك',progress_exercise_empty:'ما فيه سجل تمارين بعد — سجل أوزانك من صفحة تمرين اليوم',
+  progress_no_setup:'أعد إعداد الأكل والتمارين عشان يبان تقدمك هنا',
   q_ex_goal:'🎯 هدفك بالتمرين',q_ex_goal_sub:'تقدر تختار أكثر من وحدة',
   q_fitness_level:'📊 وش مستواك بالتمرين؟',q_fitness_level_sub:'هذا يحدد نوع التمارين نفسه، مو بس عدد العدات',
   fitlevel_beginner:'مبتدئ',fitlevel_amateur:'متوسط',fitlevel_pro:'محترف',
@@ -1316,7 +1436,16 @@ const I18N={
   card_todo:"Schedule",
   card_food:'Diet',
   card_workout:'Workout',
+  card_progress:'Progress',
   card_collections:'Collections',
+  dash_cal_title:'🍽️ Calories today',dash_cal_planned:'Planned',dash_cal_consumed:'Consumed',dash_cal_remaining:'Remaining',
+  dash_cal_empty:'Set up your food plan to see calories here',
+  dash_workout_title:'🏋️ Today\'s workout',
+  dash_water_title:'💧 Water',
+  dash_habits_title:'✅ My Habits',
+  habit_add_ph:'New habit... e.g. Read, Train',
+  dash_supp_mini:'💊 Supplements',dash_commit_mini:'📌 Commitments today',
+  dash_no_workout_setup:'Set up your training schedule',
   q_commit:'📌 Any daily fixed commitment?',q_commit_sub:'Like work or college — add more than one if needed',
   commit_label_ph:'e.g. College, Work, Gym...',q_commit_days:'Which days?',add_commit:'➕ Add commitment',
   q_commit_range:'From which date to which? (optional — leave blank if it runs forever)',
@@ -1351,6 +1480,10 @@ const I18N={
   water_target_label:'Water goal (liters)',
   q_disliked:'🚫 Any foods you dislike?',disliked_ph:'Type a food you dislike (optional)',
   weight_log_title:'⚖️ Weekly weight log',chart_btn:'Chart',
+  progress_weight_title:'⚖️ Weight trend',progress_weight_empty:'Log your weight from the Diet section to see a trend here',
+  progress_month_title:'🏋️ Workouts this month',progress_month_sub:'workouts completed this month',
+  progress_exercise_title:'📈 Strongest lifts',progress_exercise_empty:'No exercise history yet — log your sets on today’s workout page',
+  progress_no_setup:'Set up Diet and Training to see progress here',
   q_ex_goal:'🎯 Your workout goal',q_ex_goal_sub:'You can pick more than one',
   q_fitness_level:'📊 What is your fitness level?',q_fitness_level_sub:"This changes the actual exercise type, not just rep counts",
   fitlevel_beginner:'Beginner',fitlevel_amateur:'Amateur',fitlevel_pro:'Pro',
@@ -1417,13 +1550,19 @@ function applyTheme(palette,mode,font){
 }
 
 /* ================= PROFILE ================= */
+const DEFAULT_HABITS=[
+  {id:'h_seed_workout',label:{ar:'تمرين',en:'Training'}},
+  {id:'h_seed_water',label:{ar:'شرب مي',en:'Hydration'}},
+  {id:'h_seed_read',label:{ar:'قراءة',en:'Reading'}}
+];
 let P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',
   customBg:{light:null,dark:null},
   todoSetup:null,
   foodSetup:null,
   workoutSetup:null,
   streakCount:0, lastStreakDate:'',
-  workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null
+  workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null,
+  habits:DEFAULT_HABITS.map(h=>({...h}))
 };
 
 document.getElementById('mainLangToggle').addEventListener('click',async()=>{
@@ -1516,9 +1655,10 @@ document.getElementById('demoConfirmYes').addEventListener('click',async()=>{
   foodDraft=null;
   P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',customBg:{light:null,dark:null},
       todoSetup:null,foodSetup:null,workoutSetup:null,
-      streakCount:0,lastStreakDate:'',workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null };
+      streakCount:0,lastStreakDate:'',workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null,
+      habits:DEFAULT_HABITS.map(h=>({...h})) };
   weightLog=[];
-  dailyTrack={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{}};
+  dailyTrack={...DAILY_TRACK_DEFAULTS};
   LANG='ar';
   document.getElementById('demoConfirmBar').classList.add('hidden');
   await storageSet('profile',JSON.stringify(P));
@@ -1564,11 +1704,11 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
   e.target.value='';
 });
 
-document.getElementById('homeBtn').addEventListener('click',()=>showPanel('home'));
+document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); refreshHome(); });
 /* Collections has its own back-stack (species → category → animals → home)
    instead of always jumping straight to home like every other section's
    back button, so it's wired separately below and skipped here. */
-document.querySelectorAll('.back-btn').forEach(b=>{ if(b.id!=='collectionsBackBtn') b.addEventListener('click',()=>showPanel('home')); });
+document.querySelectorAll('.back-btn').forEach(b=>{ if(b.id!=='collectionsBackBtn') b.addEventListener('click',()=>{ showPanel('home'); refreshHome(); }); });
 function showPanel(name){ document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0}); }
 
 /* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
@@ -2295,7 +2435,14 @@ function parseExerciseRow(text){
   return {name,sets,reps};
 }
 let exRowCounter=0;
-function exerciseTableHtml(list,timerSecs,showVideo){
+/* stable identity for an exercise, used as the key for logged sets and for
+   the "last time" reference — built from the English name (fixed per
+   level/equipment variant) so switching level/equipment naturally starts
+   fresh history for the new variant instead of mixing incompatible logs. */
+function slugifyExerciseName(name){ return String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function exerciseId(typeKey,enName){ return typeKey+'|'+slugifyExerciseName(enName); }
+function parseSetCount(setsStr){ const m=String(setsStr||'').match(/\d+/); const n=m?parseInt(m[0],10):3; return Math.max(1,Math.min(6,n||3)); }
+function exerciseTableHtml(list,timerSecs,showVideo,typeKey,logInputs){
   if(!list||!list.length) return '';
   let rows='';
   list.forEach(e=>{
@@ -2304,9 +2451,44 @@ function exerciseTableHtml(list,timerSecs,showVideo){
     const timer = showVideo ? timerIconHtml(timerSecs) : '';
     const rid='exrow'+(exRowCounter++);
     rows+=`<tr id="${rid}"><td>${p.name}${vid}${timer}</td><td>${p.sets}</td><td>${p.reps}</td><td style="text-align:center;"><input type="checkbox" onchange="document.getElementById('${rid}').classList.toggle('ex-done',this.checked)"></td></tr>`;
+    if(logInputs && typeKey){
+      const exId=exerciseId(typeKey,parseExerciseRow(e.en).name);
+      const setCount=parseSetCount(p.sets);
+      const savedSets=(dailyTrack.workoutLog&&dailyTrack.workoutLog[exId])||[];
+      const last=(P.lastExerciseLog&&P.lastExerciseLog[exId])||null;
+      const lastText = last
+        ? (LANG==='ar'?`آخر مرة: ${last.weight}كغ × ${last.reps}`:`Last: ${last.weight}kg × ${last.reps}`)
+        : (LANG==='ar'?'ما فيه سجل سابق لهذا التمرين':'No previous log for this exercise yet');
+      let setRows='';
+      for(let i=0;i<setCount;i++){
+        const sv=savedSets[i]||{};
+        setRows+=`<div class="set-log-row"><span class="set-log-num">${i+1}</span><input type="number" inputmode="decimal" step="0.5" min="0" placeholder="${LANG==='ar'?'كغ':'kg'}" class="set-log-input" value="${sv.weight!=null?sv.weight:''}" data-exid="${exId}" data-set="${i}" data-field="weight"><input type="number" inputmode="numeric" min="0" placeholder="${LANG==='ar'?'عدات':'reps'}" class="set-log-input" value="${sv.reps!=null?sv.reps:''}" data-exid="${exId}" data-set="${i}" data-field="reps"></div>`;
+      }
+      rows+=`<tr class="set-log-tr"><td colspan="4"><div class="set-log-block"><div class="set-log-last">${lastText}</div>${setRows}</div></td></tr>`;
+    }
   });
   return `<table class="ex-table"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Checklist</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
+/* delegated once — the table is fully rebuilt on every openWorkoutDay() call,
+   so a single document-level listener (matched by class) survives that
+   instead of needing to be re-attached per render. */
+document.addEventListener('change',async(e)=>{
+  const el=e.target;
+  if(!el.matches || !el.matches('.set-log-input')) return;
+  const exId=el.dataset.exid, setIdx=parseInt(el.dataset.set,10), field=el.dataset.field;
+  dailyTrack.workoutLog=dailyTrack.workoutLog||{};
+  dailyTrack.workoutLog[exId]=dailyTrack.workoutLog[exId]||[];
+  dailyTrack.workoutLog[exId][setIdx]=dailyTrack.workoutLog[exId][setIdx]||{};
+  dailyTrack.workoutLog[exId][setIdx][field]=el.value===''?null:parseFloat(el.value);
+  await saveDailyTrack();
+  const filled=dailyTrack.workoutLog[exId].filter(s=>s&&s.weight!=null&&s.reps!=null);
+  if(filled.length){
+    const latest=filled[filled.length-1];
+    P.lastExerciseLog=P.lastExerciseLog||{};
+    P.lastExerciseLog[exId]={weight:latest.weight,reps:latest.reps,date:todayKey()};
+    await storageSet('profile',JSON.stringify(P));
+  }
+});
 function timerIconHtml(seconds){
   seconds=seconds||60;
   return `<button type="button" onclick="startRestTimer(${seconds})" style="margin-inline-start:6px;border:none;background:none;cursor:pointer;font-size:0.85em;vertical-align:middle;padding:0;" title="${LANG==='ar'?'مؤقت راحة ٦٠ ثانية':'60s rest timer'}">⏱️</button>`;
@@ -2511,6 +2693,7 @@ function enterSection(name){
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
+  if(name==='progress') renderProgressSection();
   if(name==='collections') enterCollections();
 }
 document.querySelectorAll('#panel-home .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
@@ -3481,10 +3664,11 @@ function openWorkoutDay(label,typeKey,isToday){
   }
   const base=workoutTypes[typeKey];
   const showVideoIcons = typeKey!=='rest' && !day.skippedByInjury;
-  html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons)}</div>`;
-  if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons)}</div>`; }
+  const logInputs = isToday && showVideoIcons;
+  html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons,typeKey,logInputs)}</div>`;
+  if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons,typeKey,logInputs)}</div>`; }
   if(base.tierNotes && !day.skippedByInjury && currentTier(typeKey)>=4){
-    html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 مستوى متقدم':'🔥 Advanced level'}</div>${exerciseTableHtml(base.tierBoost,60,true)}</div>`;
+    html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 مستوى متقدم':'🔥 Advanced level'}</div>${exerciseTableHtml(base.tierBoost,60,true,typeKey,logInputs)}</div>`;
   }
   if(day.cardioFinisher){ const vid=videoIconHtml(day.cardioFinisher.en); html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 فينشر حرق دهون':'🔥 Fat-burn finisher'}</div><div class="content"><div>${day.cardioFinisher[LANG]}${vid}</div></div></div>`; }
   html+=`<div class="exercise"><div class="label">${t('closing')}</div><div class="content">${day.stretch[LANG]}${videoIconHtml(day.stretch.en)}</div></div>`;
@@ -3496,25 +3680,33 @@ function openWorkoutDay(label,typeKey,isToday){
   if(isToday){
     const toggle=document.getElementById('workoutDoneToggle');
     toggle.addEventListener('click',async()=>{
-      dailyTrack.workoutDone=!dailyTrack.workoutDone;
-      toggle.classList.toggle('done',dailyTrack.workoutDone);
-      toggle.querySelector('.box').textContent=dailyTrack.workoutDone?'✓':'';
-      saveDailyTrack();
-      if(dailyTrack.workoutDone){
-        updateStreak();
-        if(!dailyTrack.completionCounted){
-          P.workoutCompletions=P.workoutCompletions||{push:0,pull:0,legs:0};
-          P.workoutCompletions[typeKey]=(P.workoutCompletions[typeKey]||0)+1;
-          dailyTrack.completionCounted=true;
-          await storageSet('profile',JSON.stringify(P));
-          await saveDailyTrack();
-        }
-        if(!dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
-      }
+      const done=await toggleWorkoutDone(typeKey);
+      toggle.classList.toggle('done',done);
+      toggle.querySelector('.box').textContent=done?'✓':'';
+      if(done && !dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
     });
     if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
   }
   overlay.classList.add('open');
+}
+/* single source of truth for "mark today's workout done" — used by both the
+   full workout-day view and the compact home dashboard widget, so streak/
+   completion-count bookkeeping never has to be duplicated (and can't drift
+   between the two entry points). Returns the new done state. */
+async function toggleWorkoutDone(typeKey){
+  dailyTrack.workoutDone=!dailyTrack.workoutDone;
+  await saveDailyTrack();
+  if(dailyTrack.workoutDone){
+    updateStreak();
+    if(!dailyTrack.completionCounted){
+      P.workoutCompletions=P.workoutCompletions||{push:0,pull:0,legs:0};
+      P.workoutCompletions[typeKey]=(P.workoutCompletions[typeKey]||0)+1;
+      dailyTrack.completionCounted=true;
+      await storageSet('profile',JSON.stringify(P));
+      await saveDailyTrack();
+    }
+  }
+  return dailyTrack.workoutDone;
 }
 function showFeedbackPrompt(typeKey){
   const row=document.getElementById('feedbackRow'); if(!row) return;
@@ -3575,7 +3767,11 @@ function showFeedbackPrompt(typeKey){
 document.getElementById('closeBtn').addEventListener('click',()=>overlay.classList.remove('open'));
 overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
 
-const GOAL_WEIGHT=70, START_WEIGHT=61;
+/* the chart's reference lines must come from the user's ACTUAL setup, never
+   a fixed placeholder — falls back to the log's own first entry when no
+   goal/starting weight has been entered, rather than inventing one. */
+function startWeightVal(){ const w=P.foodSetup&&parseFloat(P.foodSetup.weight); return (w&&!isNaN(w))?w:(weightLog.length?weightLog[0].kg:null); }
+function goalWeightVal(){ const w=P.foodSetup&&parseFloat(P.foodSetup.targetWeight); return (w&&!isNaN(w))?w:null; }
 let weightLog=[];
 let foodDraft=null;
 async function loadFoodDraft(){ try{ const v=await storageGet('food-draft'); foodDraft=v?JSON.parse(v):null; }catch(e){ foodDraft=null; } }
@@ -3584,8 +3780,9 @@ function renderLog(){
   const list=document.getElementById('logList'); if(!list) return;
   if(!weightLog.length){ list.innerHTML=`<div class="log-empty">${t('log_empty')}</div>`; return; }
   let html='';
+  const sv0=startWeightVal();
   weightLog.slice().reverse().forEach((e,idx)=>{
-    const ri=weightLog.length-1-idx; const prev=ri>0?weightLog[ri-1].kg:START_WEIGHT;
+    const ri=weightLog.length-1-idx; const prev=ri>0?weightLog[ri-1].kg:(sv0!=null?sv0:e.kg);
     const diff=(e.kg-prev).toFixed(1);
     html+=`<div class="log-row"><span>${e.date}</span><span class="kg">${e.kg} ${t('kg')}</span><span class="diff ${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff}</span></div>`;
   });
@@ -3597,11 +3794,13 @@ function renderChart(svgId,h){
   const w=320,pad=20;
   if(weightLog.length<2){ svg.innerHTML=`<text x="${w/2}" y="${h/2}" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">${t('chart_need2')}</text>`; return; }
   const vals=weightLog.map(e=>e.kg);
-  const minV=Math.min(...vals,START_WEIGHT)-0.5, maxV=Math.max(...vals,GOAL_WEIGHT)+0.5, range=maxV-minV||1;
+  const sv=startWeightVal(), gv=goalWeightVal();
+  const refVals=[...vals]; if(sv!=null) refVals.push(sv); if(gv!=null) refVals.push(gv);
+  const minV=Math.min(...refVals)-0.5, maxV=Math.max(...refVals)+0.5, range=maxV-minV||1;
   const stepX=(w-pad*2)/(weightLog.length-1);
   const yF=v=>h-pad-((v-minV)/range)*(h-pad*2), xF=i=>pad+i*stepX;
-  const gY=yF(GOAL_WEIGHT);
-  let s=`<line x1="${pad}" y1="${gY}" x2="${w-pad}" y2="${gY}" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+  let s='';
+  if(gv!=null){ const gY=yF(gv); s+=`<line x1="${pad}" y1="${gY}" x2="${w-pad}" y2="${gY}" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="4,4"/>`; }
   s+=`<polyline points="${weightLog.map((e,i)=>`${xF(i)},${yF(e.kg)}`).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
   weightLog.forEach((e,i)=>{ s+=`<circle cx="${xF(i)}" cy="${yF(e.kg)}" r="3.5" fill="var(--accent-deep)"/>`; });
   svg.innerHTML=s;
@@ -3630,6 +3829,85 @@ function openWeightChartModal(){
   overlay.classList.add('open');
   renderChart('weightChartBig',260);
 }
+/* ================= PROGRESS (Priority 3) =================
+   Read-only view built entirely from data that already exists: the same
+   weightLog + startWeightVal/goalWeightVal used by the Diet chart, and the
+   real daily-track docs written by workoutDone / the new per-set logging.
+   Nothing here is hardcoded or invented — an empty state is shown whenever
+   there isn't yet enough real history for a section. */
+async function renderProgressSection(){
+  document.getElementById('progressWeightTitle').textContent=t('progress_weight_title');
+  document.getElementById('progressMonthTitle').textContent=t('progress_month_title');
+  document.getElementById('progressMonthSub').textContent=t('progress_month_sub');
+  document.getElementById('progressExerciseTitle').textContent=t('progress_exercise_title');
+
+  await loadWeightLog();
+  const weightEmpty=document.getElementById('progressWeightEmpty');
+  const weightStats=document.getElementById('progressWeightStats');
+  const chartBox=document.getElementById('progressWeightChart').closest('.chart-box');
+  if(weightLog.length<2){
+    chartBox.classList.add('hidden'); weightStats.classList.add('hidden');
+    weightEmpty.classList.remove('hidden'); weightEmpty.textContent=t('progress_weight_empty');
+  } else {
+    chartBox.classList.remove('hidden'); weightStats.classList.remove('hidden');
+    weightEmpty.classList.add('hidden');
+    renderChart('progressWeightChart',160);
+    const latest=weightLog[weightLog.length-1].kg;
+    const diff=(weightLog[weightLog.length-1].kg-weightLog[0].kg).toFixed(1);
+    const arrow = diff>0?'📈':(diff<0?'📉':'➡️');
+    weightStats.textContent=`${t('latest_weight')}: ${latest} ${t('kg')} · ${arrow} ${diff>0?'+':''}${diff} ${t('kg')}`;
+  }
+
+  document.getElementById('progressMonthCount').textContent='…';
+  computeWorkoutsThisMonth().then(n=>{ document.getElementById('progressMonthCount').textContent=n; });
+
+  document.getElementById('progressExerciseList').innerHTML=`<div class="dash-empty">…</div>`;
+  computeExerciseHistory().then(renderExerciseHistoryList);
+}
+/* counts real daily-track docs for the CURRENT calendar month where
+   workoutDone is true — never P.workoutCompletions (that's a lifetime
+   per-split counter, a different metric), and never guessed. */
+async function computeWorkoutsThisMonth(){
+  const now=new Date();
+  const y=now.getFullYear(), m=now.getMonth();
+  const daysSoFar=now.getDate();
+  const keys=Array.from({length:daysSoFar},(_,i)=>`daily-track:${y}-${m+1}-${i+1}`);
+  const docs=await Promise.all(keys.map(k=>storageGet(k).catch(()=>null)));
+  return docs.reduce((n,v)=>{ if(!v) return n; try{ return n+(JSON.parse(v).workoutDone?1:0); }catch(e){ return n; } },0);
+}
+/* scans the last 120 real days of workoutLog entries (bounded, not the
+   entire lifetime history) and keeps each exercise's best estimated 1RM
+   (Epley: weight*(1+reps/30)) — a real number from a real logged set, not
+   a placeholder. */
+async function computeExerciseHistory(){
+  const now=new Date();
+  const keys=Array.from({length:120},(_,i)=>{ const d=new Date(now); d.setDate(d.getDate()-i); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; });
+  const docs=await Promise.all(keys.map(k=>storageGet(k).catch(()=>null)));
+  const best={};
+  docs.forEach(v=>{
+    if(!v) return;
+    let doc; try{ doc=JSON.parse(v); }catch(e){ return; }
+    if(!doc.workoutLog) return;
+    Object.entries(doc.workoutLog).forEach(([exId,sets])=>{
+      (sets||[]).forEach(s=>{
+        if(!s||s.weight==null||s.reps==null) return;
+        const est=s.weight*(1+s.reps/30);
+        if(!best[exId]||est>best[exId].est1rm) best[exId]={weight:s.weight,reps:s.reps,est1rm:est};
+      });
+    });
+  });
+  return best;
+}
+function renderExerciseHistoryList(best){
+  const list=document.getElementById('progressExerciseList');
+  const entries=Object.entries(best);
+  if(!entries.length){ list.innerHTML=`<div class="dash-empty">${t('progress_exercise_empty')}</div>`; return; }
+  entries.sort((a,b)=>b[1].est1rm-a[1].est1rm);
+  list.innerHTML=entries.map(([exId,d])=>{
+    const name=exId.split('|').slice(1).join(' ').replace(/-/g,' ');
+    return `<div class="log-row"><span style="text-transform:capitalize;">${name}</span><span class="kg">${d.weight}${t('kg')} × ${d.reps}</span><span style="font-size:0.68rem;color:var(--ink-soft);">~${Math.round(d.est1rm)}${t('kg')} 1RM</span></div>`;
+  }).join('');
+}
 document.getElementById('weightChartBox').addEventListener('click',openWeightChartModal);
 document.getElementById('weightInput').addEventListener('keydown',e=>{
   if(e.key==='Enter'){ e.preventDefault(); document.getElementById('saveWeightBtn').click(); }
@@ -3647,8 +3925,9 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
 });
 
 function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-let dailyTrack={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{}};
-async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},...JSON.parse(v)}; } }catch(e){} }
+const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{}};
+let dailyTrack={...DAILY_TRACK_DEFAULTS};
+async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
 async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
 
 function renderMealChecklist(idx,v){
@@ -3852,7 +4131,165 @@ function refreshHome(){
   const idx=todayWeekdayIndex();
   document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]}`;
   renderStreakBadge();
+  renderDailySummary();
 }
+/* ================= HOME DASHBOARD (Daily Summary) =================
+   Single glance-and-know surface. Every number here is read from state that
+   already exists elsewhere (today's menu, dailyTrack, foodSetup,
+   workoutSetup) — nothing is computed independently a second time, and
+   nothing is shown as a fake/placeholder number: sections hide themselves
+   and show an explicit "not set up" message when the underlying data
+   doesn't exist yet. */
+function renderDailySummary(){
+  document.getElementById('dashCalTitle').textContent=t('dash_cal_title');
+  document.getElementById('dashCalPlannedLbl').textContent=t('dash_cal_planned');
+  document.getElementById('dashCalConsumedLbl').textContent=t('dash_cal_consumed');
+  document.getElementById('dashCalRemainingLbl').textContent=t('dash_cal_remaining');
+  document.getElementById('dashWorkoutTitle').textContent=t('dash_workout_title');
+  document.getElementById('dashWaterTitle').textContent=t('dash_water_title');
+  document.getElementById('dashHabitsTitle').textContent=t('dash_habits_title');
+  const habitAddInp=document.getElementById('dashHabitAdd'); if(habitAddInp) habitAddInp.placeholder=t('habit_add_ph');
+
+  // ---- calories: planned (today's actual generated menu) vs consumed
+  // (only the meal slots the user has actually checked off as eaten) ----
+  const calRow=document.getElementById('dashCalRow');
+  const calEmpty=document.getElementById('dashCalEmpty');
+  if(!P.foodSetup){
+    calRow.classList.add('hidden'); calEmpty.classList.remove('hidden');
+    calEmpty.textContent=t('dash_cal_empty');
+  } else {
+    calRow.classList.remove('hidden'); calEmpty.classList.add('hidden');
+    const idx=todayWeekdayIndex();
+    const v=getTodayMenu(idx);
+    const doneFlags=dailyTrack.meals||[];
+    let consumed=0;
+    v.meals.forEach((m,i)=>{ if(doneFlags[i]) consumed+=(m.calories||0); });
+    const planned=Math.round(v.calories);
+    const remaining=Math.max(0,planned-Math.round(consumed));
+    document.getElementById('dashCalPlanned').textContent=planned;
+    document.getElementById('dashCalConsumed').textContent=Math.round(consumed);
+    document.getElementById('dashCalRemaining').textContent=remaining;
+  }
+
+  // ---- today's workout ----
+  const wCard=document.getElementById('dashWorkoutCard');
+  if(!P.workoutSetup){
+    wCard.classList.add('hidden');
+  } else {
+    wCard.classList.remove('hidden');
+    const restDays=P.workoutSetup.restDays||[];
+    const typeKey=workoutTypeForDate(new Date(),restDays);
+    const day=adaptDay(typeKey);
+    document.getElementById('dashWorkoutName').textContent=`${day.icon} ${day.name[LANG]}`;
+    const toggle=document.getElementById('dashWorkoutToggle');
+    toggle.textContent=dailyTrack.workoutDone?'✓':'';
+    toggle.classList.toggle('done',dailyTrack.workoutDone);
+    toggle.onclick=async()=>{
+      const done=await toggleWorkoutDone(typeKey);
+      toggle.textContent=done?'✓':'';
+      toggle.classList.toggle('done',done);
+    };
+  }
+
+  // ---- water (same dailyTrack.water state as the Food panel's water card) ----
+  const waterTarget=(P.foodSetup&&P.foodSetup.waterTarget)||3.5;
+  const w=dailyTrack.water||0;
+  document.getElementById('dashWaterCount').textContent=`${w.toFixed(2)} / ${waterTarget} L`;
+
+  // ---- supplements mini badge ----
+  const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
+  document.getElementById('dashSuppMini').innerHTML=supList.length
+    ? `${t('dash_supp_mini')}<span class="n">${supList.filter((s,i)=>dailyTrack.supplements['other'+i]).length}/${supList.length}</span>`
+    : `${t('dash_supp_mini')}<span class="n">–</span>`;
+
+  // ---- commitments mini badge ----
+  const commits=commitmentsForToday();
+  document.getElementById('dashCommitMini').innerHTML=`${t('dash_commit_mini')}<span class="n">${commits.length}</span>`;
+
+  renderHabits();
+}
+document.getElementById('dashWaterPlus').addEventListener('click',()=>{ dailyTrack.water=Math.min(8,+((dailyTrack.water||0)+0.25).toFixed(2)); renderDailySummary(); saveDailyTrack(); });
+document.getElementById('dashWaterMinus').addEventListener('click',()=>{ dailyTrack.water=Math.max(0,+((dailyTrack.water||0)-0.25).toFixed(2)); renderDailySummary(); saveDailyTrack(); });
+document.querySelectorAll('#dashboardSummary .dash-mini[data-goto]').forEach(el=>el.addEventListener('click',()=>{ showPanel(el.dataset.goto); enterSection(el.dataset.goto); }));
+
+/* ---- habits: per-day completion lives in dailyTrack.habits (same doc as
+   meals/supplements/water — no separate storage key), the habit LIST itself
+   lives in P.habits (part of the profile, like foodSetup/workoutSetup).
+   Streaks are computed from real historical daily-track docs, never faked. */
+function habitLabelText(h){ return (typeof h.label==='object') ? (h.label[LANG]||h.label.en) : h.label; }
+function renderHabits(){
+  const list=document.getElementById('dashHabitsList'); if(!list) return;
+  const habits=P.habits||[];
+  if(!habits.length){
+    list.innerHTML=`<div class="dash-empty">${LANG==='ar'?'ضيف عادة تبي تتابعها':'Add a habit to start tracking it'}</div>`;
+    return;
+  }
+  list.innerHTML='';
+  habits.forEach(h=>{
+    const done=!!(dailyTrack.habits&&dailyTrack.habits[h.id]);
+    const row=document.createElement('div');
+    row.className='habit-row'+(done?' done':'');
+    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${habitLabelText(h)}</div><div class="habit-streak" id="habitStreak_${h.id}"></div><button type="button" class="habit-remove">✕</button>`;
+    row.addEventListener('click',(e)=>{
+      if(e.target.closest('.habit-remove')) return;
+      dailyTrack.habits=dailyTrack.habits||{};
+      dailyTrack.habits[h.id]=!dailyTrack.habits[h.id];
+      saveDailyTrack();
+      renderHabits();
+    });
+    row.querySelector('.habit-remove').addEventListener('click',async(e)=>{
+      e.stopPropagation();
+      P.habits=(P.habits||[]).filter(x=>x.id!==h.id);
+      await storageSet('profile',JSON.stringify(P));
+      renderHabits();
+    });
+    list.appendChild(row);
+  });
+  computeHabitStreaks().then(streaks=>{
+    habits.forEach(h=>{
+      const el=document.getElementById('habitStreak_'+h.id);
+      if(!el) return;
+      const n=streaks[h.id]||0;
+      el.textContent = n>0 ? `🔥${n}` : '';
+    });
+  });
+}
+/* walks backward day-by-day (capped at 60 days) checking each real
+   daily-track doc for this habit's completion — stops the moment a habit's
+   chain breaks (or a day has no record at all). Nothing here is guessed. */
+async function computeHabitStreaks(){
+  const habits=P.habits||[];
+  const streaks={}; habits.forEach(h=>streaks[h.id]=0);
+  if(!habits.length) return streaks;
+  let stillCounting=new Set(habits.map(h=>h.id));
+  habits.forEach(h=>{
+    if(dailyTrack.habits&&dailyTrack.habits[h.id]) streaks[h.id]++;
+    else stillCounting.delete(h.id);
+  });
+  for(let back=1;back<=60&&stillCounting.size;back++){
+    const d=new Date(); d.setDate(d.getDate()-back);
+    const key=`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    let doc=null;
+    try{ const v=await storageGet(key); if(v) doc=JSON.parse(v); }catch(e){}
+    if(!doc) break;
+    [...stillCounting].forEach(hid=>{
+      if(doc.habits&&doc.habits[hid]) streaks[hid]++;
+      else stillCounting.delete(hid);
+    });
+  }
+  return streaks;
+}
+async function addHabit(){
+  const inp=document.getElementById('dashHabitAdd');
+  const label=inp.value.trim(); if(!label) return;
+  const id='h'+Date.now()+Math.floor(Math.random()*1000);
+  P.habits=(P.habits||[]); P.habits.push({id,label});
+  await storageSet('profile',JSON.stringify(P));
+  inp.value='';
+  renderHabits();
+}
+document.getElementById('dashHabitAddBtn').addEventListener('click',addHabit);
+document.getElementById('dashHabitAdd').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addHabit(); } });
 function launchApp(){
   LANG=P.lang||'ar';
   document.getElementById('mainNav').classList.remove('hidden');
