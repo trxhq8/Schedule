@@ -22,25 +22,30 @@
 <style>
   :root{
     color-scheme:light dark;
-    --bg:#f6f5ee; --card:#ffffff; --ink:#2f3d33; --ink-soft:#5b6a5f;
-    --accent:#7c9473; --accent-deep:#4c6350; --heading:#4c6350; --gold:#e0a458; --line:#e7e3d5;
-    --blue:#6a8caf; --water:#6fa3c9; --shadow:0 10px 30px rgba(0,0,0,0.10);
-    --err:#c0392b; --warn-text:#b8860b; --diff-up:#5a8a5f; --diff-down:#c15b4a; --warn-chip-text:#b06355; --warn-chip-border:#d9a79e;
+    /* Static fallback only, matching PALETTES.mono.light exactly — the app's
+       REAL theming is JS-driven (applyTheme() below, backed by PALETTES),
+       since it must react to the user's in-app light/dark toggle (P.mode),
+       not just OS preference. These values only paint for the instant
+       before JS runs; there is deliberately no @media(prefers-color-scheme)
+       override here anymore — that would be a second, independent source of
+       truth for theme colors that can disagree with applyTheme() (exactly
+       what happened before: a user picking dark in-app while their OS
+       stayed in light mode got dark backgrounds from JS but light-mode text
+       colors from this media query, since inline styles only override the
+       specific properties JS sets). One function, one palette table, one
+       source of truth for every themed color. */
+    --bg:#f7f7f5; --card:#ffffff; --ink:#1a1a1a; --ink-soft:#6b6b6b;
+    --accent:#1a1a1a; --accent-deep:#000000; --heading:#000000; --gold:#4a4a4a; --line:#e2e2e0;
+    --blue:#3d3d3d; --water:#5c5c5c; --shadow:0 10px 30px rgba(0,0,0,0.10);
+    --err:#c0392b; --warn-text:#b8860b; --diff-up:#4a7a4f; --diff-down:#b8503f; --warn-chip-text:#b06355; --warn-chip-border:#d9a79e;
     --font-head:'Cairo',sans-serif; --font-body:'Tajawal',sans-serif;
   }
   /* --heading = prominent text/titles directly on --bg/--card (must stay
      readable against the page background in both themes). --accent-deep
      stays reserved for FILLED button/badge backgrounds paired with white
      text, so it's tuned for that contrast instead — the two roles need
-     different lightness in dark mode, which is why they're separate vars. */
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#171b18; --card:#242b25; --ink:#edf1e9; --ink-soft:#a7b2a1;
-      --accent:#7fa571; --accent-deep:#5c7c53; --heading:#bcd6ac; --gold:#e6b06e; --line:#3a4137;
-      --blue:#8fb3d6; --water:#7fbde0; --shadow:0 10px 30px rgba(0,0,0,0.45);
-      --err:#e3695a; --warn-text:#e0b04a; --diff-up:#8fc98a; --diff-down:#e08a76; --warn-chip-text:#e0a394; --warn-chip-border:#7a4a42;
-    }
-  }
+     different lightness in dark mode, which is why applyTheme() sets them
+     independently per mode (see PALETTES.mono below). */
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{ margin:0; background:var(--bg); font-family:var(--font-body); color:var(--ink); padding:0 0 60px; min-height:100vh; }
@@ -893,7 +898,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.12.0';
+const APP_VERSION='v1.12.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1383,8 +1388,15 @@ function applyI18n(){
 /* single black/white minimalist identity — "mono" light + "Onyx" dark, no
    multi-palette/font choice anymore per the minimalism request */
 const PALETTES={
- mono:{ light:{bg:'#f7f7f5',card:'#ffffff',ink:'#1a1a1a',inkSoft:'#6b6b6b',line:'#e2e2e0',accent:'#1a1a1a',accentDeep:'#000000',gold:'#4a4a4a',water:'#5c5c5c',blue:'#3d3d3d'},
-       dark:{bg:'#121212',card:'#1c1c1c',ink:'#f2f2f2',inkSoft:'#a0a0a0',line:'#2e2e2e',accent:'#e8e8e8',accentDeep:'#ffffff',gold:'#cfcfcf',water:'#bdbdbd',blue:'#d6d6d6'} }
+ /* accentDeep is a FILL color (always paired with white text on buttons/
+    badges) — it must stay dark enough for white text in BOTH modes, so
+    dark mode does NOT simply invert it to white (that made every filled
+    button render white-on-white). heading is the separate TEXT-on-background
+    role (titles/labels directly on bg/card) and inverts freely per mode. */
+ mono:{ light:{bg:'#f7f7f5',card:'#ffffff',ink:'#1a1a1a',inkSoft:'#6b6b6b',line:'#e2e2e0',accent:'#1a1a1a',accentDeep:'#000000',heading:'#000000',gold:'#4a4a4a',water:'#5c5c5c',blue:'#3d3d3d',
+              err:'#c0392b',warnText:'#8a6800',diffUp:'#3f6b43',diffDown:'#a1432f',warnChipText:'#8a4a3d',warnChipBorder:'#d9a79e'},
+       dark:{bg:'#121212',card:'#1c1c1c',ink:'#f2f2f2',inkSoft:'#a0a0a0',line:'#2e2e2e',accent:'#e8e8e8',accentDeep:'#3a3a3a',heading:'#ffffff',gold:'#cfcfcf',water:'#bdbdbd',blue:'#d6d6d6',
+              err:'#e3695a',warnText:'#e0b04a',diffUp:'#8fc98a',diffDown:'#e08a76',warnChipText:'#e0a394',warnChipBorder:'#7a4a42'} }
 };
 const FONTS={ classic:{head:"'Cairo',sans-serif",body:"'Tajawal',sans-serif"} };
 function applyTheme(palette,mode,font){
@@ -1393,8 +1405,11 @@ function applyTheme(palette,mode,font){
   const customBg=(P.customBg&&P.customBg[mode==='dark'?'dark':'light'])||null;
   r.setProperty('--bg',customBg||p.bg); r.setProperty('--card',p.card); r.setProperty('--ink',p.ink);
   r.setProperty('--ink-soft',p.inkSoft); r.setProperty('--line',p.line);
-  r.setProperty('--accent',p.accent); r.setProperty('--accent-deep',p.accentDeep);
+  r.setProperty('--accent',p.accent); r.setProperty('--accent-deep',p.accentDeep); r.setProperty('--heading',p.heading);
   r.setProperty('--gold',p.gold); r.setProperty('--water',p.water); r.setProperty('--blue',p.blue);
+  r.setProperty('--err',p.err); r.setProperty('--warn-text',p.warnText);
+  r.setProperty('--diff-up',p.diffUp); r.setProperty('--diff-down',p.diffDown);
+  r.setProperty('--warn-chip-text',p.warnChipText); r.setProperty('--warn-chip-border',p.warnChipBorder);
   const f=FONTS.classic;
   r.setProperty('--font-head',f.head); r.setProperty('--font-body',f.body);
   const mb=document.getElementById('modeBtn'); if(mb) mb.textContent=mode==='dark'?'☀️':'🌙';
