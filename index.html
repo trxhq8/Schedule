@@ -51,10 +51,12 @@
   .ob-choice{ border:1.5px solid var(--line); border-radius:14px; padding:14px 8px; text-align:center; cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.82rem; background:var(--bg); transition:all .15s ease; color:var(--ink); }
   .ob-choice .ic{ font-size:1.5rem; display:block; margin-bottom:5px; }
   .ob-choice.selected{ border-color:var(--accent-deep); background:var(--card); box-shadow:var(--shadow); outline:2px solid var(--accent-deep); }
+  .ob-choice.unrealistic{ opacity:0.4; filter:blur(0.3px); cursor:not-allowed; border-color:#e0685a; background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,rgba(224,104,90,0.08) 6px,rgba(224,104,90,0.08) 12px); }
   .ob-btn{ width:100%; font-family:var(--font-head); font-weight:800; font-size:0.95rem; background:var(--accent-deep); color:#fff; border:none; border-radius:14px; padding:13px; cursor:pointer; }
   .ob-btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .ob-btn.secondary{ background:transparent; color:var(--ink-soft); font-weight:700; margin-top:8px; font-size:0.8rem; }
   .val-msg{ color:#c0392b; font-size:0.76rem; text-align:center; margin-bottom:10px; min-height:15px; }
+  .val-msg.warn{ color:#b8860b; }
 
   /* ---- topnav ---- */
   .topnav{ position:sticky; top:0; z-index:40; backdrop-filter:blur(10px); background:color-mix(in srgb, var(--bg) 85%, transparent); border-bottom:1px solid var(--line); padding:10px 14px; padding-top:calc(10px + env(safe-area-inset-top)); }
@@ -91,6 +93,9 @@
   .setup-row > *{ flex:1; }
   .tag-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
   .tag-chip{ background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:0.78rem; display:flex; align-items:center; gap:6px; color:var(--ink); }
+  .emoji-picker-pop{ position:fixed; z-index:200; background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:8px; display:grid; grid-template-columns:repeat(6,1fr); gap:2px; max-width:220px; }
+  .emoji-picker-pop button{ border:none; background:none; font-size:1.2rem; padding:6px; border-radius:8px; cursor:pointer; line-height:1; }
+  .emoji-picker-pop button:hover{ background:var(--bg); }
   .commit-chip .pin-btn{ opacity:0; transition:opacity 0.15s; background:none; border:none; cursor:pointer; font-size:0.85rem; padding:2px; }
   .commit-chip:hover .pin-btn, .commit-chip .pin-btn.pinned-visible{ opacity:1; }
   .tag-chip button{ border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:0.85rem; padding:0; line-height:1; }
@@ -554,6 +559,7 @@
         <div class="ob-grid" id="targetDurationGrid" style="grid-template-columns:repeat(3,1fr);"></div>
         <input type="hidden" id="targetDateInput">
         <div class="val-msg" id="targetValMsg"></div>
+        <button type="button" class="setup-btn hidden" id="goalRecommendBtn" style="background:var(--gold);color:#1a1300;margin-bottom:14px;"></button>
         <div class="setup-row">
           <button class="setup-btn secondary-btn" id="fBack2" data-i18n="back" style="background:var(--card);color:var(--ink-soft);border:1px solid var(--line);"></button>
           <button class="setup-btn" id="fNext2" data-i18n="next"></button>
@@ -567,9 +573,17 @@
           <div class="ob-choice" data-diet="balanced"><span class="ic">🍽️</span><span data-i18n="diet_balanced"></span></div>
           <div class="ob-choice" data-diet="highProtein"><span class="ic">🥩</span><span data-i18n="diet_high_protein"></span></div>
           <div class="ob-choice" data-diet="lowCarb"><span class="ic">🥗</span><span data-i18n="diet_low_carb"></span></div>
-          <div class="ob-choice" data-diet="if168"><span class="ic">⏱️</span><span data-i18n="diet_if"></span></div>
+          <div class="ob-choice" data-diet="mediterranean"><span class="ic">🫒</span><span data-i18n="diet_mediterranean"></span></div>
+          <div class="ob-choice" data-diet="vegetarian"><span class="ic">🥬</span><span data-i18n="diet_vegetarian"></span></div>
+          <div class="ob-choice" data-diet="vegan"><span class="ic">🌱</span><span data-i18n="diet_vegan"></span></div>
         </div>
         <div class="info-chip" id="dietTypeNote" style="margin-bottom:16px;"></div>
+        <h3 data-i18n="q_schedule"></h3>
+        <div class="ob-grid" id="scheduleGrid" style="grid-template-columns:1fr 1fr;">
+          <div class="ob-choice" data-schedule="standard"><span class="ic">🍽️</span><span data-i18n="schedule_standard"></span></div>
+          <div class="ob-choice" data-schedule="if168"><span class="ic">⏱️</span><span data-i18n="schedule_if"></span></div>
+        </div>
+        <div class="info-chip" id="scheduleNote" style="margin-bottom:16px;"></div>
         <h3 data-i18n="q_meal_count"></h3>
         <div class="total-kcal" id="mealCountAutoNote" style="margin-bottom:10px;"></div>
         <div class="setup-row">
@@ -844,7 +858,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.9.13';
+const APP_VERSION='v1.10.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1214,6 +1228,8 @@ const I18N={
   calorie_no_body:'⚠️ ما دخلت وزن/طول — السعرات تقديرية عامة، عدّل الإعداد لحساب أدق',
   q_diet_type:'🍽️ نوع نظامك الغذائي',q_diet_type_sub:'كل نوع له تأثير حقيقي على وجباتك، مو بس اسم',
   diet_balanced:'متوازن',diet_high_protein:'عالي البروتين',diet_low_carb:'قليل الكارب',diet_if:'صيام متقطع ١٦:٨',
+  diet_mediterranean:'متوسطي',diet_vegetarian:'نباتي',diet_vegan:'نباتي صرف',
+  q_schedule:'⏱️ جدول أكلك',schedule_standard:'وجبات عادية',schedule_if:'صيام متقطع ١٦:٨',
   q_meal_count:'🍴 كم وجبة تقدر تاكل باليوم؟',q_meal_count_sub:'يتغير تلقائياً لو اخترت صيام متقطع',
   q_target:'📅 هدفك بالوزن',q_target_duration:'⏳ خلال كم مدة؟',
   pick_something_allergy:'🚫 لازم تختار وحدة على الأقل — لو ما عندك حساسية، اختر "ما عندي"',
@@ -1278,6 +1294,8 @@ const I18N={
   calorie_no_body:"⚠️ You haven't entered weight/height — calories are a generic estimate, edit setup for accuracy",
   q_diet_type:'🍽️ Your diet type',q_diet_type_sub:'Each type really changes your meals, not just a label',
   diet_balanced:'Balanced',diet_high_protein:'High-Protein',diet_low_carb:'Low-Carb',diet_if:'Intermittent Fasting 16:8',
+  diet_mediterranean:'Mediterranean',diet_vegetarian:'Vegetarian',diet_vegan:'Vegan',
+  q_schedule:'⏱️ Your eating schedule',schedule_standard:'Standard meals',schedule_if:'Intermittent Fasting 16:8',
   q_meal_count:'🍴 How many meals a day can you manage?',q_meal_count_sub:'Auto-adjusts if you pick intermittent fasting',
   q_target:'📅 Your weight goal',q_target_duration:'⏳ Over how long?',
   pick_something_allergy:'🚫 Pick at least one — if you have no allergies, choose "None"',
@@ -1514,147 +1532,7 @@ const SLOT_LABELS=[
   {ar:'🌙 العشا',en:'🌙 Dinner'}
 ];
 const SLOT_KEYS=['breakfast','snack1','lunch','snack2','dinner'];
-
-const MEAL_POOLS={
- gain:{
-  breakfast:[
-   {ar:'بيض مقلي (٢-٣) بالطماط + خبز تنور + ملعقة عسل',en:'Fried eggs (2-3) w/ tomato + bread + honey',kcal:550},
-   {ar:'عجة بيض (٣) بالبصل والجبن + خبز',en:'3-egg omelet w/ onion & cheese + bread',kcal:600},
-   {ar:'فول مدمس بزيت الزيتون + خبز + بيضة',en:'Foul medames w/ olive oil + bread + egg',kcal:600},
-   {ar:'شوفان بالحليب + موز + عسل + مكسرات',en:'Oats w/ milk + banana + honey + nuts',kcal:650},
-   {ar:'بيض مقلي (٣) + جبن + خبز تنور',en:'3 fried eggs + cheese + bread',kcal:600},
-   {ar:'أومليت بالخضار (٣ بيضات) + خبز + جبنة',en:'Veggie omelet (3 eggs) + bread + cheese',kcal:600},
-   {ar:'فطور بيتي: بيض + جبن + عسل + خبز + لبنة',en:'Home breakfast: eggs + cheese + honey + bread + labneh',kcal:700},
-   {ar:'بيض مسلوق (٣) + أفوكادو + خبز أسمر',en:'3 boiled eggs + avocado + whole wheat bread',kcal:580}
-  ],
-  snack1:[
-   {ar:'٥ حبات تمر + كوب حليب كامل الدسم',en:'5 dates + full-fat milk',kcal:350},
-   {ar:'زبادي + عسل + حفنة مكسرات',en:'Yogurt + honey + handful of nuts',kcal:400},
-   {ar:'موزة + ٤ تمرات',en:'Banana + 4 dates',kcal:300},
-   {ar:'تفاحة + زبادي يوناني',en:'Apple + Greek yogurt',kcal:300},
-   {ar:'موز + كوب حليب',en:'Banana + milk',kcal:350},
-   {ar:'٥ تمرات + حفنة مكسرات',en:'5 dates + handful of nuts',kcal:400},
-   {ar:'تمر + كوب حليب',en:'Dates + milk',kcal:350},
-   {ar:'بسبوسة قطعة وحدة + شاي',en:'A piece of basbousa + tea',kcal:380}
-  ],
-  lunch:[
-   {ar:'رز بسمتي + دجاج مشوي (صدر ونص) + مرقة باميا',en:'Basmati rice + grilled chicken + okra stew',kcal:850},
-   {ar:'رز + قيمة لحم مفروم + سلطة بزيت زيتون',en:'Rice + minced meat + olive-oil salad',kcal:850},
-   {ar:'رز + سمك مقلي (قطعتين) + مرقة خضار',en:'Rice + fried fish (2 pcs) + veg stew',kcal:900},
-   {ar:'رز + تكة دجاج + سلطة + خبز',en:'Rice + chicken tikka + salad + bread',kcal:850},
-   {ar:'مجبوس دجاج (صحن كبير) + سلطة',en:'Chicken machboos (big plate) + salad',kcal:950},
-   {ar:'رز + لحم + مرقة باذنجان + سلطة',en:'Rice + meat + eggplant stew + salad',kcal:900},
-   {ar:'برياني دجاج + سلطة زبادي',en:'Chicken biryani + yogurt salad',kcal:900},
-   {ar:'وجبة عائلية دسمة (قوزي/مجبوس) 👨‍👩‍👦',en:'Big family meal (qouzi/machboos) 👨‍👩‍👦',kcal:1100}
-  ],
-  snack2:[
-   {ar:'شيك بروتين بالحليب + موزة',en:'Protein shake w/ milk + banana',kcal:450},
-   {ar:'بيضتين مسلوقات + خبز توست + جبنة',en:'2 boiled eggs + toast + cheese',kcal:400},
-   {ar:'شيك بروتين بالحليب + ٣ تمرات',en:'Protein shake w/ milk + 3 dates',kcal:450},
-   {ar:'كوب حليب كامل + ٥ تمرات + فول سوداني',en:'Full-fat milk + 5 dates + peanuts',kcal:450},
-   {ar:'شيك بروتين + ملعقة زبدة فول سوداني',en:'Protein shake + spoon of peanut butter',kcal:500},
-   {ar:'بيضتين مسلوقات + خبز + حليب',en:'2 boiled eggs + bread + milk',kcal:450},
-   {ar:'شيك بروتين + موزة',en:'Protein shake + banana',kcal:450},
-   {ar:'توست بالجبن والعسل',en:'Toast with cheese and honey',kcal:420}
-  ],
-  dinner:[
-   {ar:'شوربة عدس + خبز + زبادي',en:'Lentil soup + bread + yogurt',kcal:450},
-   {ar:'زبادي + خيار + خبز + تمر',en:'Yogurt + cucumber + bread + dates',kcal:450},
-   {ar:'شوربة خضار بالدجاج + خبز',en:'Chicken veg soup + bread',kcal:450},
-   {ar:'شوربة عدس + خبز',en:'Lentil soup + bread',kcal:400},
-   {ar:'زبادي + فواكه + عسل',en:'Yogurt + fruit + honey',kcal:350},
-   {ar:'شوربة عدس خفيفة + خبز',en:'Light lentil soup + bread',kcal:400},
-   {ar:'زبادي + خيار (خفيف)',en:'Yogurt + cucumber (light)',kcal:300},
-   {ar:'شوربة شعيرية بالدجاج + خبز',en:'Chicken vermicelli soup + bread',kcal:400}
-  ]
- },
- lose:{
-  breakfast:[
-   {ar:'عجة بياض بيض (٤) بالخضار + خبز أسمر رقاقة',en:'Egg-white omelet (4) with veggies + 1 slice whole wheat bread',kcal:320},
-   {ar:'شوفان بحليب خالي الدسم + قرفة + نص موزة',en:'Oats with skim milk + cinnamon + half a banana',kcal:320},
-   {ar:'٢ بيض مسلوق + خبز أسمر رقاقة + خيار',en:'2 boiled eggs + 1 slice whole wheat bread + cucumber',kcal:320},
-   {ar:'توست أسمر بجبن قليل الدسم + طماط',en:'Whole wheat toast with low-fat cheese + tomato',kcal:320},
-   {ar:'عجة بيضة كاملة وحدة + بياضين + سبانخ',en:'1 whole egg + 2 egg whites omelet + spinach',kcal:320},
-   {ar:'شوفان بحليب خالي الدسم + تفاح مبشور وقرفة',en:'Oats with skim milk + grated apple & cinnamon',kcal:320},
-   {ar:'فطور بيتي خفيف: بيضتين + خبز أسمر + خيار وطماط',en:'Light home breakfast: 2 eggs + whole wheat bread + cucumber & tomato',kcal:350},
-   {ar:'زبادي يوناني + شوفان نيء + توت',en:'Greek yogurt overnight oats with berries',kcal:300}
-  ],
-  snack1:[
-   {ar:'تفاحة + ١٠ حبات لوز',en:'An apple + 10 almonds',kcal:200},
-   {ar:'برتقالة + بيضة مسلوقة',en:'An orange + a boiled egg',kcal:200},
-   {ar:'زبادي يوناني + ملعقة عسل',en:'Greek yogurt + a spoon of honey',kcal:200},
-   {ar:'موزة + نص ملعقة زبدة فول سوداني',en:'A banana + half a spoon of peanut butter',kcal:200},
-   {ar:'كيوي + ١٠ حبات لوز',en:'A kiwi + 10 almonds',kcal:200},
-   {ar:'بيضة مسلوقة + خيار',en:'A boiled egg + cucumber',kcal:200},
-   {ar:'فواكه موسمية متنوعة',en:'A mix of seasonal fruit',kcal:200},
-   {ar:'جزر ومقرمشات خضار + ملعقتين حمص',en:'Carrot & veggie sticks + 2 spoons of hummus',kcal:180}
-  ],
-  lunch:[
-   {ar:'صدر دجاج مشوي (١٨٠غ) + سلطة خضراء كبيرة + ربع كوب كينوا',en:'Grilled chicken breast (180g) + big green salad + 1/4 cup quinoa',kcal:550},
-   {ar:'سمك مشوي (١٨٠غ) + خضار مشوية + بطاطا مسلوقة صغيرة',en:'Grilled fish (180g) + grilled vegetables + a small boiled potato',kcal:550},
-   {ar:'لحم مشوي قليل الدهن (١٥٠غ) + سلطة تبولة + ربع كوب رز',en:'Lean grilled meat (150g) + tabbouleh + 1/4 cup rice',kcal:550},
-   {ar:'صدر دجاج مشوي (١٨٠غ) + سلطة فتوش (بدون خبز مقلي)',en:'Grilled chicken breast (180g) + fattoush (no fried bread)',kcal:550},
-   {ar:'سمك مشوي (١٨٠غ) + ربع كوب أرز بني + خضار سوتيه',en:'Grilled fish (180g) + 1/4 cup brown rice + sautéed vegetables',kcal:550},
-   {ar:'دجاج مشوي (١٨٠غ) + سلطة يونانية خفيفة + خبز أسمر رقاقة',en:'Grilled chicken (180g) + light Greek salad + 1 slice whole wheat bread',kcal:550},
-   {ar:'سلطة دجاج مشوي كبيرة بصلصة زبادي خفيفة',en:'Big grilled chicken salad with light yogurt dressing',kcal:500},
-   {ar:'دجاج مشوي أو مسلوق (١٨٠غ) + سلطة كبيرة + ربع كوب رز',en:'Grilled or boiled chicken (180g) + a big salad + 1/4 cup rice',kcal:570}
-  ],
-  snack2:[
-   {ar:'زبادي يوناني قليل الدسم + توت',en:'Low-fat Greek yogurt + berries',kcal:200},
-   {ar:'حمص بخبز رقاق صغير',en:'Hummus with a small piece of flatbread',kcal:200},
-   {ar:'تفاحة + ١٠ حبات لوز',en:'An apple + 10 almonds',kcal:200},
-   {ar:'زبادي يوناني + فراولة',en:'Greek yogurt + strawberries',kcal:200},
-   {ar:'حمص بالخضار',en:'Hummus with veggie sticks',kcal:200},
-   {ar:'زبادي يوناني + عسل',en:'Greek yogurt + honey',kcal:200},
-   {ar:'زبادي يوناني + مكسرات قليلة',en:'Greek yogurt + a few nuts',kcal:200},
-   {ar:'كوب حليب خالي الدسم + ٣ تمرات',en:'Skim milk + 3 dates',kcal:180}
-  ],
-  dinner:[
-   {ar:'شوربة عدس + سلطة خيار وطماط',en:'Lentil soup + cucumber-tomato salad',kcal:380},
-   {ar:'سلطة دجاج مشوي بخس وخيار',en:'Grilled chicken lettuce & cucumber salad',kcal:380},
-   {ar:'شوربة خضار خفيفة بدون كريمة',en:'Light vegetable soup, no cream',kcal:380},
-   {ar:'عدس أصفر بدون خبز + سلطة خضراء',en:'Yellow lentils, no bread + green salad',kcal:380},
-   {ar:'سلطة تونة (بدون مايونيز، بزيت زيتون)',en:'Tuna salad (no mayo, olive oil instead)',kcal:380},
-   {ar:'شوربة خضار بالدجاج خفيفة',en:'Light chicken vegetable soup',kcal:380},
-   {ar:'سلطة خفيفة بجبنة قليلة الدسم',en:'Light salad with low-fat cheese',kcal:330},
-   {ar:'شوربة عدس أحمر بالليمون',en:'Red lentil soup with lemon',kcal:350}
-  ]
- }
-};
-
 function currentGoalKey(){ return (P.foodSetup&&P.foodSetup.goal==='lose') ? 'lose' : 'gain'; }
-const EXTRA_ITEMS={
-  gain:[
-    {ar:'شيك بروتين إضافي',en:'Extra protein shake',kcal:300},
-    {ar:'حفنة مكسرات',en:'Handful of nuts',kcal:200},
-    {ar:'ملعقتين زبدة فول سوداني',en:'2 tbsp peanut butter',kcal:190},
-    {ar:'موزة بالعسل',en:'Banana with honey',kcal:180},
-    {ar:'كوب حليب كامل الدسم إضافي',en:'Extra full-fat milk',kcal:150},
-    {ar:'ربع رغيف خبز إضافي',en:'Extra quarter loaf of bread',kcal:150}
-  ],
-  lose:[
-    {ar:'حصة زبادي يوناني إضافية',en:'Extra Greek yogurt serving',kcal:120},
-    {ar:'حفنة صغيرة لوز',en:'Small handful of almonds',kcal:110},
-    {ar:'تفاحة',en:'An apple',kcal:90},
-    {ar:'بيضة مسلوقة',en:'A boiled egg',kcal:70}
-  ]
-};
-function fillGapWithRealFood(gapKcal,goal,dietType){
-  if(gapKcal<150) return [];
-  let pool=[...EXTRA_ITEMS[goal]];
-  if(dietType==='lowCarb'){
-    const filtered=pool.filter(item=>!/خبز|عسل|تمر|bread|honey|dates/i.test(item.ar+item.en));
-    if(filtered.length) pool=filtered;
-  }
-  pool.sort((a,b)=>b.kcal-a.kcal);
-  const picked=[]; let remaining=gapKcal;
-  for(const item of pool){
-    if(picked.length>=2) break;
-    if(item.kcal<=remaining+80){ picked.push(item); remaining-=item.kcal; }
-    if(remaining<100) break;
-  }
-  return picked;
-}
 function getISOWeekNum(d){
   const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
   const dayNum=dt.getUTCDay()||7;
@@ -1668,98 +1546,282 @@ const MEAL_COUNT_SLOTS={
   3:['breakfast','lunch','dinner'],
   2:['lunch','dinner']
 };
-function getMealPoolForSlot(key){
-  const goal=currentGoalKey();
-  const fs=P.foodSetup||{};
-  const dietType=fs.dietType||'balanced';
-  let pool = (dietType==='lowCarb' && (key==='breakfast'||key==='lunch')) ? MEAL_POOLS.lose[key] : MEAL_POOLS[goal][key];
-  if(dietType==='highProtein' && (key==='snack1'||key==='snack2')){
-    const filtered=pool.filter(item=>/بروتين|بيض|زبادي|جبن|protein|egg|yogurt|cheese/i.test(item.ar+item.en));
-    if(filtered.length) pool=filtered;
-  }
-  const disliked=fs.dislikedList||[];
-  if(disliked.length){
-    const dislikedTerms=disliked.flatMap(d=>expandFoodTerm(d));
-    const notDisliked=pool.filter(item=>!dislikedTerms.some(term=>term&&(item.ar.toLowerCase().includes(term.toLowerCase())||item.en.toLowerCase().includes(term.toLowerCase()))));
-    if(notDisliked.length) pool=notDisliked;
-  }
-  return pool;
-}
+const SLOT_LABELS_BY_KEY={
+  breakfast:{ar:'الفطور',en:'Breakfast'}, snack1:{ar:'سناك',en:'Snack'},
+  lunch:{ar:'الغدا',en:'Lunch'}, snack2:{ar:'سناك',en:'Snack'}, dinner:{ar:'العشا',en:'Dinner'},
+};
+/* getDayMenu / getTodayMenu / swapSingleTodayMeal keep their original names
+   and call signatures (other UI code calls these) but now return real
+   composed meals with real per-item macros instead of a fixed kcal string. */
 function getDayMenu(weekdayIdx){
-  const fs=P.foodSetup||{};
-  const dietType=fs.dietType||'balanced';
-  const isIF=dietType==='if168';
-  const mealCount=isIF?2:(fs.mealCount||5);
-  const activeSlotKeys=MEAL_COUNT_SLOTS[mealCount]||MEAL_COUNT_SLOTS[5];
-  const week=getISOWeekNum(new Date());
-  const isFriday=(weekdayIdx===6);
-  const meals=[];
-  SLOT_KEYS.forEach((key,slotIdx)=>{
-    if(!activeSlotKeys.includes(key)) return;
-    const pool=getMealPoolForSlot(key);
-    let idx;
-    if(key==='lunch'){
-      if(isFriday){
-        idx=pool.length-1;
-      } else {
-        idx=(weekdayIdx+week*(slotIdx+1))%Math.max(1,pool.length-1);
-      }
-    } else {
-      idx=(weekdayIdx+week*(slotIdx+1))%pool.length;
-    }
-    const item=pool[idx];
-    meals.push([SLOT_LABELS[slotIdx],{ar:item.ar,en:item.en},String(item.kcal),key]);
-  });
-  const total=meals.reduce((s,m)=>s+parseInt(m[2],10),0);
-  return {tag:isFriday?'special':'', total:String(total), meals};
+  const isoWeek=getISOWeekNum(new Date());
+  const meals=generateDailyPlan(weekdayIdx,isoWeek);
+  const daily=calculateDailyNutrition(meals);
+  return {tag:weekdayIdx===6?'special':'', meals, ...daily};
 }
-/* today's meals can be swapped one at a time (see swapSingleTodayMeal) — the
-   swap is stored per-slot in dailyTrack so it persists for the rest of the
-   day; every other day always shows the plain computed menu */
 function getTodayMenu(weekdayIdx){
   const v=getDayMenu(weekdayIdx);
   const overrides=dailyTrack.mealOverrides||{};
   if(!Object.keys(overrides).length) return v;
-  const meals=v.meals.map(m=>{
-    const key=m[3];
-    const ov=overrides[key];
-    return ov ? [m[0],{ar:ov.ar,en:ov.en},String(ov.kcal),key] : m;
-  });
-  const total=meals.reduce((s,m)=>s+parseInt(m[2],10),0);
-  return {tag:v.tag, total:String(total), meals};
+  const meals=v.meals.map(m=>overrides[m.slotKey]||m);
+  const daily=calculateDailyNutrition(meals);
+  return {tag:v.tag, meals, ...daily};
 }
 function swapSingleTodayMeal(key){
-  const idx=todayWeekdayIndex();
-  const current=getTodayMenu(idx).meals.find(m=>m[3]===key);
+  const current=getTodayMenu(todayWeekdayIndex()).meals.find(m=>m.slotKey===key);
   if(!current) return;
-  const pool=getMealPoolForSlot(key);
-  const candidates=pool.filter(p=>p.ar!==current[1].ar);
-  if(!candidates.length) return;
-  const pick=candidates[Math.floor(Math.random()*candidates.length)];
+  dailyTrack.recentSwaps=dailyTrack.recentSwaps||{};
+  const recent=new Set(dailyTrack.recentSwaps[key]||[]);
+  current.items.forEach(it=>recent.add(it.foodId));
+  const options=getSwapOptions(key,current.items,Math.round(current.calories),recent,6);
+  if(!options.length){
+    showToast(LANG==='ar'?'ما فيه بدائل آمنة لهالوجبة بقيودك الحالية':'No safe alternatives available for this meal with your current restrictions','error');
+    return;
+  }
+  const next=options[0];
   dailyTrack.mealOverrides=dailyTrack.mealOverrides||{};
-  dailyTrack.mealOverrides[key]={ar:pick.ar,en:pick.en,kcal:pick.kcal};
+  dailyTrack.mealOverrides[key]=next;
+  dailyTrack.recentSwaps[key]=[...recent, ...next.items.map(it=>it.foodId)].slice(-12);
   saveDailyTrack();
   renderFoodSection();
 }
 
-/* Real removal (not just a visual strikethrough): each free-text allergy/
-   dislike is matched by word and the exact match is replaced in the meal
-   text with its substitute, so the ingredient is actually gone from what's
-   shown — not merely crossed out. */
-function transformMeal(text,lang){
-  let out=text, touched=false;
-  const fs=P.foodSetup||{};
-  const analyses=fs.allergyAnalysis||[];
-  analyses.forEach(a=>{
-    (a.avoidWords||[]).forEach(w=>{
-      if(!w) return;
-      const escaped=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      const re=new RegExp(/[a-zA-Z]/.test(w) ? `${escaped}[a-zA-Z]*` : `${escaped}[ء-ي]*`,'gi');
-      if(re.test(out)){ out=out.replace(re, a.subText?a.subText[lang]:''); touched=true; }
+/* ================= REAL NUTRITION ENGINE =================
+   Replaces the old hardcoded meal-string + fixed-kcal system. Meals are now
+   composed of real food items from FOOD_DB, each with real per-100g macros;
+   calories/macros are computed by summing actual items, never faked from a
+   percentage split of a single number. */
+const FOOD_DB=[{"id":"chicken_breast","nameAr":"صدر دجاج","nameEn":"Chicken breast","category":"protein","caloriesPer100g":165,"proteinPer100g":31,"carbsPer100g":0,"fatPer100g":3.6,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb","mediterranean"],"allergens":[],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"chicken_thigh","nameAr":"فخذ دجاج","nameEn":"Chicken thigh","category":"protein","caloriesPer100g":209,"proteinPer100g":26,"carbsPer100g":0,"fatPer100g":10.9,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein"],"allergens":[],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"turkey_breast","nameAr":"صدر ديك رومي","nameEn":"Turkey breast","category":"protein","caloriesPer100g":135,"proteinPer100g":30,"carbsPer100g":0,"fatPer100g":1,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb","mediterranean"],"allergens":[],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"ground_turkey","nameAr":"لحم ديك رومي مفروم","nameEn":"Ground turkey","category":"protein","caloriesPer100g":203,"proteinPer100g":27,"carbsPer100g":0,"fatPer100g":10,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein"],"allergens":[],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"lean_beef","nameAr":"لحم بقر قليل الدهن","nameEn":"Lean beef (95/5)","category":"protein","caloriesPer100g":137,"proteinPer100g":21,"carbsPer100g":0,"fatPer100g":5,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb"],"allergens":[],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"beef_steak","nameAr":"ستيك لحم","nameEn":"Beef steak","category":"protein","caloriesPer100g":271,"proteinPer100g":25,"carbsPer100g":0,"fatPer100g":18,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein"],"allergens":[],"cuisineTags":["western"],"vegetarian":false,"vegan":false},{"id":"beef_mince_regular","nameAr":"لحم مفروم عادي","nameEn":"Ground beef (80/20)","category":"protein","caloriesPer100g":254,"proteinPer100g":17,"carbsPer100g":0,"fatPer100g":20,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"lamb_leg","nameAr":"فخذ خروف","nameEn":"Lamb leg","category":"protein","caloriesPer100g":258,"proteinPer100g":25,"carbsPer100g":0,"fatPer100g":17,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"lamb_chops","nameAr":"ريش غنم","nameEn":"Lamb chops","category":"protein","caloriesPer100g":294,"proteinPer100g":25,"carbsPer100g":0,"fatPer100g":21,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"salmon","nameAr":"سلمون","nameEn":"Salmon","category":"protein","caloriesPer100g":208,"proteinPer100g":20,"carbsPer100g":0,"fatPer100g":13,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb","mediterranean"],"allergens":["fish"],"cuisineTags":["western"],"vegetarian":false,"vegan":false},{"id":"tuna_canned","nameAr":"تونة معلبة","nameEn":"Canned tuna (in water)","category":"protein","caloriesPer100g":116,"proteinPer100g":26,"carbsPer100g":0,"fatPer100g":1,"defaultServingG":120,"mealTypes":["lunch","dinner","snack"],"dietTags":["highProtein","lowCarb","mediterranean"],"allergens":["fish"],"cuisineTags":["general"],"vegetarian":false,"vegan":false},{"id":"white_fish","nameAr":"سمك أبيض (هامور/زبيدي)","nameEn":"White fish (grouper/pomfret)","category":"protein","caloriesPer100g":105,"proteinPer100g":20,"carbsPer100g":0,"fatPer100g":2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb","mediterranean"],"allergens":["fish"],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"shrimp","nameAr":"ربيان","nameEn":"Shrimp","category":"protein","caloriesPer100g":99,"proteinPer100g":24,"carbsPer100g":0.2,"fatPer100g":0.3,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb","mediterranean"],"allergens":["shellfish"],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"egg_whole","nameAr":"بيض كامل","nameEn":"Whole egg","category":"protein","caloriesPer100g":155,"proteinPer100g":13,"carbsPer100g":1.1,"fatPer100g":11,"defaultServingG":100,"mealTypes":["breakfast","snack"],"dietTags":["highProtein","mediterranean","vegetarian"],"allergens":["egg"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"egg_white","nameAr":"بياض بيض","nameEn":"Egg white","category":"protein","caloriesPer100g":52,"proteinPer100g":11,"carbsPer100g":0.7,"fatPer100g":0.2,"defaultServingG":100,"mealTypes":["breakfast","snack"],"dietTags":["highProtein","lowCarb","vegetarian"],"allergens":["egg"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"greek_yogurt","nameAr":"زبادي يوناني","nameEn":"Greek yogurt (plain)","category":"protein","caloriesPer100g":59,"proteinPer100g":10,"carbsPer100g":3.6,"fatPer100g":0.4,"defaultServingG":170,"mealTypes":["breakfast","snack"],"dietTags":["highProtein","mediterranean","vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"cottage_cheese","nameAr":"جبنة قريش","nameEn":"Cottage cheese","category":"protein","caloriesPer100g":98,"proteinPer100g":11,"carbsPer100g":3.4,"fatPer100g":4.3,"defaultServingG":150,"mealTypes":["breakfast","snack"],"dietTags":["highProtein","vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"tofu","nameAr":"توفو","nameEn":"Tofu","category":"protein","caloriesPer100g":76,"proteinPer100g":8,"carbsPer100g":1.9,"fatPer100g":4.8,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","lowCarb","vegetarian","vegan"],"allergens":["soy"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"lentils_cooked","nameAr":"عدس مطبوخ","nameEn":"Lentils (cooked)","category":"protein","caloriesPer100g":116,"proteinPer100g":9,"carbsPer100g":20,"fatPer100g":0.4,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["vegetarian","vegan","mediterranean"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"chickpeas_cooked","nameAr":"حمص مطبوخ","nameEn":"Chickpeas (cooked)","category":"protein","caloriesPer100g":164,"proteinPer100g":9,"carbsPer100g":27,"fatPer100g":2.6,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["vegetarian","vegan","mediterranean"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"black_beans","nameAr":"فاصوليا سوداء","nameEn":"Black beans (cooked)","category":"protein","caloriesPer100g":132,"proteinPer100g":9,"carbsPer100g":24,"fatPer100g":0.5,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"edamame","nameAr":"إداماميه","nameEn":"Edamame","category":"protein","caloriesPer100g":122,"proteinPer100g":11,"carbsPer100g":10,"fatPer100g":5,"defaultServingG":100,"mealTypes":["snack","lunch"],"dietTags":["vegetarian","vegan"],"allergens":["soy"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"tempeh","nameAr":"تمبيه","nameEn":"Tempeh","category":"protein","caloriesPer100g":192,"proteinPer100g":20,"carbsPer100g":7.6,"fatPer100g":11,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":["highProtein","vegetarian","vegan"],"allergens":["soy"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"protein_powder_whey","nameAr":"بروتين مصل الحليب","nameEn":"Whey protein powder","category":"protein","caloriesPer100g":380,"proteinPer100g":80,"carbsPer100g":8,"fatPer100g":6,"defaultServingG":30,"mealTypes":["snack","breakfast"],"dietTags":["highProtein"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"protein_powder_vegan","nameAr":"بروتين نباتي","nameEn":"Vegan protein powder","category":"protein","caloriesPer100g":370,"proteinPer100g":75,"carbsPer100g":10,"fatPer100g":5,"defaultServingG":30,"mealTypes":["snack","breakfast"],"dietTags":["highProtein","vegan","vegetarian"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"white_rice","nameAr":"رز أبيض","nameEn":"White rice (cooked)","category":"carb","caloriesPer100g":130,"proteinPer100g":2.7,"carbsPer100g":28,"fatPer100g":0.3,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"basmati_rice","nameAr":"رز بسمتي","nameEn":"Basmati rice (cooked)","category":"carb","caloriesPer100g":121,"proteinPer100g":2.5,"carbsPer100g":25,"fatPer100g":0.3,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"brown_rice","nameAr":"رز بني","nameEn":"Brown rice (cooked)","category":"carb","caloriesPer100g":123,"proteinPer100g":2.7,"carbsPer100g":26,"fatPer100g":1,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"oats","nameAr":"شوفان","nameEn":"Oats (dry)","category":"carb","caloriesPer100g":389,"proteinPer100g":17,"carbsPer100g":66,"fatPer100g":7,"defaultServingG":50,"mealTypes":["breakfast"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["gluten"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"potato","nameAr":"بطاطا","nameEn":"Potato (boiled)","category":"carb","caloriesPer100g":87,"proteinPer100g":2,"carbsPer100g":20,"fatPer100g":0.1,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"sweet_potato","nameAr":"بطاطا حلوة","nameEn":"Sweet potato (baked)","category":"carb","caloriesPer100g":90,"proteinPer100g":2,"carbsPer100g":21,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"pasta","nameAr":"معكرونة","nameEn":"Pasta (cooked)","category":"carb","caloriesPer100g":131,"proteinPer100g":5,"carbsPer100g":25,"fatPer100g":1.1,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["western"],"vegetarian":true,"vegan":true},{"id":"whole_wheat_pasta","nameAr":"معكرونة أسمر","nameEn":"Whole wheat pasta (cooked)","category":"carb","caloriesPer100g":124,"proteinPer100g":5.3,"carbsPer100g":27,"fatPer100g":0.9,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":["gluten"],"cuisineTags":["western"],"vegetarian":true,"vegan":true},{"id":"bread_white","nameAr":"خبز أبيض","nameEn":"White bread","category":"carb","caloriesPer100g":265,"proteinPer100g":9,"carbsPer100g":49,"fatPer100g":3.2,"defaultServingG":60,"mealTypes":["breakfast","lunch"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"bread_whole_wheat","nameAr":"خبز أسمر","nameEn":"Whole wheat bread","category":"carb","caloriesPer100g":247,"proteinPer100g":13,"carbsPer100g":41,"fatPer100g":3.4,"defaultServingG":60,"mealTypes":["breakfast","lunch"],"dietTags":["mediterranean"],"allergens":["gluten"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"arabic_bread","nameAr":"خبز تنور/رقاق","nameEn":"Arabic flatbread","category":"carb","caloriesPer100g":275,"proteinPer100g":9,"carbsPer100g":53,"fatPer100g":2,"defaultServingG":60,"mealTypes":["breakfast","lunch","dinner"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"tortilla","nameAr":"تورتيلا","nameEn":"Tortilla wrap","category":"carb","caloriesPer100g":218,"proteinPer100g":6,"carbsPer100g":36,"fatPer100g":5,"defaultServingG":50,"mealTypes":["breakfast","lunch"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["western"],"vegetarian":true,"vegan":true},{"id":"quinoa","nameAr":"كينوا","nameEn":"Quinoa (cooked)","category":"carb","caloriesPer100g":120,"proteinPer100g":4.4,"carbsPer100g":21,"fatPer100g":1.9,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"couscous","nameAr":"كسكسي","nameEn":"Couscous (cooked)","category":"carb","caloriesPer100g":112,"proteinPer100g":3.8,"carbsPer100g":23,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":["gluten"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"freekeh","nameAr":"فريكة","nameEn":"Freekeh (cooked)","category":"carb","caloriesPer100g":124,"proteinPer100g":4.5,"carbsPer100g":24,"fatPer100g":1,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"bulgur","nameAr":"برغل","nameEn":"Bulgur (cooked)","category":"carb","caloriesPer100g":83,"proteinPer100g":3,"carbsPer100g":19,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean"],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"corn","nameAr":"ذرة","nameEn":"Corn (boiled)","category":"carb","caloriesPer100g":96,"proteinPer100g":3.4,"carbsPer100g":21,"fatPer100g":1.5,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":["vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"vermicelli","nameAr":"شعيرية","nameEn":"Vermicelli (cooked)","category":"carb","caloriesPer100g":158,"proteinPer100g":5.5,"carbsPer100g":31,"fatPer100g":1,"defaultServingG":100,"mealTypes":["dinner"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"apple","nameAr":"تفاح","nameEn":"Apple","category":"fruit","caloriesPer100g":52,"proteinPer100g":0.3,"carbsPer100g":14,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"banana","nameAr":"موز","nameEn":"Banana","category":"fruit","caloriesPer100g":89,"proteinPer100g":1.1,"carbsPer100g":23,"fatPer100g":0.3,"defaultServingG":120,"mealTypes":["snack","breakfast"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"orange","nameAr":"برتقال","nameEn":"Orange","category":"fruit","caloriesPer100g":47,"proteinPer100g":0.9,"carbsPer100g":12,"fatPer100g":0.1,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"grapes","nameAr":"عنب","nameEn":"Grapes","category":"fruit","caloriesPer100g":69,"proteinPer100g":0.7,"carbsPer100g":18,"fatPer100g":0.2,"defaultServingG":120,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"strawberries","nameAr":"فراولة","nameEn":"Strawberries","category":"fruit","caloriesPer100g":32,"proteinPer100g":0.7,"carbsPer100g":7.7,"fatPer100g":0.3,"defaultServingG":150,"mealTypes":["snack","breakfast"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"blueberries","nameAr":"توت أزرق","nameEn":"Blueberries","category":"fruit","caloriesPer100g":57,"proteinPer100g":0.7,"carbsPer100g":14,"fatPer100g":0.3,"defaultServingG":120,"mealTypes":["snack","breakfast"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"mango","nameAr":"مانجو","nameEn":"Mango","category":"fruit","caloriesPer100g":60,"proteinPer100g":0.8,"carbsPer100g":15,"fatPer100g":0.4,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"pineapple","nameAr":"أناناس","nameEn":"Pineapple","category":"fruit","caloriesPer100g":50,"proteinPer100g":0.5,"carbsPer100g":13,"fatPer100g":0.1,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"watermelon","nameAr":"بطيخ","nameEn":"Watermelon","category":"fruit","caloriesPer100g":30,"proteinPer100g":0.6,"carbsPer100g":8,"fatPer100g":0.2,"defaultServingG":200,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"kiwi","nameAr":"كيوي","nameEn":"Kiwi","category":"fruit","caloriesPer100g":61,"proteinPer100g":1.1,"carbsPer100g":15,"fatPer100g":0.5,"defaultServingG":100,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"dates","nameAr":"تمر","nameEn":"Dates","category":"fruit","caloriesPer100g":277,"proteinPer100g":1.8,"carbsPer100g":75,"fatPer100g":0.2,"defaultServingG":40,"mealTypes":["snack","breakfast"],"dietTags":["vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"pear","nameAr":"كمثرى","nameEn":"Pear","category":"fruit","caloriesPer100g":57,"proteinPer100g":0.4,"carbsPer100g":15,"fatPer100g":0.1,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"pomegranate","nameAr":"رمان","nameEn":"Pomegranate","category":"fruit","caloriesPer100g":83,"proteinPer100g":1.7,"carbsPer100g":19,"fatPer100g":1.2,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"fig","nameAr":"تين","nameEn":"Fig","category":"fruit","caloriesPer100g":74,"proteinPer100g":0.8,"carbsPer100g":19,"fatPer100g":0.3,"defaultServingG":80,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"peach","nameAr":"خوخ","nameEn":"Peach","category":"fruit","caloriesPer100g":39,"proteinPer100g":0.9,"carbsPer100g":10,"fatPer100g":0.3,"defaultServingG":150,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"broccoli","nameAr":"بروكلي","nameEn":"Broccoli","category":"vegetable","caloriesPer100g":34,"proteinPer100g":2.8,"carbsPer100g":7,"fatPer100g":0.4,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"spinach","nameAr":"سبانخ","nameEn":"Spinach","category":"vegetable","caloriesPer100g":23,"proteinPer100g":2.9,"carbsPer100g":3.6,"fatPer100g":0.4,"defaultServingG":100,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"cucumber","nameAr":"خيار","nameEn":"Cucumber","category":"vegetable","caloriesPer100g":16,"proteinPer100g":0.7,"carbsPer100g":3.6,"fatPer100g":0.1,"defaultServingG":150,"mealTypes":["lunch","dinner","snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"tomato","nameAr":"طماط","nameEn":"Tomato","category":"vegetable","caloriesPer100g":18,"proteinPer100g":0.9,"carbsPer100g":3.9,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"carrot","nameAr":"جزر","nameEn":"Carrot","category":"vegetable","caloriesPer100g":41,"proteinPer100g":0.9,"carbsPer100g":10,"fatPer100g":0.2,"defaultServingG":100,"mealTypes":["lunch","dinner","snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"bell_pepper","nameAr":"فلفل رومي","nameEn":"Bell pepper","category":"vegetable","caloriesPer100g":31,"proteinPer100g":1,"carbsPer100g":6,"fatPer100g":0.3,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"okra","nameAr":"باميا","nameEn":"Okra","category":"vegetable","caloriesPer100g":33,"proteinPer100g":1.9,"carbsPer100g":7.5,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"lettuce","nameAr":"خس","nameEn":"Lettuce","category":"vegetable","caloriesPer100g":15,"proteinPer100g":1.4,"carbsPer100g":2.9,"fatPer100g":0.2,"defaultServingG":100,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"eggplant","nameAr":"باذنجان","nameEn":"Eggplant","category":"vegetable","caloriesPer100g":25,"proteinPer100g":1,"carbsPer100g":6,"fatPer100g":0.2,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"zucchini","nameAr":"كوسا","nameEn":"Zucchini","category":"vegetable","caloriesPer100g":17,"proteinPer100g":1.2,"carbsPer100g":3.1,"fatPer100g":0.3,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"cauliflower","nameAr":"قرنبيط","nameEn":"Cauliflower","category":"vegetable","caloriesPer100g":25,"proteinPer100g":1.9,"carbsPer100g":5,"fatPer100g":0.3,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"mushroom","nameAr":"فطر","nameEn":"Mushroom","category":"vegetable","caloriesPer100g":22,"proteinPer100g":3.1,"carbsPer100g":3.3,"fatPer100g":0.3,"defaultServingG":100,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"onion","nameAr":"بصل","nameEn":"Onion","category":"vegetable","caloriesPer100g":40,"proteinPer100g":1.1,"carbsPer100g":9,"fatPer100g":0.1,"defaultServingG":80,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"green_beans","nameAr":"فاصوليا خضراء","nameEn":"Green beans","category":"vegetable","caloriesPer100g":31,"proteinPer100g":1.8,"carbsPer100g":7,"fatPer100g":0.2,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"cabbage","nameAr":"ملفوف","nameEn":"Cabbage","category":"vegetable","caloriesPer100g":25,"proteinPer100g":1.3,"carbsPer100g":5.8,"fatPer100g":0.1,"defaultServingG":120,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"milk_full","nameAr":"حليب كامل الدسم","nameEn":"Whole milk","category":"dairy","caloriesPer100g":61,"proteinPer100g":3.2,"carbsPer100g":4.8,"fatPer100g":3.3,"defaultServingG":240,"mealTypes":["breakfast","snack"],"dietTags":["vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"milk_skim","nameAr":"حليب خالي الدسم","nameEn":"Skim milk","category":"dairy","caloriesPer100g":34,"proteinPer100g":3.4,"carbsPer100g":5,"fatPer100g":0.1,"defaultServingG":240,"mealTypes":["breakfast","snack"],"dietTags":["highProtein","lowCarb","vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"labneh","nameAr":"لبنة","nameEn":"Labneh","category":"dairy","caloriesPer100g":132,"proteinPer100g":5.5,"carbsPer100g":4.3,"fatPer100g":11,"defaultServingG":50,"mealTypes":["breakfast","snack"],"dietTags":["vegetarian"],"allergens":["dairy"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":false},{"id":"cheese_cheddar","nameAr":"جبنة شيدر","nameEn":"Cheddar cheese","category":"dairy","caloriesPer100g":403,"proteinPer100g":25,"carbsPer100g":1.3,"fatPer100g":33,"defaultServingG":30,"mealTypes":["breakfast","snack"],"dietTags":["vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"cheese_feta","nameAr":"جبنة فيتا","nameEn":"Feta cheese","category":"dairy","caloriesPer100g":264,"proteinPer100g":14,"carbsPer100g":4,"fatPer100g":21,"defaultServingG":40,"mealTypes":["breakfast","lunch"],"dietTags":["mediterranean","vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"cheese_mozzarella","nameAr":"جبنة موزاريلا","nameEn":"Mozzarella cheese","category":"dairy","caloriesPer100g":280,"proteinPer100g":28,"carbsPer100g":3.1,"fatPer100g":17,"defaultServingG":30,"mealTypes":["lunch","dinner"],"dietTags":["vegetarian"],"allergens":["dairy"],"cuisineTags":["western"],"vegetarian":true,"vegan":false},{"id":"cream_cheese","nameAr":"جبنة كريمي","nameEn":"Cream cheese","category":"dairy","caloriesPer100g":342,"proteinPer100g":6,"carbsPer100g":4,"fatPer100g":34,"defaultServingG":30,"mealTypes":["breakfast"],"dietTags":["vegetarian"],"allergens":["dairy"],"cuisineTags":["general"],"vegetarian":true,"vegan":false},{"id":"almonds","nameAr":"لوز","nameEn":"Almonds","category":"fat","caloriesPer100g":579,"proteinPer100g":21,"carbsPer100g":22,"fatPer100g":50,"defaultServingG":20,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["nuts"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"walnuts","nameAr":"جوز","nameEn":"Walnuts","category":"fat","caloriesPer100g":654,"proteinPer100g":15,"carbsPer100g":14,"fatPer100g":65,"defaultServingG":20,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["nuts"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"cashews","nameAr":"كاجو","nameEn":"Cashews","category":"fat","caloriesPer100g":553,"proteinPer100g":18,"carbsPer100g":30,"fatPer100g":44,"defaultServingG":20,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["nuts"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"pistachios","nameAr":"فستق","nameEn":"Pistachios","category":"fat","caloriesPer100g":560,"proteinPer100g":20,"carbsPer100g":28,"fatPer100g":45,"defaultServingG":20,"mealTypes":["snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["nuts"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"peanuts","nameAr":"فول سوداني","nameEn":"Peanuts","category":"fat","caloriesPer100g":567,"proteinPer100g":26,"carbsPer100g":16,"fatPer100g":49,"defaultServingG":20,"mealTypes":["snack"],"dietTags":["vegetarian","vegan"],"allergens":["peanuts"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"peanut_butter","nameAr":"زبدة فول سوداني","nameEn":"Peanut butter","category":"fat","caloriesPer100g":588,"proteinPer100g":25,"carbsPer100g":20,"fatPer100g":50,"defaultServingG":20,"mealTypes":["snack","breakfast"],"dietTags":["vegetarian","vegan"],"allergens":["peanuts"],"cuisineTags":["western"],"vegetarian":true,"vegan":true},{"id":"almond_butter","nameAr":"زبدة لوز","nameEn":"Almond butter","category":"fat","caloriesPer100g":614,"proteinPer100g":21,"carbsPer100g":19,"fatPer100g":56,"defaultServingG":20,"mealTypes":["snack","breakfast"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["nuts"],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"avocado","nameAr":"أفوكادو","nameEn":"Avocado","category":"fat","caloriesPer100g":160,"proteinPer100g":2,"carbsPer100g":9,"fatPer100g":15,"defaultServingG":100,"mealTypes":["breakfast","lunch"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["western"],"vegetarian":true,"vegan":true},{"id":"olive_oil","nameAr":"زيت زيتون","nameEn":"Olive oil","category":"fat","caloriesPer100g":884,"proteinPer100g":0,"carbsPer100g":0,"fatPer100g":100,"defaultServingG":10,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"tahini","nameAr":"طحينة","nameEn":"Tahini","category":"fat","caloriesPer100g":595,"proteinPer100g":17,"carbsPer100g":21,"fatPer100g":54,"defaultServingG":20,"mealTypes":["lunch","snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["sesame"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"hummus","nameAr":"حمص بطحينة","nameEn":"Hummus","category":"fat","caloriesPer100g":166,"proteinPer100g":8,"carbsPer100g":14,"fatPer100g":10,"defaultServingG":100,"mealTypes":["snack","lunch"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["sesame"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"chia_seeds","nameAr":"بذور شيا","nameEn":"Chia seeds","category":"fat","caloriesPer100g":486,"proteinPer100g":17,"carbsPer100g":42,"fatPer100g":31,"defaultServingG":15,"mealTypes":["breakfast","snack"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["general"],"vegetarian":true,"vegan":true},{"id":"honey","nameAr":"عسل","nameEn":"Honey","category":"fat","caloriesPer100g":304,"proteinPer100g":0.3,"carbsPer100g":82,"fatPer100g":0,"defaultServingG":20,"mealTypes":["breakfast","snack"],"dietTags":["vegetarian"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":false},{"id":"machboos_chicken","nameAr":"مجبوس دجاج","nameEn":"Chicken machboos","category":"combo","caloriesPer100g":180,"proteinPer100g":12,"carbsPer100g":20,"fatPer100g":6,"defaultServingG":300,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"biryani_chicken","nameAr":"برياني دجاج","nameEn":"Chicken biryani","category":"combo","caloriesPer100g":190,"proteinPer100g":11,"carbsPer100g":22,"fatPer100g":7,"defaultServingG":300,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"shawarma_chicken","nameAr":"شاورما دجاج","nameEn":"Chicken shawarma wrap","category":"combo","caloriesPer100g":250,"proteinPer100g":15,"carbsPer100g":26,"fatPer100g":10,"defaultServingG":250,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"falafel","nameAr":"فلافل","nameEn":"Falafel","category":"combo","caloriesPer100g":333,"proteinPer100g":13,"carbsPer100g":32,"fatPer100g":18,"defaultServingG":120,"mealTypes":["lunch","dinner","snack"],"dietTags":["vegetarian","vegan"],"allergens":["sesame"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"foul_medames","nameAr":"فول مدمس","nameEn":"Foul medames","category":"combo","caloriesPer100g":110,"proteinPer100g":7,"carbsPer100g":17,"fatPer100g":2,"defaultServingG":200,"mealTypes":["breakfast"],"dietTags":["vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"tabbouleh","nameAr":"تبولة","nameEn":"Tabbouleh","category":"combo","caloriesPer100g":66,"proteinPer100g":2,"carbsPer100g":10,"fatPer100g":2.5,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"fattoush","nameAr":"فتوش","nameEn":"Fattoush salad","category":"combo","caloriesPer100g":75,"proteinPer100g":2,"carbsPer100g":10,"fatPer100g":3.5,"defaultServingG":200,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian","vegan"],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"lentil_soup","nameAr":"شوربة عدس","nameEn":"Lentil soup","category":"combo","caloriesPer100g":80,"proteinPer100g":5,"carbsPer100g":13,"fatPer100g":1,"defaultServingG":250,"mealTypes":["dinner"],"dietTags":["vegetarian","vegan","mediterranean"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"harees","nameAr":"هريس","nameEn":"Harees","category":"combo","caloriesPer100g":140,"proteinPer100g":9,"carbsPer100g":18,"fatPer100g":3,"defaultServingG":250,"mealTypes":["dinner"],"dietTags":[],"allergens":["gluten"],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"grape_leaves","nameAr":"ورق عنب","nameEn":"Stuffed grape leaves","category":"combo","caloriesPer100g":150,"proteinPer100g":3,"carbsPer100g":20,"fatPer100g":6,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["vegetarian","vegan","mediterranean"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":true,"vegan":true},{"id":"kabsa_lamb","nameAr":"كبسة لحم","nameEn":"Lamb kabsa","category":"combo","caloriesPer100g":195,"proteinPer100g":13,"carbsPer100g":20,"fatPer100g":7,"defaultServingG":300,"mealTypes":["lunch","dinner"],"dietTags":[],"allergens":[],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"grilled_kofta","nameAr":"كفتة مشوية","nameEn":"Grilled kofta","category":"combo","caloriesPer100g":215,"proteinPer100g":17,"carbsPer100g":3,"fatPer100g":15,"defaultServingG":150,"mealTypes":["lunch","dinner"],"dietTags":["lowCarb"],"allergens":[],"cuisineTags":["gulf"],"vegetarian":false,"vegan":false},{"id":"manakish_zaatar","nameAr":"مناقيش زعتر","nameEn":"Zaatar manakish","category":"combo","caloriesPer100g":290,"proteinPer100g":8,"carbsPer100g":42,"fatPer100g":10,"defaultServingG":120,"mealTypes":["breakfast"],"dietTags":["vegetarian"],"allergens":["gluten","sesame"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":false},{"id":"shakshuka","nameAr":"شكشوكة","nameEn":"Shakshuka","category":"combo","caloriesPer100g":120,"proteinPer100g":7,"carbsPer100g":8,"fatPer100g":7,"defaultServingG":250,"mealTypes":["breakfast"],"dietTags":["vegetarian","mediterranean"],"allergens":["egg"],"cuisineTags":["gulf"],"vegetarian":true,"vegan":false},{"id":"greek_salad","nameAr":"سلطة يونانية","nameEn":"Greek salad","category":"combo","caloriesPer100g":110,"proteinPer100g":3,"carbsPer100g":6,"fatPer100g":8,"defaultServingG":200,"mealTypes":["lunch","dinner"],"dietTags":["mediterranean","vegetarian"],"allergens":["dairy"],"cuisineTags":["western"],"vegetarian":true,"vegan":false},{"id":"overnight_oats_berries","nameAr":"شوفان بالتوت (بارد)","nameEn":"Overnight oats with berries","category":"combo","caloriesPer100g":140,"proteinPer100g":6,"carbsPer100g":22,"fatPer100g":3,"defaultServingG":200,"mealTypes":["breakfast"],"dietTags":["mediterranean","vegetarian"],"allergens":["gluten","dairy"],"cuisineTags":["western"],"vegetarian":true,"vegan":false},{"id":"protein_pancakes","nameAr":"بان كيك بروتين","nameEn":"Protein pancakes","category":"combo","caloriesPer100g":180,"proteinPer100g":15,"carbsPer100g":18,"fatPer100g":5,"defaultServingG":150,"mealTypes":["breakfast"],"dietTags":["highProtein"],"allergens":["egg","gluten","dairy"],"cuisineTags":["western"],"vegetarian":true,"vegan":false}];
+const FOOD_BY_ID={}; FOOD_DB.forEach(f=>{ FOOD_BY_ID[f.id]=f; });
+
+/* canonical allergen tags, mapped from whatever free text the user typed.
+   Matching is by whole-word alias, not substring — so an "egg" allergy
+   never matches "eggplant", and a real allergens[] tag on each food is the
+   hard-exclusion key, not a fuzzy text search over dish names. */
+const ALLERGEN_TAG_ALIASES={
+  peanuts:['peanut','peanuts','فول سوداني','فول','سوداني'],
+  nuts:['nuts','nut','almond','almonds','walnut','walnuts','cashew','cashews','pistachio','pistachios','مكسرات','لوز','جوز','كاجو','فستق'],
+  egg:['egg','eggs','بيض','بيضة','بيضتين'],
+  dairy:['milk','cheese','yogurt','labneh','dairy','حليب','جبن','جبنة','زبادي','لبنة'],
+  gluten:['gluten','wheat','bread','pasta','جلوتين','قمح','خبز','معكرونة','خبزة'],
+  fish:['fish','tuna','salmon','سمك','تونة','سلمون'],
+  shellfish:['shrimp','shellfish','prawns','روبيان','ربيان'],
+  soy:['soy','soya','tofu','صويا','توفو'],
+  sesame:['sesame','tahini','سمسم','طحينة'],
+};
+function textToAllergenTags(raw){
+  const words=(raw||'').toLowerCase().split(/[\s,،/]+/).map(w=>w.trim()).filter(Boolean);
+  const tags=new Set();
+  words.forEach(w=>{
+    Object.entries(ALLERGEN_TAG_ALIASES).forEach(([tag,aliases])=>{
+      if(aliases.includes(w)) tags.add(tag);
     });
   });
-  return {text:out,touched};
+  return tags;
 }
+function nameHasWord(food,word){
+  const w=word.toLowerCase();
+  const enWords=food.nameEn.toLowerCase().split(/[\s,()+-]+/);
+  const arWords=food.nameAr.split(/[\s,()+-]+/);
+  return enWords.includes(w) || arWords.includes(word);
+}
+
+/* THE hard-exclusion filter — applied BEFORE any meal generation or swap,
+   never after. A food that fails this never enters the candidate pool, so
+   it structurally cannot appear in a generated plan or a swap option. */
+function filterFoodsByRestrictions(foods, opts){
+  opts=opts||{};
+  const allergyTexts=opts.allergies||[];
+  const dislikeTexts=opts.dislikes||[];
+  const dietStyle=opts.dietStyle||'balanced';
+  let pool=foods;
+  const allergenTags=new Set();
+  allergyTexts.forEach(a=>textToAllergenTags(a).forEach(t=>allergenTags.add(t)));
+  if(allergenTags.size){
+    pool=pool.filter(f=>!f.allergens.some(a=>allergenTags.has(a)));
+  }
+  if(dislikeTexts.length){
+    const dislikeWords=dislikeTexts.flatMap(d=>expandFoodTerm(d)).filter(Boolean);
+    pool=pool.filter(f=>!dislikeWords.some(w=>nameHasWord(f,w)));
+  }
+  if(dietStyle==='vegetarian') pool=pool.filter(f=>f.vegetarian);
+  if(dietStyle==='vegan') pool=pool.filter(f=>f.vegan);
+  if(dietStyle==='mediterranean') pool=pool.filter(f=>f.dietTags.includes('mediterranean')||f.category==='fruit'||f.category==='vegetable'||f.category==='combo');
+  return pool;
+}
+
+function calculateMealNutrition(items){
+  return items.reduce((acc,it)=>{
+    const f=FOOD_BY_ID[it.foodId]; if(!f) return acc;
+    const ratio=it.grams/100;
+    acc.calories+=f.caloriesPer100g*ratio;
+    acc.protein+=f.proteinPer100g*ratio;
+    acc.carbs+=f.carbsPer100g*ratio;
+    acc.fat+=f.fatPer100g*ratio;
+    return acc;
+  },{calories:0,protein:0,carbs:0,fat:0});
+}
+function calculateDailyNutrition(meals){
+  return meals.reduce((acc,m)=>{
+    acc.calories+=m.calories||0; acc.protein+=m.protein||0;
+    acc.carbs+=m.carbs||0; acc.fat+=m.fat||0;
+    return acc;
+  },{calories:0,protein:0,carbs:0,fat:0});
+}
+
+// tiny seeded PRNG so a given (day, slot) always generates the same plan on
+// refresh, but naturally varies week to week and day to day — no persistence
+// needed for "don't regenerate randomly", and no artificial repetition either
+function hashSeed(str){ let h=0; for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))|0; } return Math.abs(h); }
+function seededRandom(seed){ let s=seed%2147483647; if(s<=0) s+=2147483646; return function(){ s=s*16807%2147483647; return (s-1)/2147483646; }; }
+function pickSeeded(arr,rng){ return arr[Math.floor(rng()*arr.length)]; }
+
+const MEAL_ROLE_TEMPLATES={
+  breakfast:[['protein','carb'],['combo'],['dairy','fruit'],['protein','fruit'],['carb','fat']],
+  lunch:[['protein','carb','vegetable'],['combo','vegetable'],['combo'],['protein','carb']],
+  dinner:[['protein','vegetable'],['combo'],['protein','carb','vegetable'],['combo','vegetable']],
+  snack1:[['fruit'],['protein'],['dairy'],['fat'],['fruit','fat']],
+  snack2:[['fruit'],['protein'],['dairy'],['fat'],['fruit','fat']],
+};
+const SLOT_TO_MEALTYPE={breakfast:'breakfast',lunch:'lunch',dinner:'dinner',snack1:'snack',snack2:'snack'};
+
+function candidatesForRole(role,mealType,filteredFoods,excludeIds,dietStyle){
+  const wantCat = role==='combo' ? 'combo' : role;
+  let cands=filteredFoods.filter(f=>f.category===wantCat && f.mealTypes.includes(mealType));
+  if(!cands.length) return [];
+  const fresh=cands.filter(f=>!excludeIds.has(f.id));
+  if(fresh.length) cands=fresh;
+  if(dietStyle==='highProtein' && (role==='protein'||role==='dairy')){
+    cands=cands.slice().sort((a,b)=>b.proteinPer100g-a.proteinPer100g);
+    cands=cands.slice(0,Math.max(3,Math.ceil(cands.length*0.6)));
+  }
+  if(dietStyle==='lowCarb' && role==='carb'){
+    cands=cands.slice().sort((a,b)=>a.carbsPer100g-b.carbsPer100g);
+    cands=cands.slice(0,Math.max(2,Math.ceil(cands.length*0.5)));
+  }
+  return cands;
+}
+
+/* pick real foods for a meal slot, then scale their grams (all items scaled
+   together, proportionally, within sane per-food bounds) so the composed
+   meal's REAL summed calories land on the target — not a fake number. */
+function generateMeal(slotKey,targetKcal,filteredFoods,excludeIds,dietStyle,rng){
+  const mealType=SLOT_TO_MEALTYPE[slotKey];
+  let templates=MEAL_ROLE_TEMPLATES[slotKey]||MEAL_ROLE_TEMPLATES.snack1;
+  if(dietStyle==='lowCarb' && (slotKey==='breakfast'||slotKey==='lunch')){
+    templates=templates.filter(t=>!t.includes('carb')).concat(templates.filter(t=>!t.includes('carb')));
+    if(!templates.length) templates=MEAL_ROLE_TEMPLATES[slotKey];
+  }
+  // try templates in a seeded-shuffled order until one has valid items for every role
+  const order=templates.map((t,i)=>i).sort(()=>rng()-0.5);
+  for(const ti of order){
+    const template=templates[ti];
+    const items=[];
+    let ok=true;
+    for(const role of template){
+      const cands=candidatesForRole(role,mealType,filteredFoods,excludeIds,dietStyle);
+      if(!cands.length){ ok=false; break; }
+      const food=pickSeeded(cands,rng);
+      items.push({foodId:food.id, grams:food.defaultServingG});
+    }
+    if(!ok) continue;
+    // scale proportionally to hit the calorie target within sane per-item bounds
+    const baseNutri=calculateMealNutrition(items);
+    if(baseNutri.calories<=0) continue;
+    let scale=targetKcal/baseNutri.calories;
+    scale=Math.max(0.5,Math.min(2.2,scale));
+    const scaledItems=items.map(it=>{
+      const f=FOOD_BY_ID[it.foodId];
+      let grams=Math.round(it.grams*scale/5)*5;
+      grams=Math.max(20,Math.min(500,grams));
+      return {foodId:it.foodId, grams};
+    });
+    const nutrition=calculateMealNutrition(scaledItems);
+    return {slotKey, items:scaledItems, ...nutrition};
+  }
+  return null; // no valid combination exists under current restrictions
+}
+
+const SLOT_PCT={
+  5:{breakfast:0.20,snack1:0.10,lunch:0.30,snack2:0.10,dinner:0.30},
+  4:{breakfast:0.22,lunch:0.33,snack2:0.12,dinner:0.33},
+  3:{breakfast:0.28,lunch:0.36,dinner:0.36},
+  2:{lunch:0.50,dinner:0.50},
+};
+function activeSlotsForSetup(fs){
+  const isIF=fs.schedule==='if168'||fs.dietType==='if168';
+  const mealCount=isIF?2:(fs.mealCount||5);
+  return MEAL_COUNT_SLOTS[mealCount]||MEAL_COUNT_SLOTS[5];
+}
+/* one composed day of real meals — deterministic per (date, user setup) so
+   a page refresh shows the same plan, but the seed changes every day/week
+   so the plan actually rotates instead of repeating forever */
+function generateDailyPlan(weekdayIdx, isoWeek){
+  const fs=P.foodSetup||{};
+  const dietStyle=fs.dietStyle||fs.dietType||'balanced';
+  const target=calorieTarget()||2000;
+  const activeSlots=activeSlotsForSetup(fs);
+  const pcts=SLOT_PCT[activeSlots.length]||SLOT_PCT[5];
+  const filtered=filterFoodsByRestrictions(FOOD_DB,{
+    allergies:(fs.allergyOtherList||[]).map(a=>a.text),
+    dislikes:fs.dislikedList||[],
+    dietStyle,
+  });
+  // exclude yesterday's picks per slot so consecutive days don't repeat
+  const yesterdayIds=new Set();
+  const yIdx=(weekdayIdx+6)%7;
+  activeSlots.forEach(slotKey=>{
+    const yRng=seededRandom(hashSeed(isoWeek+'-'+yIdx+'-'+slotKey+'-'+dietStyle));
+    const yTarget=Math.round(target*(pcts[slotKey]||0.2));
+    const ym=generateMeal(slotKey,yTarget,filtered,new Set(),dietStyle,yRng);
+    if(ym) ym.items.forEach(it=>yesterdayIds.add(it.foodId));
+  });
+  const meals=[];
+  activeSlots.forEach(slotKey=>{
+    const rng=seededRandom(hashSeed(isoWeek+'-'+weekdayIdx+'-'+slotKey+'-'+dietStyle));
+    const slotTarget=Math.round(target*(pcts[slotKey]||0.2));
+    const meal=generateMeal(slotKey,slotTarget,filtered,yesterdayIds,dietStyle,rng)
+             || generateMeal(slotKey,slotTarget,filtered,new Set(),dietStyle,rng);
+    if(meal) meals.push(meal);
+  });
+  return meals;
+}
+function mealItemsLabel(items,lang){
+  return items.map(it=>{
+    const f=FOOD_BY_ID[it.foodId]; if(!f) return '';
+    const name=lang==='ar'?f.nameAr:f.nameEn;
+    return `${name} (${it.grams}${lang==='ar'?'غ':'g'})`;
+  }).join(' + ');
+}
+/* the swap pool: many valid whole-meal alternatives for one slot, generated
+   fresh from the real food pool (not a fixed 8-item list), filtered by the
+   exact same restriction rules as generation — a swap can never bypass an
+   allergy or dislike — and excluding whatever was recently shown for this
+   slot so pressing swap repeatedly cycles through real variety. */
+function getSwapOptions(slotKey,currentItems,targetKcal,recentlyShownIds,count){
+  count=count||6;
+  const fs=P.foodSetup||{};
+  const dietStyle=fs.dietStyle||fs.dietType||'balanced';
+  const filtered=filterFoodsByRestrictions(FOOD_DB,{
+    allergies:(fs.allergyOtherList||[]).map(a=>a.text),
+    dislikes:fs.dislikedList||[],
+    dietStyle,
+  });
+  const currentIds=new Set(currentItems.map(it=>it.foodId));
+  const exclude=new Set([...currentIds,...recentlyShownIds]);
+  const options=[]; const seenSignatures=new Set();
+  for(let i=0;i<count*4 && options.length<count;i++){
+    const rng=seededRandom(hashSeed(slotKey+'-'+targetKcal+'-'+i+'-'+Date.now()+'-'+Math.random()));
+    const meal=generateMeal(slotKey,targetKcal,filtered,exclude,dietStyle,rng);
+    if(!meal) continue;
+    const sig=meal.items.map(it=>it.foodId).sort().join(',');
+    if(seenSignatures.has(sig) || sig===[...currentIds].sort().join(',')) continue;
+    seenSignatures.add(sig);
+    options.push(meal);
+  }
+  return options; // empty array => caller must show "no safe alternatives"
+}
+
 
 /* ================= WORKOUT CONTENT ================= */
 const LEVEL_MAIN={
@@ -2288,6 +2350,7 @@ function buildTargetDurationGrid(){
     el.textContent = months===24 ? (LANG==='ar'?'سنتين':'2 Years') : (LANG==='ar'?`${months} ${months===1?'شهر':'أشهر'}`:`${months} Month${months>1?'s':''}`);
     el.dataset.months=months;
     el.addEventListener('click',()=>{
+      if(el.classList.contains('unrealistic')) return; // blocked — pick the recommended timeframe instead
       grid.querySelectorAll('.ob-choice').forEach(c=>c.classList.remove('selected'));
       el.classList.add('selected');
       document.getElementById('targetDateInput').value=monthsToTargetDate(months);
@@ -2296,6 +2359,7 @@ function buildTargetDurationGrid(){
     });
     grid.appendChild(el);
   });
+  updateDurationGridRealism(null);
 }
 buildTargetDurationGrid();
 
@@ -2338,7 +2402,8 @@ async function saveFoodDraft(){
     age:document.getElementById('bodyAge').value,
     sex:document.getElementById('bodySex').value,
     goal:P._foodGoal||'',
-    dietType:P._dietType||'balanced',
+    dietStyle:P._dietStyle||'balanced',
+    schedule:P._schedule||'standard',
     mealCount:P._mealCount||5,
     allergyOtherList:P._allergyOtherList||[],
     supOtherList:P._supOtherList||[],
@@ -2356,25 +2421,40 @@ async function saveFoodDraft(){
    in the target weight/date asked right before this step), always editable. */
 /* returns {kcal, dailyAdjust} — dailyAdjust is the signed daily surplus (+)
    or deficit (-) vs. maintenance (TDEE) implied by the target weight/date */
+/* single source of truth for BMR/TDEE/rate math — both the live setup-
+   wizard preview and the post-setup calorieTarget() below call these same
+   functions, instead of keeping two slightly-diverged copies. */
+function calculateBMR(weight,height,age,sex){
+  return (sex==='female') ? (10*weight+6.25*height-5*age-161) : (10*weight+6.25*height-5*age+5);
+}
+function calculateTDEE(bmr,factor){ return bmr*factor; }
+function dailyKcalAdjustForRate(weeklyRateKg){ return (weeklyRateKg*7700)/7; }
+function applyCalorieSafetyLimits(kcal,sex){
+  const floor = sex==='female' ? 1200 : 1500;
+  const ceiling = 4500;
+  return Math.max(floor, Math.min(ceiling, Math.round(kcal)));
+}
 function estimateCalorieTargetFromDraft(){
   const weight=parseFloat(document.getElementById('bodyWeight').value)||null;
   const height=parseFloat(document.getElementById('bodyHeight').value)||null;
   const age=parseInt(document.getElementById('bodyAge').value,10)||25;
   const sex=document.getElementById('bodySex').value||'male';
   if(!weight||!height) return {kcal:null,dailyAdjust:0};
-  const bmr=(sex==='female') ? (10*weight+6.25*height-5*age-161) : (10*weight+6.25*height-5*age+5);
-  const tdee=bmr*1.55;
+  const bmr=calculateBMR(weight,height,age,sex);
+  const tdee=calculateTDEE(bmr,1.55); // workout setup doesn't exist yet at this point in onboarding
   const targetWeight=parseFloat(document.getElementById('targetWeightInput').value)||null;
   const targetDate=document.getElementById('targetDateInput').value||null;
+  const goal=P._foodGoal==='lose'?'lose':'gain';
   if(targetWeight&&targetDate){
     const today=new Date(); today.setHours(0,0,0,0);
     const target=new Date(targetDate+'T00:00:00');
     const weeksLeft=(target-today)/(1000*60*60*24*7);
     if(weeksLeft>0){
+      const maxRate=weight*((GOAL_RATE_PCT[goal]||GOAL_RATE_PCT.lose).max);
       let weeklyRate=(targetWeight-weight)/weeksLeft;
-      if(Math.abs(weeklyRate)>1) weeklyRate = weeklyRate>0?1:-1;
-      const dailyAdjust=(weeklyRate*7700)/7;
-      return {kcal:Math.max(1300,Math.round(tdee+dailyAdjust)), dailyAdjust};
+      if(Math.abs(weeklyRate)>maxRate) weeklyRate = weeklyRate>0?maxRate:-maxRate;
+      const dailyAdjust=dailyKcalAdjustForRate(weeklyRate);
+      return {kcal:applyCalorieSafetyLimits(tdee+dailyAdjust,sex), dailyAdjust};
     }
   }
   return {kcal:Math.round(tdee), dailyAdjust:0};
@@ -2392,7 +2472,7 @@ function suggestedMealCount(dailyAdjust){
 }
 function applyMealCountSuggestion(){
   const {dailyAdjust}=estimateCalorieTargetFromDraft();
-  const n = P._dietType==='if168' ? 2 : suggestedMealCount(dailyAdjust);
+  const n = P._schedule==='if168' ? 2 : suggestedMealCount(dailyAdjust);
   P._mealCount=n;
   const noteEl=document.getElementById('mealCountAutoNote');
   noteEl.textContent = LANG==='ar'
@@ -2406,44 +2486,34 @@ document.getElementById('fBack2').addEventListener('click',()=>goToFStep(1));
 document.getElementById('fBack3').addEventListener('click',()=>goToFStep(2));
 document.getElementById('fBack4').addEventListener('click',()=>goToFStep(3));
 
+/* diet STYLE (macro composition/food filtering) is now a separate concept
+   from eating SCHEDULE (meal timing) — intermittent fasting only changes
+   which slots exist, never the macro targets. */
 const DIET_MACROS={
-  balanced:{ar:'🍽️ متوازن: ٥٠-٦٠٪ كارب، ١٥٪ بروتين، ٢٥-٣٥٪ دهون — نفس مكتبة الأكل الحالية بدون تغيير',en:'🍽️ Balanced: 50-60% carb, 15% protein, 25-35% fat — same food library, unchanged'},
-  highProtein:{ar:'🥩 عالي بروتين: هدفك ~{p}غ بروتين يومياً (١.٦-٢.٢غ/كج) — الوجبات الخفيفة بتكون بروتين بس (شيك، بيض، زبادي)',en:'🥩 High-protein: your target is ~{p}g protein/day (1.6-2.2g/kg) — snacks will be protein-only (shake, eggs, yogurt)'},
-  lowCarb:{ar:'🥗 قليل الكارب: الفطور والغدا بيصيرون خفاف (سلطة+بروتين مشوي) بدل الرز الثقيل، حتى لو هدفك زيادة وزن',en:'🥗 Low-carb: breakfast & lunch become lighter (salad+grilled protein) instead of heavy rice, even if your goal is gaining'},
-  if168:{ar:'⏱️ صيام متقطع ١٦:٨: نافذة الأكل ٨ ساعات بس — الفطور والسناك الأول بينشالون، وجبتين رئيسيتين بدل ٥',en:'⏱️ Intermittent fasting 16:8: 8-hour eating window only — breakfast & first snack are dropped, 2 main meals instead of 5'}
+  balanced:{ar:'🍽️ متوازن: توزيع معقول من البروتين والكارب والدهون',en:'🍽️ Balanced: a reasonable spread of protein, carbs and fat'},
+  highProtein:{ar:'🥩 عالي بروتين: هدفك ~{p}غ بروتين يومياً (١.٦-٢.٢غ/كج) — بروتين أعلى مع كارب ودهون معقولين',en:'🥩 High-protein: your target is ~{p}g protein/day (1.6-2.2g/kg) — higher protein while carbs/fat stay reasonable'},
+  lowCarb:{ar:'🥗 قليل الكارب: كارب أقل مع بروتين ودهون كافية',en:'🥗 Lower-carb: reduced carbohydrate intake, with adequate protein and fat'},
+  mediterranean:{ar:'🫒 متوسطي: خضار وفواكه وحبوب كاملة وسمك وزيت زيتون ومكسرات',en:'🫒 Mediterranean: emphasis on vegetables, fruit, whole grains, fish, olive oil and nuts'},
+  vegetarian:{ar:'🥬 نباتي: بدون لحوم أو أسماك، مع مصادر بروتين نباتية وبيض ومنتجات ألبان',en:'🥬 Vegetarian: no meat or fish — plant protein sources plus eggs and dairy'},
+  vegan:{ar:'🌱 نباتي صرف: بدون أي منتج حيواني إطلاقاً',en:'🌱 Vegan: no animal products at all'},
 };
-/* the meal library only stores kcal per dish (no per-ingredient macros), so
-   grams here are an estimate derived from the chosen diet type's macro split
-   (same ratios shown in DIET_MACROS) applied to that one meal's calories —
-   not a lab-measured breakdown */
-const MACRO_SPLITS={
-  balanced:{protein:0.20,carbs:0.50,fat:0.30},
-  highProtein:{protein:0.30,carbs:0.35,fat:0.35},
-  lowCarb:{protein:0.30,carbs:0.20,fat:0.50},
-  if168:{protein:0.20,carbs:0.50,fat:0.30}
+const SCHEDULE_INFO={
+  standard:{ar:'وجبات عادية على مدار اليوم',en:'Standard meals spread across the day'},
+  if168:{ar:'⏱️ صيام متقطع ١٦:٨: نافذة أكل ٨ ساعات — وجبتين رئيسيتين بدل الجدول الكامل. السعرات المستهدفة ما تتغير، بس توقيت الأكل.',en:'⏱️ Intermittent fasting 16:8: an 8-hour eating window — 2 main meals instead of the full schedule. The calorie target stays the same, only the timing changes.'},
 };
-function estimateMealMacros(kcal){
-  const dietType=(P.foodSetup&&P.foodSetup.dietType)||'balanced';
-  const split=MACRO_SPLITS[dietType]||MACRO_SPLITS.balanced;
-  return {
-    protein:Math.round((kcal*split.protein)/4),
-    carbs:Math.round((kcal*split.carbs)/4),
-    fat:Math.round((kcal*split.fat)/9)
-  };
-}
-function mealMacroLabel(kcal){
-  const mm=estimateMealMacros(kcal);
+function mealMacroLabel(nutrition){
+  const kcal=Math.round(nutrition.calories), p=Math.round(nutrition.protein), c=Math.round(nutrition.carbs), f=Math.round(nutrition.fat);
   return LANG==='ar'
-    ? `🔥 ~${kcal} سعرة · 🥩${mm.protein}غ · 🍞${mm.carbs}غ · 🧈${mm.fat}غ`
-    : `🔥 ~${kcal} kcal · 🥩${mm.protein}g · 🍞${mm.carbs}g · 🧈${mm.fat}g`;
+    ? `🔥 ~${kcal} سعرة · 🥩${p}غ · 🍞${c}غ · 🧈${f}غ`
+    : `🔥 ~${kcal} kcal · 🥩${p}g · 🍞${c}g · 🧈${f}g`;
 }
 function updateDietTypeNote(){
-  const dietType=P._dietType||'balanced';
+  const dietStyle=P._dietStyle||'balanced';
   const weight=parseFloat(document.getElementById('bodyWeight').value)||null;
   const height=parseFloat(document.getElementById('bodyHeight').value)||null;
-  let msg=DIET_MACROS[dietType][LANG];
-  if(dietType==='highProtein'&&weight){ msg=msg.replace('{p}',Math.round(weight*1.9)); }
-  else if(dietType==='highProtein'){ msg=msg.replace('{p}','...'); }
+  let msg=DIET_MACROS[dietStyle][LANG];
+  if(dietStyle==='highProtein'&&weight){ msg=msg.replace('{p}',Math.round(weight*1.9)); }
+  else if(dietStyle==='highProtein'){ msg=msg.replace('{p}','...'); }
   const noteEl=document.getElementById('dietTypeNote');
   if(weight&&height){
     const bmi=weight/((height/100)**2);
@@ -2452,15 +2522,53 @@ function updateDietTypeNote(){
   }
   noteEl.textContent=msg;
 }
+function updateScheduleNote(){
+  const schedule=P._schedule||'standard';
+  const noteEl=document.getElementById('scheduleNote');
+  if(noteEl) noteEl.textContent=SCHEDULE_INFO[schedule][LANG];
+}
 wireSingle('#dietTypeGrid',el=>{
-  P._dietType=el.dataset.diet;
+  P._dietStyle=el.dataset.diet;
   updateDietTypeNote();
+  applyMealCountSuggestion();
+});
+wireSingle('#scheduleGrid',el=>{
+  P._schedule=el.dataset.schedule;
+  updateScheduleNote();
   applyMealCountSuggestion();
 });
 document.getElementById('bodyWeight').addEventListener('input',updateDietTypeNote);
 document.getElementById('bodyHeight').addEventListener('input',updateDietTypeNote);
 
+/* ===== evidence-based goal-timeline validator =====
+   Loss: 0.5-1.0% of current body weight per week is a reasonable range for
+   most adults. Gain: 0.25-0.5%/week for controlled, mostly-lean gaining.
+   Nothing here is hardcoded per-kg — it's computed from the user's actual
+   current weight and the requested weight change. */
+const GOAL_RATE_PCT={
+  lose:{min:0.005, max:0.01},   // slowest .. fastest safe, fraction of bodyweight/week
+  gain:{min:0.0025, max:0.005},
+};
+function validateGoalTimeline(currentWeight,targetWeight,goal,userWeeks){
+  const rates=GOAL_RATE_PCT[goal]||GOAL_RATE_PCT.lose;
+  const diffKg=Math.abs(targetWeight-currentWeight);
+  if(diffKg<0.1) return {realistic:true, diffKg:0, minWeeks:0, maxWeeks:0, recommendedWeeks:0};
+  const maxWeeklyRate=currentWeight*rates.max;   // fastest safe pace
+  const minWeeklyRate=currentWeight*rates.min;   // slowest/comfortable pace
+  const minWeeks=diffKg/maxWeeklyRate;           // shortest realistic duration
+  const maxWeeks=diffKg/minWeeklyRate;           // longest "still makes sense" duration
+  const recommendedWeeks=diffKg/((maxWeeklyRate+minWeeklyRate)/2);
+  const realistic = userWeeks==null ? true : userWeeks>=minWeeks;
+  return {realistic, diffKg, minWeeks, maxWeeks, recommendedWeeks};
+}
+function weeksToMonthsLabel(weeks,lang){
+  const months=weeks/4.345;
+  const lo=Math.max(1,Math.round(months*0.85));
+  const hi=Math.max(lo+1,Math.round(months*1.15));
+  return lang==='ar' ? `~${lo}-${hi} ${LANG==='ar'?'أشهر':'months'}` : `~${lo}-${hi} months`;
+}
 function checkGoalTargetConflict(){
+  document.getElementById('targetValMsg').classList.remove('warn');
   const weight=parseFloat(document.getElementById('bodyWeight').value);
   const targetWeight=parseFloat(document.getElementById('targetWeightInput').value);
   const targetDate=document.getElementById('targetDateInput').value;
@@ -2470,6 +2578,7 @@ function checkGoalTargetConflict(){
     msgEl.textContent = LANG==='ar'
       ? '🚫 لازم تدخل وزنك المستهدف وتختار مدة عشان نحسب وجباتك صح'
       : '🚫 Enter your target weight and pick a duration so we can work out your meals correctly';
+    updateDurationGridRealism(null);
     return false;
   }
   if(targetDate){
@@ -2479,24 +2588,94 @@ function checkGoalTargetConflict(){
       msgEl.textContent = LANG==='ar'
         ? '🚫 هذا التاريخ فات! اختر تاريخ بالمستقبل عشان نحسب المعدل الأسبوعي صح.'
         : '🚫 That date has already passed! Pick a future date so we can calculate the weekly rate correctly.';
+      updateDurationGridRealism(null);
       return false;
     }
   }
-  if(!weight||!targetWeight||!goal){ msgEl.textContent=''; return true; }
+  if(!weight||!targetWeight||!goal){ msgEl.textContent=''; updateDurationGridRealism(null); return true; }
+  if(targetWeight<30||targetWeight>300){
+    msgEl.textContent = LANG==='ar'
+      ? '🚫 الوزن المستهدف لازم يكون بين ٣٠ و٣٠٠ كيلو'
+      : '🚫 Target weight must be between 30 and 300 kg';
+    updateDurationGridRealism(null);
+    return false;
+  }
+  if(Math.abs(targetWeight-weight)<0.1){
+    msgEl.textContent = LANG==='ar'
+      ? '🚫 وزنك المستهدف مطابق لوزنك الحالي — اختر رقم مختلف أو غيّر الهدف لـ"الحفاظ على الوزن".'
+      : '🚫 Your target is the same as your current weight — pick a different number, or switch the goal to "maintenance".';
+    updateDurationGridRealism(null);
+    return false;
+  }
   if(goal==='lose' && targetWeight>weight){
     msgEl.textContent = LANG==='ar'
       ? `🚫 تناقض: اخترت "إنقاص وزن" بس وزنك المستهدف (${targetWeight}) أكبر من وزنك الحالي (${weight}) — هذا يعتبر زيادة وزن! غيّر الهدف أو رقم الوزن المستهدف.`
       : `🚫 Conflict: you picked "lose weight" but your target (${targetWeight}) is above your current weight (${weight}) — that's actually a gain! Change the goal or the target number.`;
+    updateDurationGridRealism(null);
     return false;
   }
   if(goal==='gain' && targetWeight<weight){
     msgEl.textContent = LANG==='ar'
       ? `🚫 تناقض: اخترت "زيادة وزن" بس وزنك المستهدف (${targetWeight}) أقل من وزنك الحالي (${weight}) — هذا يعتبر إنقاص وزن! غيّر الهدف أو رقم الوزن المستهدف.`
       : `🚫 Conflict: you picked "gain weight" but your target (${targetWeight}) is below your current weight (${weight}) — that's actually a loss! Change the goal or the target number.`;
+    updateDurationGridRealism(null);
     return false;
   }
+  // direction is consistent — now check whether the chosen deadline is
+  // realistically achievable given evidence-based safe weekly rates
+  const today=new Date(); today.setHours(0,0,0,0);
+  const td=new Date(targetDate+'T00:00:00');
+  const userWeeks=(td-today)/(1000*60*60*24*7);
+  const check=validateGoalTimeline(weight,targetWeight,goal,userWeeks);
+  updateDurationGridRealism(check);
+  if(!check.realistic){
+    const diffLabel=check.diffKg.toFixed(1);
+    msgEl.classList.add('warn');
+    msgEl.innerHTML = LANG==='ar'
+      ? `⚠️ <b>هدف عدواني جداً</b><br>${goal==='gain'?'زيادة':'إنقاص'} ${diffLabel} كجم بالمدة المختارة مو واقعي وممكن يكون خطر على صحتك.<br>المدة الموصى بها: <b>${weeksToMonthsLabel(check.recommendedWeeks,'ar')}</b>`
+      : `⚠️ <b>Goal too aggressive</b><br>${goal==='gain'?'Gaining':'Losing'} ${diffLabel} kg in the selected timeframe is not a realistic, safe target.<br>Recommended: <b>${weeksToMonthsLabel(check.recommendedWeeks,'en')}</b>`;
+    return false;
+  }
+  msgEl.classList.remove('warn');
   msgEl.textContent='';
   return true;
+}
+function updateDurationGridRealism(check){
+  const grid=document.getElementById('targetDurationGrid');
+  if(!grid) return;
+  const weight=parseFloat(document.getElementById('bodyWeight').value);
+  const targetWeight=parseFloat(document.getElementById('targetWeightInput').value);
+  const goal=P._foodGoal;
+  grid.querySelectorAll('.ob-choice').forEach(el=>{
+    el.classList.remove('unrealistic');
+    el.title='';
+    if(!check||!weight||!targetWeight||!goal) return;
+    const months=+el.dataset.months;
+    const weeks=months*4.345;
+    const v=validateGoalTimeline(weight,targetWeight,goal,weeks);
+    if(!v.realistic){
+      el.classList.add('unrealistic');
+      el.title=LANG==='ar'?'مدة غير واقعية لهذا الهدف':'Unrealistic timeframe for this goal';
+    }
+  });
+  const recEl=document.getElementById('goalRecommendBtn');
+  if(!recEl) return;
+  if(check && !check.realistic){
+    recEl.classList.remove('hidden');
+    recEl.textContent=LANG==='ar'?`✅ اختر المدة الموصى بها (${weeksToMonthsLabel(check.recommendedWeeks,'ar')})`:`✅ Choose recommended timeframe (${weeksToMonthsLabel(check.recommendedWeeks,'en')})`;
+    recEl.onclick=()=>{
+      const bestMonths=TARGET_DURATION_MONTHS.find(m=>{
+        const v=validateGoalTimeline(weight,targetWeight,goal,m*4.345);
+        return v.realistic;
+      }) || TARGET_DURATION_MONTHS[TARGET_DURATION_MONTHS.length-1];
+      document.getElementById('targetDateInput').value=monthsToTargetDate(bestMonths);
+      buildTargetDurationGrid();
+      document.querySelectorAll('#targetDurationGrid .ob-choice').forEach(c=>c.classList.toggle('selected',+c.dataset.months===bestMonths));
+      checkGoalTargetConflict();
+    };
+  } else {
+    recEl.classList.add('hidden');
+  }
 }
 document.getElementById('bodyWeight').addEventListener('input',checkGoalTargetConflict);
 document.getElementById('targetWeightInput').addEventListener('input',checkGoalTargetConflict);
@@ -2523,6 +2702,23 @@ function setupTagInput(fieldId,addBtnId,chipsId,getArr,setArr,onChange){
 }
 /* free text only (no presets) + a user-changeable emoji per item, stored as
    {text,emoji} instead of a plain string */
+const EMOJI_PICKER_OPTIONS=['💊','🧪','🥤','💧','⚡','💪','🏋️','🥛','🧃','🍓','🍌','🌿','🌱','🧂','🫐','🥜','🍯','☕','🔥','🧬','🔋','✨','⭐'];
+function closeEmojiPicker(){ document.querySelectorAll('.emoji-picker-pop').forEach(p=>p.remove()); document.removeEventListener('click',closeEmojiPickerOutside,true); }
+function closeEmojiPickerOutside(e){ if(!e.target.closest('.emoji-picker-pop') && !e.target.closest('.emoji-pick')) closeEmojiPicker(); }
+function openEmojiPicker(anchorEl,onPick){
+  closeEmojiPicker();
+  const pop=document.createElement('div'); pop.className='emoji-picker-pop';
+  EMOJI_PICKER_OPTIONS.forEach(em=>{
+    const b=document.createElement('button'); b.type='button'; b.textContent=em;
+    b.addEventListener('click',()=>{ onPick(em); closeEmojiPicker(); });
+    pop.appendChild(b);
+  });
+  document.body.appendChild(pop);
+  const r=anchorEl.getBoundingClientRect();
+  pop.style.top=Math.min(r.bottom+4, window.innerHeight-160)+'px';
+  pop.style.left=Math.min(r.left, window.innerWidth-230)+'px';
+  setTimeout(()=>document.addEventListener('click',closeEmojiPickerOutside,true),0);
+}
 function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,onChange){
   const field=document.getElementById(fieldId);
   const btn=document.getElementById(addBtnId);
@@ -2533,9 +2729,11 @@ function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,
     arr.forEach((item,i)=>{
       const chip=document.createElement('div'); chip.className='tag-chip';
       chip.innerHTML=`<button type="button" class="emoji-pick" style="border:none;background:none;cursor:pointer;font-size:1rem;padding:0;line-height:1;">${item.emoji||defaultEmoji}</button><span>${item.text}</span><button type="button">✕</button>`;
-      chip.querySelector('.emoji-pick').addEventListener('click',()=>{
-        const val=prompt(LANG==='ar'?'اختر إيموجي لهذا العنصر':'Pick an emoji for this item', item.emoji||defaultEmoji);
-        if(val){ const a=getArr().slice(); a[i]={...a[i],emoji:val.trim().slice(0,4)||defaultEmoji}; setArr(a); render(); if(onChange) onChange(); }
+      chip.querySelector('.emoji-pick').addEventListener('click',(e)=>{
+        e.stopPropagation();
+        openEmojiPicker(e.currentTarget,(picked)=>{
+          const a=getArr().slice(); a[i]={...a[i],emoji:picked}; setArr(a); render(); if(onChange) onChange();
+        });
       });
       chip.querySelector('button:last-child').addEventListener('click',()=>{ const a=getArr().slice(); a.splice(i,1); setArr(a); render(); if(onChange) onChange(); });
       chipsEl.appendChild(chip);
@@ -2556,7 +2754,8 @@ function prefillFoodSetup(){
   document.getElementById('bodyAge').value=s.age||'';
   document.getElementById('bodySex').value=s.sex||'male';
   document.querySelectorAll('#foodGoalGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.goal===s.goal));
-  document.querySelectorAll('#dietTypeGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.diet===(s.dietType||'balanced')));
+  document.querySelectorAll('#dietTypeGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.diet===(s.dietStyle||'balanced')));
+  document.querySelectorAll('#scheduleGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.schedule===(s.schedule||'standard')));
   P._waterTarget=s.waterTarget||3;
   buildWaterTargetGrid();
   document.getElementById('targetWeightInput').value=s.targetWeight||'';
@@ -2572,10 +2771,12 @@ function prefillFoodSetup(){
   P._allergyOtherList=(s.allergyOtherList||[]).slice(); P._supOtherList=(s.supOtherList||[]).slice();
   P._dislikedList=(s.dislikedList||[]).slice();
   renderDislikedChips();
-  P._dietType=s.dietType||'balanced';
+  P._dietStyle=s.dietStyle||'balanced';
+  P._schedule=s.schedule||'standard';
   applyMealCountSuggestion();
   renderAllergyOtherChips(); renderSupOtherChips();
   updateDietTypeNote();
+  updateScheduleNote();
   goToFStep(1);
 }
 document.getElementById('foodSetupSave').addEventListener('click',async()=>{
@@ -2588,7 +2789,8 @@ document.getElementById('foodSetupSave').addEventListener('click',async()=>{
     age:parseInt(document.getElementById('bodyAge').value,10)||null,
     sex:document.getElementById('bodySex').value||'male',
     goal:P._foodGoal||'gain',
-    dietType:P._dietType||'balanced',
+    dietStyle:P._dietStyle||'balanced',
+    schedule:P._schedule||'standard',
     mealCount:P._mealCount||5,
     allergyOtherList,
     allergyAnalysis,
@@ -2806,9 +3008,8 @@ function activityFactor(){
 function computeTDEE(){
   const fs=P.foodSetup||{};
   if(!fs.weight||!fs.height) return null;
-  const age=fs.age||25;
-  const bmr=(fs.sex==='female') ? (10*fs.weight+6.25*fs.height-5*age-161) : (10*fs.weight+6.25*fs.height-5*age+5);
-  return bmr*activityFactor();
+  const bmr=calculateBMR(fs.weight,fs.height,fs.age||25,fs.sex);
+  return calculateTDEE(bmr,activityFactor());
 }
 function weeklyRatePlan(){
   const fs=P.foodSetup||{};
@@ -2817,10 +3018,12 @@ function weeklyRatePlan(){
   const target=new Date(fs.targetDate+'T00:00:00');
   const weeksLeft=(target-today)/(1000*60*60*24*7);
   if(weeksLeft<=0) return null;
+  const goal=fs.goal==='lose'?'lose':'gain';
+  const maxRate=fs.weight*((GOAL_RATE_PCT[goal]||GOAL_RATE_PCT.lose).max);
   const totalChange=fs.targetWeight-fs.weight;
   let weeklyRate=totalChange/weeksLeft;
-  const capped=Math.abs(weeklyRate)>1;
-  if(capped) weeklyRate = weeklyRate>0 ? 1 : -1;
+  const capped=Math.abs(weeklyRate)>maxRate;
+  if(capped) weeklyRate = weeklyRate>0 ? maxRate : -maxRate;
   return {weeklyRateKg:weeklyRate,capped};
 }
 function calorieTarget(){
@@ -2829,54 +3032,51 @@ function calorieTarget(){
   const fs=P.foodSetup||{};
   const plan=weeklyRatePlan();
   if(plan){
-    const dailyKcalAdjust=(plan.weeklyRateKg*7700)/7;
-    return Math.max(1300,Math.round(tdee+dailyKcalAdjust));
+    return applyCalorieSafetyLimits(tdee+dailyKcalAdjustForRate(plan.weeklyRateKg), fs.sex);
   }
-  return fs.goal==='lose' ? Math.max(1300,Math.round(tdee-450)) : Math.round(tdee+450);
+  return applyCalorieSafetyLimits(fs.goal==='lose' ? tdee-450 : tdee+450, fs.sex);
 }
 function openFoodDay(label,v){
   document.getElementById('dayTitle').textContent=`${label} 🍽️`;
   document.getElementById('daySubtitle').textContent=v.tag==='special'?t('special_day'):'';
-  const target=calorieTarget();
-  const totalNum=parseInt(v.total,10);
-  const goal=currentGoalKey();
-  const gap=target?target-totalNum:0;
-  const extras=target?fillGapWithRealFood(gap,goal,(P.foodSetup&&P.foodSetup.dietType)||'balanced'):[];
-  const extrasKcal=extras.reduce((s,e)=>s+e.kcal,0);
-  const finalTotal=totalNum+extrasKcal;
   let html='';
-  html+=`<div class="total-kcal">~${target?finalTotal:v.total} ${LANG==='ar'?'سعرة':'kcal'}</div>`;
-  currentDayMeals=v.meals.map(m=>({label:m[0],ar:m[1].ar,en:m[1].en,kcal:parseInt(m[2],10),key:m[3]}));
+  html+=`<div class="total-kcal">~${Math.round(v.calories)} ${LANG==='ar'?'سعرة':'kcal'} · 🥩${Math.round(v.protein)}${LANG==='ar'?'غ':'g'} · 🍞${Math.round(v.carbs)}${LANG==='ar'?'غ':'g'} · 🧈${Math.round(v.fat)}${LANG==='ar'?'غ':'g'}</div>`;
+  currentDayMeals=v.meals.map(m=>({...m}));
+  currentDaySwapHistory={};
   html+=`<div id="mealBlocks"></div>`;
-  extras.forEach(ex=>{
-    html+=`<div class="meal" style="border-color:var(--gold);"><div class="label"><span>${LANG==='ar'?'➕ إضافة لهدفك':'➕ Goal top-up'}</span><span class="kcal">🔥 ~${ex.kcal}</span></div><div class="content">${ex[LANG]}</div></div>`;
-  });
   document.getElementById('cardBody').innerHTML=html;
   currentDayMeals.forEach((_,i)=>renderMealBlock(i));
   overlay.classList.add('open');
 }
-/* session-only meal swap: alternates to the closest-kcal item in the same
-   slot's pool (macros aren't tracked as data yet, so kcal-matching is the
-   closest available guarantee until the meal library is structured data) */
 let currentDayMeals=[];
+let currentDaySwapHistory={};
+/* real swap: pulls from the actual food database via getSwapOptions, which
+   applies the exact same allergen/dislike/diet filtering as generation —
+   a swap can never bypass a restriction. Recently-shown foods for this slot
+   are tracked so repeated presses cycle through real variety instead of
+   bouncing between the same couple of items. */
 function swapMealAt(i){
   const cur=currentDayMeals[i];
-  const pool=getMealPoolForSlot(cur.key);
-  const candidates=pool.filter(p=>p.ar!==cur.ar);
-  if(!candidates.length) return;
-  candidates.sort((a,b)=>Math.abs(a.kcal-cur.kcal)-Math.abs(b.kcal-cur.kcal));
-  const next=candidates[0];
-  currentDayMeals[i]={...cur,ar:next.ar,en:next.en,kcal:next.kcal};
+  const recent=new Set(currentDaySwapHistory[cur.slotKey]||[]);
+  cur.items.forEach(it=>recent.add(it.foodId));
+  const options=getSwapOptions(cur.slotKey,cur.items,Math.round(cur.calories),recent,6);
+  if(!options.length){
+    showToast(LANG==='ar'?'ما فيه بدائل آمنة لهالوجبة بقيودك الحالية':'No safe alternatives available for this meal with your current restrictions','error');
+    return;
+  }
+  const next=options[0];
+  currentDayMeals[i]={slotKey:cur.slotKey, ...next};
+  currentDaySwapHistory[cur.slotKey]=[...recent, ...next.items.map(it=>it.foodId)].slice(-12);
   renderMealBlock(i);
 }
 function renderMealBlock(i){
   const m=currentDayMeals[i];
   const container=document.getElementById('mealBlocks'); if(!container) return;
-  const tr=transformMeal(m[LANG],LANG);
+  const label=SLOT_LABELS_BY_KEY[m.slotKey]?SLOT_LABELS_BY_KEY[m.slotKey][LANG]:m.slotKey;
+  const content=mealItemsLabel(m.items,LANG);
   let block=document.getElementById('mealBlock'+i);
   if(!block){ block=document.createElement('div'); block.className='meal'; block.id='mealBlock'+i; container.appendChild(block); }
-  block.innerHTML=`<div class="label"><span>${m.label[LANG]}</span></div><div class="content">${tr.text}</div><div class="meal-macro-line">${mealMacroLabel(m.kcal)}</div>`;
-  if(tr.touched) block.innerHTML+=`<div class="info-chip" style="margin-top:6px;">${t('allergy_note')}</div>`;
+  block.innerHTML=`<div class="label"><span>${label}</span></div><div class="content">${content}</div><div class="meal-macro-line">${mealMacroLabel(m)}</div>`;
   block.innerHTML+=`<button type="button" class="edit-btn" style="margin-top:6px;" onclick="swapMealAt(${i})">🔄 ${LANG==='ar'?'استبدال الوجبة':'Swap meal'}</button>`;
 }
 function openWorkoutDay(label,typeKey,isToday){
@@ -3077,15 +3277,14 @@ async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dail
 function renderMealChecklist(idx,v){
   const mc=document.getElementById('mealChecklist'); mc.innerHTML='';
   v.meals.forEach((m,i)=>{
-    const tr=transformMeal(m[1][LANG],LANG);
-    const displayText=tr.text;
+    const label=SLOT_LABELS_BY_KEY[m.slotKey]?SLOT_LABELS_BY_KEY[m.slotKey][LANG]:m.slotKey;
+    const displayText=mealItemsLabel(m.items,LANG);
     const item=document.createElement('div');
     item.className='check-item'+(dailyTrack.meals[i]?' done':'');
-    const kcal=parseInt(m[2],10);
-    item.innerHTML=`<button type="button" class="meal-swap-btn" title="${LANG==='ar'?'بدّل هالوجبة':'Swap this meal'}">🔄</button><div class="box">${dailyTrack.meals[i]?'✓':''}</div><div class="txt"><div>${m[0][LANG]}: ${displayText}</div><div class="meal-macro-line">${mealMacroLabel(kcal)}</div></div>`;
+    item.innerHTML=`<button type="button" class="meal-swap-btn" title="${LANG==='ar'?'بدّل هالوجبة':'Swap this meal'}">🔄</button><div class="box">${dailyTrack.meals[i]?'✓':''}</div><div class="txt"><div>${label}: ${displayText}</div><div class="meal-macro-line">${mealMacroLabel(m)}</div></div>`;
     item.querySelector('.meal-swap-btn').addEventListener('click',(e)=>{
       e.stopPropagation();
-      swapSingleTodayMeal(m[3]);
+      swapSingleTodayMeal(m.slotKey);
     });
     item.addEventListener('click',()=>{
       dailyTrack.meals[i]=!dailyTrack.meals[i];
