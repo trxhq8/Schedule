@@ -101,6 +101,8 @@
   .commit-chip .pin-btn{ opacity:0; transition:opacity 0.15s; background:none; border:none; cursor:pointer; font-size:0.85rem; padding:2px; }
   .commit-chip:hover .pin-btn, .commit-chip .pin-btn.pinned-visible{ opacity:1; }
   .tag-chip button{ border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:0.85rem; padding:0; line-height:1; }
+  .tag-chip .emoji-pick{ border:1px dashed var(--line); border-radius:8px; background:var(--card); font-size:1rem; padding:1px 5px; line-height:1.3; }
+  .tag-chip .emoji-pick:hover{ background:var(--bg); border-color:var(--ink-soft); }
   .tag-add-row{ display:flex; gap:8px; margin-bottom:12px; }
   .tag-add-row input{ flex:1; margin-bottom:0; }
   .tag-add-row button{ flex:0 0 auto; width:auto; padding:0 16px; margin-top:0; border-radius:12px; }
@@ -861,7 +863,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.11.0';
+const APP_VERSION='v1.11.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1574,9 +1576,8 @@ function swapSingleTodayMeal(key){
   const current=getTodayMenu(todayWeekdayIndex()).meals.find(m=>m.slotKey===key);
   if(!current) return;
   dailyTrack.recentSwaps=dailyTrack.recentSwaps||{};
-  const recent=new Set(dailyTrack.recentSwaps[key]||[]);
-  current.items.forEach(it=>recent.add(it.foodId));
-  const options=getSwapOptions(key,current.items,Math.round(current.calories),recent,6);
+  const shown=new Set(dailyTrack.recentSwaps[key]||[]);
+  const options=getSwapOptions(key,current,shown,6);
   if(!options.length){
     showToast(LANG==='ar'?'ما فيه بدائل آمنة لهالوجبة بقيودك الحالية':'No safe alternatives available for this meal with your current restrictions','error');
     return;
@@ -1584,7 +1585,7 @@ function swapSingleTodayMeal(key){
   const next=options[0];
   dailyTrack.mealOverrides=dailyTrack.mealOverrides||{};
   dailyTrack.mealOverrides[key]=next;
-  dailyTrack.recentSwaps[key]=[...recent, ...next.items.map(it=>it.foodId)].slice(-12);
+  dailyTrack.recentSwaps[key]=[...shown, mealIdentity(next)].slice(-30);
   saveDailyTrack();
   renderFoodSection();
 }
@@ -1962,39 +1963,79 @@ function mealDisplayName(meal,lang){
   if(meal.recipeName) return meal.recipeName[lang];
   return mealItemsLabel(meal.items,lang);
 }
-/* the swap pool: many valid whole-meal alternatives for one slot, generated
-   fresh from the real recipe/food pool (not a fixed short list), filtered by
-   the exact same restriction + supplement rules as generation — a swap can
-   never bypass an allergy, dislike, or supplement conflict — and excluding
-   whatever was recently shown for this slot so pressing swap repeatedly
-   cycles through real variety. */
-function getSwapOptions(slotKey,currentItems,targetKcal,recentlyShownIds,count){
+/* a meal's stable identity for swap-history tracking: the recipe id when it
+   came from a curated recipe, otherwise a sorted-ingredient signature for a
+   role-composed fallback meal. Used to guarantee "never the same meal twice
+   in a row" and to know when the whole pool for a slot has been cycled
+   through. */
+function mealIdentity(meal){
+  return meal.recipeId || ('FB:'+meal.items.map(it=>it.foodId).sort().join(','));
+}
+/* the swap pool: real whole-meal alternatives for one slot, drawn from the
+   full recipe database (not a fixed short list), filtered by the exact same
+   allergy/dislike/diet/supplement rules as generation — a swap can never
+   bypass a restriction. Unlike the old implementation, this ALWAYS returns a
+   genuinely different meal from what's currently shown: candidates already
+   seen this session are hard-excluded (not just soft-penalized), and once
+   every candidate for a slot has been shown, the "seen" history resets so
+   the button keeps offering variety indefinitely instead of running dry or
+   getting stuck re-picking the single best-calorie-match every time. */
+function getSwapOptions(slotKey,currentMeal,shownIds,count){
   count=count||6;
   const fs=P.foodSetup||{};
   const dietStyle=fs.dietStyle||fs.dietType||'balanced';
   const activeSupplements=getActiveSupplements();
-  let filtered=filterFoodsByRestrictions(FOOD_DB,{
+  const targetKcal=Math.round(currentMeal.calories)||400;
+  const restrictionOpts={
     allergies:(fs.allergyOtherList||[]).map(a=>a.text),
     dislikes:fs.dislikedList||[],
     dietStyle,
-  });
+  };
+  let filtered=filterFoodsByRestrictions(FOOD_DB,restrictionOpts);
   filtered=excludeSupplementDuplicateFoods(filtered,activeSupplements);
-  const currentIds=new Set(currentItems.map(it=>it.foodId));
-  const exclude=new Set([...currentIds,...recentlyShownIds]);
-  const recentRecipeIds=new Set([...recentlyShownIds].filter(id=>RECIPES_BY_ID[id]));
-  const pool=[]; const seenSignatures=new Set();
-  for(let i=0;i<count*8 && pool.length<count*3;i++){
+  const filteredFoodIds=new Set(filtered.map(f=>f.id));
+  const currentId=mealIdentity(currentMeal);
+  const excludeSet=new Set([...(shownIds||[]), currentId]);
+
+  const mealType=SLOT_TO_MEALTYPE[slotKey];
+  let candidates=RECIPES_DB.filter(r=>r.mealType===mealType);
+  candidates=filterRecipesByRestrictions(candidates,restrictionOpts);
+  candidates=excludeSupplementDuplicateRecipes(candidates,activeSupplements);
+  candidates=candidates.filter(r=>r.ingredients.every(i=>filteredFoodIds.has(i.foodId)));
+
+  // hard-exclude already-shown recipes; if that empties the pool, the slot's
+  // whole rotation has been seen, so reset and cycle again (still never the
+  // current one) instead of leaving the user stuck
+  let survivors=candidates.filter(r=>!excludeSet.has(r.id));
+  if(!survivors.length) survivors=candidates.filter(r=>r.id!==currentId);
+  if(!survivors.length) survivors=candidates;
+
+  // prefer recipes that can scale to a realistic portion for this target;
+  // fall back to the full survivor list if that's too strict
+  const reasonable=survivors.filter(r=>{ const scale=targetKcal/r.calories; return scale>=0.5 && scale<=2.0; });
+  const pool=reasonable.length?reasonable:survivors;
+
+  const shuffled=pool.slice();
+  for(let i=shuffled.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=shuffled[i]; shuffled[i]=shuffled[j]; shuffled[j]=t; }
+  const options=shuffled.slice(0,count).map(r=>({slotKey, ...scaleRecipeToTarget(r,targetKcal)}));
+
+  if(options.length) return options;
+
+  // last resort (e.g. an extreme allergy/diet combo leaves zero recipes for
+  // this slot): dynamically compose fresh ingredient combos so the button
+  // never simply fails
+  const fallbackOptions=[]; const seenFallbackIds=new Set([currentId]);
+  for(let i=0;i<count*4 && fallbackOptions.length<count;i++){
     const rng=seededRandom(hashSeed(slotKey+'-'+targetKcal+'-'+i+'-'+Date.now()+'-'+Math.random()));
-    const meal=generateMeal(slotKey,targetKcal,filtered,exclude,dietStyle,rng,recentRecipeIds,activeSupplements);
-    if(!meal) continue;
-    const sig=(meal.recipeId||'')+'|'+meal.items.map(it=>it.foodId).sort().join(',');
-    if(seenSignatures.has(sig) || sig===('|'+[...currentIds].sort().join(','))) continue;
-    seenSignatures.add(sig);
-    pool.push(meal);
+    const fb=generateMealFromRoles(slotKey,targetKcal,filtered,new Set(),dietStyle,rng);
+    if(!fb) continue;
+    const meal={slotKey, ...fb};
+    const sig=mealIdentity(meal);
+    if(seenFallbackIds.has(sig)) continue;
+    seenFallbackIds.add(sig);
+    fallbackOptions.push(meal);
   }
-  pool.sort((a,b)=>Math.abs(a.calories-targetKcal)-Math.abs(b.calories-targetKcal));
-  const options=pool.slice(0,count);
-  return options; // empty array => caller must show "no safe alternatives"
+  return fallbackOptions; // empty array only in a truly degenerate case (no valid foods at all)
 }
 
 
@@ -2894,7 +2935,7 @@ function openEmojiPicker(anchorEl,onPick){
   pop.style.left=Math.min(r.left, window.innerWidth-230)+'px';
   setTimeout(()=>document.addEventListener('click',closeEmojiPickerOutside,true),0);
 }
-function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,onChange){
+function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,onChange,emojiFor){
   const field=document.getElementById(fieldId);
   const btn=document.getElementById(addBtnId);
   const chipsEl=document.getElementById(chipsId);
@@ -2903,7 +2944,7 @@ function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,
     chipsEl.innerHTML='';
     arr.forEach((item,i)=>{
       const chip=document.createElement('div'); chip.className='tag-chip';
-      chip.innerHTML=`<button type="button" class="emoji-pick" style="border:none;background:none;cursor:pointer;font-size:1rem;padding:0;line-height:1;">${item.emoji||defaultEmoji}</button><span>${item.text}</span><button type="button">✕</button>`;
+      chip.innerHTML=`<button type="button" class="emoji-pick" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Tap to change icon'}">${item.emoji||defaultEmoji}</button><span>${item.text}</span><button type="button">✕</button>`;
       chip.querySelector('.emoji-pick').addEventListener('click',(e)=>{
         e.stopPropagation();
         openEmojiPicker(e.currentTarget,(picked)=>{
@@ -2914,7 +2955,11 @@ function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,
       chipsEl.appendChild(chip);
     });
   }
-  function add(){ const v=field.value.trim(); if(!v) return; const a=getArr().slice(); a.push({text:v,emoji:defaultEmoji}); setArr(a); field.value=''; render(); field.focus(); if(onChange) onChange(); }
+  // each item gets its OWN emoji, chosen up front by emojiFor() (e.g. the
+  // matched supplement's canonical icon) when available, but this is only
+  // ever the STARTING value — the user can tap the icon and change it to
+  // anything, per item, at any time, and that choice is what's saved.
+  function add(){ const v=field.value.trim(); if(!v) return; const a=getArr().slice(); const startEmoji=(emojiFor&&emojiFor(v))||defaultEmoji; a.push({text:v,emoji:startEmoji}); setArr(a); field.value=''; render(); field.focus(); if(onChange) onChange(); }
   btn.addEventListener('click',add);
   field.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } });
   return render;
@@ -2943,7 +2988,8 @@ function enhanceSupplementChips(){
   });
 }
 const renderSupOtherChips=(()=>{
-  const base=setupEmojiTagInput('supOtherField','supOtherAdd','supOtherChips',()=>P._supOtherList||[],a=>P._supOtherList=a,'💊');
+  const base=setupEmojiTagInput('supOtherField','supOtherAdd','supOtherChips',()=>P._supOtherList||[],a=>P._supOtherList=a,'💊',null,
+    (text)=>{ const sid=matchSupplementId(text); const def=sid&&SUPPLEMENT_BY_ID[sid]; return def&&def.icon; });
   return ()=>{ base(); enhanceSupplementChips(); };
 })();
 
@@ -3260,16 +3306,15 @@ let currentDaySwapHistory={};
    bouncing between the same couple of items. */
 function swapMealAt(i){
   const cur=currentDayMeals[i];
-  const recent=new Set(currentDaySwapHistory[cur.slotKey]||[]);
-  cur.items.forEach(it=>recent.add(it.foodId));
-  const options=getSwapOptions(cur.slotKey,cur.items,Math.round(cur.calories),recent,6);
+  const shown=new Set(currentDaySwapHistory[cur.slotKey]||[]);
+  const options=getSwapOptions(cur.slotKey,cur,shown,6);
   if(!options.length){
     showToast(LANG==='ar'?'ما فيه بدائل آمنة لهالوجبة بقيودك الحالية':'No safe alternatives available for this meal with your current restrictions','error');
     return;
   }
   const next=options[0];
-  currentDayMeals[i]={slotKey:cur.slotKey, ...next};
-  currentDaySwapHistory[cur.slotKey]=[...recent, ...next.items.map(it=>it.foodId)].slice(-12);
+  currentDayMeals[i]=next;
+  currentDaySwapHistory[cur.slotKey]=[...shown, mealIdentity(next)].slice(-30);
   renderMealBlock(i);
 }
 function renderMealBlock(i){
