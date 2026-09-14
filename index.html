@@ -129,6 +129,52 @@
   .habit-add-row input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.82rem; background:var(--bg); color:var(--ink); }
   .habit-add-row button{ border:none; background:var(--accent-deep); color:#fff; border-radius:10px; padding:0 14px; cursor:pointer; font-weight:700; }
 
+  /* ---- profile / XP / achievements / challenges / social (demo) ---- */
+  .xp-bar-track{ width:100%; height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:8px; }
+  .xp-bar-fill{ height:100%; background:var(--accent-deep); border-radius:999px; transition:width .3s ease; }
+  .profile-stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .profile-stat-tile{ background:var(--bg); border-radius:12px; padding:10px; text-align:center; }
+  .profile-stat-tile b{ display:block; font-family:var(--font-head); font-size:1.15rem; }
+  .profile-stat-tile span{ font-size:0.68rem; color:var(--ink-soft); }
+  .title-chip{ display:inline-flex; align-items:center; gap:6px; background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:0.78rem; font-weight:700; margin:0 6px 6px 0; }
+  .ach-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .ach-row:last-child{ border-bottom:none; }
+  .ach-row.locked{ opacity:0.4; }
+  .ach-ic{ font-size:1.3rem; width:30px; text-align:center; flex-shrink:0; }
+  .ach-name{ font-weight:700; font-size:0.85rem; }
+  .ach-desc{ font-size:0.72rem; color:var(--ink-soft); }
+  .ach-xp{ font-size:0.72rem; color:var(--ink-soft); white-space:nowrap; }
+  .challenge-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow); margin-bottom:12px; }
+  .challenge-card.completed{ border-color:var(--accent-deep); }
+  .challenge-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .challenge-name{ font-weight:800; font-size:0.88rem; }
+  .challenge-xp-badge{ font-size:0.7rem; color:var(--ink-soft); }
+  .challenge-bar-track{ width:100%; height:8px; border-radius:999px; background:var(--line); overflow:hidden; margin:6px 0; }
+  .challenge-bar-fill{ height:100%; background:var(--accent-deep); border-radius:999px; }
+  .challenge-progress-label{ font-size:0.72rem; color:var(--ink-soft); }
+  .demo-mode-banner{ background:var(--bg); border:1px dashed var(--line); border-radius:12px; padding:10px 14px; font-size:0.78rem; color:var(--ink-soft); text-align:center; margin-bottom:14px; }
+  .social-tabs{ display:flex; gap:6px; overflow-x:auto; margin-bottom:14px; padding-bottom:2px; }
+  .social-tab{ flex-shrink:0; border:1px solid var(--line); background:var(--bg); color:var(--ink-soft); border-radius:999px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; }
+  .social-tab.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .lb-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .lb-row:last-child{ border-bottom:none; }
+  .lb-row.me{ background:var(--bg); border-radius:10px; padding:9px 8px; border-bottom:none; }
+  .lb-rank{ width:28px; text-align:center; font-weight:800; flex-shrink:0; }
+  .lb-name{ flex:1; font-weight:700; font-size:0.85rem; }
+  .lb-title-sub{ font-size:0.68rem; color:var(--ink-soft); }
+  .lb-value{ font-weight:800; font-family:var(--font-head); font-size:0.9rem; }
+  .friend-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .friend-row:last-child{ border-bottom:none; }
+  .friend-avatar{ width:36px; height:36px; border-radius:50%; background:var(--bg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+  .feed-row{ display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:0.83rem; }
+  .feed-row:last-child{ border-bottom:none; }
+  .feed-time{ font-size:0.68rem; color:var(--ink-soft); }
+  .compare-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:0.83rem; }
+  .compare-row:last-child{ border-bottom:none; }
+  .compare-bar-wrap{ flex:1; margin:0 10px; height:6px; background:var(--line); border-radius:999px; overflow:hidden; display:flex; }
+  .compare-bar-you{ background:var(--accent-deep); height:100%; }
+  .compare-bar-them{ background:var(--ink-soft); height:100%; }
+
   .back-row{ margin:14px 0 4px; display:flex; justify-content:space-between; align-items:center; }
   .back-btn{ font-family:var(--font-head); font-weight:700; font-size:0.8rem; background:var(--card); border:1px solid var(--line); color:var(--ink-soft); border-radius:999px; padding:7px 16px; cursor:pointer; }
   .edit-btn{ font-family:var(--font-head); font-weight:700; font-size:0.75rem; background:none; border:none; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
@@ -580,6 +626,9 @@
       <div class="home-card" data-goto="workout"><span class="ic">🏋️</span><div class="ttl" data-i18n="card_workout"></div></div>
       <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
       <div class="home-card" data-goto="collections"><span class="ic">🐾</span><div class="ttl" data-i18n="card_collections"></div></div>
+      <div class="home-card" data-goto="profile"><span class="ic">👤</span><div class="ttl" data-i18n="card_profile"></div></div>
+      <div class="home-card" data-goto="challenges"><span class="ic">🎯</span><div class="ttl" data-i18n="card_challenges"></div></div>
+      <div class="home-card" data-goto="social"><span class="ic">👥</span><div class="ttl" data-i18n="card_social"></div></div>
     </div>
   </section>
 
@@ -862,6 +911,57 @@
     </div>
   </section>
 
+  <!-- PROFILE (real — level/XP/streaks/achievements/titles, all derived from
+       actual logged data via computeUserStats()) -->
+  <section class="panel" id="panel-profile">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="setup-card" style="text-align:center;">
+      <div style="font-size:2.2rem;">👤</div>
+      <h2 id="profileLevelLabel" style="margin:6px 0 2px;"></h2>
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
+      <div id="profileXpLabel" style="font-size:0.75rem;color:var(--ink-soft);margin-top:4px;"></div>
+    </div>
+    <div class="setup-card">
+      <h3 id="profileStreaksTitle"></h3>
+      <div class="dash-row-mini" id="profileStreaksRow" style="flex-wrap:wrap;"></div>
+    </div>
+    <div class="setup-card">
+      <h3 id="profileStatsTitle"></h3>
+      <div id="profileStatsGrid" class="profile-stats-grid"></div>
+    </div>
+    <div class="setup-card">
+      <h3 id="profileTitlesTitle"></h3>
+      <div id="profileTitlesList" class="dash-empty"></div>
+    </div>
+    <div class="setup-card">
+      <h3 id="profileAchievementsTitle"></h3>
+      <div id="profileAchievementsList"></div>
+    </div>
+  </section>
+
+  <!-- CHALLENGES (real — progress computed from actual logged history) -->
+  <section class="panel" id="panel-challenges">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div id="challengesList"></div>
+  </section>
+
+  <!-- SOCIAL (DEMO MODE — see banner; friends/leaderboard/feed/comparison
+       need a backend change — public profile reads — that isn't possible
+       from this static-site + per-user-Firestore architecture alone) -->
+  <section class="panel" id="panel-social">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="demo-mode-banner" id="socialDemoBanner"></div>
+    <div class="setup-card">
+      <div class="social-tabs" id="socialTabs">
+        <button type="button" class="social-tab active" data-tab="friends" id="socialTabFriends"></button>
+        <button type="button" class="social-tab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
+        <button type="button" class="social-tab" data-tab="feed" id="socialTabFeed"></button>
+        <button type="button" class="social-tab" data-tab="compare" id="socialTabCompare"></button>
+      </div>
+      <div id="socialTabContent"></div>
+    </div>
+  </section>
+
   <!-- COLLECTIONS -->
   <section class="panel" id="panel-collections">
     <div class="back-row"><button class="back-btn" id="collectionsBackBtn" data-i18n="back_home"></button><span></span></div>
@@ -1005,7 +1105,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.13.0';
+const APP_VERSION='v1.14.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1208,6 +1308,7 @@ async function bootApp(){
   const pv=await storageGet('profile');
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
   else{ await storageSet('profile',JSON.stringify(P)); }
+  migrateProgressionFields();
   launchApp();
 }
 if(fbAuth){
@@ -1358,6 +1459,18 @@ const I18N={
   card_workout:'التمارين',
   card_progress:'التقدم',
   card_collections:'المقتنيات',
+  card_profile:'ملفي',card_challenges:'التحديات',card_social:'الأصدقاء',
+  profile_level:'المستوى {n}',profile_streaks_title:'🔥 سلاسل الاستمرار',
+  profile_streak_workout:'تمرين',profile_streak_water:'ماء',profile_streak_nutrition:'تغذية',
+  profile_stats_title:'📊 الإحصائيات',profile_titles_title:'👑 الألقاب',profile_achievements_title:'🏅 الإنجازات',
+  profile_no_titles:'أكمل المزيد لفتح ألقاب',
+  stat_workouts:'تمرين مكتمل',stat_nutrition:'يوم تغذية',stat_water:'يوم ماء',stat_collection:'مجموع',stat_achievements:'إنجاز',stat_xp:'نقطة خبرة',
+  challenges_title:'🎯 التحديات',challenges_empty:'ما فيه تحديات نشطة حالياً',
+  challenge_progress:'{cur} / {target}',challenge_completed:'✅ مكتمل',
+  social_demo_banner:'🔧 وضع تجريبي — بيانات وهمية للعرض فقط. الأصدقاء الحقيقيون يحتاجون تفعيل قاعدة بيانات مشتركة (راجع التقرير).',
+  social_tab_friends:'👥 الأصدقاء',social_tab_leaderboard:'🏆 المتصدرين',social_tab_feed:'📰 النشاط',social_tab_compare:'⚖️ مقارنة',
+  friends_empty:'رصيدك فاضي — أضف أصدقاء عشان تنافسهم',
+  lb_you:'أنت',compare_vs:'أنت ضد {name}',
   dash_cal_title:'🍽️ السعرات اليوم',dash_cal_planned:'مخطط',dash_cal_consumed:'مستهلك',dash_cal_remaining:'متبقي',
   dash_cal_empty:'أعد إعداد نظامك الغذائي عشان نحسب سعراتك',
   dash_workout_title:'🏋️ تمرين اليوم',
@@ -1438,6 +1551,18 @@ const I18N={
   card_workout:'Workout',
   card_progress:'Progress',
   card_collections:'Collections',
+  card_profile:'Profile',card_challenges:'Challenges',card_social:'Friends',
+  profile_level:'Level {n}',profile_streaks_title:'🔥 Streaks',
+  profile_streak_workout:'Workout',profile_streak_water:'Water',profile_streak_nutrition:'Nutrition',
+  profile_stats_title:'📊 Stats',profile_titles_title:'👑 Titles',profile_achievements_title:'🏅 Achievements',
+  profile_no_titles:'Keep going to unlock titles',
+  stat_workouts:'workouts done',stat_nutrition:'nutrition days',stat_water:'water days',stat_collection:'collected',stat_achievements:'achievements',stat_xp:'XP',
+  challenges_title:'🎯 Challenges',challenges_empty:'No active challenges right now',
+  challenge_progress:'{cur} / {target}',challenge_completed:'✅ Completed',
+  social_demo_banner:'🔧 Demo Mode — sample data for preview only. Real friends need a shared backend (see report).',
+  social_tab_friends:'👥 Friends',social_tab_leaderboard:'🏆 Leaderboard',social_tab_feed:'📰 Activity',social_tab_compare:'⚖️ Compare',
+  friends_empty:'Your squad is empty — add friends to start competing',
+  lb_you:'You',compare_vs:'You vs {name}',
   dash_cal_title:'🍽️ Calories today',dash_cal_planned:'Planned',dash_cal_consumed:'Consumed',dash_cal_remaining:'Remaining',
   dash_cal_empty:'Set up your food plan to see calories here',
   dash_workout_title:'🏋️ Today\'s workout',
@@ -1562,7 +1687,15 @@ let P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',
   workoutSetup:null,
   streakCount:0, lastStreakDate:'',
   workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null,
-  habits:DEFAULT_HABITS.map(h=>({...h}))
+  habits:DEFAULT_HABITS.map(h=>({...h})),
+  /* progression system — all real, derived, persisted via the same
+     Firestore profile doc as everything else. See "single source of
+     truth" note above computeUserStats(). */
+  xp:0,
+  streaks:null, // lazily migrated from streakCount/lastStreakDate on first load, see migrateProgressionFields()
+  lifetimeStats:{waterDaysHit:0,nutritionDaysHit:0,challengesCompleted:0,longestHabitStreakEver:0},
+  achievements:{}, // {achievementId: {unlockedAt: isoString}}
+  challengeState:{} // {challengeId+periodKey: {completed:true, completedAt}}
 };
 
 document.getElementById('mainLangToggle').addEventListener('click',async()=>{
@@ -1656,7 +1789,9 @@ document.getElementById('demoConfirmYes').addEventListener('click',async()=>{
   P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',customBg:{light:null,dark:null},
       todoSetup:null,foodSetup:null,workoutSetup:null,
       streakCount:0,lastStreakDate:'',workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null,
-      habits:DEFAULT_HABITS.map(h=>({...h})) };
+      habits:DEFAULT_HABITS.map(h=>({...h})),
+      xp:0, streaks:null, lifetimeStats:{waterDaysHit:0,nutritionDaysHit:0,challengesCompleted:0,longestHabitStreakEver:0},
+      achievements:{}, challengeState:{} };
   weightLog=[];
   dailyTrack={...DAILY_TRACK_DEFAULTS};
   LANG='ar';
@@ -2694,6 +2829,9 @@ function enterSection(name){
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
   if(name==='progress') renderProgressSection();
+  if(name==='profile') renderProfileSection();
+  if(name==='challenges') renderChallengesSection();
+  if(name==='social') renderSocialSection();
   if(name==='collections') enterCollections();
 }
 document.querySelectorAll('#panel-home .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
@@ -3702,11 +3840,26 @@ async function toggleWorkoutDone(typeKey){
       P.workoutCompletions=P.workoutCompletions||{push:0,pull:0,legs:0};
       P.workoutCompletions[typeKey]=(P.workoutCompletions[typeKey]||0)+1;
       dailyTrack.completionCounted=true;
-      await storageSet('profile',JSON.stringify(P));
+      await awardXP(XP_CONFIG.workout_complete);
       await saveDailyTrack();
+      await notifyNewUnlocks();
     }
   }
   return dailyTrack.workoutDone;
+}
+/* shared by every completion trigger (workout/water/nutrition/habit) —
+   recomputes real stats, awards any newly-earned achievements/challenges
+   exactly once each, and surfaces a toast for the first new unlock so the
+   user notices without stacking multiple popups. */
+async function notifyNewUnlocks(){
+  const stats=await computeUserStats();
+  const newAch=await checkAndAwardAchievements(stats);
+  const {newlyCompleted}=await checkAndAwardChallenges();
+  const first=newAch[0]||newlyCompleted[0];
+  if(first){
+    const label=LANG==='ar'?(first.nameAr||first.descAr):(first.nameEn||first.descEn);
+    showToast(`${first.icon||'🏆'} ${label}`,'success');
+  }
 }
 function showFeedbackPrompt(typeKey){
   const row=document.getElementById('feedbackRow'); if(!row) return;
@@ -3925,7 +4078,7 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
 });
 
 function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{}};
+const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},xpAwarded:{}};
 let dailyTrack={...DAILY_TRACK_DEFAULTS};
 async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
 async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
@@ -3942,11 +4095,24 @@ function renderMealChecklist(idx,v){
       e.stopPropagation();
       swapSingleTodayMeal(m.slotKey);
     });
-    item.addEventListener('click',()=>{
+    item.addEventListener('click',async()=>{
       dailyTrack.meals[i]=!dailyTrack.meals[i];
       item.classList.toggle('done',dailyTrack.meals[i]);
       item.querySelector('.box').textContent=dailyTrack.meals[i]?'✓':'';
-      saveDailyTrack();
+      await saveDailyTrack();
+      // "nutrition day complete" = every one of today's active meal slots
+      // checked off — real completion, never a guess, awarded exactly once
+      const allDone=v.meals.every((_,idx)=>dailyTrack.meals[idx]);
+      if(allDone && !(dailyTrack.xpAwarded&&dailyTrack.xpAwarded.nutrition)){
+        dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
+        dailyTrack.xpAwarded.nutrition=true;
+        updateNamedStreak('nutrition');
+        await awardXP(XP_CONFIG.nutrition_day_complete);
+        P.lifetimeStats.nutritionDaysHit=(P.lifetimeStats.nutritionDaysHit||0)+1;
+        await storageSet('profile',JSON.stringify(P));
+        await saveDailyTrack();
+        await notifyNewUnlocks();
+      }
     });
     mc.appendChild(item);
   });
@@ -3988,17 +4154,66 @@ function renderWater(){
   let cups=''; for(let i=0;i<total;i++) cups+=i<filled?'💧':'<span style="opacity:0.25;">💧</span>';
   document.getElementById('waterCups').innerHTML=cups;
 }
-document.getElementById('waterPlus').addEventListener('click',()=>{ dailyTrack.water=Math.min(8,+((dailyTrack.water||0)+0.25).toFixed(2)); renderWater(); saveDailyTrack(); });
-document.getElementById('waterMinus').addEventListener('click',()=>{ dailyTrack.water=Math.max(0,+((dailyTrack.water||0)-0.25).toFixed(2)); renderWater(); saveDailyTrack(); });
+/* single source of truth for "water target hit today" — both the Food-panel
+   and dashboard +/- buttons call this instead of duplicating the mutation,
+   so the target-hit XP/streak award can only ever be wired in one place. */
+async function adjustWater(delta){
+  dailyTrack.water=Math.max(0,Math.min(8,+((dailyTrack.water||0)+delta).toFixed(2)));
+  renderWater();
+  if(document.getElementById('dashWaterCount')) renderDailySummary();
+  await saveDailyTrack();
+  const target=(P.foodSetup&&P.foodSetup.waterTarget)||3.5;
+  if(dailyTrack.water>=target && !(dailyTrack.xpAwarded&&dailyTrack.xpAwarded.water)){
+    dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
+    dailyTrack.xpAwarded.water=true;
+    updateNamedStreak('water');
+    await awardXP(XP_CONFIG.water_target_complete);
+    P.lifetimeStats.waterDaysHit=(P.lifetimeStats.waterDaysHit||0)+1;
+    await storageSet('profile',JSON.stringify(P));
+    await saveDailyTrack();
+    await notifyNewUnlocks();
+  }
+}
+document.getElementById('waterPlus').addEventListener('click',()=>adjustWater(0.25));
+document.getElementById('waterMinus').addEventListener('click',()=>adjustWater(-0.25));
 
 function dateKeyOf(d){ return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-async function updateStreak(){
+/* ================= CENTRALIZED STREAK ENGINE =================
+   One implementation for every named streak (workout/water/nutrition —
+   per-habit streaks stay on computeHabitStreaks() since those are derived
+   fresh from real history rather than incrementally maintained, which is
+   the more correct approach when day-by-day docs are cheap to re-scan).
+   Same-day re-entry is a no-op (prevents double-incrementing a streak from
+   multiple clicks/refreshes the same day); a gap resets to 1 rather than 0
+   since the day it fires IS itself a completed day. */
+function migrateProgressionFields(){
+  if(!P.streaks){
+    P.streaks={
+      workout:{current:P.streakCount||0, longest:P.streakCount||0, lastDate:P.lastStreakDate||''},
+      water:{current:0,longest:0,lastDate:''},
+      nutrition:{current:0,longest:0,lastDate:''}
+    };
+  }
+  if(P.xp===undefined) P.xp=0;
+  if(!P.lifetimeStats) P.lifetimeStats={waterDaysHit:0,nutritionDaysHit:0,challengesCompleted:0,longestHabitStreakEver:0};
+  if(!P.achievements) P.achievements={};
+  if(!P.challengeState) P.challengeState={};
+}
+function updateNamedStreak(key){
+  migrateProgressionFields();
   const today=dateKeyOf(new Date());
-  if(P.lastStreakDate===today) return;
+  const s=P.streaks[key]=P.streaks[key]||{current:0,longest:0,lastDate:''};
+  if(s.lastDate===today) return s; // already counted today — no double-increment
   const y=new Date(); y.setDate(y.getDate()-1);
   const yesterday=dateKeyOf(y);
-  P.streakCount = (P.lastStreakDate===yesterday) ? (P.streakCount||0)+1 : 1;
-  P.lastStreakDate=today;
+  s.current = (s.lastDate===yesterday) ? s.current+1 : 1;
+  s.longest = Math.max(s.longest, s.current);
+  s.lastDate = today;
+  return s;
+}
+async function updateStreak(){
+  const s=updateNamedStreak('workout');
+  P.streakCount=s.current; P.lastStreakDate=s.lastDate; // kept in sync for renderStreakBadge/back-compat readers
   await storageSet('profile',JSON.stringify(P));
   renderStreakBadge();
 }
@@ -4008,6 +4223,374 @@ function renderStreakBadge(){
   if(!P.streakCount||P.streakCount<2){ el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
   el.textContent=`🔥 ${P.streakCount} ${LANG==='ar'?'يوم متتالي':'day streak'}`;
+}
+
+/* ================= XP / LEVEL ENGINE =================
+   One centralized config and one centralized award function — nowhere else
+   in the app is allowed to touch P.xp directly. Every award site is guarded
+   by a check against real, already-persisted state (a daily flag on
+   dailyTrack, or an achievement/challenge id already present in P) so the
+   SAME event can never fire twice — there is no click-driven "+XP" anywhere;
+   XP only ever follows a real, already-recorded completion. */
+const XP_CONFIG={
+  workout_complete:50, nutrition_day_complete:30, water_target_complete:20,
+  habit_complete:10, challenge_complete:100, collection_unlock:25, achievement_unlock:15
+};
+async function awardXP(amount){
+  migrateProgressionFields();
+  P.xp=(P.xp||0)+amount;
+  await storageSet('profile',JSON.stringify(P));
+}
+/* cumulative XP required to REACH `level` — a formula, not a hand-written
+   table, so the level range is unbounded without maintenance. */
+function xpForLevel(level){ return Math.round(250*(level-1)*level); }
+function levelFromXP(xp){ let l=1; while(xpForLevel(l+1)<=xp) l++; return l; }
+function levelProgress(xp){
+  const level=levelFromXP(xp);
+  const floor=xpForLevel(level), ceiling=xpForLevel(level+1);
+  return {level, floor, ceiling, current:xp-floor, needed:ceiling-floor, pct: ceiling>floor ? Math.round((xp-floor)/(ceiling-floor)*100) : 100};
+}
+
+/* ================= REAL USER STATS (single source of truth) =================
+   Every number achievements/titles/challenges/profile use comes from here —
+   nothing recomputes these independently. Collection numbers come from
+   computeCollectionStats() (already the collections panel's own source of
+   truth); everything else reads P fields that are only ever changed through
+   the guarded award functions below. */
+async function computeUserStats(){
+  const coll=await computeCollectionStats();
+  const totalWorkouts=Object.values(P.workoutCompletions||{}).reduce((a,b)=>a+b,0);
+  const streaks=P.streaks||{};
+  const bestStreak=Math.max(0,...Object.values(streaks).map(s=>s.longest||0));
+  const lifetime=P.lifetimeStats||{};
+  const rareOrBetterCount=(coll.rarityCounts.epic||0)+(coll.rarityCounts.mythic||0)+(coll.rarityCounts.legendary||0);
+  const xp=P.xp||0;
+  return {
+    xp, level:levelFromXP(xp),
+    totalWorkouts,
+    workoutStreak:(streaks.workout&&streaks.workout.current)||0,
+    waterStreak:(streaks.water&&streaks.water.current)||0,
+    nutritionStreak:(streaks.nutrition&&streaks.nutrition.current)||0,
+    bestStreak,
+    bestHabitStreak:lifetime.longestHabitStreakEver||0,
+    waterDaysHit:lifetime.waterDaysHit||0,
+    nutritionDaysHit:lifetime.nutritionDaysHit||0,
+    challengesCompleted:lifetime.challengesCompleted||0,
+    achievementsUnlocked:Object.keys(P.achievements||{}).length,
+    totalCatches:coll.totalCatches,
+    totalCollected:coll.totalCollected,
+    totalSpecies:coll.totalSpecies,
+    rareOrBetterCount,
+    legendaryCount:coll.legendaryCount,
+  };
+}
+
+/* ================= ACHIEVEMENTS =================
+   Purely derived: `check(stats)` is a pure function over computeUserStats()'s
+   output. Nothing is ever manually marked "unlocked" — checkAndAwardAchievements()
+   is the only writer of P.achievements, and only writes an id the FIRST time
+   its check() goes true, which is what makes duplicate-award impossible. */
+const ACHIEVEMENTS_CONFIG=[
+  {id:'first_workout', icon:'🏋️', nameEn:'First Workout', nameAr:'أول تمرين', descEn:'Complete your first workout', descAr:'أكمل أول تمرين', xp:15, check:s=>s.totalWorkouts>=1},
+  {id:'week_warrior', icon:'🔥', nameEn:'Week Warrior', nameAr:'محارب الأسبوع', descEn:'Complete 7 workouts total', descAr:'أكمل 7 تمارين', xp:15, check:s=>s.totalWorkouts>=7},
+  {id:'century', icon:'💯', nameEn:'Century', nameAr:'المئوية', descEn:'Complete 100 workouts', descAr:'أكمل 100 تمرين', xp:50, check:s=>s.totalWorkouts>=100},
+  {id:'hydration_master', icon:'💧', nameEn:'Hydration Master', nameAr:'سيد الترطيب', descEn:'Hit your water target 30 times', descAr:'حقق هدف الماء 30 مرة', xp:15, check:s=>s.waterDaysHit>=30},
+  {id:'fisherman', icon:'🐟', nameEn:'Fisherman', nameAr:'صياد', descEn:'Catch 10 fish/animals total', descAr:'اصطد 10 حيوانات', xp:15, check:s=>s.totalCatches>=10},
+  {id:'rare_hunter', icon:'💎', nameEn:'Rare Hunter', nameAr:'صائد النوادر', descEn:'Collect 5 epic-or-better species', descAr:'اجمع 5 أنواع ملحمية أو أعلى', xp:20, check:s=>s.rareOrBetterCount>=5},
+  {id:'collector', icon:'📦', nameEn:'Collector', nameAr:'الجامع', descEn:'Collect 50 species total', descAr:'اجمع 50 نوع', xp:25, check:s=>s.totalCollected>=50},
+  {id:'unbreakable', icon:'🔥', nameEn:'Unbreakable', nameAr:'لا يُكسر', descEn:'Reach a 30-day streak', descAr:'وصل لسلسلة 30 يوم', xp:30, check:s=>s.bestStreak>=30},
+  {id:'champion', icon:'👑', nameEn:'Champion', nameAr:'البطل', descEn:'Reach Level 20', descAr:'وصل للمستوى 20', xp:50, check:s=>s.level>=20},
+  {id:'nutrition_machine', icon:'🍽️', nameEn:'Nutrition Machine', nameAr:'آلة التغذية', descEn:'Complete your nutrition target 20 times', descAr:'حقق هدف التغذية 20 مرة', xp:20, check:s=>s.nutritionDaysHit>=20},
+  {id:'habit_builder', icon:'✅', nameEn:'Habit Builder', nameAr:'باني العادات', descEn:'Reach a 14-day habit streak', descAr:'وصل لسلسلة عادة 14 يوم', xp:15, check:s=>s.bestHabitStreak>=14},
+  {id:'challenger', icon:'🎯', nameEn:'Challenger', nameAr:'المتحدي', descEn:'Complete your first challenge', descAr:'أكمل أول تحدي', xp:15, check:s=>s.challengesCompleted>=1},
+];
+/* the ONLY place P.achievements is written. Returns the list of newly
+   unlocked achievements (empty if none) so the caller can show a toast. */
+async function checkAndAwardAchievements(stats){
+  migrateProgressionFields();
+  const newlyUnlocked=[];
+  for(const a of ACHIEVEMENTS_CONFIG){
+    if(P.achievements[a.id]) continue; // already unlocked — never re-award
+    if(a.check(stats)){
+      P.achievements[a.id]={unlockedAt:new Date().toISOString()};
+      newlyUnlocked.push(a);
+    }
+  }
+  if(newlyUnlocked.length){
+    const totalXp=newlyUnlocked.reduce((sum,a)=>sum+(a.xp||XP_CONFIG.achievement_unlock),0);
+    P.xp=(P.xp||0)+totalXp;
+    await storageSet('profile',JSON.stringify(P));
+  }
+  return newlyUnlocked;
+}
+
+/* ================= TITLES (self-progress, not competitive) =================
+   Shown on the Profile as milestones the user has personally reached — not
+   a comparison against anyone else, since there is no real multi-user
+   leaderboard yet (see the Social section's DEMO MODE). */
+const TITLES_CONFIG=[
+  {id:'iron_beast', icon:'🏋️', nameEn:'Iron Beast', nameAr:'وحش الحديد', metric:'totalWorkouts', threshold:40},
+  {id:'unbreakable_title', icon:'🔥', nameEn:'Unbreakable', nameAr:'لا يُكسر', metric:'bestStreak', threshold:30},
+  {id:'sea_hunter', icon:'🐟', nameEn:'Sea Hunter', nameAr:'صياد البحر', metric:'totalCatches', threshold:20},
+  {id:'collector_title', icon:'🏆', nameEn:'Collector', nameAr:'الجامع', metric:'totalCollected', threshold:50},
+  {id:'achievement_king', icon:'👑', nameEn:'Achievement King', nameAr:'ملك الإنجازات', metric:'achievementsUnlocked', threshold:10},
+  {id:'nutrition_machine_title', icon:'🍽️', nameEn:'Nutrition Machine', nameAr:'آلة التغذية', metric:'nutritionDaysHit', threshold:20},
+  {id:'hydration_master_title', icon:'💧', nameEn:'Hydration Master', nameAr:'سيد الترطيب', metric:'waterDaysHit', threshold:30},
+  {id:'xp_legend', icon:'⚡', nameEn:'XP Legend', nameAr:'أسطورة الخبرة', metric:'xp', threshold:5000},
+  {id:'the_champion', icon:'👑', nameEn:'The Champion', nameAr:'البطل', metric:'level', threshold:20},
+];
+function unlockedTitles(stats){ return TITLES_CONFIG.filter(t=>stats[t.metric]>=t.threshold); }
+
+/* ================= SOLO CHALLENGES =================
+   Real, computed from real logged history — a challenge is only "complete"
+   when its progress (derived from actual daily-track docs) reaches target,
+   and each period (identified by an explicit period key) can only ever be
+   awarded once, guarded by P.challengeState. */
+const CHALLENGES_CONFIG=[
+  {id:'weekly_workouts', period:'week', icon:'🏋️', nameEn:'5 Workouts This Week', nameAr:'5 تمارين هذا الأسبوع', target:5, xp:100, metric:'workoutsThisWeek'},
+  {id:'weekly_hydration', period:'week', icon:'💧', nameEn:'Hydration Week', nameAr:'أسبوع الترطيب', target:5, xp:100, metric:'waterDaysThisWeek'},
+  {id:'weekly_nutrition', period:'week', icon:'🍽️', nameEn:'Nutrition Streak', nameAr:'التزام التغذية', target:5, xp:100, metric:'nutritionDaysThisWeek'},
+  {id:'monthly_fishing', period:'month', icon:'🐟', nameEn:'Fishing Collector', nameAr:'جامع الأسماك', target:5, xp:100, metric:'distinctCatchesThisMonth'},
+];
+function currentPeriodKey(period){
+  const now=new Date();
+  if(period==='month') return `${now.getFullYear()}-${now.getMonth()+1}`;
+  return `${now.getFullYear()}-w${getISOWeekNum(now)}`;
+}
+async function computeMonthlyDistinctCatches(){
+  const now=new Date(); const y=now.getFullYear(), m=now.getMonth();
+  let count=0;
+  for(const cat of ANIMAL_CATEGORIES){
+    let data={};
+    try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
+    Object.values(data).forEach(rec=>{
+      if(rec&&rec.catches&&rec.catches.some(c=>{ const d=new Date(c.date); return d.getFullYear()===y&&d.getMonth()===m; })) count++;
+    });
+  }
+  return count;
+}
+async function computeChallengeProgress(){
+  const weekDates=datesForCurrentWeek();
+  const keys=weekDates.map(d=>`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+  const docs=await Promise.all(keys.map(k=>storageGet(k).catch(()=>null)));
+  let workoutsThisWeek=0, waterDaysThisWeek=0, nutritionDaysThisWeek=0;
+  docs.forEach(v=>{
+    if(!v) return;
+    let doc; try{ doc=JSON.parse(v); }catch(e){ return; }
+    if(doc.workoutDone) workoutsThisWeek++;
+    if(doc.xpAwarded&&doc.xpAwarded.water) waterDaysThisWeek++;
+    if(doc.xpAwarded&&doc.xpAwarded.nutrition) nutritionDaysThisWeek++;
+  });
+  const distinctCatchesThisMonth=await computeMonthlyDistinctCatches();
+  return {workoutsThisWeek,waterDaysThisWeek,nutritionDaysThisWeek,distinctCatchesThisMonth};
+}
+/* the ONLY place P.challengeState is written / XP for challenges is
+   awarded. Returns the list of newly-completed challenges this call. */
+async function checkAndAwardChallenges(){
+  migrateProgressionFields();
+  const progress=await computeChallengeProgress();
+  const newlyCompleted=[];
+  for(const c of CHALLENGES_CONFIG){
+    const key=c.id+'|'+currentPeriodKey(c.period);
+    if(P.challengeState[key]&&P.challengeState[key].completed) continue;
+    const value=progress[c.metric]||0;
+    if(value>=c.target){
+      P.challengeState[key]={completed:true,completedAt:new Date().toISOString(),value};
+      P.lifetimeStats.challengesCompleted=(P.lifetimeStats.challengesCompleted||0)+1;
+      P.xp=(P.xp||0)+c.xp;
+      newlyCompleted.push(c);
+    }
+  }
+  if(newlyCompleted.length) await storageSet('profile',JSON.stringify(P));
+  return {progress,newlyCompleted};
+}
+
+/* ================= PROFILE PANEL (real) ================= */
+async function renderProfileSection(){
+  document.getElementById('profileStreaksTitle').textContent=t('profile_streaks_title');
+  document.getElementById('profileStatsTitle').textContent=t('profile_stats_title');
+  document.getElementById('profileTitlesTitle').textContent=t('profile_titles_title');
+  document.getElementById('profileAchievementsTitle').textContent=t('profile_achievements_title');
+
+  const stats=await computeUserStats();
+  const prog=levelProgress(stats.xp);
+  document.getElementById('profileLevelLabel').textContent=t('profile_level').replace('{n}',prog.level);
+  document.getElementById('profileXpFill').style.width=prog.pct+'%';
+  document.getElementById('profileXpLabel').textContent=`${prog.current} / ${prog.needed} XP`;
+
+  const streaksRow=document.getElementById('profileStreaksRow');
+  streaksRow.innerHTML=[
+    ['profile_streak_workout',stats.workoutStreak],
+    ['profile_streak_water',stats.waterStreak],
+    ['profile_streak_nutrition',stats.nutritionStreak],
+  ].map(([k,v])=>`<div class="dash-mini">${t(k)}<span class="n">${v>0?'🔥'+v:'–'}</span></div>`).join('');
+
+  const grid=document.getElementById('profileStatsGrid');
+  grid.innerHTML=[
+    ['🏋️',stats.totalWorkouts,'stat_workouts'],
+    ['🍽️',stats.nutritionDaysHit,'stat_nutrition'],
+    ['💧',stats.waterDaysHit,'stat_water'],
+    ['📦',`${stats.totalCollected}/${stats.totalSpecies}`,'stat_collection'],
+    ['🏅',`${stats.achievementsUnlocked}/${ACHIEVEMENTS_CONFIG.length}`,'stat_achievements'],
+    ['⚡',stats.xp,'stat_xp'],
+  ].map(([ic,val,labelKey])=>`<div class="profile-stat-tile"><b>${ic} ${val}</b><span>${t(labelKey)}</span></div>`).join('');
+
+  const titlesList=document.getElementById('profileTitlesList');
+  const earned=unlockedTitles(stats);
+  if(!earned.length){
+    titlesList.className='dash-empty'; titlesList.textContent=t('profile_no_titles');
+  } else {
+    titlesList.className='';
+    titlesList.innerHTML=earned.map(ti=>`<span class="title-chip">${ti.icon} ${LANG==='ar'?ti.nameAr:ti.nameEn}</span>`).join('');
+  }
+
+  const achList=document.getElementById('profileAchievementsList');
+  achList.innerHTML=ACHIEVEMENTS_CONFIG.map(a=>{
+    const unlocked=!!P.achievements[a.id];
+    const name=LANG==='ar'?a.nameAr:a.nameEn, desc=LANG==='ar'?a.descAr:a.descEn;
+    return `<div class="ach-row${unlocked?'':' locked'}"><div class="ach-ic">${a.icon}</div><div style="flex:1;"><div class="ach-name">${name}</div><div class="ach-desc">${desc}</div></div><div class="ach-xp">${unlocked?'✓':'+'+a.xp+'xp'}</div></div>`;
+  }).join('');
+}
+
+/* ================= CHALLENGES PANEL (real) ================= */
+async function renderChallengesSection(){
+  const list=document.getElementById('challengesList');
+  list.innerHTML=`<div class="dash-empty">…</div>`;
+  const {progress}=await checkAndAwardChallenges(); // also awards+persists any just-completed challenge
+  list.innerHTML=CHALLENGES_CONFIG.map(c=>{
+    const key=c.id+'|'+currentPeriodKey(c.period);
+    const state=P.challengeState[key];
+    const completed=!!(state&&state.completed);
+    const value=Math.min(c.target, completed?(state.value||c.target):(progress[c.metric]||0));
+    const pct=Math.round(value/c.target*100);
+    const name=LANG==='ar'?c.nameAr:c.nameEn;
+    return `<div class="challenge-card${completed?' completed':''}">
+      <div class="challenge-head"><div class="challenge-name">${c.icon} ${name}</div><div class="challenge-xp-badge">+${c.xp} XP</div></div>
+      <div class="challenge-bar-track"><div class="challenge-bar-fill" style="width:${pct}%;"></div></div>
+      <div class="challenge-progress-label">${completed?t('challenge_completed'):t('challenge_progress').replace('{cur}',value).replace('{target}',c.target)}</div>
+    </div>`;
+  }).join('') || `<div class="dash-empty">${t('challenges_empty')}</div>`;
+}
+
+/* ================= SOCIAL — DEMO MODE =================
+   IMPORTANT: this whole section is sample data. The app's real backend
+   (Firebase Auth + Firestore) stores every user's data under
+   users/{uid}/data/* with (almost certainly) rules restricting reads to
+   that same uid — nothing in this codebase has ever read another user's
+   data. Real friends/leaderboards/activity feed need either a public
+   profile collection with relaxed read rules, or a Cloud Function — a
+   Firebase-console change outside what a static HTML file can do. The
+   three services below are written as the clean interface a real
+   implementation would fill in later (swap the demo body, keep the same
+   method signature, and every render function below keeps working
+   unchanged). Demo data NEVER touches P.xp/achievements/real stats — it is
+   read-only sample display. */
+const DEMO_FRIENDS=[
+  {id:'demo1', name:'Ahmed', avatar:'🧑', level:9, xp:3200, totalWorkouts:38, nutritionDaysHit:25, waterDaysHit:20, totalCollected:31, bestStreak:12, achievementsUnlocked:7, title:'Iron Beast'},
+  {id:'demo2', name:'Sara', avatar:'👩', level:14, xp:6100, totalWorkouts:52, nutritionDaysHit:40, waterDaysHit:35, totalCollected:48, bestStreak:21, achievementsUnlocked:10, title:'Unbreakable'},
+  {id:'demo3', name:'Mohammed', avatar:'🧑', level:6, xp:1500, totalWorkouts:19, nutritionDaysHit:12, waterDaysHit:15, totalCollected:18, bestStreak:6, achievementsUnlocked:4, title:null},
+];
+const DEMO_FEED=[
+  {icon:'🔥', textEn:'Ahmed completed a workout', textAr:'أحمد أكمل تمرين', when:'2h'},
+  {icon:'🏆', textEn:'Sara unlocked "Unbreakable"', textAr:'سارة فتحت لقب "لا يُكسر"', when:'5h'},
+  {icon:'🐟', textEn:'Mohammed caught a new species', textAr:'محمد اصطاد نوع جديد', when:'1d'},
+  {icon:'💧', textEn:'Ahmed completed his water goal', textAr:'أحمد حقق هدف الماء', when:'1d'},
+];
+const FriendService={
+  MODE:'demo',
+  async listFriends(){ return DEMO_FRIENDS.map(f=>({...f})); }
+};
+const ActivityService={
+  MODE:'demo',
+  async listFeed(){ return DEMO_FEED.slice(); }
+};
+const LEADERBOARD_CATEGORIES=[
+  {id:'training', icon:'🏋️', metric:'totalWorkouts', labelEn:'Training', labelAr:'التمارين', unitEn:'workouts', unitAr:'تمرين'},
+  {id:'nutrition', icon:'🍽️', metric:'nutritionDaysHit', labelEn:'Nutrition', labelAr:'التغذية', unitEn:'days', unitAr:'يوم'},
+  {id:'water', icon:'💧', metric:'waterDaysHit', labelEn:'Water', labelAr:'الماء', unitEn:'days', unitAr:'يوم'},
+  {id:'collection', icon:'📦', metric:'totalCollected', labelEn:'Collection', labelAr:'المقتنيات', unitEn:'collected', unitAr:'مجموع'},
+  {id:'streak', icon:'🔥', metric:'bestStreak', labelEn:'Streak', labelAr:'السلاسل', unitEn:'days', unitAr:'يوم'},
+  {id:'achievements', icon:'🏅', metric:'achievementsUnlocked', labelEn:'Achievements', labelAr:'الإنجازات', unitEn:'unlocked', unitAr:'إنجاز'},
+  {id:'xp', icon:'⚡', metric:'xp', labelEn:'XP', labelAr:'الخبرة', unitEn:'XP', unitAr:'نقطة'},
+];
+const LeaderboardService={
+  MODE:'demo',
+  /* the REAL user's own row is genuine (computeUserStats()); every other
+     row is demo. Only "All Time" is implemented — weekly/monthly periods
+     for OTHER users would need backend-side historical aggregation, which
+     doesn't exist yet, so faking a period toggle on top of demo data would
+     just be a second layer of pretend. */
+  async getLeaderboard(categoryId){
+    const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===categoryId)||LEADERBOARD_CATEGORIES[0];
+    const you=await computeUserStats();
+    const friends=await FriendService.listFriends();
+    const rows=[{name:t('lb_you'), isMe:true, avatar:'⭐', ...you}, ...friends];
+    rows.sort((a,b)=>(b[cat.metric]||0)-(a[cat.metric]||0));
+    return {category:cat, rows};
+  }
+};
+
+let socialActiveTab='friends';
+let socialActiveCategory='training';
+function renderSocialSection(){
+  document.getElementById('socialDemoBanner').textContent=t('social_demo_banner');
+  document.getElementById('socialTabFriends').textContent=t('social_tab_friends');
+  document.getElementById('socialTabLeaderboard').textContent=t('social_tab_leaderboard');
+  document.getElementById('socialTabFeed').textContent=t('social_tab_feed');
+  document.getElementById('socialTabCompare').textContent=t('social_tab_compare');
+  document.querySelectorAll('#socialTabs .social-tab').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===socialActiveTab);
+    b.onclick=()=>{ socialActiveTab=b.dataset.tab; renderSocialSection(); };
+  });
+  const content=document.getElementById('socialTabContent');
+  if(socialActiveTab==='friends') return renderSocialFriendsTab(content);
+  if(socialActiveTab==='leaderboard') return renderSocialLeaderboardTab(content);
+  if(socialActiveTab==='feed') return renderSocialFeedTab(content);
+  if(socialActiveTab==='compare') return renderSocialCompareTab(content);
+}
+async function renderSocialFriendsTab(content){
+  content.innerHTML=`<div class="dash-empty">…</div>`;
+  const friends=await FriendService.listFriends();
+  if(!friends.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
+  content.innerHTML=friends.map(f=>`<div class="friend-row"><div class="friend-avatar">${f.avatar}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${f.name} <span style="font-size:0.68rem;color:var(--ink-soft);">(demo)</span></div><div style="font-size:0.7rem;color:var(--ink-soft);">Lvl ${f.level} · ${f.xp} XP${f.title?' · '+f.title:''}</div></div></div>`).join('');
+}
+async function renderSocialLeaderboardTab(content){
+  content.innerHTML=`
+    <div class="social-tabs" id="lbCategoryTabs" style="margin-bottom:12px;"></div>
+    <div id="lbRows">…</div>
+  `;
+  const catTabs=document.getElementById('lbCategoryTabs');
+  catTabs.innerHTML=LEADERBOARD_CATEGORIES.map(c=>`<button type="button" class="social-tab${c.id===socialActiveCategory?' active':''}" data-cat="${c.id}">${c.icon} ${LANG==='ar'?c.labelAr:c.labelEn}</button>`).join('');
+  catTabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ socialActiveCategory=b.dataset.cat; renderSocialLeaderboardTab(content); }));
+  const {category,rows}=await LeaderboardService.getLeaderboard(socialActiveCategory);
+  const medals=['🥇','🥈','🥉'];
+  const rowsEl=document.getElementById('lbRows');
+  rowsEl.innerHTML=rows.map((r,i)=>{
+    const rank=medals[i]||(i+1);
+    const unit=LANG==='ar'?category.unitAr:category.unitEn;
+    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${r.avatar}</div><div class="lb-name">${r.name}${r.isMe?'':' <span style=\"font-size:0.65rem;color:var(--ink-soft);\">(demo)</span>'}${r.title?`<div class="lb-title-sub">${r.title}</div>`:''}</div><div class="lb-value">${r[category.metric]||0} ${unit}</div></div>`;
+  }).join('');
+}
+async function renderSocialFeedTab(content){
+  content.innerHTML=`<div class="dash-empty">…</div>`;
+  const feed=await ActivityService.listFeed();
+  content.innerHTML=feed.map(f=>`<div class="feed-row"><div>${f.icon}</div><div style="flex:1;">${LANG==='ar'?f.textAr:f.textEn}<div class="feed-time">${f.when} · demo</div></div></div>`).join('');
+}
+async function renderSocialCompareTab(content){
+  const friends=await FriendService.listFriends();
+  content.innerHTML=`<select class="setup-input" id="compareFriendSelect" style="margin-bottom:12px;">${friends.map(f=>`<option value="${f.id}">${f.name} (demo)</option>`).join('')}</select><div id="compareRows">…</div>`;
+  const sel=document.getElementById('compareFriendSelect');
+  const draw=async()=>{
+    const you=await computeUserStats();
+    const friend=friends.find(f=>f.id===sel.value)||friends[0];
+    document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',friend.name)+'</div>'+
+      LEADERBOARD_CATEGORIES.map(c=>{
+        const yv=you[c.metric]||0, fv=friend[c.metric]||0, max=Math.max(yv,fv,1);
+        return `<div class="compare-row"><div>${c.icon} ${yv}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${yv/max*50}%;"></div><div class="compare-bar-them" style="width:${fv/max*50}%;"></div></div><div>${fv}</div></div>`;
+      }).join('');
+  };
+  sel.addEventListener('change',draw);
+  draw();
 }
 
 const AGENDA_SLOTS=Array.from({length:24},(_,h)=>{
@@ -4230,11 +4813,20 @@ function renderHabits(){
     const row=document.createElement('div');
     row.className='habit-row'+(done?' done':'');
     row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${habitLabelText(h)}</div><div class="habit-streak" id="habitStreak_${h.id}"></div><button type="button" class="habit-remove">✕</button>`;
-    row.addEventListener('click',(e)=>{
+    row.addEventListener('click',async(e)=>{
       if(e.target.closest('.habit-remove')) return;
       dailyTrack.habits=dailyTrack.habits||{};
       dailyTrack.habits[h.id]=!dailyTrack.habits[h.id];
-      saveDailyTrack();
+      await saveDailyTrack();
+      // XP only on the transition TO done, once per habit per day —
+      // unchecking never revokes XP already earned that day.
+      dailyTrack.xpAwarded=dailyTrack.xpAwarded||{}; dailyTrack.xpAwarded.habits=dailyTrack.xpAwarded.habits||{};
+      if(dailyTrack.habits[h.id] && !dailyTrack.xpAwarded.habits[h.id]){
+        dailyTrack.xpAwarded.habits[h.id]=true;
+        await awardXP(XP_CONFIG.habit_complete);
+        await saveDailyTrack();
+        await notifyNewUnlocks();
+      }
       renderHabits();
     });
     row.querySelector('.habit-remove').addEventListener('click',async(e)=>{
@@ -4245,13 +4837,19 @@ function renderHabits(){
     });
     list.appendChild(row);
   });
-  computeHabitStreaks().then(streaks=>{
+  computeHabitStreaks().then(async streaks=>{
     habits.forEach(h=>{
       const el=document.getElementById('habitStreak_'+h.id);
       if(!el) return;
       const n=streaks[h.id]||0;
       el.textContent = n>0 ? `🔥${n}` : '';
     });
+    const bestNow=Math.max(0,...Object.values(streaks));
+    migrateProgressionFields();
+    if(bestNow>(P.lifetimeStats.longestHabitStreakEver||0)){
+      P.lifetimeStats.longestHabitStreakEver=bestNow;
+      await storageSet('profile',JSON.stringify(P));
+    }
   });
 }
 /* walks backward day-by-day (capped at 60 days) checking each real
@@ -4548,6 +5146,34 @@ function renderCollRoot(){
   document.getElementById('collGoPlants').addEventListener('click',()=>{ showToast(LANG==='ar'?'قسم النباتات قادم قريباً 🌱':'Plants section is coming soon 🌱'); });
 }
 
+/* single source of truth for collection totals — used by the Animals grid
+   here AND by the Profile/Achievements/Challenges systems, so "how many
+   species has this user collected" is never computed two different ways. */
+async function computeCollectionStats(){
+  let totalCollected=0, totalSpecies=0, legendaryCount=0;
+  const catchSums={}, rarityCounts={}, perCategory={};
+  for(const cat of ANIMAL_CATEGORIES){
+    const raw=await storageGet('collections:animals:'+cat.id);
+    const data=raw?JSON.parse(raw):{};
+    const list=collSpeciesList(cat.id);
+    const total=list.length;
+    let got=0, catchSum=0;
+    list.forEach(sp=>{
+      const rec=data[sp.id];
+      if(rec&&collIsCollected(rec)){
+        got++;
+        catchSum+=rec.catches.length;
+        rarityCounts[sp.rarity]=(rarityCounts[sp.rarity]||0)+1;
+        if(sp.rarity==='legendary') legendaryCount++;
+      }
+    });
+    totalCollected+=got; totalSpecies+=total;
+    catchSums[cat.id]=catchSum;
+    perCategory[cat.id]={collected:got,total};
+  }
+  return {totalCollected,totalSpecies,catchSums,legendaryCount,rarityCounts,perCategory,
+    totalCatches:Object.values(catchSums).reduce((a,b)=>a+b,0)};
+}
 async function renderCollAnimals(){
   const grid=document.getElementById('collAnimalsGrid');
   grid.innerHTML=ANIMAL_CATEGORIES.map(cat=>`<div class="coll-cat-card" data-cat="${cat.id}"><span class="ic">${cat.icon}</span><div class="ttl">${collCatName(cat)}</div><div class="sub" id="collCatProgress-${cat.id}">…</div></div>`).join('');
@@ -4559,38 +5185,25 @@ async function renderCollAnimals(){
       renderCollGroups();
     });
   });
-  let totalCollected=0, totalSpeciesAll=0, legendaryCount=0;
-  const catchSums={};
-  for(const cat of ANIMAL_CATEGORIES){
-    const raw=await storageGet('collections:animals:'+cat.id);
-    const data=raw?JSON.parse(raw):{};
-    const total=collSpeciesList(cat.id).length;
-    const got=Object.values(data).filter(collIsCollected).length;
-    totalCollected+=got;
-    totalSpeciesAll+=total;
-    let catchSum=0;
-    collSpeciesList(cat.id).forEach(sp=>{
-      const rec=data[sp.id];
-      if(rec&&collIsCollected(rec)) catchSum+=rec.catches.length;
-      if(rec&&collIsCollected(rec)&&sp.rarity==='legendary') legendaryCount++;
-    });
-    catchSums[cat.id]=catchSum;
+  const stats=await computeCollectionStats();
+  ANIMAL_CATEGORIES.forEach(cat=>{
     const elp=document.getElementById('collCatProgress-'+cat.id);
-    if(elp) elp.textContent=`${got} / ${total}`;
-  }
+    const pc=stats.perCategory[cat.id];
+    if(elp&&pc) elp.textContent=`${pc.collected} / ${pc.total}`;
+  });
   const progLabel=document.getElementById('collAnimalsProgressLabel');
   const progFill=document.getElementById('collAnimalsProgressFill');
-  if(progLabel) progLabel.textContent=`${LANG==='ar'?'🐾 حيوانات':'🐾 Animals'}: ${totalCollected} / ${totalSpeciesAll}`;
-  if(progFill) progFill.style.width=(totalSpeciesAll?Math.round(totalCollected/totalSpeciesAll*100):0)+'%';
+  if(progLabel) progLabel.textContent=`${LANG==='ar'?'🐾 حيوانات':'🐾 Animals'}: ${stats.totalCollected} / ${stats.totalSpecies}`;
+  if(progFill) progFill.style.width=(stats.totalSpecies?Math.round(stats.totalCollected/stats.totalSpecies*100):0)+'%';
   const statsBar=document.getElementById('collStatsBar');
   if(statsBar){
     statsBar.innerHTML=`
-      <div class="coll-stat-chip"><b>🏆 ${totalCollected}</b>${LANG==='ar'?'نوع مجموع':'species collected'}</div>
-      <div class="coll-stat-chip"><b>🎣 ${catchSums.fish||0}</b>${LANG==='ar'?'سمكة مصيدة':'fish caught'}</div>
-      <div class="coll-stat-chip"><b>🐦 ${catchSums.birds||0}</b>${LANG==='ar'?'طير موثق':'birds documented'}</div>
-      <div class="coll-stat-chip"><b>🐻 ${catchSums.mammals||0}</b>${LANG==='ar'?'ثديي موثق':'mammals documented'}</div>
-      <div class="coll-stat-chip"><b>🐜 ${catchSums.insects||0}</b>${LANG==='ar'?'حشرة موثقة':'insects documented'}</div>
-      <div class="coll-stat-chip legendary"><b>${RARITY_TIERS.legendary.icon} ${legendaryCount}</b>${LANG==='ar'?'اكتشاف أسطوري':'Legendary discoveries'}</div>
+      <div class="coll-stat-chip"><b>🏆 ${stats.totalCollected}</b>${LANG==='ar'?'نوع مجموع':'species collected'}</div>
+      <div class="coll-stat-chip"><b>🎣 ${stats.catchSums.fish||0}</b>${LANG==='ar'?'سمكة مصيدة':'fish caught'}</div>
+      <div class="coll-stat-chip"><b>🐦 ${stats.catchSums.birds||0}</b>${LANG==='ar'?'طير موثق':'birds documented'}</div>
+      <div class="coll-stat-chip"><b>🐻 ${stats.catchSums.mammals||0}</b>${LANG==='ar'?'ثديي موثق':'mammals documented'}</div>
+      <div class="coll-stat-chip"><b>🐜 ${stats.catchSums.insects||0}</b>${LANG==='ar'?'حشرة موثقة':'insects documented'}</div>
+      <div class="coll-stat-chip legendary"><b>${RARITY_TIERS.legendary.icon} ${stats.legendaryCount}</b>${LANG==='ar'?'اكتشاف أسطوري':'Legendary discoveries'}</div>
     `;
   }
 }
@@ -4919,6 +5532,10 @@ function collAddCatch(measurements){
       const achievement=LANG==='ar'?sp.bossData.achievementAr:sp.bossData.achievementEn;
       showToast('🏆 '+(LANG==='ar'?`تم فتح إنجاز: ${achievement}`:`Achievement unlocked: ${achievement}`));
     }
+    // real XP + achievement/challenge check for the new species — fire-and-
+    // forget, matching this function's existing "never block the tap on a
+    // network round-trip" pattern.
+    (async()=>{ await awardXP(XP_CONFIG.collection_unlock); await notifyNewUnlocks(); })();
   }
 }
 
