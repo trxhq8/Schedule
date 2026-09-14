@@ -648,6 +648,10 @@
         <div class="tag-chips" id="commitListChips"></div>
         <input type="text" class="setup-input" id="commitLabel" data-i18n-ph="commit_label_ph">
         <label style="font-size:0.85rem;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <input type="checkbox" id="commitHardToggle" checked style="width:18px;height:18px;"> <span data-i18n="commit_hard_label"></span>
+        </label>
+        <div class="val-msg" id="commitHardHint" style="text-align:start;color:var(--ink-soft);margin-top:-6px;"></div>
+        <label style="font-size:0.85rem;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <input type="checkbox" id="commitAllDayToggle" style="width:18px;height:18px;"> <span data-i18n="all_day_label"></span>
         </label>
         <div class="setup-row" id="commitTimeRow">
@@ -1105,7 +1109,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.14.0';
+const APP_VERSION='v1.15.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1485,6 +1489,13 @@ const I18N={
   commit_from_date:'من تاريخ',commit_to_date:'إلى تاريخ',
   daily_routine_title:'🗓️ الروتين اليومي',daily_routine_desc:'ضيف أو عدّل التزاماتك المتكررة',all_day_label:'طوال اليوم (بدون وقت محدد)',
   from_label:'من',to_label:'إلى',
+  commit_hard_label:'التزام ثابت (ما ينتقل)',
+  commit_hard_hint:'مثل الكلية، الدوام، موعد، امتحان. الأنشطة المرنة (نادي، قرآن، مذاكرة) ممكن تتحرك لو صار تعارض.',
+  conflict_title:'⚠️ تعارض بالجدول',conflict_body:'هذي الأنشطة متعارضة، شنو تبي تسوي؟',
+  conflict_move_flex:'📍 انقل "{name}" لـ {time}',conflict_keep_both:'✅ خلهم بنفس الوقت (تجاهل)',
+  conflict_cancel:'✖️ رجوع وعدّل يدوي',conflict_no_slot:'ما لقيت وقت فاضي بنفس اليوم — عدّل يدوي.',
+  conflict_badge:'⚠️ متعارض',
+  conflict_both_hard:'كلا الالتزامين ثابتين — ما نقدر ننقل أي وحدة تلقائياً. عدّل الوقت يدوياً.',
   agenda_title:'🗓️ أجندة اليوم — اضغط على أي وقت وسجل شنو عندك',
   cal_hint:'اضغط أي يوم عشان تشوف التزاماتك، وتقدر تفتح التفاصيل بالساعة من جواه',
   cal_today_btn:'📍 رجّعني لليوم',
@@ -1577,6 +1588,13 @@ const I18N={
   commit_from_date:'From date',commit_to_date:'To date',
   daily_routine_title:'🗓️ Daily Routine',daily_routine_desc:'Add or edit your recurring commitments',all_day_label:'All day (no specific time)',
   from_label:'From',to_label:'To',
+  commit_hard_label:'Fixed commitment (can\'t be moved)',
+  commit_hard_hint:'Like class, work, an appointment, an exam. Flexible activities (gym, Quran, studying) can be moved if there\'s a conflict.',
+  conflict_title:'⚠️ Schedule conflict',conflict_body:'These activities overlap. What would you like to do?',
+  conflict_move_flex:'📍 Move "{name}" to {time}',conflict_keep_both:'✅ Keep both as-is (ignore)',
+  conflict_cancel:'✖️ Go back and edit manually',conflict_no_slot:'No free slot found that day — please adjust manually.',
+  conflict_badge:'⚠️ Conflict',
+  conflict_both_hard:'Both commitments are fixed — neither can be auto-moved. Please adjust the time manually.',
   agenda_title:"🗓️ Today's agenda — tap any time to note what's on",
   cal_hint:'Tap any day to see your commitments, then open hour-by-hour details from there',
   cal_today_btn:'📍 Back to today',
@@ -2911,16 +2929,115 @@ function buildCommitDaysGrid(){
 }
 function renderCommitList(){
   const box=document.getElementById('commitListChips'); box.innerHTML='';
-  const sorted=(P._commitments||[]).map((c,i)=>({c,i})).sort((a,b)=>(b.c.pinned?1:0)-(a.c.pinned?1:0));
+  const list=P._commitments||[];
+  // retroactively flag any pair that's already conflicting — e.g. loaded
+  // from before this feature existed, or created some other way — so a
+  // real conflict is never invisible just because it wasn't caught at
+  // add-time.
+  const conflicts=findAllScheduleConflicts(list);
+  const conflictedSet=new Set();
+  conflicts.forEach(cf=>{ if(cf.kind==='overlap'){ conflictedSet.add(cf.a); conflictedSet.add(cf.b); } });
+  const sorted=list.map((c,i)=>({c,i})).sort((a,b)=>{
+    if(!!b.c.pinned!==!!a.c.pinned) return (b.c.pinned?1:0)-(a.c.pinned?1:0);
+    const sa=commitTimeSpan(a.c), sb=commitTimeSpan(b.c);
+    return (sa?sa.start:-1)-(sb?sb.start:-1);
+  });
   sorted.forEach(({c,i})=>{
     const dayLabels=c.days.map(d=>DAY_NAMES[LANG][d]).join(LANG==='ar'?'،':', ');
     const rangeLabel=(c.fromDate||c.toDate) ? ` [${c.fromDate||'…'} → ${c.toDate||'…'}]` : '';
+    const conflictBadge=conflictedSet.has(c) ? `<span style="color:var(--err);font-weight:700;">${t('conflict_badge')}</span> ` : '';
     const chip=document.createElement('div'); chip.className='tag-chip commit-chip';
-    chip.innerHTML=`<span>📌 ${c.label} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
+    chip.innerHTML=`<span>${conflictBadge}📌 ${c.label} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})${c.hard===false?' 🔓':''}</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
     chip.querySelector('.pin-btn').addEventListener('click',()=>{ c.pinned=!c.pinned; renderCommitList(); });
     chip.querySelector('button:last-child').addEventListener('click',()=>{ P._commitments.splice(i,1); renderCommitList(); });
     box.appendChild(chip);
   });
+}
+function resetCommitForm(){
+  document.getElementById('commitLabel').value='';
+  document.getElementById('commitAllDayToggle').checked=false;
+  document.getElementById('commitHardToggle').checked=true;
+  document.getElementById('commitTimeRow').classList.remove('hidden');
+  initCommitTimePickers();
+  document.getElementById('commitFromDate').value='';
+  document.getElementById('commitToDate').value='';
+  P._commitDays=[];
+  buildCommitDaysGrid();
+}
+/* the ONLY path that adds a commitment to the draft list — always checks
+   for real conflicts first and never saves silently over one. `opts.forceKeep`
+   is set only after the user explicitly chose "keep both anyway". */
+function attemptAddCommitment(candidate, opts){
+  opts=opts||{};
+  const conflicts=findConflictsFor(candidate, P._commitments||[]);
+  const overlaps=conflicts.filter(c=>c.kind==='overlap');
+  const bufferIssues=conflicts.filter(c=>c.kind==='buffer');
+  if((overlaps.length||bufferIssues.length) && !opts.forceKeep){
+    showConflictModal(candidate, overlaps, bufferIssues, {
+      onKeepBoth:()=>finalizeAddCommitment(candidate),
+      onMoveCandidate:(newFrom,newTo)=>{ candidate.from=newFrom; candidate.to=newTo; attemptAddCommitment(candidate); },
+      onMoveOther:()=>finalizeAddCommitment(candidate),
+      onCancel:()=>{}
+    });
+    return;
+  }
+  finalizeAddCommitment(candidate);
+}
+function finalizeAddCommitment(candidate){
+  P._commitments=[...(P._commitments||[]),candidate];
+  resetCommitForm();
+  renderCommitList();
+}
+/* reused for every conflict prompt in the app (new commitment vs existing,
+   and the retroactive "⚠️ Conflict" badge in renderCommitList) — shows every
+   simultaneous conflict at once rather than nagging one at a time, and
+   never auto-picks a resolution: a suggested move is always a button the
+   user has to press. */
+function showConflictModal(candidate, overlaps, bufferIssues, handlers){
+  document.getElementById('dayTitle').textContent=t('conflict_title');
+  document.getElementById('daySubtitle').textContent='';
+  let html=`<div class="dash-empty" style="margin-bottom:10px;">${t('conflict_body')}</div>`;
+  overlaps.forEach((cf,idx)=>{
+    html+=`<div class="challenge-card">
+      <div style="font-weight:700;margin-bottom:8px;">📌 ${candidate.label} (${formatCommitRange(candidate)})<br>📌 ${cf.other.label} (${formatCommitRange(cf.other)})</div>
+      <div id="conflictActions_${idx}" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>`;
+  });
+  bufferIssues.forEach(cf=>{
+    html+=`<div class="warn-chip">${candidate.label} ↔ ${cf.other.label}: ${cf.gap} min ${LANG==='ar'?'بس بينهم':'gap only'}</div>`;
+  });
+  html+=`<button type="button" class="setup-btn" id="conflictKeepBtn">${t('conflict_keep_both')}</button>`;
+  html+=`<button type="button" class="ob-btn secondary" id="conflictCancelBtn">${t('conflict_cancel')}</button>`;
+  document.getElementById('cardBody').innerHTML=html;
+  overlay.classList.add('open');
+
+  overlaps.forEach((cf,idx)=>{
+    const other=cf.other;
+    const actionsEl=document.getElementById('conflictActions_'+idx);
+    const candidateFlexible=!candidate.hard, otherFlexible=!other.hard;
+    const day=cf.sharedDays[0];
+    if(candidateFlexible){
+      const sug=suggestTimeAfter(candidate,other,P._commitments||[],day);
+      if(sug){
+        const btn=document.createElement('button'); btn.type='button'; btn.className='setup-btn';
+        btn.textContent=t('conflict_move_flex').replace('{name}',candidate.label).replace('{time}',`${formatTime12h(minutesToHM(sug.start))}-${formatTime12h(minutesToHM(sug.end))}`);
+        btn.addEventListener('click',()=>{ overlay.classList.remove('open'); handlers.onMoveCandidate(minutesToHM(sug.start),minutesToHM(sug.end)); });
+        actionsEl.appendChild(btn);
+      } else actionsEl.innerHTML=`<div class="dash-empty">${t('conflict_no_slot')}</div>`;
+    } else if(otherFlexible){
+      const sug=suggestTimeAfter(other,candidate,P._commitments||[],day);
+      if(sug){
+        const btn=document.createElement('button'); btn.type='button'; btn.className='setup-btn';
+        btn.textContent=t('conflict_move_flex').replace('{name}',other.label).replace('{time}',`${formatTime12h(minutesToHM(sug.start))}-${formatTime12h(minutesToHM(sug.end))}`);
+        btn.addEventListener('click',()=>{ other.from=minutesToHM(sug.start); other.to=minutesToHM(sug.end); overlay.classList.remove('open'); handlers.onMoveOther(); renderCommitList(); });
+        actionsEl.appendChild(btn);
+      } else actionsEl.innerHTML=`<div class="dash-empty">${t('conflict_no_slot')}</div>`;
+    } else {
+      actionsEl.innerHTML=`<div class="dash-empty">${t('conflict_both_hard')}</div>`;
+    }
+  });
+  document.getElementById('conflictKeepBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); handlers.onKeepBoth(); });
+  document.getElementById('conflictCancelBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); if(handlers.onCancel) handlers.onCancel(); });
 }
 document.getElementById('commitAddBtn').addEventListener('click',()=>{
   const label=document.getElementById('commitLabel').value.trim();
@@ -2928,25 +3045,23 @@ document.getElementById('commitAddBtn').addEventListener('click',()=>{
   const to=document.getElementById('commitTo').value||null;
   const fromDate=document.getElementById('commitFromDate').value||null;
   const toDate=document.getElementById('commitToDate').value||null;
+  const hard=document.getElementById('commitHardToggle').checked;
   const days=P._commitDays||[];
   if(!label||!days.length) return;
-  P._commitments=[...(P._commitments||[]),{label,from,to,days,fromDate,toDate,pinned:false}];
-  document.getElementById('commitLabel').value='';
-  document.getElementById('commitAllDayToggle').checked=false;
-  document.getElementById('commitTimeRow').classList.remove('hidden');
-  initCommitTimePickers();
-  document.getElementById('commitFromDate').value='';
-  document.getElementById('commitToDate').value='';
-  P._commitDays=[];
-  buildCommitDaysGrid();
-  renderCommitList();
+  attemptAddCommitment({label,from,to,days,fromDate,toDate,pinned:false,hard});
 });
 function prefillTodoSetup(){
   const s=P.todoSetup||{};
-  P._commitments=(s.commitments||[]).map(c=>({...c,days:[...c.days]}));
+  // pre-existing commitments saved before the fixed/flexible field existed
+  // default to "hard" — they were originally added as schedule items, and
+  // treating them as movable-by-default would risk auto-suggesting a move
+  // for something the user actually meant as fixed.
+  P._commitments=(s.commitments||[]).map(c=>({hard:true,...c,days:[...c.days]}));
   P._commitDays=[];
   document.getElementById('commitLabel').value='';
   document.getElementById('commitAllDayToggle').checked=false;
+  document.getElementById('commitHardToggle').checked=true;
+  document.getElementById('commitHardHint').textContent=t('commit_hard_hint');
   document.getElementById('commitTimeRow').classList.remove('hidden');
   initCommitTimePickers();
   buildCommitDaysGrid();
@@ -2973,6 +3088,106 @@ function formatCommitRange(c){
   if(!c.from&&!c.to) return LANG==='ar'?'طوال اليوم':'All day';
   if(c.from&&c.to) return `${formatTime12h(c.from)}-${formatTime12h(c.to)}`;
   return formatTime12h(c.from||c.to);
+}
+/* ================= SCHEDULE CONFLICT ENGINE =================
+   A real overlap/buffer detector over the SAME commitment objects the
+   rest of the app already reads (P.todoSetup.commitments) — no parallel
+   "events" model. Every add/edit goes through attemptAddCommitment(),
+   which NEVER silently saves an overlapping or under-buffered pair; it
+   always surfaces the conflict and lets the user choose, per the
+   "never guess, always ask" rule. */
+const DEFAULT_SCHEDULE_BUFFER_MIN=10;
+function scheduleBufferMinutes(){ return (P.scheduleBufferMinutes!=null) ? P.scheduleBufferMinutes : DEFAULT_SCHEDULE_BUFFER_MIN; }
+/* {start,end} in minutes-from-midnight, end always > start (wraps past
+   midnight for overnight commitments like 22:00-02:00). null = "all day",
+   which is treated as overlapping any timed commitment that shares a day. */
+function commitTimeSpan(c){
+  if(!c.from&&!c.to) return null;
+  const start=parseHM(c.from||c.to);
+  let end=parseHM(c.to||c.from);
+  if(end<=start) end+=24*60;
+  return {start,end};
+}
+function daysIntersect(a,b){ return (a.days||[]).filter(d=>(b.days||[]).includes(d)); }
+function spansOverlap(s1,s2){ if(!s1||!s2) return true; return s1.start<s2.end && s2.start<s1.end; }
+/* s1 = candidate's span, s2 = the existing commitment's span — named by
+   ROLE (candidate/other), not by position, since "a/b" labels are easy to
+   misread backwards (this tripped up even the test written for it). */
+function overlapType(s1,s2){
+  if(!s1||!s2) return 'allday';
+  if(s1.start===s2.start && s1.end===s2.end) return 'exact';
+  if(s1.start<=s2.start && s1.end>=s2.end) return 'candidate-contains-other';
+  if(s2.start<=s1.start && s2.end>=s1.end) return 'other-contains-candidate';
+  return 'partial';
+}
+/* minutes between two NON-overlapping spans that share a day (how tight
+   a back-to-back transition is) — null when they aren't adjacent-ish
+   (i.e. they actually overlap, handled separately) */
+function gapBetween(s1,s2){
+  if(!s1||!s2) return null;
+  if(s1.end<=s2.start) return s2.start-s1.end;
+  if(s2.end<=s1.start) return s1.start-s2.end;
+  return null;
+}
+/* every real conflict `candidate` has against `existing` — both overlaps
+   (kind:'overlap') and tight-buffer back-to-backs (kind:'buffer') — scoped
+   to the days they actually share, so two commitments on different days
+   never falsely conflict just because their time ranges overlap. */
+function findConflictsFor(candidate, existing, bufferMin){
+  bufferMin = bufferMin==null ? scheduleBufferMinutes() : bufferMin;
+  const results=[];
+  const s1=commitTimeSpan(candidate);
+  (existing||[]).forEach(other=>{
+    if(other===candidate) return;
+    const sharedDays=daysIntersect(candidate,other);
+    if(!sharedDays.length) return;
+    const s2=commitTimeSpan(other);
+    if(spansOverlap(s1,s2)){
+      results.push({other, sharedDays, kind:'overlap', type:overlapType(s1,s2)});
+    } else {
+      const gap=gapBetween(s1,s2);
+      if(gap!=null && gap<bufferMin) results.push({other, sharedDays, kind:'buffer', gap});
+    }
+  });
+  return results;
+}
+/* every conflicting PAIR across a whole commitment list — used to
+   retroactively flag existing saved commitments, not just new ones. */
+function findAllScheduleConflicts(commitments, bufferMin){
+  const seen=new Set(); const out=[];
+  (commitments||[]).forEach((c,i)=>{
+    findConflictsFor(c, commitments, bufferMin).forEach(cf=>{
+      const j=commitments.indexOf(cf.other);
+      const key=[i,j].sort((a,b)=>a-b).join('-');
+      if(seen.has(key)) return;
+      seen.add(key);
+      out.push({a:c, b:cf.other, sharedDays:cf.sharedDays, kind:cf.kind, type:cf.type, gap:cf.gap});
+    });
+  });
+  return out;
+}
+function minutesToHM(mins){ mins=((mins%1440)+1440)%1440; const h=Math.floor(mins/60), m=mins%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+/* the next free slot for `flexible` on a specific shared `day`, starting
+   after `fixed` ends (+buffer) and not colliding with anything ELSE
+   already on that day — bounded to the rest of that day (never wraps to
+   "tomorrow", since that would silently change which day the commitment
+   is on). Returns null when nothing fits, rather than guessing. */
+function suggestTimeAfter(flexible, fixed, allCommitments, day, bufferMin){
+  bufferMin = bufferMin==null ? scheduleBufferMinutes() : bufferMin;
+  const fixedSpan=commitTimeSpan(fixed);
+  if(!fixedSpan) return null; // fixed is all-day -> no slot exists that day at all
+  const flexSpan=commitTimeSpan(flexible);
+  const durationMin=flexSpan ? (flexSpan.end-flexSpan.start) : 30;
+  const others=(allCommitments||[]).filter(c=>c!==flexible && c!==fixed && (c.days||[]).includes(day));
+  let candidateStart=fixedSpan.end+bufferMin;
+  const dayEnd=24*60;
+  while(candidateStart+durationMin<=dayEnd){
+    const candidateSpan={start:candidateStart,end:candidateStart+durationMin};
+    const collides=others.some(o=>spansOverlap(candidateSpan,commitTimeSpan(o)));
+    if(!collides) return candidateSpan;
+    candidateStart+=15;
+  }
+  return null;
 }
 function commitmentsForWeekday(idx){
   return ((P.todoSetup&&P.todoSetup.commitments)||[]).filter(c=>c.days.includes(idx));
@@ -4642,14 +4857,26 @@ async function openCalendarDay(y,m,d){
   const label=dateObj.toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('dayTitle').textContent=`📅 ${label}`;
   document.getElementById('daySubtitle').textContent='';
-  const commitments=commitmentsForDate(dateObj);
+  const commitments=commitmentsForDate(dateObj).slice().sort((a,b)=>{
+    const sa=commitTimeSpan(a), sb=commitTimeSpan(b);
+    return (sa?sa.start:-1)-(sb?sb.start:-1);
+  });
   const dateKey=calDateKey(y,m,d);
   let dayTrack={agenda:{}};
   try{ const v=await storageGet(dateKey); if(v) dayTrack={agenda:{},...JSON.parse(v)}; }catch(e){}
   let html='';
   if(commitments.length){
     html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'📌 عندك':'📌 You have'}</div>`;
-    commitments.forEach(c=>{ html+=`<div class="meal"><div class="content">📌 ${c.label}</div></div>`; });
+    // each commitment shown ONCE with its own real time range (this is what
+    // was missing before — several genuinely different time blocks with the
+    // same label, e.g. several class periods, used to render as identical-
+    // looking rows with no time at all, which read as duplicated spam).
+    const dayConflicts=findAllScheduleConflicts(commitments).filter(cf=>cf.kind==='overlap');
+    const conflicted=new Set(); dayConflicts.forEach(cf=>{ conflicted.add(cf.a); conflicted.add(cf.b); });
+    commitments.forEach(c=>{
+      const badge=conflicted.has(c)?`<span style="color:var(--err);font-weight:700;">${t('conflict_badge')} </span>`:'';
+      html+=`<div class="meal"><div class="content">${badge}📌 ${c.label} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
+    });
   } else {
     html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'✅ يوم فاضي، ما عندك التزامات':'✅ Free day, no commitments'}</div>`;
   }
