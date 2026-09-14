@@ -72,6 +72,11 @@
   .ob-choice .ic{ font-size:1.5rem; display:block; margin-bottom:5px; }
   .ob-choice.selected{ border-color:var(--heading); background:var(--card); box-shadow:var(--shadow); outline:2px solid var(--heading); }
   .ob-choice.unrealistic{ opacity:0.4; filter:blur(0.3px); cursor:not-allowed; border-color:#e0685a; background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,rgba(224,104,90,0.08) 6px,rgba(224,104,90,0.08) 12px); }
+  .custom-day-row{ margin-bottom:14px; }
+  .custom-day-row-label{ font-family:var(--font-head); font-weight:800; font-size:0.85rem; margin-bottom:6px; color:var(--heading); }
+  .ob-grid.compact{ grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:0; }
+  .ob-choice.compact{ padding:8px 4px; font-size:0.68rem; border-radius:10px; }
+  .ob-choice.compact .ic{ font-size:1.1rem; margin-bottom:2px; }
   .ob-btn{ width:100%; font-family:var(--font-head); font-weight:800; font-size:0.95rem; background:var(--accent-deep); color:#fff; border:none; border-radius:14px; padding:13px; cursor:pointer; }
   .ob-btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .ob-btn.secondary{ background:transparent; color:var(--ink-soft); font-weight:700; margin-top:8px; font-size:0.8rem; }
@@ -245,12 +250,25 @@
   .ex-table td{ padding:7px 4px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; }
   .ex-table tr.ex-done td{ opacity:0.55; text-decoration:line-through; }
   .set-log-tr td{ padding:0 4px 10px; border-bottom:1px solid var(--line); }
-  .set-log-block{ background:var(--bg); border-radius:12px; padding:8px 10px; }
-  .set-log-last{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:6px; }
-  .set-log-row{ display:flex; align-items:center; gap:6px; margin-bottom:5px; }
-  .set-log-row:last-child{ margin-bottom:0; }
-  .set-log-num{ font-size:0.7rem; color:var(--ink-soft); width:14px; flex-shrink:0; }
-  .set-log-input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-family:var(--font-body); font-size:0.8rem; background:var(--card); color:var(--ink); }
+  .set-log-block{ background:var(--bg); border-radius:12px; padding:10px; }
+  .set-log-last{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:8px; }
+  .fl-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .fl-label{ font-size:0.7rem; color:var(--ink-soft); width:44px; flex-shrink:0; }
+  .fl-stepper{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .fl-step-btn{ width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-family:var(--font-head); font-weight:800; font-size:1rem; cursor:pointer; flex-shrink:0; }
+  .fl-step-btn:active{ transform:scale(0.9); }
+  .fl-value{ font-family:var(--font-head); font-weight:800; font-size:0.95rem; min-width:56px; text-align:center; color:var(--heading); }
+  .fl-edit-btn{ border:none; background:none; cursor:pointer; font-size:0.85em; padding:2px 4px; flex-shrink:0; opacity:0.6; }
+  .fl-chips{ display:flex; gap:5px; overflow-x:auto; margin:0 0 8px 52px; padding-bottom:2px; }
+  .fl-chip{ flex-shrink:0; border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:0.72rem; font-family:var(--font-head); font-weight:700; background:var(--card); color:var(--ink); cursor:pointer; }
+  .fl-chip.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .fl-custom-input{ width:60px; border:1px solid var(--line); border-radius:8px; padding:5px 6px; font-family:var(--font-body); font-size:0.8rem; background:var(--card); color:var(--ink); }
+  .fl-slots{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .fl-slot{ border:1.5px dashed var(--line); border-radius:10px; padding:6px 10px; font-size:0.72rem; font-family:var(--font-head); font-weight:700; color:var(--ink-soft); cursor:pointer; background:var(--card); min-width:44px; text-align:center; }
+  .fl-slot.done{ border-style:solid; border-color:var(--accent-deep); background:var(--accent-deep); color:#fff; }
+  .fl-extra-toggle{ font-size:0.68rem; color:var(--ink-soft); text-decoration:underline; cursor:pointer; margin-top:6px; display:inline-block; }
+  .fl-extra-row{ display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .fl-note-input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-family:var(--font-body); font-size:0.78rem; background:var(--card); color:var(--ink); }
   .ex-table input[type="checkbox"]{ width:18px; height:18px; }
   .grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
   @media(max-width:480px){ .grid{grid-template-columns:repeat(4,1fr);} }
@@ -843,6 +861,17 @@
       <div class="ob-grid" id="obTrainLocGrid" style="grid-template-columns:1fr 1fr;">
         <div class="ob-choice" data-trainloc="gym"><span class="ic">🏋️</span><span data-i18n="trainloc_gym"></span></div>
         <div class="ob-choice" data-trainloc="home"><span class="ic">🏠</span><span data-i18n="trainloc_home"></span></div>
+        <div class="ob-choice" data-trainloc="outdoor"><span class="ic">🌳</span><span data-i18n="trainloc_outdoor"></span></div>
+        <div class="ob-choice" data-trainloc="other"><span class="ic">📍</span><span data-i18n="trainloc_other"></span></div>
+      </div>
+      <h3 data-i18n="q_split"></h3>
+      <div class="val-msg" id="splitHintMsg" style="text-align:center;margin-bottom:8px;" data-i18n="split_hint"></div>
+      <div class="ob-grid" id="obSplitGrid" style="grid-template-columns:1fr 1fr;">
+        <div class="ob-choice" data-split="ppl"><span class="ic">🔁</span><span data-i18n="split_ppl"></span></div>
+        <div class="ob-choice" data-split="upperlower"><span class="ic">⬆️</span><span data-i18n="split_upperlower"></span></div>
+        <div class="ob-choice" data-split="bodypart"><span class="ic">🫀</span><span data-i18n="split_bodypart"></span></div>
+        <div class="ob-choice" data-split="fullbody"><span class="ic">🧍</span><span data-i18n="split_fullbody"></span></div>
+        <div class="ob-choice" data-split="custom"><span class="ic">🛠️</span><span data-i18n="split_custom"></span></div>
       </div>
       <div id="homeEquipSection">
       <h3 data-i18n="q_equip"></h3>
@@ -877,8 +906,14 @@
         <button class="setup-btn" id="injuryOtherAdd" type="button">➕</button>
       </div>
       <div class="val-msg" id="injuryValMsg"></div>
+      <div id="restDaysSection">
       <h3 data-i18n="q_rest"></h3>
       <div class="ob-grid" id="obRestGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+      </div>
+      <div id="customScheduleSection" class="hidden">
+      <h3 data-i18n="q_custom_schedule"></h3>
+      <div id="customScheduleGrid"></div>
+      </div>
       <div class="split-preview" id="splitPreview" style="font-size:0.78rem;color:var(--ink-soft);text-align:center;margin-bottom:12px;"></div>
       <div class="val-msg" id="restValMsg"></div>
       <button class="setup-btn" id="workoutSetupSave" disabled data-i18n="save"></button>
@@ -1532,7 +1567,11 @@ const I18N={
   fitlevel_beginner:'مبتدئ',fitlevel_amateur:'متوسط',fitlevel_pro:'محترف',
   pick_something_fitlevel:'🚫 لازم تختار مستواك عشان نعطيك تمارين مناسبة لك',
   ex_goal_muscle:'بناء عضل',ex_goal_lose:'حرق دهون',ex_goal_mobility:'مرونة',
-  q_train_location:'📍 وين تتمرن؟',trainloc_gym:'جيم',trainloc_home:'بيت',
+  q_train_location:'📍 وين تتمرن؟',trainloc_gym:'جيم',trainloc_home:'بيت',trainloc_outdoor:'خارجي',trainloc_other:'مكان ثاني',
+  q_split:'🧩 شلون تبي تقسم تمرينك؟',split_hint:'المكان (جيم/بيت) يحدد الأدوات بس — هذا يحدد شكل أسبوعك',
+  split_ppl:'دفع/سحب/رجل',split_upperlower:'علوي/سفلي',split_bodypart:'حسب العضلة',split_fullbody:'جسم كامل',split_custom:'مخصص',
+  q_custom_schedule:'🗓️ رتب أسبوعك بنفسك',split_custom_incomplete:'🚫 حدد نوع تمرين (أو راحة) لكل يوم قبل الحفظ',
+  type_chest:'صدر',type_back:'ظهر',type_shoulders:'كتف',type_arms:'أذرع',type_upper:'علوي',type_lower:'سفلي',type_full:'جسم كامل',
   q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_barbell:'بار حديد (باربل)',eq_bench:'بنش',eq_kettlebell:'كيتل بيل',eq_dipbars:'متوازي ديبس',eq_mat:'مسطبة يوقا',eq_none:'ولا شي',
   equip_other_ph:'أداة ثانية؟ اكتبها هنا (اختياري)',
   q_injury:'🩹 عندك إصابات؟',inj_elbow:'الكوع',inj_shoulder:'الكتف',inj_knee:'الركبة',inj_back:'أسفل الظهر',inj_none:'ما عندي',
@@ -1631,7 +1670,11 @@ const I18N={
   fitlevel_beginner:'Beginner',fitlevel_amateur:'Amateur',fitlevel_pro:'Pro',
   pick_something_fitlevel:'🚫 Pick your level so we can give you the right exercises',
   ex_goal_muscle:'Build muscle',ex_goal_lose:'Fat loss',ex_goal_mobility:'Mobility',
-  q_train_location:'📍 Where do you train?',trainloc_gym:'Gym',trainloc_home:'Home',
+  q_train_location:'📍 Where do you train?',trainloc_gym:'Gym',trainloc_home:'Home',trainloc_outdoor:'Outdoor',trainloc_other:'Other',
+  q_split:'🧩 How do you want to split your training?',split_hint:'Location (gym/home) only decides equipment — this decides your weekly shape',
+  split_ppl:'Push/Pull/Legs',split_upperlower:'Upper/Lower',split_bodypart:'Body part',split_fullbody:'Full body',split_custom:'Custom',
+  q_custom_schedule:'🗓️ Build your own week',split_custom_incomplete:'🚫 Assign a training type (or rest) to every day before saving',
+  type_chest:'Chest',type_back:'Back',type_shoulders:'Shoulders',type_arms:'Arms',type_upper:'Upper',type_lower:'Lower',type_full:'Full body',
   q_equip:'🎒 What equipment do you have?',eq_db:'Dumbbells',eq_band:'Resistance band',eq_bar:'Pull-up bar',eq_barbell:'Barbell',eq_bench:'Bench',eq_kettlebell:'Kettlebell',eq_dipbars:'Dip bars',eq_mat:'Yoga mat',eq_none:'No equipment',
   equip_other_ph:'Other equipment? Type it here (optional)',
   q_injury:'🩹 Any injuries?',inj_elbow:'Elbow',inj_shoulder:'Shoulder',inj_knee:'Knee',inj_back:'Lower back',inj_none:'None',
@@ -2520,6 +2563,98 @@ const GYM_LEVEL_SMALL={
   legs:[{ar:'٧. لنجز بلغاري بدمبل ثقيل — ٣ × ١٠/رجل',en:'7. Heavy Bulgarian split squat — 3×10/leg'},{ar:'٨. رفع رجل معلق — ٣ × ١٥',en:'8. Hanging leg raise — 3×15'},{ar:'٩. كرنش كيبل ثقيل — ٣ × ١٥',en:'9. Heavy cable crunch — 3×15'}]
  }
 };
+
+/* ================= TRAINING SPLIT SYSTEM =================
+   LOCATION (gym/home/outdoor/other) and SPLIT (how the week is divided into
+   day-types) are fully independent axes — see problem report #3. Location
+   only ever decides which exercise pool/equipment logic applies (gym pool
+   vs the bodyweight+equipment-swap pool used for home/outdoor/other); it
+   never implies push/pull/legs or any other split. The split purely decides
+   which sequence of day-type keys the week rotates through (or, for
+   'custom', a direct weekday→day-type map with no rotation at all). Adding
+   a new split later only means adding one entry here — nothing about
+   location or the exercise pools needs to change. */
+const TRAINING_SPLITS={
+ ppl:{days:['push','pull','legs']},
+ upperlower:{days:['upper','lower']},
+ bodypart:{days:['chest','back','shoulders','arms','legs']},
+ fullbody:{days:['full']},
+ custom:{days:null} // per-weekday assignment lives in P.workoutSetup.customSchedule instead
+};
+const ALL_TRAINING_DAY_TYPES=['push','pull','legs','chest','back','shoulders','arms','upper','lower','full'];
+function dayTypeIcon(typeKey){ return (workoutTypes[typeKey]||{}).icon || '💪'; }
+function dayTypeLabel(typeKey){ return typeKey==='rest' ? t('rest_day_name') : t('type_'+typeKey); }
+function currentSplitId(){ return (P.workoutSetup&&P.workoutSetup.splitId) || 'ppl'; }
+function currentSplitDays(){ return TRAINING_SPLITS[currentSplitId()].days || []; }
+
+/* ---- body-part / upper-lower / full-body pools (home = bodyweight, subject
+   to the same equipment swap/upgrade tables as push/pull/legs; gym = full
+   equipment assumed, same as GYM_WORKOUT_TYPES). Single-tier for now (no
+   separate beginner/pro variant yet, unlike push/pull/legs) — adaptDay()
+   already falls back to these base pools whenever no LEVEL_MAIN entry
+   exists for a typeKey, so this is a real, honest v1 scope choice rather
+   than a broken lookup. */
+Object.assign(workoutTypes,{
+ chest:{icon:'🫀',name:{ar:'صدر',en:'Chest'},
+  main:[{ar:'١. ضغط عادي — ٤ × ١٢-١٥',en:'1. Push-ups — 4×12-15'},{ar:'٢. ضغط واسع — ٣ × ١٠-١٢',en:'2. Wide push-ups — 3×10-12'},{ar:'٣. ضغط منحدر (رجلينك مرفوعة) — ٣ × ١٠-١٢',en:'3. Decline push-ups (feet elevated) — 3×10-12'},{ar:'٤. ضغط ماسي — ٣ × ٨-١٠',en:'4. Diamond push-ups — 3×8-10'},{ar:'٥. ديبس على المتوازي — ٤ × ٨-١٢',en:'5. Dips — 4×8-12'}],
+  small:[{ar:'٦. باي فلاي بحبل مطاطي — ٣ × ١٢',en:'6. Band chest fly — 3×12'},{ar:'٧. ضغط بطيء مع وقفة ثانيتين تحت — ٣ × ١٠',en:'7. Slow push-up with 2s pause at bottom — 3×10'}],
+  stretch:{ar:'🧘 استرتش صدر — ٥ دقايق',en:'🧘 Chest stretch — 5 min'}},
+ back:{icon:'🦾',name:{ar:'ظهر',en:'Back'},
+  main:[{ar:'١. عقلة أستراليان — ٤ × ٨-١٢',en:'1. Australian rows — 4×8-12'},{ar:'٢. عقلة بقبضة عريضة — ٣ × ٥-٨',en:'2. Wide-grip pull-ups — 3×5-8'},{ar:'٣. سحب حبل أفقي — ٤ × ١٠',en:'3. Band rows — 4×10'},{ar:'٤. سوبرمان — ٤ × ١٢ ثانية',en:'4. Superman hold — 4×12s'},{ar:'٥. رفعات Y-T-W نايم على البطن — ٣ × ١٠ لكل شكل',en:'5. Prone Y-T-W raises — 3×10 per shape'}],
+  small:[{ar:'٦. شراغ بدمبل/غرض ثقيل — ٣ × ١٥',en:'6. Shrugs (weighted item) — 3×15'},{ar:'٧. فيس بول بحبل مطاطي — ٣ × ١٥',en:'7. Band face pulls — 3×15'}],
+  stretch:{ar:'🧘 استرتش ظهر علوي — ٥ دقايق',en:'🧘 Upper-back stretch — 5 min'}},
+ shoulders:{icon:'🏔️',name:{ar:'كتف',en:'Shoulders'},
+  main:[{ar:'١. بايك بوش أب — ٤ × ٨-١٢',en:'1. Pike push-ups — 4×8-12'},{ar:'٢. رفرفة جانبية بحبل مطاطي — ٤ × ١٢-١٥',en:'2. Band lateral raises — 4×12-15'},{ar:'٣. رفرفة أمامية — ٣ × ١٢',en:'3. Front raises — 3×12'},{ar:'٤. بايك بوش أب مرفوع الرجل (متقدم) — ٣ × ٦-٨',en:'4. Elevated pike push-ups (advanced) — 3×6-8'},{ar:'٥. دوران كتف مقاوم بحبل مطاطي — ٣ × ١٢',en:'5. Band shoulder rotations — 3×12'}],
+  small:[{ar:'٦. رفعات خلفية نايم على البطن — ٣ × ١٢',en:'6. Prone rear-delt raises — 3×12'},{ar:'٧. تعليق كتف ثابت (شراغ سلبي) — ٣ × ٢٠ ثانية',en:'7. Passive shoulder hang (if bar available) — 3×20s'}],
+  stretch:{ar:'🧘 استرتش كتف كامل — ٥ دقايق',en:'🧘 Full shoulder stretch — 5 min'}},
+ arms:{icon:'💪',name:{ar:'أذرع',en:'Arms'},
+  main:[{ar:'١. باي كيرل بحبل مطاطي — ٤ × ١٠-١٢',en:'1. Band bicep curls — 4×10-12'},{ar:'٢. ضغط ماسي (تراي) — ٤ × ٨-١٢',en:'2. Diamond push-ups (triceps) — 4×8-12'},{ar:'٣. ديبس على كرسي — ٣ × ١٠-١٢',en:'3. Chair dips (triceps) — 3×10-12'},{ar:'٤. هامر كيرل بحبل مطاطي — ٣ × ١٠',en:'4. Band hammer curls — 3×10'},{ar:'٥. ترايسبس إكستنشن فوق الراس بغرض ثقيل — ٣ × ١٢',en:'5. Overhead triceps extension (weighted item) — 3×12'}],
+  small:[{ar:'٦. إكسنتريك رست كيرل بطيء — ٣ × ١٥',en:'6. Slow eccentric wrist curls — 3×15'},{ar:'٧. عصر كرة بأقصى قوة — ٣ × ٢٠ ثانية',en:'7. Max-effort ball squeeze — 3×20s'}],
+  stretch:{ar:'🧘 استرتش ساعد وذراع — ٥ دقايق',en:'🧘 Forearm + arm stretch — 5 min'}},
+ upper:{icon:'⬆️',name:{ar:'علوي',en:'Upper body'},
+  main:[{ar:'١. ضغط عادي — ٤ × ١٢-١٥',en:'1. Push-ups — 4×12-15'},{ar:'٢. عقلة أستراليان — ٤ × ٨-١٢',en:'2. Australian rows — 4×8-12'},{ar:'٣. بايك بوش أب — ٣ × ٨-١٢',en:'3. Pike push-ups — 3×8-12'},{ar:'٤. سحب حبل أفقي — ٣ × ١٠',en:'4. Band rows — 3×10'},{ar:'٥. باي كيرل بحبل مطاطي — ٣ × ١٢',en:'5. Band bicep curls — 3×12'},{ar:'٦. ديبس على كرسي — ٣ × ١٠',en:'6. Chair dips — 3×10'}],
+  small:[],
+  stretch:{ar:'🧘 استرتش الجزء العلوي كامل — ٥ دقايق',en:'🧘 Full upper-body stretch — 5 min'}},
+ lower:{icon:'⬇️',name:{ar:'سفلي',en:'Lower body'},
+  main:[{ar:'١. سكوات بوزن الجسم — ٤ × ١٥-٢٠',en:'1. Bodyweight squats — 4×15-20'},{ar:'٢. لنجز مشي — ٤ × ١٢/رجل',en:'2. Walking lunges — 4×12/leg'},{ar:'٣. سكوات بلغاري — ٣ × ٨-١٠',en:'3. Bulgarian split squats — 3×8-10'},{ar:'٤. جسر المؤخرة — ٤ × ١٥',en:'4. Glute bridges — 4×15'},{ar:'٥. سمانة واقف — ٤ × ٢٠',en:'5. Calf raises — 4×20'}],
+  small:[{ar:'٦. بلانك — ٣ × ٤٥-٦٠ ثانية',en:'6. Plank — 3×45-60s'},{ar:'٧. ديد بق — ٣ × ١٢',en:'7. Dead bug — 3×12'}],
+  stretch:{ar:'🧘 استرتش هامسترنق + كواد + ورك — ٥ دقايق',en:'🧘 Hamstring + quad + hip stretch — 5 min'}},
+ full:{icon:'🧍',name:{ar:'جسم كامل',en:'Full body'},
+  main:[{ar:'١. سكوات بوزن الجسم — ٤ × ١٥',en:'1. Bodyweight squats — 4×15'},{ar:'٢. ضغط عادي — ٤ × ١٢',en:'2. Push-ups — 4×12'},{ar:'٣. عقلة أستراليان — ٣ × ١٠',en:'3. Australian rows — 3×10'},{ar:'٤. لنجز مشي — ٣ × ١٠/رجل',en:'4. Walking lunges — 3×10/leg'},{ar:'٥. بلانك — ٣ × ٤٥ ثانية',en:'5. Plank — 3×45s'},{ar:'٦. جسر المؤخرة — ٣ × ١٥',en:'6. Glute bridges — 3×15'}],
+  small:[],
+  stretch:{ar:'🧘 استرتش جسم كامل — ٥ دقايق',en:'🧘 Full-body stretch — 5 min'}}
+});
+Object.assign(GYM_WORKOUT_TYPES,{
+ chest:{icon:'🫀',name:{ar:'صدر (جيم)',en:'Chest (gym)'},
+  main:[{ar:'١. بنش برس بار — ٤ × ٨-١٠',en:'1. Barbell bench press — 4×8-10'},{ar:'٢. بنش دمبل مائل — ٤ × ١٠-١٢',en:'2. Incline dumbbell press — 4×10-12'},{ar:'٣. باي فلاي كيبل — ٣ × ١٢',en:'3. Cable chest fly — 3×12'},{ar:'٤. ديبس صدر (بوزن إضافي لو تقدر) — ٤ × ٨-١٢',en:'4. Chest dips (weighted if possible) — 4×8-12'},{ar:'٥. بنش دمبل مسطح — ٣ × ١٠',en:'5. Flat dumbbell press — 3×10'}],
+  small:[{ar:'٦. كيبل كروس أوفر منخفض — ٣ × ١٢',en:'6. Low-to-high cable crossover — 3×12'}],
+  stretch:{ar:'🧘 استرتش صدر — ٥ دقايق',en:'🧘 Chest stretch — 5 min'}},
+ back:{icon:'🦾',name:{ar:'ظهر (جيم)',en:'Back (gym)'},
+  main:[{ar:'١. لات بولداون — ٤ × ١٠-١٢',en:'1. Lat pulldown — 4×10-12'},{ar:'٢. تجديف بار/دمبل — ٤ × ٨-١٠',en:'2. Barbell/dumbbell row — 4×8-10'},{ar:'٣. سيتد كيبل رو — ٤ × ١٠',en:'3. Seated cable row — 4×10'},{ar:'٤. بندلاي رو — ٣ × ٨',en:'4. Pendlay row — 3×8'},{ar:'٥. عقلة (بمساعدة لو تحتاج) — ٣ × ٦-١٠',en:'5. Pull-ups (assisted if needed) — 3×6-10'}],
+  small:[{ar:'٦. فيس بول كيبل — ٣ × ١٥',en:'6. Cable face pulls — 3×15'}],
+  stretch:{ar:'🧘 استرتش ظهر علوي — ٥ دقايق',en:'🧘 Upper-back stretch — 5 min'}},
+ shoulders:{icon:'🏔️',name:{ar:'كتف (جيم)',en:'Shoulders (gym)'},
+  main:[{ar:'١. شولدر برس دمبل جالس — ٤ × ١٠-١٢',en:'1. Seated dumbbell shoulder press — 4×10-12'},{ar:'٢. رفرفة جانبية كيبل/دمبل — ٤ × ١٢-١٥',en:'2. Cable/dumbbell lateral raises — 4×12-15'},{ar:'٣. رفرفة أمامية دمبل — ٣ × ١٢',en:'3. Dumbbell front raise — 3×12'},{ar:'٤. شولدر برس بار واقف — ٣ × ٨-١٠',en:'4. Standing barbell overhead press — 3×8-10'},{ar:'٥. فيس بول كيبل — ٣ × ١٥',en:'5. Cable face pulls — 3×15'}],
+  small:[{ar:'٦. رفرفة كتف خلفي ماكينة/دمبل — ٣ × ١٥',en:'6. Rear-delt fly (machine/dumbbell) — 3×15'}],
+  stretch:{ar:'🧘 استرتش كتف كامل — ٥ دقايق',en:'🧘 Full shoulder stretch — 5 min'}},
+ arms:{icon:'💪',name:{ar:'أذرع (جيم)',en:'Arms (gym)'},
+  main:[{ar:'١. باي كيرل بار/دمبل — ٤ × ١٠-١٢',en:'1. Barbell/dumbbell bicep curl — 4×10-12'},{ar:'٢. ترايسبس بوشداون كيبل — ٤ × ١٢',en:'2. Cable triceps pushdown — 4×12'},{ar:'٣. بريتشر كيرل — ٣ × ١٠',en:'3. Preacher curl — 3×10'},{ar:'٤. بنش قبضة ضيقة (تراي) — ٣ × ٨-١٠',en:'4. Close-grip bench press (triceps) — 3×8-10'},{ar:'٥. هامر كيرل دمبل — ٣ × ١٢',en:'5. Dumbbell hammer curl — 3×12'}],
+  small:[{ar:'٦. ترايسبس اوفرهيد دمبل — ٣ × ١٢',en:'6. Overhead dumbbell triceps extension — 3×12'}],
+  stretch:{ar:'🧘 استرتش ساعد وذراع — ٥ دقايق',en:'🧘 Forearm + arm stretch — 5 min'}},
+ upper:{icon:'⬆️',name:{ar:'علوي (جيم)',en:'Upper body (gym)'},
+  main:[{ar:'١. بنش برس بار — ٤ × ٨-١٠',en:'1. Barbell bench press — 4×8-10'},{ar:'٢. لات بولداون — ٤ × ١٠-١٢',en:'2. Lat pulldown — 4×10-12'},{ar:'٣. شولدر برس دمبل — ٣ × ١٠',en:'3. Dumbbell shoulder press — 3×10'},{ar:'٤. سيتد كيبل رو — ٣ × ١٠',en:'4. Seated cable row — 3×10'},{ar:'٥. باي كيرل بار — ٣ × ١٢',en:'5. Barbell bicep curl — 3×12'},{ar:'٦. ترايسبس بوشداون — ٣ × ١٢',en:'6. Triceps pushdown — 3×12'}],
+  small:[],
+  stretch:{ar:'🧘 استرتش الجزء العلوي كامل — ٥ دقايق',en:'🧘 Full upper-body stretch — 5 min'}},
+ lower:{icon:'⬇️',name:{ar:'سفلي (جيم)',en:'Lower body (gym)'},
+  main:[{ar:'١. سكوات بار خلفي — ٤ × ٨-١٠',en:'1. Barbell back squat — 4×8-10'},{ar:'٢. ليج برس — ٤ × ١٠-١٢',en:'2. Leg press — 4×10-12'},{ar:'٣. رومانيان ديدلفت — ٣ × ١٠',en:'3. Romanian deadlift — 3×10'},{ar:'٤. ليج كيرل ماكينة — ٣ × ١٢',en:'4. Leg curl machine — 3×12'},{ar:'٥. سمانة واقف — ٤ × ١٥-٢٠',en:'5. Standing calf raise — 4×15-20'}],
+  small:[{ar:'٦. كرنش كيبل — ٣ × ١٥',en:'6. Cable crunch — 3×15'}],
+  stretch:{ar:'🧘 استرتش هامسترنق + كواد + ورك — ٥ دقايق',en:'🧘 Hamstring + quad + hip stretch — 5 min'}},
+ full:{icon:'🧍',name:{ar:'جسم كامل (جيم)',en:'Full body (gym)'},
+  main:[{ar:'١. سكوات بار خلفي — ٤ × ٨-١٠',en:'1. Barbell back squat — 4×8-10'},{ar:'٢. بنش برس بار — ٣ × ١٠',en:'2. Barbell bench press — 3×10'},{ar:'٣. لات بولداون — ٣ × ١٠',en:'3. Lat pulldown — 3×10'},{ar:'٤. رومانيان ديدلفت — ٣ × ١٠',en:'4. Romanian deadlift — 3×10'},{ar:'٥. شولدر برس دمبل — ٣ × ١٠',en:'5. Dumbbell shoulder press — 3×10'},{ar:'٦. بلانك — ٣ × ٤٥ ثانية',en:'6. Plank — 3×45s'}],
+  small:[],
+  stretch:{ar:'🧘 استرتش جسم كامل — ٥ دقايق',en:'🧘 Full-body stretch — 5 min'}}
+});
+
 /* video link for any exercise: strips numbering + rep/set info from the English
    name and builds a YouTube search link — works for every exercise at every
    level (beginner/amateur/pro) since it's generated from the text itself,
@@ -2594,6 +2729,24 @@ let exRowCounter=0;
 function slugifyExerciseName(name){ return String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function exerciseId(typeKey,enName){ return typeKey+'|'+slugifyExerciseName(enName); }
 function parseSetCount(setsStr){ const m=String(setsStr||'').match(/\d+/); const n=m?parseInt(m[0],10):3; return Math.max(1,Math.min(6,n||3)); }
+/* fast-logging quick-pick presets. Weight/reps steppers snap to these first
+   when tapped, but the stepper +/- and the ✏️ custom-entry fallback both
+   still accept ANY value — these are just the fast path, never the only
+   path. */
+const FL_WEIGHT_QUICK=[10,15,20,25,30,35,40,45,50];
+const FL_REPS_QUICK=[6,8,10,12,15,20];
+const FL_WEIGHT_STEP=2.5, FL_REPS_STEP=1;
+function flClampWeight(v){ return Math.max(0,Math.min(300,v)); }
+function flClampReps(v){ return Math.max(1,Math.min(50,v)); }
+/* Chooses the value a stepper opens with: whatever's already staged/logged
+   in the FIRST not-yet-done set today beats last session's number, which
+   beats a plain default — so reopening a day you already started never
+   resets what you were mid-way through logging. */
+function flInitialValue(savedSets,setCount,last,field,fallback){
+  for(let i=0;i<setCount;i++){ const sv=savedSets[i]; if(sv&&sv[field]!=null) return sv[field]; }
+  if(last&&last[field]!=null) return last[field];
+  return fallback;
+}
 function exerciseTableHtml(list,timerSecs,showVideo,typeKey,logInputs){
   if(!list||!list.length) return '';
   let rows='';
@@ -2611,27 +2764,70 @@ function exerciseTableHtml(list,timerSecs,showVideo,typeKey,logInputs){
       const lastText = last
         ? (LANG==='ar'?`آخر مرة: ${last.weight}كغ × ${last.reps}`:`Last: ${last.weight}kg × ${last.reps}`)
         : (LANG==='ar'?'ما فيه سجل سابق لهذا التمرين':'No previous log for this exercise yet');
-      let setRows='';
-      for(let i=0;i<setCount;i++){
+      const curWeight=flInitialValue(savedSets,setCount,last,'weight',20);
+      const curReps=flInitialValue(savedSets,setCount,last,'reps',10);
+      const meta=(dailyTrack.workoutMeta&&dailyTrack.workoutMeta[exId])||{};
+      const weightChips=FL_WEIGHT_QUICK.map(v=>`<span class="fl-chip${v===curWeight?' active':''}" data-exid="${exId}" data-field="weight" data-value="${v}">${v}</span>`).join('');
+      const repsChips=FL_REPS_QUICK.map(v=>`<span class="fl-chip${v===curReps?' active':''}" data-exid="${exId}" data-field="reps" data-value="${v}">${v}</span>`).join('');
+      const slots=Array.from({length:setCount},(_,i)=>{
         const sv=savedSets[i]||{};
-        setRows+=`<div class="set-log-row"><span class="set-log-num">${i+1}</span><input type="number" inputmode="decimal" step="0.5" min="0" placeholder="${LANG==='ar'?'كغ':'kg'}" class="set-log-input" value="${sv.weight!=null?sv.weight:''}" data-exid="${exId}" data-set="${i}" data-field="weight"><input type="number" inputmode="numeric" min="0" placeholder="${LANG==='ar'?'عدات':'reps'}" class="set-log-input" value="${sv.reps!=null?sv.reps:''}" data-exid="${exId}" data-set="${i}" data-field="reps"></div>`;
-      }
-      rows+=`<tr class="set-log-tr"><td colspan="4"><div class="set-log-block"><div class="set-log-last">${lastText}</div>${setRows}</div></td></tr>`;
+        const done=sv.weight!=null&&sv.reps!=null;
+        return `<div class="fl-slot${done?' done':''}" data-exid="${exId}" data-set="${i}">${done?`✓ ${sv.weight}×${sv.reps}`:(LANG==='ar'?`مجموعة ${i+1}`:`Set ${i+1}`)}</div>`;
+      }).join('');
+      const weightUnit=LANG==='ar'?'كغ':'kg';
+      const setLogBlock=`<div class="set-log-block" data-exid="${exId}">
+        <div class="set-log-last">${lastText}</div>
+        <div class="fl-row">
+          <span class="fl-label">${LANG==='ar'?'الوزن':'Weight'}</span>
+          <div class="fl-stepper">
+            <button type="button" class="fl-step-btn" data-fl-action="dec" data-exid="${exId}" data-field="weight">−</button>
+            <span class="fl-value" data-exid="${exId}" data-field="weight" data-raw="${curWeight}">${curWeight} ${weightUnit}</span>
+            <button type="button" class="fl-step-btn" data-fl-action="inc" data-exid="${exId}" data-field="weight">+</button>
+          </div>
+          <button type="button" class="fl-edit-btn" data-fl-action="custom" data-exid="${exId}" data-field="weight" title="${LANG==='ar'?'إدخال يدوي':'Custom entry'}">✏️</button>
+        </div>
+        <div class="fl-chips">${weightChips}</div>
+        <div class="fl-row">
+          <span class="fl-label">${LANG==='ar'?'العدات':'Reps'}</span>
+          <div class="fl-stepper">
+            <button type="button" class="fl-step-btn" data-fl-action="dec" data-exid="${exId}" data-field="reps">−</button>
+            <span class="fl-value" data-exid="${exId}" data-field="reps" data-raw="${curReps}">${curReps}</span>
+            <button type="button" class="fl-step-btn" data-fl-action="inc" data-exid="${exId}" data-field="reps">+</button>
+          </div>
+          <button type="button" class="fl-edit-btn" data-fl-action="custom" data-exid="${exId}" data-field="reps" title="${LANG==='ar'?'إدخال يدوي':'Custom entry'}">✏️</button>
+        </div>
+        <div class="fl-chips">${repsChips}</div>
+        <div class="fl-slots">${slots}</div>
+        <span class="fl-extra-toggle" data-exid="${exId}">${LANG==='ar'?'+ RPE / ملاحظة':'+ RPE / note'}</span>
+        <div class="fl-extra-row hidden" data-exid="${exId}">
+          <span class="fl-label">RPE</span>
+          <div class="fl-stepper">
+            <button type="button" class="fl-step-btn" data-fl-action="dec" data-exid="${exId}" data-field="rpe">−</button>
+            <span class="fl-value" data-exid="${exId}" data-field="rpe" data-raw="${meta.rpe||''}">${meta.rpe||'—'}</span>
+            <button type="button" class="fl-step-btn" data-fl-action="inc" data-exid="${exId}" data-field="rpe">+</button>
+          </div>
+          <input type="text" class="fl-note-input" data-exid="${exId}" placeholder="${LANG==='ar'?'ملاحظة (اختياري)':'Note (optional)'}" value="${meta.note?meta.note.replace(/"/g,'&quot;'):''}">
+        </div>
+      </div>`;
+      rows+=`<tr class="set-log-tr"><td colspan="4">${setLogBlock}</td></tr>`;
     }
   });
   return `<table class="ex-table"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Checklist</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
-/* delegated once — the table is fully rebuilt on every openWorkoutDay() call,
-   so a single document-level listener (matched by class) survives that
-   instead of needing to be re-attached per render. */
-document.addEventListener('change',async(e)=>{
-  const el=e.target;
-  if(!el.matches || !el.matches('.set-log-input')) return;
-  const exId=el.dataset.exid, setIdx=parseInt(el.dataset.set,10), field=el.dataset.field;
+/* commits the exercise's currently-staged weight/reps stepper values into a
+   specific set slot (or clears that slot back to empty if it was already
+   done — a slot toggles, so a mis-tap is never permanent). This is the ONLY
+   place a set actually gets logged: the steppers/chips above only ever
+   change what's staged, never write to dailyTrack by themselves. */
+async function flCommitSlot(exId,setIdx){
+  const weightEl=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="weight"]`);
+  const repsEl=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="reps"]`);
+  const weight=parseFloat(weightEl.dataset.raw), reps=parseFloat(repsEl.dataset.raw);
   dailyTrack.workoutLog=dailyTrack.workoutLog||{};
   dailyTrack.workoutLog[exId]=dailyTrack.workoutLog[exId]||[];
-  dailyTrack.workoutLog[exId][setIdx]=dailyTrack.workoutLog[exId][setIdx]||{};
-  dailyTrack.workoutLog[exId][setIdx][field]=el.value===''?null:parseFloat(el.value);
+  const cur=dailyTrack.workoutLog[exId][setIdx];
+  const alreadyDone=cur&&cur.weight!=null&&cur.reps!=null;
+  dailyTrack.workoutLog[exId][setIdx]=alreadyDone?{weight:null,reps:null}:{weight,reps};
   await saveDailyTrack();
   const filled=dailyTrack.workoutLog[exId].filter(s=>s&&s.weight!=null&&s.reps!=null);
   if(filled.length){
@@ -2640,6 +2836,80 @@ document.addEventListener('change',async(e)=>{
     P.lastExerciseLog[exId]={weight:latest.weight,reps:latest.reps,date:todayKey()};
     await storageSet('profile',JSON.stringify(P));
   }
+  const slotEl=document.querySelector(`.fl-slot[data-exid="${cssEscape(exId)}"][data-set="${setIdx}"]`);
+  if(slotEl){
+    const nowDone=!alreadyDone;
+    slotEl.classList.toggle('done',nowDone);
+    slotEl.textContent=nowDone?`✓ ${weight}×${reps}`:(LANG==='ar'?`مجموعة ${setIdx+1}`:`Set ${setIdx+1}`);
+  }
+}
+function cssEscape(s){ return String(s).replace(/["\\]/g,'\\$&'); }
+function flSetStepperValue(exId,field,rawValue){
+  const el=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="${field}"]`);
+  if(!el) return;
+  el.dataset.raw=rawValue;
+  const unit = field==='weight' ? (LANG==='ar'?' كغ':' kg') : '';
+  el.textContent = (field==='rpe'&&(rawValue===''||rawValue==null)) ? '—' : rawValue+unit;
+  const flRow=el.closest('.fl-row');
+  const chipsRow=flRow&&flRow.nextElementSibling;
+  if(chipsRow&&chipsRow.classList.contains('fl-chips')){
+    chipsRow.querySelectorAll('.fl-chip').forEach(c=>c.classList.toggle('active',c.dataset.field===field&&+c.dataset.value===+rawValue));
+  }
+}
+/* delegated once — every fast-log block is fully rebuilt on each
+   openWorkoutDay() call, so one document-level listener (matched by class)
+   survives that instead of needing to be re-attached per render. */
+document.addEventListener('click',async(e)=>{
+  const chip=e.target.closest && e.target.closest('.fl-chip');
+  if(chip){ flSetStepperValue(chip.dataset.exid,chip.dataset.field,chip.dataset.value); return; }
+  const slot=e.target.closest && e.target.closest('.fl-slot');
+  if(slot){ await flCommitSlot(slot.dataset.exid,+slot.dataset.set); return; }
+  const stepBtn=e.target.closest && e.target.closest('.fl-step-btn');
+  if(stepBtn){
+    const {exid:exId,field}=stepBtn.dataset;
+    const el=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="${field}"]`);
+    const dir=stepBtn.dataset.flAction==='inc'?1:-1;
+    let raw=parseFloat(el.dataset.raw)||0;
+    if(field==='weight') raw=flClampWeight(raw+dir*FL_WEIGHT_STEP);
+    else if(field==='reps') raw=flClampReps(raw+dir*FL_REPS_STEP);
+    else raw=Math.max(1,Math.min(10,raw+dir));
+    flSetStepperValue(exId,field,raw);
+    if(field==='rpe'){
+      dailyTrack.workoutMeta=dailyTrack.workoutMeta||{};
+      dailyTrack.workoutMeta[exId]=dailyTrack.workoutMeta[exId]||{};
+      dailyTrack.workoutMeta[exId].rpe=raw;
+      await saveDailyTrack();
+    }
+    return;
+  }
+  const editBtn=e.target.closest && e.target.closest('.fl-edit-btn');
+  if(editBtn){
+    const {exid:exId,field}=editBtn.dataset;
+    const valEl=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="${field}"]`);
+    if(!valEl||valEl.querySelector('input')) return;
+    const raw=valEl.dataset.raw;
+    valEl.innerHTML=`<input type="number" inputmode="decimal" class="fl-custom-input" value="${raw}">`;
+    const inp=valEl.querySelector('input'); inp.focus(); inp.select();
+    const commit=()=>{ const v=parseFloat(inp.value); flSetStepperValue(exId,field,isNaN(v)?raw:(field==='weight'?flClampWeight(v):flClampReps(v))); };
+    inp.addEventListener('blur',commit,{once:true});
+    inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') inp.blur(); });
+    return;
+  }
+  const extraToggle=e.target.closest && e.target.closest('.fl-extra-toggle');
+  if(extraToggle){
+    const row=document.querySelector(`.fl-extra-row[data-exid="${cssEscape(extraToggle.dataset.exid)}"]`);
+    if(row) row.classList.toggle('hidden');
+    return;
+  }
+});
+document.addEventListener('change',async(e)=>{
+  const el=e.target;
+  if(!el.matches || !el.matches('.fl-note-input')) return;
+  const exId=el.dataset.exid;
+  dailyTrack.workoutMeta=dailyTrack.workoutMeta||{};
+  dailyTrack.workoutMeta[exId]=dailyTrack.workoutMeta[exId]||{};
+  dailyTrack.workoutMeta[exId].note=el.value||'';
+  await saveDailyTrack();
 });
 function timerIconHtml(seconds){
   seconds=seconds||60;
@@ -2652,13 +2922,13 @@ function currentTier(typeKey){
 }
 const INJURY_MODS={
  elbow:{ warn:{ar:'🦾 كوعك: تجنب الحمل الثقيل بوضعية الكف للأعلى. تمرين الإكسنتريك رقم ٩ علاجي — لا تطوفه.',en:'🦾 Elbow: avoid heavy palm-up loading. Eccentric wrist curls (#9) are therapeutic — never skip them.'},
-   applies:['pull'], swaps:{pull:[[{find:'عقلة'},{ar:'سحب بحبل مطاطي — ٣ × ١٢ (آمن للكوع)',en:'Band rows — 3×12 (elbow-safe)'}]]}},
+   applies:['pull','back','arms','upper','full'], swaps:{pull:[[{find:'عقلة'},{ar:'سحب بحبل مطاطي — ٣ × ١٢ (آمن للكوع)',en:'Band rows — 3×12 (elbow-safe)'}]]}},
  shoulder:{ warn:{ar:'🙆 كتفك: وقف فوراً عند أي ألم، وخل مدى الحركة مريح.',en:'🙆 Shoulder: stop at any pain; keep range comfortable.'},
-   applies:['push'], swaps:{push:[[{find:'ديبس'},{ar:'ضغط على الركب — ٣ × ١٢ (آمن للكتف)',en:'Knee push-ups — 3×12 (shoulder-safe)'}]]}},
+   applies:['push','chest','shoulders','upper','full'], swaps:{push:[[{find:'ديبس'},{ar:'ضغط على الركب — ٣ × ١٢ (آمن للكتف)',en:'Knee push-ups — 3×12 (shoulder-safe)'}]]}},
  knee:{ warn:{ar:'🦵 ركبتك: لا تنزل بعمق يسبب ألم، والقفز ملغي.',en:'🦵 Knee: avoid painful depth; jumping removed.'},
-   applies:['legs'], swaps:{legs:[[{find:'قفز'},{ar:'جسر مؤخرة بثبات — ٣ × ١٥',en:'Glute bridge holds — 3×15'}]]}},
+   applies:['legs','lower','full'], swaps:{legs:[[{find:'قفز'},{ar:'جسر مؤخرة بثبات — ٣ × ١٥',en:'Glute bridge holds — 3×15'}]]}},
  lowback:{ warn:{ar:'🔙 ظهرك: لا أوزان إضافية ولا انحناء ثقيل، ركز على الكور.',en:'🔙 Lower back: no added weight/heavy bending, focus core.'},
-   applies:['pull'], swaps:{pull:[[{find:'سوبرمان'},{ar:'بيرد دوق — ٣ × ١٠ (آمن للظهر)',en:'Bird dog — 3×10 (back-safe)'}]]}}
+   applies:['pull','back','arms','upper','lower','full'], swaps:{pull:[[{find:'سوبرمان'},{ar:'بيرد دوق — ٣ × ١٠ (آمن للظهر)',en:'Bird dog — 3×10 (back-safe)'}]]}}
 };
 const EQUIPMENT_SWAPS={
  pull:[
@@ -2806,7 +3076,8 @@ function adaptDay(typeKey){
     if(typeKey!=='rest' && mod.applies.includes(typeKey)) day.warns.push(mod.warn);
   });
   (ws.injuryAnalysis||[]).forEach(a=>{
-    const unsafe=(typeKey==='push'&&a.avoidPush)||(typeKey==='pull'&&a.avoidPull)||(typeKey==='legs'&&a.avoidLegs);
+    const AVOID_MAP={push:'avoidPush',chest:'avoidPush',shoulders:'avoidPush',pull:'avoidPull',back:'avoidPull',arms:'avoidPull',legs:'avoidLegs',lower:'avoidLegs',upper:'avoidPush',full:'avoidPush'};
+    const unsafe=AVOID_MAP[typeKey]&&a[AVOID_MAP[typeKey]];
     if(unsafe && typeKey!=='rest'){
       day.skippedByInjury={ar:a.noteAr,en:a.noteEn,text:a.text};
       const typeNameAr=I18N.ar['type_'+typeKey], typeNameEn=I18N.en['type_'+typeKey];
@@ -3748,6 +4019,40 @@ wireSingle('#obTrainLocGrid',el=>{ P._trainLocation=el.dataset.trainloc; updateH
 function updateHomeEquipVisibility(){
   document.getElementById('homeEquipSection').classList.toggle('hidden', P._trainLocation==='gym');
 }
+/* SPLIT is fully independent of LOCATION (see problem report #3) — picking
+   Gym here only ever affects updateHomeEquipVisibility() above (equipment
+   pool), never which days/muscle-groups the week rotates through. */
+wireSingle('#obSplitGrid',el=>{ P._splitId=el.dataset.split; onSplitChanged(); });
+function onSplitChanged(){
+  const isCustom=P._splitId==='custom';
+  document.getElementById('restDaysSection').classList.toggle('hidden',isCustom);
+  document.getElementById('customScheduleSection').classList.toggle('hidden',!isCustom);
+  if(isCustom) buildCustomScheduleGrid();
+  updateSplitPreview();
+}
+function buildCustomScheduleGrid(){
+  const container=document.getElementById('customScheduleGrid'); container.innerHTML='';
+  P._customSchedule=P._customSchedule||{};
+  const options=[...ALL_TRAINING_DAY_TYPES,'rest'];
+  DAY_NAMES[LANG].forEach((name,i)=>{
+    const row=document.createElement('div'); row.className='custom-day-row';
+    const label=document.createElement('div'); label.className='custom-day-row-label'; label.textContent=name;
+    const grid=document.createElement('div'); grid.className='ob-grid compact';
+    options.forEach(typeKey=>{
+      const chip=document.createElement('div');
+      chip.className='ob-choice compact'+(P._customSchedule[i]===typeKey?' selected':'');
+      chip.innerHTML=`<span class="ic">${typeKey==='rest'?'😴':dayTypeIcon(typeKey)}</span><span>${dayTypeLabel(typeKey)}</span>`;
+      chip.addEventListener('click',()=>{
+        P._customSchedule[i]=typeKey;
+        grid.querySelectorAll('.ob-choice').forEach(c=>c.classList.remove('selected'));
+        chip.classList.add('selected');
+        updateSplitPreview();
+      });
+      grid.appendChild(chip);
+    });
+    row.appendChild(label); row.appendChild(grid); container.appendChild(row);
+  });
+}
 wireMulti('#obEquipGrid','data-equip',()=>{ P._equipment=[...document.querySelectorAll('#obEquipGrid .ob-choice.selected')].map(c=>c.dataset.equip); });
 wireMulti('#obInjuryGrid','data-injury',()=>{ P._injuries=[...document.querySelectorAll('#obInjuryGrid .ob-choice.selected')].map(c=>c.dataset.injury).filter(x=>x!=='none'); checkInjuryPicked(); });
 function checkInjuryPicked(){
@@ -3768,13 +4073,17 @@ function prefillWorkoutSetup(){
   document.querySelectorAll('#obFitnessLevelGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.fitlevel===(s.fitnessLevel||'')));
   const trainLoc=s.trainLocation||'home';
   document.querySelectorAll('#obTrainLocGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.trainloc===trainLoc));
+  const splitId=s.splitId||'ppl';
+  document.querySelectorAll('#obSplitGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.split===splitId));
   document.querySelectorAll('#obEquipGrid .ob-choice').forEach(c=>c.classList.toggle('selected',(s.equipment||[]).includes(c.dataset.equip)));
   document.querySelectorAll('#obInjuryGrid .ob-choice').forEach(c=>c.classList.toggle('selected', c.dataset.injury==='none' ? !!s.noInjuries : (s.injuries||[]).includes(c.dataset.injury)));
-  P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._trainLocation=trainLoc; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
+  P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._trainLocation=trainLoc; P._splitId=splitId; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
   P._restDays=s.restDays||[];
+  P._customSchedule={...(s.customSchedule||{})};
   P._equipOtherList=(s.equipOtherList||[]).slice(); P._injuryOtherList=(s.injuryOtherList||[]).slice();
   renderEquipOtherChips(); renderInjuryOtherChips();
   updateHomeEquipVisibility();
+  onSplitChanged();
 }
 function buildRestGrid(){
   const grid=document.getElementById('obRestGrid'); grid.innerHTML='';
@@ -3794,15 +4103,19 @@ function buildRestGrid(){
   updateSplitPreview();
 }
 function flashRestMsg(msg){ const el=document.getElementById('restValMsg'); el.textContent=msg; clearTimeout(flashRestMsg._t); flashRestMsg._t=setTimeout(()=>{el.textContent='';},2500); }
-/* Push→Pull→Legs is a PERPETUAL rotation that only advances on training
-   days — rest days are skipped without resetting or repeating the cycle.
-   A fixed epoch (arbitrary, never changes) means the sequence stays
-   consistent forever: whatever the last training day's muscle group was,
-   the next training day (however many rest days away) always continues
-   straight to the next one in the cycle. */
+/* The split's day-type sequence is a PERPETUAL rotation that only advances on
+   training days — rest days are skipped without resetting or repeating the
+   cycle. A fixed epoch (arbitrary, never changes) means the sequence stays
+   consistent forever: whatever the last training day's type was, the next
+   training day (however many rest days away) always continues straight to
+   the next one in the cycle. 'custom' bypasses rotation entirely — each
+   weekday has its own directly-assigned type, exactly as the user laid it
+   out, so rest days can sit anywhere in the week without shifting anything. */
 const WORKOUT_ROTATION_EPOCH=new Date(2024,0,1);
-function workoutTypeForDate(dateObj,restDays){
+function workoutTypeForDate(dateObj,ws){
   const weekdayIdx=(dateObj.getDay()+1)%7;
+  if(ws.splitId==='custom') return (ws.customSchedule&&ws.customSchedule[weekdayIdx])||'rest';
+  const restDays=ws.restDays||[];
   if(restDays.includes(weekdayIdx)) return 'rest';
   const epochStart=new Date(WORKOUT_ROTATION_EPOCH.getFullYear(),WORKOUT_ROTATION_EPOCH.getMonth(),WORKOUT_ROTATION_EPOCH.getDate());
   const d=new Date(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
@@ -3817,8 +4130,9 @@ function workoutTypeForDate(dateObj,restDays){
     if(!restDays.includes(wd)) trainingInRemainder++;
   }
   const trainingCount=fullWeeks*trainingPerWeek+trainingInRemainder;
-  const cycle=['push','pull','legs'];
-  return cycle[((trainingCount-1)%3+3)%3];
+  const cycle=(TRAINING_SPLITS[ws.splitId]||TRAINING_SPLITS.ppl).days;
+  const n=cycle.length;
+  return cycle[((trainingCount-1)%n+n)%n];
 }
 function datesForCurrentWeek(){
   const today=new Date();
@@ -3826,26 +4140,54 @@ function datesForCurrentWeek(){
   const satOfWeek=new Date(today.getFullYear(),today.getMonth(),today.getDate()-todayIdx);
   return Array.from({length:7},(_,i)=>new Date(satOfWeek.getFullYear(),satOfWeek.getMonth(),satOfWeek.getDate()+i));
 }
-function generateWeekPattern(restDays){
-  return datesForCurrentWeek().map(d=>workoutTypeForDate(d,restDays));
+function generateWeekPattern(ws){
+  return datesForCurrentWeek().map(d=>workoutTypeForDate(d,ws));
+}
+/* derives an effective restDays array from a custom weekly schedule, purely
+   so downstream consumers that only know about restDays.length (activityFactor,
+   the calorie/TDEE calc) keep working unchanged for custom splits too —
+   never used to drive the custom rotation itself, which reads customSchedule
+   directly by weekday. */
+function restDaysFromCustomSchedule(schedule){
+  const rd=[]; for(let i=0;i<7;i++){ if(!schedule[i]||schedule[i]==='rest') rd.push(i); } return rd;
 }
 function updateSplitPreview(){
   const prev=document.getElementById('splitPreview'); const btn=document.getElementById('workoutSetupSave');
+  const splitId=P._splitId||'ppl';
+  if(splitId==='custom'){
+    const sched=P._customSchedule||{};
+    const complete=Array.from({length:7},(_,i)=>sched[i]).every(Boolean);
+    btn.disabled=!complete;
+    if(!complete){ prev.textContent=t('split_custom_incomplete'); return; }
+    const pattern=Array.from({length:7},(_,i)=>sched[i]);
+    renderSplitPreviewFromPattern(pattern);
+    return;
+  }
   const rd=P._restDays||[];
-  if(rd.length===0){ prev.textContent=''; btn.disabled=false; renderSplitPreviewFromPattern(generateWeekPattern([])); return; }
-  const pattern=generateWeekPattern(rd);
-  renderSplitPreviewFromPattern(pattern);
+  const wsPreview={splitId,restDays:rd};
   btn.disabled=false;
+  renderSplitPreviewFromPattern(generateWeekPattern(wsPreview));
 }
 function renderSplitPreviewFromPattern(pattern){
   const prev=document.getElementById('splitPreview');
-  const names={push:'🔴 '+t('type_push'),pull:'🔵 '+t('type_pull'),legs:'🟢 '+t('type_legs'),rest:'😴 '+t('rest_day_name')};
-  prev.innerHTML=DAY_NAMES[LANG].map((d,i)=>`<b>${d}</b>: ${names[pattern[i]]}`).join(' &nbsp;•&nbsp; ');
+  prev.innerHTML=DAY_NAMES[LANG].map((d,i)=>{
+    const typeKey=pattern[i]||'rest';
+    const icon=typeKey==='rest'?'😴':dayTypeIcon(typeKey);
+    return `<b>${d}</b>: ${icon} ${dayTypeLabel(typeKey)}`;
+  }).join(' &nbsp;•&nbsp; ');
 }
 document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
   if(!checkFitnessLevelPicked()){ scrollToEl(document.getElementById('fitnessLevelValMsg')); return; }
   if(!checkInjuryPicked()){ scrollToEl(document.getElementById('injuryValMsg')); return; }
-  const restDays=P._restDays||[];
+  const splitId=P._splitId||'ppl';
+  const isCustom=splitId==='custom';
+  if(isCustom){
+    const sched=P._customSchedule||{};
+    const complete=Array.from({length:7},(_,i)=>sched[i]).every(Boolean);
+    if(!complete){ scrollToEl(document.getElementById('customScheduleSection')); return; }
+  }
+  const customSchedule=isCustom?{...P._customSchedule}:null;
+  const restDays=isCustom?restDaysFromCustomSchedule(customSchedule):(P._restDays||[]);
   const injuryOtherList=P._injuryOtherList||[];
   const injuryAnalysis=injuryOtherList.map(text=>({text,...analyzeInjuryTextLocal(text)}));
   const previousFitnessLevel=P.workoutSetup ? P.workoutSetup.fitnessLevel : null;
@@ -3854,6 +4196,8 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
     goals:P._exGoals||[],
     fitnessLevel:newFitnessLevel,
     trainLocation:P._trainLocation||'home',
+    splitId,
+    customSchedule,
     equipment:P._equipment||[],
     equipOtherList:P._equipOtherList||[],
     injuries:P._injuries||[],
@@ -3863,8 +4207,8 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
     restDays
   };
   if(!P.exerciseLevel || previousFitnessLevel!==newFitnessLevel){
-    P.exerciseLevel={push:newFitnessLevel,pull:newFitnessLevel,legs:newFitnessLevel};
-    P.workoutCounts={push:1,pull:1,legs:1};
+    P.exerciseLevel={}; P.workoutCounts={};
+    ALL_TRAINING_DAY_TYPES.forEach(k=>{ P.exerciseLevel[k]=newFitnessLevel; P.workoutCounts[k]=1; });
   }
   await storageSet('profile',JSON.stringify(P));
   renderWorkoutSection();
@@ -3875,7 +4219,11 @@ function renderWorkoutSection(){
   document.getElementById('workoutContent').classList.toggle('hidden',!has);
   if(!has){ prefillWorkoutSetup(); buildRestGrid(); return; }
   const lg=document.getElementById('workoutLegend');
-  lg.innerHTML=`<span>🔴 ${t('type_push')}</span><span>🔵 ${t('type_pull')}</span><span>🟢 ${t('type_legs')}</span><span>😴 ${t('rest_day_name')}</span>`;
+  const ws=P.workoutSetup;
+  const daysInLegend = ws.splitId==='custom'
+    ? [...new Set(Object.values(ws.customSchedule||{}).filter(k=>k&&k!=='rest'))]
+    : (TRAINING_SPLITS[ws.splitId||'ppl']||TRAINING_SPLITS.ppl).days;
+  lg.innerHTML=daysInLegend.map(k=>`<span>${dayTypeIcon(k)} ${dayTypeLabel(k)}</span>`).join('')+`<span>😴 ${t('rest_day_name')}</span>`;
   buildWorkoutGrid();
 }
 
@@ -3894,8 +4242,7 @@ function buildFoodGrid(todayIdx){
 function buildWorkoutGrid(){
   const grid=document.getElementById('workoutGrid'); grid.innerHTML='';
   const idx=todayWeekdayIndex();
-  const restDays=(P.workoutSetup&&P.workoutSetup.restDays)||[];
-  const pattern=generateWeekPattern(restDays);
+  const pattern=generateWeekPattern(P.workoutSetup||{});
   DAY_NAMES[LANG].forEach((name,i)=>{
     const typeKey=pattern[i]||'rest';
     const type=workoutTypes[typeKey];
@@ -4292,7 +4639,7 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
 });
 
 function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},xpAwarded:{}};
+const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},xpAwarded:{}};
 let dailyTrack={...DAILY_TRACK_DEFAULTS};
 async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
 async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
@@ -4986,8 +5333,7 @@ function renderDailySummary(){
     wCard.classList.add('hidden');
   } else {
     wCard.classList.remove('hidden');
-    const restDays=P.workoutSetup.restDays||[];
-    const typeKey=workoutTypeForDate(new Date(),restDays);
+    const typeKey=workoutTypeForDate(new Date(),P.workoutSetup);
     const day=adaptDay(typeKey);
     document.getElementById('dashWorkoutName').textContent=`${day.icon} ${day.name[LANG]}`;
     const toggle=document.getElementById('dashWorkoutToggle');
