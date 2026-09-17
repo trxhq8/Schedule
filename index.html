@@ -1081,6 +1081,7 @@
         <button type="button" class="social-tab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
         <button type="button" class="social-tab" data-tab="feed" id="socialTabFeed"></button>
         <button type="button" class="social-tab" data-tab="compare" id="socialTabCompare"></button>
+        <button type="button" class="social-tab" data-tab="challenges" id="socialTabChallenges"></button>
         <button type="button" class="social-tab" data-tab="privacy" id="socialTabPrivacy" data-i18n="privacy_title"></button>
       </div>
       <div id="socialTabContent"></div>
@@ -1611,6 +1612,11 @@ const I18N={
   lb_scope_friends:'أصدقاء',lb_scope_global:'عام',
   activity_you:'أنت',
   act_workout:'أكمل تمرين',act_achievement:'فتح إنجاز',act_challenge:'أكمل تحدي',act_streak:'وصل لسلسلة {n} يوم',act_friend_added:'صار صديق مع {name}',act_collection:'أضاف مقتنى جديد',
+  social_tab_challenges:'🎯 تحديات',new_challenge_title:'🎯 تحدي صديق جديد',challenge_target_ph:'الهدف (رقم)',challenge_start_btn:'ابدأ التحدي',
+  no_challenges_yet:'ما عندك تحديات بعد — ابدأ وحدة فوق',challenge_target_label:'الهدف:',
+  challenge_both_done:'🎉 كلكم وصلتوا الهدف!',challenge_you_won:'🎉 وصلت الهدف!',challenge_they_won:'{name} وصل الهدف',
+  challenge_you_ahead:'أنت متقدم 💪',challenge_they_ahead:'{name} متقدم',challenge_tied:'متعادلين',
+  act_friend_challenge_started:'بدأ تحدي مع {name}',
   dash_cal_title:'🍽️ السعرات اليوم',dash_cal_planned:'مخطط',dash_cal_consumed:'مستهلك',dash_cal_remaining:'متبقي',
   dash_cal_empty:'أعد إعداد نظامك الغذائي عشان نحسب سعراتك',
   dash_workout_title:'🏋️ تمرين اليوم',
@@ -1729,6 +1735,11 @@ const I18N={
   lb_scope_friends:'Friends',lb_scope_global:'Global',
   activity_you:'You',
   act_workout:'completed a workout',act_achievement:'unlocked an achievement',act_challenge:'completed a challenge',act_streak:'reached a {n}-day streak',act_friend_added:'became friends with {name}',act_collection:'added a new collection item',
+  social_tab_challenges:'🎯 Challenges',new_challenge_title:'🎯 New friend challenge',challenge_target_ph:'Target (number)',challenge_start_btn:'Start challenge',
+  no_challenges_yet:"You don't have any challenges yet — start one above",challenge_target_label:'Target:',
+  challenge_both_done:'🎉 You both hit the target!',challenge_you_won:'🎉 You hit the target!',challenge_they_won:'{name} hit the target',
+  challenge_you_ahead:"You're ahead 💪",challenge_they_ahead:'{name} is ahead',challenge_tied:"It's tied",
+  act_friend_challenge_started:'started a challenge with {name}',
   dash_cal_title:'🍽️ Calories today',dash_cal_planned:'Planned',dash_cal_consumed:'Consumed',dash_cal_remaining:'Remaining',
   dash_cal_empty:'Set up your food plan to see calories here',
   dash_workout_title:'🏋️ Today\'s workout',
@@ -5281,6 +5292,7 @@ function friendRequestsCol(){ return fbDb.collection('friendRequests'); }
 function friendshipsCol(){ return fbDb.collection('friendships'); }
 function activityCol(){ return fbDb.collection('activity'); }
 function leaderboardEntriesCol(){ return fbDb.collection('leaderboardEntries'); }
+function friendChallengesCol(){ return fbDb.collection('friendChallenges'); }
 function pairId(a,b){ return a<b ? a+'_'+b : b+'_'+a; }
 function defaultPrivacy(){ return {profileVisibility:'friends', training:true, nutrition:true, achievements:true, collection:true, activity:true, leaderboardGlobal:false}; }
 function serverNow(){ return firebase.firestore.FieldValue.serverTimestamp(); }
@@ -5477,6 +5489,62 @@ const LeaderboardService={
   }
 };
 
+/* ---- Friend-vs-friend challenges ----
+   A challenge doc is created ONCE with both participants' starting stat
+   value baked in (startValues), so "progress" is always "how much have you
+   moved the metric SINCE the challenge began", never the lifetime total —
+   two people starting a "most workouts" challenge mid-way through their
+   own histories still compete on a level footing. Per the security rules,
+   after creation only `progress.<your own uid>` and `updatedAt` may ever
+   change, and only by you — nobody can edit the target, the metric, or the
+   other participant's number. There is no separate "winner" field; a
+   challenge's status (still open / someone hit target) is always derived
+   live from the two real progress numbers, never stored, so it can never
+   drift out of sync with what actually happened. */
+const ChallengeService={
+  async create(friendUid, metric, target){
+    const me=currentUser.uid;
+    const myStats=await computeUserStats();
+    const friendProfile=await PublicProfileService.getProfile(friendUid);
+    const friendStats=(friendProfile&&friendProfile.stats)||{};
+    const doc={
+      createdBy:me,
+      participantUids:[me,friendUid],
+      metric, target,
+      startValues:{[me]:myStats[metric]||0, [friendUid]:friendStats[metric]||0},
+      progress:{[me]:0, [friendUid]:0},
+      createdAt:serverNow(), updatedAt:serverNow()
+    };
+    const ref=await friendChallengesCol().add(doc);
+    await ActivityService.post('friend_challenge_started',{withName:(friendProfile&&friendProfile.displayName)||'?', metric});
+    return ref.id;
+  },
+  async listMine(){
+    const me=currentUser.uid;
+    const snap=await friendChallengesCol().where('participantUids','array-contains',me).get();
+    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const withProfiles=await Promise.all(rows.map(async r=>{
+      const otherUid=r.participantUids.find(u=>u!==me);
+      const profile=await PublicProfileService.getProfile(otherUid).catch(()=>null);
+      return {...r, otherUid, otherProfile:profile};
+    }));
+    withProfiles.sort((a,b)=>(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0)-(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0));
+    return withProfiles;
+  },
+  /* recomputes and pushes only YOUR OWN progress number for one challenge —
+     called whenever the challenges tab renders, so numbers are always
+     fresh without needing a background job. */
+  async syncMyProgress(challenge){
+    const me=currentUser.uid;
+    const start=(challenge.startValues&&challenge.startValues[me])||0;
+    const stats=await computeUserStats();
+    const current=Math.max(0,(stats[challenge.metric]||0)-start);
+    if(challenge.progress&&challenge.progress[me]===current) return current;
+    try{ await friendChallengesCol().doc(challenge.id).update({['progress.'+me]:current, updatedAt:serverNow()}); }catch(e){}
+    return current;
+  }
+};
+
 let socialActiveTab='friends';
 let socialActiveCategory='training';
 let socialActiveScope='friends';
@@ -5490,6 +5558,7 @@ function renderSocialSection(){
   document.getElementById('socialTabLeaderboard').textContent=t('social_tab_leaderboard');
   document.getElementById('socialTabFeed').textContent=t('social_tab_feed');
   document.getElementById('socialTabCompare').textContent=t('social_tab_compare');
+  document.getElementById('socialTabChallenges').textContent=t('social_tab_challenges');
   document.querySelectorAll('#socialTabs .social-tab').forEach(b=>{
     b.classList.toggle('active', b.dataset.tab===socialActiveTab);
     b.onclick=()=>{ socialActiveTab=b.dataset.tab; renderSocialSection(); };
@@ -5500,6 +5569,7 @@ function renderSocialSection(){
   if(socialActiveTab==='leaderboard') return renderSocialLeaderboardTab(content);
   if(socialActiveTab==='feed') return renderSocialFeedTab(content);
   if(socialActiveTab==='compare') return renderSocialCompareTab(content);
+  if(socialActiveTab==='challenges') return renderSocialChallengesTab(content);
   if(socialActiveTab==='privacy') return renderSocialPrivacyTab(content);
 }
 const AVATAR_CHOICES=['🙂','😎','🦁','🐯','🐺','🦊','🐼','🐸','🐵','🦉','🦅','🐢','🐙','🌵','⚡','🔥','🌟','🥷','🧗','🏃'];
@@ -5566,6 +5636,7 @@ function activityLine(a, isMine){
   if(a.type==='challenge') return `🎯 ${who} ${t('act_challenge')}${a.data&&a.data.name?': '+a.data.name:''}`;
   if(a.type==='collection') return `📦 ${who} ${t('act_collection')}`;
   if(a.type==='friend_added') return `🤝 ${who} ${t('act_friend_added').replace('{name}',(a.data&&a.data.withName)||'?')}`;
+  if(a.type==='friend_challenge_started') return `🎯 ${who} ${t('act_friend_challenge_started').replace('{name}',(a.data&&a.data.withName)||'?')}`;
   return `• ${who}`;
 }
 async function renderSocialFriendsTab(content){
@@ -5652,7 +5723,7 @@ async function renderSocialFeedTab(content){
   content.innerHTML=feed.map(a=>{
     const isMine=a.uid===currentUser.uid;
     if(!isMine) a._authorName=(authorProfiles[a.uid]&&authorProfiles[a.uid].displayName)||'?';
-    return `<div class="feed-row"><div>${({workout:'🏋️',achievement:'🏆',challenge:'🎯',collection:'📦',friend_added:'🤝'})[a.type]||'•'}</div><div style="flex:1;">${activityLine(a,isMine)}<div class="feed-time">${relTimeFromTimestamp(a.createdAt)}</div></div></div>`;
+    return `<div class="feed-row"><div>${({workout:'🏋️',achievement:'🏆',challenge:'🎯',collection:'📦',friend_added:'🤝',friend_challenge_started:'🎯'})[a.type]||'•'}</div><div style="flex:1;">${activityLine(a,isMine)}<div class="feed-time">${relTimeFromTimestamp(a.createdAt)}</div></div></div>`;
   }).join('');
 }
 async function renderSocialCompareTab(content){
@@ -5692,6 +5763,53 @@ function renderSocialPrivacyTab(content){
   document.getElementById('privVisibilitySelect').value=priv.profileVisibility||'friends';
   document.getElementById('privVisibilitySelect').addEventListener('change',(e)=>PublicProfileService.updatePrivacy({profileVisibility:e.target.value}));
   content.querySelectorAll('[data-priv]').forEach(inp=>inp.addEventListener('change',(e)=>PublicProfileService.updatePrivacy({[e.target.dataset.priv]:e.target.checked})));
+}
+async function renderSocialChallengesTab(content){
+  const friends=await FriendService.listFriends();
+  const startHtml = friends.length ? `
+    <div class="setup-card" style="padding:12px;margin-bottom:14px;">
+      <h3 style="font-size:0.85rem;margin-top:0;">${t('new_challenge_title')}</h3>
+      <select class="setup-input" id="challengeFriendSelect">${friends.map(f=>`<option value="${f.uid}">${f.displayName}</option>`).join('')}</select>
+      <select class="setup-input" id="challengeMetricSelect">${LEADERBOARD_CATEGORIES.map(c=>`<option value="${c.id}">${c.icon} ${LANG==='ar'?c.labelAr:c.labelEn}</option>`).join('')}</select>
+      <input type="number" class="setup-input" id="challengeTargetInput" min="1" value="5" placeholder="${t('challenge_target_ph')}">
+      <button class="setup-btn" id="challengeStartBtn">${t('challenge_start_btn')}</button>
+    </div>` : `<div class="dash-empty">${t('friends_empty')}</div>`;
+  content.innerHTML = startHtml + `<div id="challengesList"><div class="dash-empty">…</div></div>`;
+  if(friends.length){
+    document.getElementById('challengeStartBtn').addEventListener('click',async()=>{
+      const friendUid=document.getElementById('challengeFriendSelect').value;
+      const catId=document.getElementById('challengeMetricSelect').value;
+      const target=Math.max(1,parseInt(document.getElementById('challengeTargetInput').value,10)||5);
+      const btn=document.getElementById('challengeStartBtn'); btn.disabled=true;
+      try{ await ChallengeService.create(friendUid, catId, target); }catch(e){ showToast(e.message,'error'); }
+      renderSocialChallengesTab(content);
+    });
+  }
+  const challenges=await ChallengeService.listMine();
+  const listEl=document.getElementById('challengesList');
+  if(!challenges.length){ listEl.innerHTML=`<div class="dash-empty">${t('no_challenges_yet')}</div>`; return; }
+  const me=currentUser.uid;
+  const rendered=await Promise.all(challenges.map(async ch=>{
+    const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===ch.metric)||LEADERBOARD_CATEGORIES[0];
+    const myProgress=await ChallengeService.syncMyProgress(ch);
+    const theirProgress=(ch.progress&&ch.progress[ch.otherUid])||0;
+    const otherName=(ch.otherProfile&&ch.otherProfile.displayName)||'?';
+    const otherAvatar=(ch.otherProfile&&ch.otherProfile.avatar)||'🙂';
+    const max=Math.max(myProgress,theirProgress,ch.target,1);
+    let status;
+    if(myProgress>=ch.target && theirProgress>=ch.target) status=t('challenge_both_done');
+    else if(myProgress>=ch.target) status=t('challenge_you_won');
+    else if(theirProgress>=ch.target) status=t('challenge_they_won').replace('{name}',otherName);
+    else if(myProgress>theirProgress) status=t('challenge_you_ahead');
+    else if(theirProgress>myProgress) status=t('challenge_they_ahead').replace('{name}',otherName);
+    else status=t('challenge_tied');
+    return `<div class="setup-card" style="padding:12px;">
+      <div style="font-weight:700;font-size:0.85rem;margin-bottom:6px;">${cat.icon} ${LANG==='ar'?cat.labelAr:cat.labelEn} — ${t('challenge_target_label')} ${ch.target}</div>
+      <div class="compare-row"><div>⭐ ${myProgress}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${Math.min(100,myProgress/max*50)}%;"></div><div class="compare-bar-them" style="width:${Math.min(100,theirProgress/max*50)}%;"></div></div><div>${theirProgress} ${otherAvatar}</div></div>
+      <div style="font-size:0.75rem;color:var(--ink-soft);text-align:center;margin-top:4px;">${status}</div>
+    </div>`;
+  }));
+  listEl.innerHTML=rendered.join('');
 }
 /* real friend profile view — reuses the same overlay/cardBody modal every
    other detail screen (workout day, food day, calendar day) already uses. */
@@ -6044,6 +6162,14 @@ function launchApp(){
   const fv=document.getElementById('footerVersion'); if(fv) fv.textContent=APP_VERSION;
   refreshHome();
   showPanel('home');
+  // username-first: a brand new sign-in (no public profile claimed yet)
+  // lands directly on the profile-setup screen instead of the home
+  // dashboard, so a username exists before the person does anything else
+  // in the app — not buried inside the Friends tab waiting to be found.
+  if(typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile()){
+    showPanel('social');
+    enterSection('social');
+  }
 }
 
 /* ================= COLLECTIONS =================
