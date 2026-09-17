@@ -92,6 +92,8 @@
   .nav-xp-chip{ display:flex; align-items:center; gap:5px; height:26px; padding:0 9px; border-radius:999px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:800; font-size:0.68rem; color:var(--ink); }
   .nav-xp-chip .nav-xp-track{ width:34px; height:4px; border-radius:99px; background:var(--line); overflow:hidden; display:inline-block; }
   .nav-xp-chip .nav-xp-fill{ display:block; height:100%; background:var(--heading); border-radius:99px; }
+  .nav-xp-chip #navXpLabel{ font-weight:600; color:var(--ink-soft,var(--ink)); opacity:0.75; font-size:0.64rem; }
+  .nav-coin-chip{ display:flex; align-items:center; gap:3px; height:26px; padding:0 9px; border-radius:999px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:800; font-size:0.68rem; color:var(--ink); }
 
   /* ---- home ---- */
   .hero{ text-align:center; padding:22px 0 8px; animation:fadeUp .5s ease; }
@@ -634,10 +636,12 @@
       <button type="button" class="nav-xp-chip hidden" id="navXpChip" title="Profile">
         <span id="navXpLevel">⭐1</span>
         <span class="nav-xp-track"><span class="nav-xp-fill" id="navXpFill"></span></span>
+        <span id="navXpLabel">0 XP</span>
       </button>
       <button class="icon-btn" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
     </div>
     <div class="nav-actions">
+      <button type="button" class="nav-coin-chip hidden" id="navCoinsChip" title="Store">🪙 <span id="navCoinsAmount">0</span></button>
       <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
       <button class="icon-btn" id="profileHubBtn" title="Profile">👤</button>
       <button class="icon-btn" id="modeBtn" title="Mode">🌙</button>
@@ -1012,7 +1016,7 @@
 
   <!-- PROGRESS (read-only view over real logged history, no charts beyond the existing weight trend line) -->
   <section class="panel" id="panel-progress">
-    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
     <div class="setup-card">
       <h3 id="progressWeightTitle"></h3>
       <div class="chart-box"><svg id="progressWeightChart" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"></svg></div>
@@ -1152,7 +1156,7 @@
   <!-- PROFILE (real — level/XP/streaks/achievements/titles, all derived from
        actual logged data via computeUserStats()) -->
   <section class="panel" id="panel-profile">
-    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
     <!-- shown ONLY for an existing/old account that has no username yet —
          real XP/stats/achievements stay hidden until one is set, see
          usernameSoftGateActive() + renderProfileSection() -->
@@ -1212,7 +1216,7 @@
 
   <!-- STORE (Coins + Cosmetics) -->
   <section class="panel" id="panel-store">
-    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span class="cos-store-coins" id="storeCoinsBadge"></span></div>
+    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span class="cos-store-coins" id="storeCoinsBadge"></span></div>
     <div class="social-tabs" id="storeTabs">
       <button type="button" class="social-tab active" data-store-tab="background" data-i18n="store_tab_backgrounds"></button>
       <button type="button" class="social-tab" data-store-tab="frame" data-i18n="store_tab_frames"></button>
@@ -1226,7 +1230,7 @@
        need a backend change — public profile reads — that isn't possible
        from this static-site + per-user-Firestore architecture alone) -->
   <section class="panel" id="panel-social">
-    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
     <!-- shown only until the user has claimed a public username -->
     <div class="setup-card" id="profileSetupCard">
       <h3 data-i18n="profile_setup_title"></h3>
@@ -1738,7 +1742,7 @@ window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.messa
 
 /* ================= I18N ================= */
 const I18N={
- ar:{ next:'التالي',back:'رجوع',save:'حفظ',back_home:'🏠 الرئيسية',edit_setup:'⚙️ عدّل الإعداد',
+ ar:{ next:'التالي',back:'رجوع',save:'حفظ',back_home:'🏠 الرئيسية',back_generic:'‹ رجوع',edit_setup:'⚙️ عدّل الإعداد',
   auth_title:'📅 سجّل دخول عشان جدولك يتزامن بين أجهزتك',auth_google:'تسجيل الدخول بـ Google',auth_or:'أو',
   auth_email_ph:'Email',auth_password_ph:'Password',auth_password_confirm_ph:'تأكيد كلمة المرور (لإنشاء حساب فقط)',
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
@@ -1867,7 +1871,7 @@ const I18N={
   water_title:'💧 الماء اليوم (الهدف {n} لتر)',
   no_note:'ما سجلت شي — اضغط تكتب',workout_progress_title:'📊 آخر ٧ أيام'
  },
- en:{ next:'Next',back:'Back',save:'Save',back_home:'🏠 Home',edit_setup:'⚙️ Edit setup',
+ en:{ next:'Next',back:'Back',save:'Save',back_home:'🏠 Home',back_generic:'‹ Back',edit_setup:'⚙️ Edit setup',
   auth_title:'📅 Sign in to sync your schedule across devices',auth_google:'Sign in with Google',auth_or:'or',
   auth_email_ph:'Email',auth_password_ph:'Password',auth_password_confirm_ph:'Confirm password (sign up only)',
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
@@ -2225,7 +2229,21 @@ document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ sh
 /* Collections has its own back-stack (species → category → animals → home)
    instead of always jumping straight to home like every other section's
    back button, so it's wired separately below and skipped here. */
-document.querySelectorAll('.back-btn').forEach(b=>{ if(b.id!=='collectionsBackBtn') b.addEventListener('click',()=>{ showPanel('home'); refreshHome(); }); });
+/* panels reached ONLY through the Profile Hub back up to the hub, not
+   all the way to Home — everything else (today/food/workout/challenges/
+   collections) still backs straight to Home, since those are reached
+   directly from Home's own cards. */
+const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub' };
+document.querySelectorAll('.back-btn').forEach(b=>{
+  if(b.id==='collectionsBackBtn') return;
+  b.addEventListener('click',()=>{
+    const panelEl=b.closest('.panel');
+    const name=panelEl&&panelEl.id.replace('panel-','');
+    const parent=PANEL_PARENT[name]||'home';
+    showPanel(parent);
+    if(parent==='home') refreshHome();
+  });
+});
 /* true only for an account that has never actually used any real feature
    yet — this is what separates a brand-new signup (must be blocked until
    a username is created) from an old account that predates the username
@@ -2263,7 +2281,11 @@ function usernameSoftGateActive(){
 }
 function showPanel(name){
   if(usernameHardGateActive()) name='social';
-  document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0}); }
+  document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0});
+  // the 🏠 button is a shortcut back to Home — pointless (and confusing)
+  // to show while already on Home, so it only appears everywhere else.
+  const homeBtnEl=document.getElementById('homeBtn'); if(homeBtnEl) homeBtnEl.classList.toggle('hidden', name==='home');
+}
 
 /* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
 const DAY_NAMES={ ar:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'], en:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'] };
@@ -6516,9 +6538,14 @@ function renderNavXpChip(){
   const prog=levelProgress(P.xp||0);
   document.getElementById('navXpLevel').textContent=`⭐${prog.level}`;
   document.getElementById('navXpFill').style.width=prog.pct+'%';
+  document.getElementById('navXpLabel').textContent=`${prog.current} XP`;
   chip.title=`${LANG==='ar'?'المستوى':'Level'} ${prog.level} · ${prog.current}/${prog.needed} XP`;
+
+  const coinChip=document.getElementById('navCoinsChip');
+  if(coinChip){ coinChip.classList.remove('hidden'); document.getElementById('navCoinsAmount').textContent=(P.coins||0).toLocaleString(); }
 }
 document.getElementById('navXpChip').addEventListener('click',()=>{ showPanel('profile'); enterSection('profile'); });
+document.getElementById('navCoinsChip').addEventListener('click',()=>{ showPanel('store'); enterSection('store'); });
 /* ================= HOME DASHBOARD (Daily Summary) =================
    Single glance-and-know surface. Every number here is read from state that
    already exists elsewhere (today's menu, dailyTrack, foodSetup,
