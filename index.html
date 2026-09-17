@@ -89,11 +89,15 @@
   .brand{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:0.9rem; }
   .nav-actions{ display:flex; gap:6px; }
   .icon-btn{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; color:var(--ink); }
-  .nav-xp-chip{ display:flex; align-items:center; gap:5px; height:26px; padding:0 9px; border-radius:999px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:800; font-size:0.68rem; color:var(--ink); }
-  .nav-xp-chip .nav-xp-track{ width:34px; height:4px; border-radius:99px; background:var(--line); overflow:hidden; display:inline-block; }
-  .nav-xp-chip .nav-xp-fill{ display:block; height:100%; background:var(--heading); border-radius:99px; }
-  .nav-xp-chip #navXpLabel{ font-weight:600; color:var(--ink-soft,var(--ink)); opacity:0.75; font-size:0.64rem; }
-  .nav-coin-chip{ display:flex; align-items:center; gap:3px; height:26px; padding:0 9px; border-radius:999px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:800; font-size:0.68rem; color:var(--ink); }
+  .profile-bar{ display:flex; align-items:center; gap:12px; width:100%; max-width:760px; margin:10px auto 0; padding:10px 14px; border-radius:16px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-body); text-align:start; }
+  .profile-bar-avatar{ flex:none; width:46px; height:46px; border-radius:50%; background:var(--bg) center/cover no-repeat; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border:1px solid var(--line); overflow:hidden; }
+  .profile-bar-info{ flex:1; min-width:0; }
+  .profile-bar-toprow{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; }
+  .profile-bar-level{ font-family:var(--font-head); font-weight:800; font-size:0.9rem; color:var(--ink); }
+  .profile-bar-coins{ font-family:var(--font-head); font-weight:800; font-size:0.85rem; color:var(--ink); }
+  .profile-bar-xp-track{ width:100%; height:7px; border-radius:99px; background:var(--line); overflow:hidden; }
+  .profile-bar-xp-fill{ height:100%; background:var(--heading); border-radius:99px; }
+  .profile-bar-xp-label{ font-size:0.68rem; color:var(--ink-soft,var(--ink)); opacity:0.75; margin-top:3px; }
 
   /* ---- home ---- */
   .hero{ text-align:center; padding:22px 0 8px; animation:fadeUp .5s ease; }
@@ -633,15 +637,9 @@
   <div class="topnav-inner">
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="brand" id="brandLabel">🗓️</div>
-      <button type="button" class="nav-xp-chip hidden" id="navXpChip" title="Profile">
-        <span id="navXpLevel">⭐1</span>
-        <span class="nav-xp-track"><span class="nav-xp-fill" id="navXpFill"></span></span>
-        <span id="navXpLabel">0 XP</span>
-      </button>
       <button class="icon-btn" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
     </div>
     <div class="nav-actions">
-      <button type="button" class="nav-coin-chip hidden" id="navCoinsChip" title="Store">🪙 <span id="navCoinsAmount">0</span></button>
       <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
       <button class="icon-btn" id="profileHubBtn" title="Profile">👤</button>
       <button class="icon-btn" id="modeBtn" title="Mode">🌙</button>
@@ -649,6 +647,19 @@
       <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
     </div>
   </div>
+  <!-- big profile summary bar — sits right under the icon row, always
+       visible, tap anywhere on it to open the full Profile panel -->
+  <button type="button" class="profile-bar hidden" id="profileBar" title="Profile">
+    <div class="profile-bar-avatar" id="profileBarAvatar">👤</div>
+    <div class="profile-bar-info">
+      <div class="profile-bar-toprow">
+        <span class="profile-bar-level" id="profileBarLevel">⭐ Lv 1</span>
+        <span class="profile-bar-coins" id="profileBarCoins">🪙 0</span>
+      </div>
+      <div class="profile-bar-xp-track"><div class="profile-bar-xp-fill" id="profileBarXpFill"></div></div>
+      <div class="profile-bar-xp-label" id="profileBarXpLabel">0 / 0 XP</div>
+    </div>
+  </button>
   <div id="demoConfirmBar" class="hidden" style="max-width:760px;margin:8px auto 0;background:#fdf0ee;border:1px solid #d9a79e;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span id="demoConfirmText" style="font-size:0.8rem;color:#b06355;flex:1;min-width:200px;"></span>
     <button id="demoConfirmYes" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;"></button>
@@ -6532,20 +6543,19 @@ function refreshHome(){
    convergence point after every real completion event) so it's never
    stale for more than a moment. */
 function renderNavXpChip(){
-  const chip=document.getElementById('navXpChip');
-  if(!chip||!currentUser) return;
-  chip.classList.remove('hidden');
+  const bar=document.getElementById('profileBar');
+  if(!bar||!currentUser) return;
+  bar.classList.remove('hidden');
   const prog=levelProgress(P.xp||0);
-  document.getElementById('navXpLevel').textContent=`⭐${prog.level}`;
-  document.getElementById('navXpFill').style.width=prog.pct+'%';
-  document.getElementById('navXpLabel').textContent=`${prog.current} XP`;
-  chip.title=`${LANG==='ar'?'المستوى':'Level'} ${prog.level} · ${prog.current}/${prog.needed} XP`;
-
-  const coinChip=document.getElementById('navCoinsChip');
-  if(coinChip){ coinChip.classList.remove('hidden'); document.getElementById('navCoinsAmount').textContent=(P.coins||0).toLocaleString(); }
+  document.getElementById('profileBarLevel').textContent=`⭐ ${LANG==='ar'?'مستوى':'Lv'} ${prog.level}`;
+  document.getElementById('profileBarCoins').textContent=`🪙 ${(P.coins||0).toLocaleString()}`;
+  document.getElementById('profileBarXpFill').style.width=prog.pct+'%';
+  document.getElementById('profileBarXpLabel').textContent=`${prog.current} / ${prog.needed} XP`;
+  const avatarEl=document.getElementById('profileBarAvatar');
+  if(P.avatarPhoto){ avatarEl.style.backgroundImage=`url(${P.avatarPhoto})`; avatarEl.textContent=''; }
+  else { avatarEl.style.backgroundImage=''; avatarEl.textContent='👤'; }
 }
-document.getElementById('navXpChip').addEventListener('click',()=>{ showPanel('profile'); enterSection('profile'); });
-document.getElementById('navCoinsChip').addEventListener('click',()=>{ showPanel('store'); enterSection('store'); });
+document.getElementById('profileBar').addEventListener('click',()=>{ showPanel('profile'); enterSection('profile'); });
 /* ================= HOME DASHBOARD (Daily Summary) =================
    Single glance-and-know surface. Every number here is read from state that
    already exists elsewhere (today's menu, dailyTrack, foodSetup,
