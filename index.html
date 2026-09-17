@@ -1018,37 +1018,44 @@
         <div style="font-size:0.75rem;color:var(--ink-soft);" id="progressMonthSub"></div>
       </div>
     </div>
-    <div class="setup-card">
-      <h3 id="progressExerciseTitle"></h3>
-      <div id="progressExerciseList"></div>
-    </div>
   </section>
 
   <!-- PROFILE (real — level/XP/streaks/achievements/titles, all derived from
        actual logged data via computeUserStats()) -->
   <section class="panel" id="panel-profile">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
-    <div class="setup-card" style="text-align:center;">
-      <div style="font-size:2.2rem;">👤</div>
-      <h2 id="profileLevelLabel" style="margin:6px 0 2px;"></h2>
-      <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
-      <div id="profileXpLabel" style="font-size:0.75rem;color:var(--ink-soft);margin-top:4px;"></div>
+    <!-- shown ONLY for an existing/old account that has no username yet —
+         real XP/stats/achievements stay hidden until one is set, see
+         usernameSoftGateActive() + renderProfileSection() -->
+    <div class="setup-card hidden" id="profileUsernameGateCard" style="text-align:center;">
+      <div style="font-size:2.2rem;">🔒</div>
+      <h3 data-i18n="profile_gate_title" style="margin:6px 0;"></h3>
+      <p class="dash-empty" id="profileGateBody" data-i18n="profile_gate_body" style="text-align:center;"></p>
+      <button class="setup-btn" id="profileGateSetupBtn" data-i18n="profile_gate_btn"></button>
     </div>
-    <div class="setup-card">
-      <h3 id="profileStreaksTitle"></h3>
-      <div class="dash-row-mini" id="profileStreaksRow" style="flex-wrap:wrap;"></div>
-    </div>
-    <div class="setup-card">
-      <h3 id="profileStatsTitle"></h3>
-      <div id="profileStatsGrid" class="profile-stats-grid"></div>
-    </div>
-    <div class="setup-card">
-      <h3 id="profileTitlesTitle"></h3>
-      <div id="profileTitlesList" class="dash-empty"></div>
-    </div>
-    <div class="setup-card">
-      <h3 id="profileAchievementsTitle"></h3>
-      <div id="profileAchievementsList"></div>
+    <div id="profileStatsContent">
+      <div class="setup-card" style="text-align:center;">
+        <div style="font-size:2.2rem;">👤</div>
+        <h2 id="profileLevelLabel" style="margin:6px 0 2px;"></h2>
+        <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
+        <div id="profileXpLabel" style="font-size:0.75rem;color:var(--ink-soft);margin-top:4px;"></div>
+      </div>
+      <div class="setup-card">
+        <h3 id="profileStreaksTitle"></h3>
+        <div class="dash-row-mini" id="profileStreaksRow" style="flex-wrap:wrap;"></div>
+      </div>
+      <div class="setup-card">
+        <h3 id="profileStatsTitle"></h3>
+        <div id="profileStatsGrid" class="profile-stats-grid"></div>
+      </div>
+      <div class="setup-card">
+        <h3 id="profileTitlesTitle"></h3>
+        <div id="profileTitlesList" class="dash-empty"></div>
+      </div>
+      <div class="setup-card">
+        <h3 id="profileAchievementsTitle"></h3>
+        <div id="profileAchievementsList"></div>
+      </div>
     </div>
   </section>
 
@@ -1599,6 +1606,8 @@ const I18N={
   friends_empty:'رصيدك فاضي — أضف أصدقاء عشان تنافسهم',
   lb_you:'أنت',compare_vs:'أنت ضد {name}',
   profile_setup_title:'👤 سوّي ملفك العام',profile_setup_body:'عشان تضيف أصدقاء وتظهر بالمتصدرين، لازم تختار اسم مستخدم فريد. ما أحد يشوف بياناتك الخاصة إلا اللي تسمح له.',
+  profile_gate_title:'🔒 خلك تسوي اسم مستخدم الأول',profile_gate_btn:'سوّي اسم المستخدم',
+  profile_gate_body:'لسا ما سويت اسم مستخدم لملفك. ما راح تقدر تشوف مستواك (XP)، الإنجازات، والإحصائيات إلا بعد ما تسويه — بياناتك وتقدمك محفوظين وما راح يضيعون.',
   username_ph:'اسم المستخدم (إنجليزي، بدون مسافات)',username_checking:'نتأكد إنه متاح…',username_available:'✅ متاح',username_taken:'🚫 محجوز، جرب غيره',username_invalid:'اسم المستخدم لازم يكون ٣-٢٠ حرف إنجليزي/رقم/شرطة سفلية',
   displayname_ph:'اسمك يظهر للأصدقاء',avatar_label:'اختر شكل',save_profile_btn:'حفظ الملف',
   search_username_ph:'ابحث باسم المستخدم',search_btn:'بحث',user_not_found:'ما لقينا هالمستخدم',
@@ -1668,7 +1677,6 @@ const I18N={
   weight_log_title:'⚖️ سجل وزنك الأسبوعي',chart_btn:'الرسم البياني',
   progress_weight_title:'⚖️ اتجاه الوزن',progress_weight_empty:'سجل وزنك من صفحة الأكل عشان يبان الاتجاه هنا',
   progress_month_title:'🏋️ تمارين هالشهر',progress_month_sub:'تمرين مكتمل هالشهر',
-  progress_exercise_title:'📈 أقوى أوزانك',progress_exercise_empty:'ما فيه سجل تمارين بعد — سجل أوزانك من صفحة تمرين اليوم',
   progress_no_setup:'أعد إعداد الأكل والتمارين عشان يبان تقدمك هنا',
   q_ex_goal:'🎯 هدفك بالتمرين',q_ex_goal_sub:'تقدر تختار أكثر من وحدة',
   q_fitness_level:'📊 وش مستواك بالتمرين؟',q_fitness_level_sub:'هذا يحدد نوع التمارين نفسه، مو بس عدد العدات',
@@ -1722,6 +1730,8 @@ const I18N={
   friends_empty:'Your squad is empty — add friends to start competing',
   lb_you:'You',compare_vs:'You vs {name}',
   profile_setup_title:'👤 Set up your public profile',profile_setup_body:'To add friends and appear on leaderboards, pick a unique username. Nobody sees your private data unless you allow it.',
+  profile_gate_title:'🔒 Set up a username first',profile_gate_btn:'Set up username',
+  profile_gate_body:"You haven't set a username for your profile yet. Your level, XP, achievements and stats stay hidden until you do — nothing is lost, your progress is safely saved and will show up right after.",
   username_ph:'Username (letters/numbers, no spaces)',username_checking:'Checking availability…',username_available:'✅ Available',username_taken:"🚫 That username is taken — try another",username_invalid:'Username must be 3-20 letters/numbers/underscore',
   displayname_ph:'Your name, shown to friends',avatar_label:'Pick a look',save_profile_btn:'Save profile',
   search_username_ph:'Search by username',search_btn:'Search',user_not_found:"Couldn't find that user",
@@ -1791,7 +1801,6 @@ const I18N={
   weight_log_title:'⚖️ Weekly weight log',chart_btn:'Chart',
   progress_weight_title:'⚖️ Weight trend',progress_weight_empty:'Log your weight from the Diet section to see a trend here',
   progress_month_title:'🏋️ Workouts this month',progress_month_sub:'workouts completed this month',
-  progress_exercise_title:'📈 Strongest lifts',progress_exercise_empty:'No exercise history yet — log your sets on today’s workout page',
   progress_no_setup:'Set up Diet and Training to see progress here',
   q_ex_goal:'🎯 Your workout goal',q_ex_goal_sub:'You can pick more than one',
   q_fitness_level:'📊 What is your fitness level?',q_fitness_level_sub:"This changes the actual exercise type, not just rep counts",
@@ -2044,11 +2053,49 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
 
 document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); refreshHome(); });
 document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPanel('profile-hub'); });
+document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ showPanel('social'); enterSection('social'); });
 /* Collections has its own back-stack (species → category → animals → home)
    instead of always jumping straight to home like every other section's
    back button, so it's wired separately below and skipped here. */
 document.querySelectorAll('.back-btn').forEach(b=>{ if(b.id!=='collectionsBackBtn') b.addEventListener('click',()=>{ showPanel('home'); refreshHome(); }); });
-function showPanel(name){ document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0}); }
+/* true only for an account that has never actually used any real feature
+   yet — this is what separates a brand-new signup (must be blocked until
+   a username is created) from an old account that predates the username
+   requirement (must NOT be blocked, see usernameSoftGateActive below).
+   Deliberately NOT based on Firebase's creationTime/lastSignInTime: a
+   persisted guest/anonymous session is restored silently on every reload
+   without a fresh "sign-in" event, so lastSignInTime does not reliably
+   change for a returning guest — trusting it would risk permanently
+   hard-locking a real, long-time guest account out of their own data,
+   which is exactly what existing users must never have happen to them.
+   Checking for real in-app usage instead is decided entirely by this
+   app's own data, so it can never misfire that way. */
+function isBrandNewAccount(){
+  // NOTE: P.habits is seeded with DEFAULT_HABITS for every account from
+  // the very start (see the P initializer above), so its length is never
+  // a signal of real usage — deliberately not checked here.
+  return !P.workoutSetup && !P.foodSetup
+    && !(P.todoSetup && P.todoSetup.commitments && P.todoSetup.commitments.length)
+    && !(P.xp>0)
+    && !(P.achievements && Object.keys(P.achievements).length);
+}
+/* brand-new account, no username yet — the ENTIRE app is off-limits
+   until one is created. Checked inside showPanel/enterSection itself
+   (not just at launch) so there is no button, back-nav, or deep link
+   that can skip past it. */
+function usernameHardGateActive(){
+  return typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile() && isBrandNewAccount();
+}
+/* pre-existing account (created before usernames existed) with no
+   username yet — the rest of the app stays usable, but Profile must
+   never show real XP/stats/achievements until a username is set, so
+   renderProfileSection() checks this itself. */
+function usernameSoftGateActive(){
+  return typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile() && !isBrandNewAccount();
+}
+function showPanel(name){
+  if(usernameHardGateActive()) name='social';
+  document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0}); }
 
 /* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
 const DAY_NAMES={ ar:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'], en:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'] };
@@ -3200,6 +3247,7 @@ function equipTip(typeKey){
 
 /* ================= SECTION ENTRY (setup vs content) ================= */
 function enterSection(name){
+  if(usernameHardGateActive()) name='social';
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
@@ -4654,7 +4702,6 @@ async function renderProgressSection(){
   document.getElementById('progressWeightTitle').textContent=t('progress_weight_title');
   document.getElementById('progressMonthTitle').textContent=t('progress_month_title');
   document.getElementById('progressMonthSub').textContent=t('progress_month_sub');
-  document.getElementById('progressExerciseTitle').textContent=t('progress_exercise_title');
 
   await loadWeightLog();
   const weightEmpty=document.getElementById('progressWeightEmpty');
@@ -4675,9 +4722,6 @@ async function renderProgressSection(){
 
   document.getElementById('progressMonthCount').textContent='…';
   computeWorkoutsThisMonth().then(n=>{ document.getElementById('progressMonthCount').textContent=n; });
-
-  document.getElementById('progressExerciseList').innerHTML=`<div class="dash-empty">…</div>`;
-  computeExerciseHistory().then(renderExerciseHistoryList);
 }
 /* counts real daily-track docs for the CURRENT calendar month where
    workoutDone is true — never P.workoutCompletions (that's a lifetime
@@ -4689,39 +4733,6 @@ async function computeWorkoutsThisMonth(){
   const keys=Array.from({length:daysSoFar},(_,i)=>`daily-track:${y}-${m+1}-${i+1}`);
   const docs=await Promise.all(keys.map(k=>storageGet(k).catch(()=>null)));
   return docs.reduce((n,v)=>{ if(!v) return n; try{ return n+(JSON.parse(v).workoutDone?1:0); }catch(e){ return n; } },0);
-}
-/* scans the last 120 real days of workoutLog entries (bounded, not the
-   entire lifetime history) and keeps each exercise's best estimated 1RM
-   (Epley: weight*(1+reps/30)) — a real number from a real logged set, not
-   a placeholder. */
-async function computeExerciseHistory(){
-  const now=new Date();
-  const keys=Array.from({length:120},(_,i)=>{ const d=new Date(now); d.setDate(d.getDate()-i); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; });
-  const docs=await Promise.all(keys.map(k=>storageGet(k).catch(()=>null)));
-  const best={};
-  docs.forEach(v=>{
-    if(!v) return;
-    let doc; try{ doc=JSON.parse(v); }catch(e){ return; }
-    if(!doc.workoutLog) return;
-    Object.entries(doc.workoutLog).forEach(([exId,sets])=>{
-      (sets||[]).forEach(s=>{
-        if(!s||s.weight==null||s.reps==null) return;
-        const est=s.weight*(1+s.reps/30);
-        if(!best[exId]||est>best[exId].est1rm) best[exId]={weight:s.weight,reps:s.reps,est1rm:est};
-      });
-    });
-  });
-  return best;
-}
-function renderExerciseHistoryList(best){
-  const list=document.getElementById('progressExerciseList');
-  const entries=Object.entries(best);
-  if(!entries.length){ list.innerHTML=`<div class="dash-empty">${t('progress_exercise_empty')}</div>`; return; }
-  entries.sort((a,b)=>b[1].est1rm-a[1].est1rm);
-  list.innerHTML=entries.map(([exId,d])=>{
-    const name=exId.split('|').slice(1).join(' ').replace(/-/g,' ');
-    return `<div class="log-row"><span style="text-transform:capitalize;">${name}</span><span class="kg">${d.weight}${t('kg')} × ${d.reps}</span><span style="font-size:0.68rem;color:var(--ink-soft);">~${Math.round(d.est1rm)}${t('kg')} 1RM</span></div>`;
-  }).join('');
 }
 document.getElementById('weightChartBox').addEventListener('click',openWeightChartModal);
 document.getElementById('weightInput').addEventListener('keydown',e=>{
@@ -5073,6 +5084,15 @@ async function checkAndAwardChallenges(){
 
 /* ================= PROFILE PANEL (real) ================= */
 async function renderProfileSection(){
+  const gateCard=document.getElementById('profileUsernameGateCard');
+  const statsContent=document.getElementById('profileStatsContent');
+  if(usernameSoftGateActive()){
+    gateCard.classList.remove('hidden');
+    statsContent.classList.add('hidden');
+    return; // real XP/stats/achievements never even get computed/rendered until a username exists
+  }
+  gateCard.classList.add('hidden');
+  statsContent.classList.remove('hidden');
   document.getElementById('profileStreaksTitle').textContent=t('profile_streaks_title');
   document.getElementById('profileStatsTitle').textContent=t('profile_stats_title');
   document.getElementById('profileTitlesTitle').textContent=t('profile_titles_title');
@@ -5481,7 +5501,12 @@ function initProfileSetupCard(){
       try{
         await PublicProfileService.claimUsername(unameInp.value, document.getElementById('displayNameInput').value.trim(), grid.dataset.selected);
         showToast(LANG==='ar'?'تم إنشاء ملفك العام 🎉':'Public profile created 🎉','success');
-        renderSocialSection();
+        // username requirement now satisfied — usernameHardGateActive()/
+        // usernameSoftGateActive() both immediately return false, so
+        // send the person straight into the normal app instead of leaving
+        // them sitting on the setup screen they just finished.
+        refreshHome();
+        showPanel('home');
       }catch(e){
         msgEl.textContent=e.message; msgEl.className='username-check-msg bad'; saveBtn.disabled=false;
       }
@@ -6045,11 +6070,14 @@ function launchApp(){
   const fv=document.getElementById('footerVersion'); if(fv) fv.textContent=APP_VERSION;
   refreshHome();
   showPanel('home');
-  // username-first: a brand new sign-in (no public profile claimed yet)
-  // lands directly on the profile-setup screen instead of the home
-  // dashboard, so a username exists before the person does anything else
-  // in the app — not buried inside the Friends tab waiting to be found.
-  if(typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile()){
+  // username-first, brand-new accounts ONLY: a sign-up that has never
+  // signed in before lands directly on the profile-setup screen instead
+  // of the home dashboard, and showPanel/enterSection refuse to leave it
+  // (see usernameHardGateActive) until a username is saved. An existing
+  // account that predates the username requirement is NEVER redirected
+  // here — it launches straight to Home as always; renderProfileSection()
+  // is what prompts it for a username, and only when Profile is opened.
+  if(usernameHardGateActive()){
     showPanel('social');
     enterSection('social');
   }
