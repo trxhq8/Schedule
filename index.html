@@ -179,6 +179,27 @@
   .compare-bar-wrap{ flex:1; margin:0 10px; height:6px; background:var(--line); border-radius:999px; overflow:hidden; display:flex; }
   .compare-bar-you{ background:var(--accent-deep); height:100%; }
   .compare-bar-them{ background:var(--ink-soft); height:100%; }
+  .friend-row-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .friend-action-btn{ border:none; border-radius:999px; padding:7px 12px; font-size:0.72rem; font-weight:700; font-family:var(--font-head); cursor:pointer; }
+  .friend-action-btn.accept{ background:var(--accent-deep); color:#fff; }
+  .friend-action-btn.reject{ background:var(--bg); color:var(--ink-soft); border:1px solid var(--line); }
+  .friend-action-btn.remove{ background:var(--bg); color:#c0392b; border:1px solid #d9a79e; }
+  .friend-row-clickable{ cursor:pointer; }
+  .avatar-picker-grid{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+  .avatar-choice{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; border:1.5px solid var(--line); background:var(--bg); cursor:pointer; }
+  .avatar-choice.selected{ border-color:var(--heading); outline:2px solid var(--heading); }
+  .username-check-row{ display:flex; align-items:center; gap:8px; }
+  .username-check-msg{ font-size:0.72rem; margin-top:4px; min-height:16px; }
+  .username-check-msg.ok{ color:#2d8a4e; }
+  .username-check-msg.bad{ color:#c0392b; }
+  .privacy-toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:0.8rem; }
+  .privacy-toggle-row:last-child{ border-bottom:none; }
+  .friend-profile-header{ text-align:center; padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--line); }
+  .friend-profile-avatar{ width:64px; height:64px; border-radius:50%; background:var(--bg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 8px; }
+  .friend-profile-stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .friend-profile-stat{ background:var(--bg); border-radius:12px; padding:10px; text-align:center; }
+  .friend-profile-stat b{ display:block; font-family:var(--font-head); font-size:1.1rem; color:var(--heading); }
+  .friend-profile-stat span{ font-size:0.68rem; color:var(--ink-soft); }
 
   .back-row{ margin:14px 0 4px; display:flex; justify-content:space-between; align-items:center; }
   .back-btn{ font-family:var(--font-head); font-weight:700; font-size:0.8rem; background:var(--card); border:1px solid var(--line); color:var(--ink-soft); border-radius:999px; padding:7px 16px; cursor:pointer; }
@@ -1042,13 +1063,25 @@
        from this static-site + per-user-Firestore architecture alone) -->
   <section class="panel" id="panel-social">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
-    <div class="demo-mode-banner" id="socialDemoBanner"></div>
-    <div class="setup-card">
+    <!-- shown only until the user has claimed a public username -->
+    <div class="setup-card" id="profileSetupCard">
+      <h3 data-i18n="profile_setup_title"></h3>
+      <p class="dash-empty" id="profileSetupBody" style="text-align:start;"></p>
+      <input type="text" class="setup-input" id="usernameInput" autocomplete="off" data-i18n-ph="username_ph">
+      <div class="username-check-msg" id="usernameCheckMsg"></div>
+      <input type="text" class="setup-input" id="displayNameInput" autocomplete="off" data-i18n-ph="displayname_ph">
+      <label class="settings-row-label" data-i18n="avatar_label" style="display:block;margin-bottom:6px;"></label>
+      <div class="avatar-picker-grid" id="avatarPickerGrid"></div>
+      <button class="setup-btn" id="saveProfileBtn" data-i18n="save_profile_btn"></button>
+    </div>
+    <!-- real friends UI, shown once a profile exists -->
+    <div class="setup-card hidden" id="socialMainCard">
       <div class="social-tabs" id="socialTabs">
         <button type="button" class="social-tab active" data-tab="friends" id="socialTabFriends"></button>
         <button type="button" class="social-tab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
         <button type="button" class="social-tab" data-tab="feed" id="socialTabFeed"></button>
         <button type="button" class="social-tab" data-tab="compare" id="socialTabCompare"></button>
+        <button type="button" class="social-tab" data-tab="privacy" id="socialTabPrivacy" data-i18n="privacy_title"></button>
       </div>
       <div id="socialTabContent"></div>
     </div>
@@ -1561,10 +1594,23 @@ const I18N={
   stat_workouts:'تمرين مكتمل',stat_nutrition:'يوم تغذية',stat_water:'يوم ماء',stat_collection:'مجموع',stat_achievements:'إنجاز',stat_xp:'نقطة خبرة',
   challenges_title:'🎯 التحديات',challenges_empty:'ما فيه تحديات نشطة حالياً',
   challenge_progress:'{cur} / {target}',challenge_completed:'✅ مكتمل',
-  social_demo_banner:'🔧 وضع تجريبي — بيانات وهمية للعرض فقط. الأصدقاء الحقيقيون يحتاجون تفعيل قاعدة بيانات مشتركة (راجع التقرير).',
   social_tab_friends:'👥 الأصدقاء',social_tab_leaderboard:'🏆 المتصدرين',social_tab_feed:'📰 النشاط',social_tab_compare:'⚖️ مقارنة',
   friends_empty:'رصيدك فاضي — أضف أصدقاء عشان تنافسهم',
   lb_you:'أنت',compare_vs:'أنت ضد {name}',
+  profile_setup_title:'👤 سوّي ملفك العام',profile_setup_body:'عشان تضيف أصدقاء وتظهر بالمتصدرين، لازم تختار اسم مستخدم فريد. ما أحد يشوف بياناتك الخاصة إلا اللي تسمح له.',
+  username_ph:'اسم المستخدم (إنجليزي، بدون مسافات)',username_checking:'نتأكد إنه متاح…',username_available:'✅ متاح',username_taken:'🚫 محجوز، جرب غيره',username_invalid:'اسم المستخدم لازم يكون ٣-٢٠ حرف إنجليزي/رقم/شرطة سفلية',
+  displayname_ph:'اسمك يظهر للأصدقاء',avatar_label:'اختر شكل',save_profile_btn:'حفظ الملف',
+  search_username_ph:'ابحث باسم المستخدم',search_btn:'بحث',user_not_found:'ما لقينا هالمستخدم',
+  send_request_btn:'➕ إضافة صديق',request_sent_btn:'⏳ تم الإرسال',already_friends_btn:'✅ أصدقاء',
+  incoming_requests_title:'طلبات واردة',outgoing_requests_title:'طلبات مرسلة',
+  accept_btn:'قبول',reject_btn:'رفض',remove_friend_btn:'إزالة',cancel_request_btn:'إلغاء',
+  confirm_remove_friend:'متأكد تبي تشيل هذا الصديق؟',
+  privacy_title:'🔒 خصوصيتي',privacy_profile_visibility:'من يشوف ملفي',privacy_visibility_private:'خاص',privacy_visibility_friends:'الأصدقاء بس',privacy_visibility_public:'عام',
+  privacy_training:'التمارين',privacy_nutrition:'التغذية',privacy_achievements:'الإنجازات',privacy_collection:'المقتنيات',privacy_activity:'نشاطي',privacy_leaderboard_global:'المتصدرين العام',
+  friend_profile_title:'ملف الصديق',friend_profile_hidden:'هذا القسم خاص',
+  lb_scope_friends:'أصدقاء',lb_scope_global:'عام',
+  activity_you:'أنت',
+  act_workout:'أكمل تمرين',act_achievement:'فتح إنجاز',act_challenge:'أكمل تحدي',act_streak:'وصل لسلسلة {n} يوم',act_friend_added:'صار صديق مع {name}',act_collection:'أضاف مقتنى جديد',
   dash_cal_title:'🍽️ السعرات اليوم',dash_cal_planned:'مخطط',dash_cal_consumed:'مستهلك',dash_cal_remaining:'متبقي',
   dash_cal_empty:'أعد إعداد نظامك الغذائي عشان نحسب سعراتك',
   dash_workout_title:'🏋️ تمرين اليوم',
@@ -1666,10 +1712,23 @@ const I18N={
   stat_workouts:'workouts done',stat_nutrition:'nutrition days',stat_water:'water days',stat_collection:'collected',stat_achievements:'achievements',stat_xp:'XP',
   challenges_title:'🎯 Challenges',challenges_empty:'No active challenges right now',
   challenge_progress:'{cur} / {target}',challenge_completed:'✅ Completed',
-  social_demo_banner:'🔧 Demo Mode — sample data for preview only. Real friends need a shared backend (see report).',
   social_tab_friends:'👥 Friends',social_tab_leaderboard:'🏆 Leaderboard',social_tab_feed:'📰 Activity',social_tab_compare:'⚖️ Compare',
   friends_empty:'Your squad is empty — add friends to start competing',
   lb_you:'You',compare_vs:'You vs {name}',
+  profile_setup_title:'👤 Set up your public profile',profile_setup_body:'To add friends and appear on leaderboards, pick a unique username. Nobody sees your private data unless you allow it.',
+  username_ph:'Username (letters/numbers, no spaces)',username_checking:'Checking availability…',username_available:'✅ Available',username_taken:"🚫 That username is taken — try another",username_invalid:'Username must be 3-20 letters/numbers/underscore',
+  displayname_ph:'Your name, shown to friends',avatar_label:'Pick a look',save_profile_btn:'Save profile',
+  search_username_ph:'Search by username',search_btn:'Search',user_not_found:"Couldn't find that user",
+  send_request_btn:'➕ Add friend',request_sent_btn:'⏳ Sent',already_friends_btn:'✅ Friends',
+  incoming_requests_title:'Incoming requests',outgoing_requests_title:'Sent requests',
+  accept_btn:'Accept',reject_btn:'Reject',remove_friend_btn:'Remove',cancel_request_btn:'Cancel',
+  confirm_remove_friend:'Remove this friend?',
+  privacy_title:'🔒 My privacy',privacy_profile_visibility:'Who can see my profile',privacy_visibility_private:'Private',privacy_visibility_friends:'Friends only',privacy_visibility_public:'Public',
+  privacy_training:'Training',privacy_nutrition:'Nutrition',privacy_achievements:'Achievements',privacy_collection:'Collection',privacy_activity:'My activity',privacy_leaderboard_global:'Global leaderboard',
+  friend_profile_title:"Friend's profile",friend_profile_hidden:'This section is private',
+  lb_scope_friends:'Friends',lb_scope_global:'Global',
+  activity_you:'You',
+  act_workout:'completed a workout',act_achievement:'unlocked an achievement',act_challenge:'completed a challenge',act_streak:'reached a {n}-day streak',act_friend_added:'became friends with {name}',act_collection:'added a new collection item',
   dash_cal_title:'🍽️ Calories today',dash_cal_planned:'Planned',dash_cal_consumed:'Consumed',dash_cal_remaining:'Remaining',
   dash_cal_empty:'Set up your food plan to see calories here',
   dash_workout_title:'🏋️ Today\'s workout',
@@ -1814,7 +1873,8 @@ let P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',
   lifetimeStats:{waterDaysHit:0,nutritionDaysHit:0,challengesCompleted:0,longestHabitStreakEver:0},
   achievements:{}, // {achievementId: {unlockedAt: isoString}}
   challengeState:{}, // {challengeId+periodKey: {completed:true, completedAt}}
-  settings:{achSoundEnabled:true, achSoundVolume:0.7}
+  settings:{achSoundEnabled:true, achSoundVolume:0.7},
+  publicProfile:null // {username,displayName,avatar,privacy} — see PublicProfileService; null until claimed
 };
 
 document.getElementById('mainLangToggle').addEventListener('click',async()=>{
@@ -1923,7 +1983,7 @@ document.getElementById('demoConfirmYes').addEventListener('click',async()=>{
       streakCount:0,lastStreakDate:'',workoutCounts:{push:1,pull:1,legs:1},workoutCompletions:{push:0,pull:0,legs:0},goodStreak:{push:0,pull:0,legs:0},exerciseLevel:null,
       habits:DEFAULT_HABITS.map(h=>({...h})),
       xp:0, streaks:null, lifetimeStats:{waterDaysHit:0,nutritionDaysHit:0,challengesCompleted:0,longestHabitStreakEver:0},
-      achievements:{}, challengeState:{}, settings:{achSoundEnabled:true, achSoundVolume:0.7} };
+      achievements:{}, challengeState:{}, settings:{achSoundEnabled:true, achSoundVolume:0.7}, publicProfile:null };
   weightLog=[];
   dailyTrack={...DAILY_TRACK_DEFAULTS};
   LANG='ar';
@@ -4560,6 +4620,7 @@ async function toggleWorkoutDone(typeKey){
       await awardXP(XP_CONFIG.workout_complete);
       await saveDailyTrack();
       await notifyNewUnlocks();
+      if(typeof ActivityService!=='undefined') await ActivityService.post('workout',{typeKey});
     }
   }
   return dailyTrack.workoutDone;
@@ -4576,6 +4637,15 @@ async function notifyNewUnlocks(){
     ...newAch.map(a=>({...a,kind:'achievement'})),
     ...newlyCompleted.map(c=>({...c,kind:'challenge'}))
   ]);
+  // real Friends architecture: this is the single convergence point after
+  // every completion event, so it's the one place that refreshes the public
+  // stats mirror and posts the resulting activity — never scattered into
+  // the individual event handlers above.
+  if(typeof PublicProfileService!=='undefined' && PublicProfileService.hasProfile()){
+    await PublicProfileService.syncStats();
+    for(const a of newAch) await ActivityService.post('achievement',{name:LANG==='ar'?a.nameAr:a.nameEn});
+    for(const c of newlyCompleted) await ActivityService.post('challenge',{name:LANG==='ar'?c.nameAr:c.nameEn});
+  }
 }
 function showFeedbackPrompt(typeKey){
   const row=document.getElementById('feedbackRow'); if(!row) return;
@@ -5188,59 +5258,220 @@ async function renderChallengesSection(){
   }).join('') || `<div class="dash-empty">${t('challenges_empty')}</div>`;
 }
 
-/* ================= SOCIAL — DEMO MODE =================
-   IMPORTANT: this whole section is sample data. The app's real backend
-   (Firebase Auth + Firestore) stores every user's data under
-   users/{uid}/data/* with (almost certainly) rules restricting reads to
-   that same uid — nothing in this codebase has ever read another user's
-   data. Real friends/leaderboards/activity feed need either a public
-   profile collection with relaxed read rules, or a Cloud Function — a
-   Firebase-console change outside what a static HTML file can do. The
-   three services below are written as the clean interface a real
-   implementation would fill in later (swap the demo body, keep the same
-   method signature, and every render function below keeps working
-   unchanged). Demo data NEVER touches P.xp/achievements/real stats — it is
-   read-only sample display. */
-const DEMO_FRIENDS=[
-  {id:'demo1', name:'Ahmed', avatar:'🧑', level:9, xp:3200, totalWorkouts:38, nutritionDaysHit:25, waterDaysHit:20, totalCollected:31, bestStreak:12, achievementsUnlocked:7, title:'Iron Beast'},
-  {id:'demo2', name:'Sara', avatar:'👩', level:14, xp:6100, totalWorkouts:52, nutritionDaysHit:40, waterDaysHit:35, totalCollected:48, bestStreak:21, achievementsUnlocked:10, title:'Unbreakable'},
-  {id:'demo3', name:'Mohammed', avatar:'🧑', level:6, xp:1500, totalWorkouts:19, nutritionDaysHit:12, waterDaysHit:15, totalCollected:18, bestStreak:6, achievementsUnlocked:4, title:null},
-];
-const DEMO_FEED=[
-  {icon:'🔥', textEn:'Ahmed completed a workout', textAr:'أحمد أكمل تمرين', when:'2h'},
-  {icon:'🏆', textEn:'Sara unlocked "Unbreakable"', textAr:'سارة فتحت لقب "لا يُكسر"', when:'5h'},
-  {icon:'🐟', textEn:'Mohammed caught a new species', textAr:'محمد اصطاد نوع جديد', when:'1d'},
-  {icon:'💧', textEn:'Ahmed completed his water goal', textAr:'أحمد حقق هدف الماء', when:'1d'},
-];
+/* ================= FRIENDS ARCHITECTURE (real Firebase Auth + Firestore) =================
+   Layering:  Firebase Auth  →  P.publicProfile (local source of truth for
+   YOUR OWN settings, mirrored out)  →  PublicProfileService (read/write the
+   public profile doc)  →  FriendService / ActivityService / LeaderboardService
+   (friend graph, feed, rankings)  →  the render/open functions at the
+   bottom. No Firestore call for any of this happens outside this section —
+   nothing scattered into random UI handlers.
+
+   Design note on privacy: a friendship grants read access to the other
+   person's whole public profile DOCUMENT (Firestore security rules are
+   document-level, not field-level) — the privacy.* toggles are enforced by
+   the render functions below, which simply omit a category its owner has
+   switched off. This is the same model Strava/Instagram-style "hide my
+   activity" toggles use: the number exists on the server, the toggle
+   controls what's displayed. True per-field access control would need a
+   separate document per privacy category, which is a much bigger change
+   than this feature calls for — noted here rather than hidden. */
+function usersCol(){ return fbDb.collection('users'); }
+function usernamesCol(){ return fbDb.collection('usernames'); }
+function friendRequestsCol(){ return fbDb.collection('friendRequests'); }
+function friendshipsCol(){ return fbDb.collection('friendships'); }
+function activityCol(){ return fbDb.collection('activity'); }
+function leaderboardEntriesCol(){ return fbDb.collection('leaderboardEntries'); }
+function pairId(a,b){ return a<b ? a+'_'+b : b+'_'+a; }
+function defaultPrivacy(){ return {profileVisibility:'friends', training:true, nutrition:true, achievements:true, collection:true, activity:true, leaderboardGlobal:false}; }
+function serverNow(){ return firebase.firestore.FieldValue.serverTimestamp(); }
+
+const PublicProfileService={
+  usernameRegex:/^[a-z0-9_]{3,20}$/,
+  hasProfile(){ return !!(P.publicProfile && P.publicProfile.username); },
+  async checkUsernameAvailable(rawUsername){
+    const uname=String(rawUsername||'').trim().toLowerCase();
+    if(!this.usernameRegex.test(uname)) return {ok:false, reason:'invalid'};
+    try{ const doc=await usernamesCol().doc(uname).get(); return {ok:!doc.exists, reason:doc.exists?'taken':null}; }
+    catch(e){ return {ok:false, reason:'error'}; }
+  },
+  /* two writes: claim the username doc (fails server-side if it exists —
+     see the rules' create-only match), then create the public profile doc
+     itself. If the username doc write is rejected, nothing else runs. */
+  async claimUsername(rawUsername, displayName, avatar){
+    if(!fbDb||!currentUser) throw new Error('offline');
+    const uname=String(rawUsername||'').trim().toLowerCase();
+    if(!this.usernameRegex.test(uname)) throw new Error(t('username_invalid'));
+    try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
+    catch(e){ throw new Error(t('username_taken')); }
+    const privacy=defaultPrivacy();
+    const stats=await computeUserStats();
+    const titles=unlockedTitles(stats).map(x=>x.id);
+    await usersCol().doc(currentUser.uid).set({
+      uid:currentUser.uid, username:uname, displayName:displayName||uname, avatar:avatar||'🙂',
+      privacy, stats, titles, createdAt:serverNow(), updatedAt:serverNow()
+    });
+    P.publicProfile={username:uname, displayName:displayName||uname, avatar:avatar||'🙂', privacy};
+    await storageSet('profile',JSON.stringify(P));
+    return uname;
+  },
+  async updatePrivacy(partial){
+    if(!this.hasProfile()) return;
+    P.publicProfile.privacy={...P.publicProfile.privacy, ...partial};
+    await storageSet('profile',JSON.stringify(P));
+    await usersCol().doc(currentUser.uid).set({privacy:P.publicProfile.privacy, updatedAt:serverNow()},{merge:true});
+    if(partial.leaderboardGlobal===false) await leaderboardEntriesCol().doc(currentUser.uid).delete().catch(()=>{});
+    else if(partial.leaderboardGlobal===true) await this.syncStats();
+  },
+  /* the ONLY place your public mirror's stats/titles are pushed out — called
+     from notifyNewUnlocks() (the app's existing single convergence point
+     after every real completion event), never from random UI handlers. */
+  async syncStats(){
+    if(!this.hasProfile()||!fbDb||!currentUser) return;
+    try{
+      const stats=await computeUserStats();
+      const titles=unlockedTitles(stats).map(x=>x.id);
+      await usersCol().doc(currentUser.uid).set({stats,titles,updatedAt:serverNow()},{merge:true});
+      if(P.publicProfile.privacy.leaderboardGlobal){
+        await leaderboardEntriesCol().doc(currentUser.uid).set({
+          uid:currentUser.uid, displayName:P.publicProfile.displayName, avatar:P.publicProfile.avatar,
+          xp:stats.xp, level:stats.level, totalWorkouts:stats.totalWorkouts, achievementsUnlocked:stats.achievementsUnlocked,
+          bestStreak:stats.bestStreak, totalCollected:stats.totalCollected, nutritionDaysHit:stats.nutritionDaysHit, waterDaysHit:stats.waterDaysHit,
+          updatedAt:serverNow()
+        });
+      }
+    }catch(e){ /* offline/transient — the next real completion event retries via this same hook */ }
+  },
+  async getProfile(uid){
+    try{ const doc=await usersCol().doc(uid).get(); return doc.exists?{uid,...doc.data()}:null; }
+    catch(e){ return {uid, restricted:true}; } // exists but rules denied us (not friends, not public) — treated as "can't view", not "doesn't exist"
+  },
+  async searchByUsername(rawUsername){
+    const uname=String(rawUsername||'').trim().toLowerCase();
+    if(!uname) return null;
+    const unameDoc=await usernamesCol().doc(uname).get();
+    if(!unameDoc.exists) return null;
+    const uid=unameDoc.data().uid;
+    if(uid===currentUser.uid) return {uid, self:true};
+    const profile=await this.getProfile(uid);
+    // profile exists but the read was denied (their visibility isn't public
+    // and we're not friends yet) — keep the username we already have from
+    // the public usernames lookup so the UI can still show *something* real
+    // and still let the user send a request, instead of literal "undefined".
+    if(profile&&profile.restricted) return {uid, username:uname, restricted:true};
+    return profile;
+  }
+};
+
 const FriendService={
-  MODE:'demo',
-  async listFriends(){ return DEMO_FRIENDS.map(f=>({...f})); }
+  async requestStatusWith(uid){
+    const me=currentUser.uid;
+    const fr=await friendshipsCol().doc(pairId(me,uid)).get().catch(()=>null);
+    if(fr&&fr.exists) return 'friends';
+    const out=await friendRequestsCol().doc(me+'_'+uid).get().catch(()=>null);
+    if(out&&out.exists&&out.data().status==='pending') return 'outgoing';
+    const inc=await friendRequestsCol().doc(uid+'_'+me).get().catch(()=>null);
+    if(inc&&inc.exists&&inc.data().status==='pending') return 'incoming';
+    return 'none';
+  },
+  async sendRequest(targetUid){
+    const me=currentUser.uid;
+    if(targetUid===me) throw new Error('self');
+    // if they already sent YOU one, accept theirs instead of creating a
+    // second, opposite-direction pending request for the same pair
+    const incoming=await friendRequestsCol().doc(targetUid+'_'+me).get();
+    if(incoming.exists && incoming.data().status==='pending') return this.respondToRequest(targetUid+'_'+me,'accepted');
+    await friendRequestsCol().doc(me+'_'+targetUid).set({fromUid:me, toUid:targetUid, status:'pending', createdAt:serverNow()});
+  },
+  async cancelRequest(targetUid){
+    await friendRequestsCol().doc(currentUser.uid+'_'+targetUid).update({status:'cancelled'});
+  },
+  async respondToRequest(reqId,status){
+    await friendRequestsCol().doc(reqId).update({status, respondedAt:serverNow()});
+    if(status==='accepted'){
+      const [fromUid,toUid]=reqId.split('_');
+      const uidA=fromUid<toUid?fromUid:toUid, uidB=fromUid<toUid?toUid:fromUid;
+      await friendshipsCol().doc(uidA+'_'+uidB).set({uidA,uidB,members:[uidA,uidB],createdAt:serverNow()});
+      const otherUid=fromUid===currentUser.uid?toUid:fromUid;
+      const otherProfile=await PublicProfileService.getProfile(otherUid).catch(()=>null);
+      await ActivityService.post('friend_added',{withName:(otherProfile&&otherProfile.displayName)||'?'});
+    }
+  },
+  async listIncomingRequests(){
+    const snap=await friendRequestsCol().where('toUid','==',currentUser.uid).where('status','==','pending').get();
+    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    return Promise.all(reqs.map(async r=>({...r, profile:await PublicProfileService.getProfile(r.fromUid)})));
+  },
+  async listOutgoingRequests(){
+    const snap=await friendRequestsCol().where('fromUid','==',currentUser.uid).where('status','==','pending').get();
+    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    return Promise.all(reqs.map(async r=>({...r, profile:await PublicProfileService.getProfile(r.toUid)})));
+  },
+  async listFriends(){
+    const me=currentUser.uid;
+    const snap=await friendshipsCol().where('members','array-contains',me).get();
+    const uids=snap.docs.map(d=>{ const dt=d.data(); return dt.uidA===me?dt.uidB:dt.uidA; });
+    const profiles=await Promise.all(uids.map(uid=>PublicProfileService.getProfile(uid)));
+    return profiles.filter(Boolean);
+  },
+  async removeFriend(otherUid){
+    await friendshipsCol().doc(pairId(currentUser.uid,otherUid)).delete();
+  }
 };
+
 const ActivityService={
-  MODE:'demo',
-  async listFeed(){ return DEMO_FEED.slice(); }
+  async post(type,data){
+    if(!PublicProfileService.hasProfile()) return; // no public profile yet — nothing for a friend to read anyway
+    try{ await activityCol().add({uid:currentUser.uid, type, data:data||{}, createdAt:serverNow()}); }
+    catch(e){ /* best-effort — never block the real action (workout/achievement/etc.) that triggered this */ }
+  },
+  /* deliberately NOT using orderBy alongside the "in" filter here — that
+     combination needs a composite index Firestore would have to be asked
+     to build. Sorting the (capped, ≤100) result client-side avoids that
+     dependency entirely for this size of friend list. */
+  async listFeed(){
+    const friends=await FriendService.listFriends();
+    const uids=[currentUser.uid, ...friends.map(f=>f.uid)].slice(0,30);
+    if(!uids.length) return [];
+    try{
+      const snap=await activityCol().where('uid','in',uids).limit(100).get();
+      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      docs.sort((a,b)=>(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0)-(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0));
+      return docs.slice(0,30);
+    }catch(e){ return []; }
+  }
 };
+
 const LEADERBOARD_CATEGORIES=[
-  {id:'training', icon:'🏋️', metric:'totalWorkouts', labelEn:'Training', labelAr:'التمارين', unitEn:'workouts', unitAr:'تمرين'},
-  {id:'nutrition', icon:'🍽️', metric:'nutritionDaysHit', labelEn:'Nutrition', labelAr:'التغذية', unitEn:'days', unitAr:'يوم'},
-  {id:'water', icon:'💧', metric:'waterDaysHit', labelEn:'Water', labelAr:'الماء', unitEn:'days', unitAr:'يوم'},
-  {id:'collection', icon:'📦', metric:'totalCollected', labelEn:'Collection', labelAr:'المقتنيات', unitEn:'collected', unitAr:'مجموع'},
-  {id:'streak', icon:'🔥', metric:'bestStreak', labelEn:'Streak', labelAr:'السلاسل', unitEn:'days', unitAr:'يوم'},
-  {id:'achievements', icon:'🏅', metric:'achievementsUnlocked', labelEn:'Achievements', labelAr:'الإنجازات', unitEn:'unlocked', unitAr:'إنجاز'},
-  {id:'xp', icon:'⚡', metric:'xp', labelEn:'XP', labelAr:'الخبرة', unitEn:'XP', unitAr:'نقطة'},
+  {id:'training', icon:'🏋️', metric:'totalWorkouts', privacyKey:'training', labelEn:'Training', labelAr:'التمارين', unitEn:'workouts', unitAr:'تمرين'},
+  {id:'nutrition', icon:'🍽️', metric:'nutritionDaysHit', privacyKey:'nutrition', labelEn:'Nutrition', labelAr:'التغذية', unitEn:'days', unitAr:'يوم'},
+  {id:'water', icon:'💧', metric:'waterDaysHit', privacyKey:'nutrition', labelEn:'Water', labelAr:'الماء', unitEn:'days', unitAr:'يوم'},
+  {id:'collection', icon:'📦', metric:'totalCollected', privacyKey:'collection', labelEn:'Collection', labelAr:'المقتنيات', unitEn:'collected', unitAr:'مجموع'},
+  {id:'streak', icon:'🔥', metric:'bestStreak', privacyKey:'training', labelEn:'Streak', labelAr:'السلاسل', unitEn:'days', unitAr:'يوم'},
+  {id:'achievements', icon:'🏅', metric:'achievementsUnlocked', privacyKey:'achievements', labelEn:'Achievements', labelAr:'الإنجازات', unitEn:'unlocked', unitAr:'إنجاز'},
+  {id:'xp', icon:'⚡', metric:'xp', privacyKey:null, labelEn:'XP', labelAr:'الخبرة', unitEn:'XP', unitAr:'نقطة'},
 ];
 const LeaderboardService={
-  MODE:'demo',
-  /* the REAL user's own row is genuine (computeUserStats()); every other
-     row is demo. Only "All Time" is implemented — weekly/monthly periods
-     for OTHER users would need backend-side historical aggregation, which
-     doesn't exist yet, so faking a period toggle on top of demo data would
-     just be a second layer of pretend. */
-  async getLeaderboard(categoryId){
+  /* 'global' reads the slim opt-in leaderboardEntries mirror (public to any
+     signed-in user, by design — that's what opting in means); 'friends'
+     reads each friend's real profile doc directly, honoring whichever
+     per-category privacy flag that category maps to. Both are 100% real
+     Firestore reads — there is no local/demo fallback in either branch. */
+  async getLeaderboard(categoryId, scope){
     const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===categoryId)||LEADERBOARD_CATEGORIES[0];
     const you=await computeUserStats();
-    const friends=await FriendService.listFriends();
-    const rows=[{name:t('lb_you'), isMe:true, avatar:'⭐', ...you}, ...friends];
+    let others=[];
+    if(scope==='global'){
+      try{
+        const snap=await leaderboardEntriesCol().orderBy(cat.metric,'desc').limit(50).get();
+        others=snap.docs.map(d=>d.data()).filter(r=>r.uid!==currentUser.uid);
+      }catch(e){ others=[]; }
+    } else {
+      const friends=await FriendService.listFriends();
+      others=friends
+        .filter(f=>!cat.privacyKey || (f.privacy&&f.privacy[cat.privacyKey]!==false))
+        .map(f=>({uid:f.uid, displayName:f.displayName, avatar:f.avatar, ...(f.stats||{})}));
+    }
+    const rows=[{name:t('lb_you'), isMe:true, avatar:'⭐', ...you}, ...others.map(o=>({name:o.displayName, avatar:o.avatar, ...o}))];
     rows.sort((a,b)=>(b[cat.metric]||0)-(a[cat.metric]||0));
     return {category:cat, rows};
   }
@@ -5248,8 +5479,13 @@ const LeaderboardService={
 
 let socialActiveTab='friends';
 let socialActiveCategory='training';
+let socialActiveScope='friends';
 function renderSocialSection(){
-  document.getElementById('socialDemoBanner').textContent=t('social_demo_banner');
+  document.getElementById('profileSetupBody').textContent=t('profile_setup_body');
+  const hasProfile=PublicProfileService.hasProfile();
+  document.getElementById('profileSetupCard').classList.toggle('hidden',hasProfile);
+  document.getElementById('socialMainCard').classList.toggle('hidden',!hasProfile);
+  if(!hasProfile){ initProfileSetupCard(); return; }
   document.getElementById('socialTabFriends').textContent=t('social_tab_friends');
   document.getElementById('socialTabLeaderboard').textContent=t('social_tab_leaderboard');
   document.getElementById('socialTabFeed').textContent=t('social_tab_feed');
@@ -5259,54 +5495,239 @@ function renderSocialSection(){
     b.onclick=()=>{ socialActiveTab=b.dataset.tab; renderSocialSection(); };
   });
   const content=document.getElementById('socialTabContent');
+  content.innerHTML=`<div class="dash-empty">…</div>`;
   if(socialActiveTab==='friends') return renderSocialFriendsTab(content);
   if(socialActiveTab==='leaderboard') return renderSocialLeaderboardTab(content);
   if(socialActiveTab==='feed') return renderSocialFeedTab(content);
   if(socialActiveTab==='compare') return renderSocialCompareTab(content);
+  if(socialActiveTab==='privacy') return renderSocialPrivacyTab(content);
+}
+const AVATAR_CHOICES=['🙂','😎','🦁','🐯','🐺','🦊','🐼','🐸','🐵','🦉','🦅','🐢','🐙','🌵','⚡','🔥','🌟','🥷','🧗','🏃'];
+function initProfileSetupCard(){
+  const grid=document.getElementById('avatarPickerGrid');
+  if(!grid.dataset.built){
+    grid.innerHTML=AVATAR_CHOICES.map(a=>`<div class="avatar-choice" data-avatar="${a}">${a}</div>`).join('');
+    grid.dataset.built='1';
+    grid.dataset.selected=AVATAR_CHOICES[0];
+    grid.querySelectorAll('.avatar-choice').forEach(el=>el.addEventListener('click',()=>{
+      grid.querySelectorAll('.avatar-choice').forEach(c=>c.classList.remove('selected'));
+      el.classList.add('selected'); grid.dataset.selected=el.dataset.avatar;
+    }));
+    grid.querySelector('.avatar-choice').classList.add('selected');
+  }
+  const unameInp=document.getElementById('usernameInput');
+  const msgEl=document.getElementById('usernameCheckMsg');
+  const saveBtn=document.getElementById('saveProfileBtn');
+  if(!document.getElementById('displayNameInput').value) document.getElementById('displayNameInput').value=P.name||'';
+  let checkToken=0;
+  const runCheck=async()=>{
+    const val=unameInp.value.trim();
+    if(!val){ msgEl.textContent=''; msgEl.className='username-check-msg'; saveBtn.disabled=true; return; }
+    if(!PublicProfileService.usernameRegex.test(val.toLowerCase())){
+      msgEl.textContent=t('username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; return;
+    }
+    msgEl.textContent=t('username_checking'); msgEl.className='username-check-msg'; saveBtn.disabled=true;
+    const myToken=++checkToken;
+    const res=await PublicProfileService.checkUsernameAvailable(val);
+    if(myToken!==checkToken) return; // a newer keystroke already superseded this check
+    if(res.ok){ msgEl.textContent=t('username_available'); msgEl.className='username-check-msg ok'; saveBtn.disabled=false; }
+    else{ msgEl.textContent=t(res.reason==='taken'?'username_taken':'username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; }
+  };
+  if(!unameInp.dataset.wired){
+    unameInp.dataset.wired='1';
+    let debounceT=null;
+    unameInp.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(runCheck,400); });
+    saveBtn.addEventListener('click',async()=>{
+      saveBtn.disabled=true;
+      try{
+        await PublicProfileService.claimUsername(unameInp.value, document.getElementById('displayNameInput').value.trim(), grid.dataset.selected);
+        showToast(LANG==='ar'?'تم إنشاء ملفك العام 🎉':'Public profile created 🎉','success');
+        renderSocialSection();
+      }catch(e){
+        msgEl.textContent=e.message; msgEl.className='username-check-msg bad'; saveBtn.disabled=false;
+      }
+    });
+  }
+}
+function relTimeFromTimestamp(ts){
+  if(!ts||!ts.toMillis) return '';
+  const ms=Date.now()-ts.toMillis();
+  const mins=Math.floor(ms/60000);
+  if(mins<1) return LANG==='ar'?'الحين':'now';
+  if(mins<60) return mins+(LANG==='ar'?'د':'m');
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return hrs+(LANG==='ar'?'س':'h');
+  return Math.floor(hrs/24)+(LANG==='ar'?'ي':'d');
+}
+function activityLine(a, isMine){
+  const who=isMine?t('activity_you'):(a._authorName||'?');
+  if(a.type==='workout') return `🏋️ ${who} ${t('act_workout')}`;
+  if(a.type==='achievement') return `🏆 ${who} ${t('act_achievement')}${a.data&&a.data.name?': '+a.data.name:''}`;
+  if(a.type==='challenge') return `🎯 ${who} ${t('act_challenge')}${a.data&&a.data.name?': '+a.data.name:''}`;
+  if(a.type==='collection') return `📦 ${who} ${t('act_collection')}`;
+  if(a.type==='friend_added') return `🤝 ${who} ${t('act_friend_added').replace('{name}',(a.data&&a.data.withName)||'?')}`;
+  return `• ${who}`;
 }
 async function renderSocialFriendsTab(content){
-  content.innerHTML=`<div class="dash-empty">…</div>`;
-  const friends=await FriendService.listFriends();
-  if(!friends.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
-  content.innerHTML=friends.map(f=>`<div class="friend-row"><div class="friend-avatar">${f.avatar}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${f.name} <span style="font-size:0.68rem;color:var(--ink-soft);">(demo)</span></div><div style="font-size:0.7rem;color:var(--ink-soft);">Lvl ${f.level} · ${f.xp} XP${f.title?' · '+f.title:''}</div></div></div>`).join('');
+  const [incoming,outgoing,friends]=await Promise.all([FriendService.listIncomingRequests(),FriendService.listOutgoingRequests(),FriendService.listFriends()]);
+  let html=`<div class="username-check-row" style="margin-bottom:6px;">
+    <input type="text" class="setup-input" id="friendSearchInput" style="margin-bottom:0;" data-i18n-ph="search_username_ph" placeholder="${t('search_username_ph')}">
+    <button class="setup-btn" id="friendSearchBtn" type="button" style="width:auto;padding:12px 16px;margin-bottom:0;">${t('search_btn')}</button>
+  </div>
+  <div id="friendSearchResult"></div>`;
+  if(incoming.length){
+    html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('incoming_requests_title')}</h3>`;
+    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${(r.profile&&r.profile.displayName)||r.fromUid}</div></div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
+  }
+  if(outgoing.length){
+    html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('outgoing_requests_title')}</h3>`;
+    html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${(r.profile&&r.profile.displayName)||r.toUid}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
+  }
+  html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('social_tab_friends')}</h3>`;
+  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${f.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${f.displayName}</div><div style="font-size:0.7rem;color:var(--ink-soft);">Lvl ${(f.stats&&f.stats.level)||1} · ${(f.stats&&f.stats.xp)||0} XP</div></div></div>`).join('')
+    : `<div class="dash-empty">${t('friends_empty')}</div>`;
+  content.innerHTML=html;
+
+  content.querySelectorAll('[data-open-profile]').forEach(el=>el.addEventListener('click',()=>openFriendProfile(el.dataset.openProfile)));
+  content.querySelectorAll('[data-req]').forEach(btn=>btn.addEventListener('click',async()=>{
+    const accept=btn.classList.contains('accept');
+    btn.closest('.friend-row').style.opacity='0.5';
+    try{ await FriendService.respondToRequest(btn.dataset.req, accept?'accepted':'rejected'); }catch(e){ showToast(e.message,'error'); }
+    renderSocialFriendsTab(content);
+  }));
+  content.querySelectorAll('[data-cancel]').forEach(btn=>btn.addEventListener('click',async()=>{
+    btn.closest('.friend-row').style.opacity='0.5';
+    try{ await FriendService.cancelRequest(btn.dataset.cancel); }catch(e){ showToast(e.message,'error'); }
+    renderSocialFriendsTab(content);
+  }));
+  async function doSearch(){
+    const q=document.getElementById('friendSearchInput').value.trim();
+    const resEl=document.getElementById('friendSearchResult');
+    if(!q){ resEl.innerHTML=''; return; }
+    resEl.innerHTML=`<div class="dash-empty">…</div>`;
+    const result=await PublicProfileService.searchByUsername(q);
+    if(!result){ resEl.innerHTML=`<div class="dash-empty">${t('user_not_found')}</div>`; return; }
+    if(result.self){ resEl.innerHTML=`<div class="dash-empty">${t('already_friends_btn')} (${LANG==='ar'?'انت نفسك':'that\'s you'})</div>`; return; }
+    const status=await FriendService.requestStatusWith(result.uid);
+    const btnHtml = status==='friends' ? `<span class="friend-action-btn remove" style="cursor:default;">${t('already_friends_btn')}</span>`
+      : status==='outgoing' ? `<span class="friend-action-btn reject" style="cursor:default;">${t('request_sent_btn')}</span>`
+      : status==='incoming' ? `<button class="friend-action-btn accept" id="searchAcceptBtn">${t('accept_btn')}</button>`
+      : `<button class="friend-action-btn accept" id="searchAddBtn">${t('send_request_btn')}</button>`;
+    resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${result.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${result.displayName||result.username}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
+    const addBtn=document.getElementById('searchAddBtn');
+    if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; await FriendService.sendRequest(result.uid); doSearch(); });
+    const accBtn=document.getElementById('searchAcceptBtn');
+    if(accBtn) accBtn.addEventListener('click',async()=>{ accBtn.disabled=true; await FriendService.respondToRequest(result.uid+'_'+currentUser.uid,'accepted'); doSearch(); renderSocialFriendsTab(content); });
+  }
+  document.getElementById('friendSearchBtn').addEventListener('click',doSearch);
+  document.getElementById('friendSearchInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSearch(); });
 }
 async function renderSocialLeaderboardTab(content){
   content.innerHTML=`
+    <div class="social-tabs" id="lbScopeTabs" style="margin-bottom:8px;"></div>
     <div class="social-tabs" id="lbCategoryTabs" style="margin-bottom:12px;"></div>
     <div id="lbRows">…</div>
   `;
+  document.getElementById('lbScopeTabs').innerHTML=['friends','global'].map(s=>`<button type="button" class="social-tab${s===socialActiveScope?' active':''}" data-scope="${s}">${t('lb_scope_'+s)}</button>`).join('');
+  document.querySelectorAll('#lbScopeTabs button').forEach(b=>b.addEventListener('click',()=>{ socialActiveScope=b.dataset.scope; renderSocialLeaderboardTab(content); }));
   const catTabs=document.getElementById('lbCategoryTabs');
   catTabs.innerHTML=LEADERBOARD_CATEGORIES.map(c=>`<button type="button" class="social-tab${c.id===socialActiveCategory?' active':''}" data-cat="${c.id}">${c.icon} ${LANG==='ar'?c.labelAr:c.labelEn}</button>`).join('');
   catTabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ socialActiveCategory=b.dataset.cat; renderSocialLeaderboardTab(content); }));
-  const {category,rows}=await LeaderboardService.getLeaderboard(socialActiveCategory);
+  const {category,rows}=await LeaderboardService.getLeaderboard(socialActiveCategory, socialActiveScope);
   const medals=['🥇','🥈','🥉'];
   const rowsEl=document.getElementById('lbRows');
+  if(rows.length<=1 && socialActiveScope==='friends'){ rowsEl.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
   rowsEl.innerHTML=rows.map((r,i)=>{
     const rank=medals[i]||(i+1);
     const unit=LANG==='ar'?category.unitAr:category.unitEn;
-    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${r.avatar}</div><div class="lb-name">${r.name}${r.isMe?'':' <span style=\"font-size:0.65rem;color:var(--ink-soft);\">(demo)</span>'}${r.title?`<div class="lb-title-sub">${r.title}</div>`:''}</div><div class="lb-value">${r[category.metric]||0} ${unit}</div></div>`;
+    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${r.avatar}</div><div class="lb-name">${r.name}</div><div class="lb-value">${r[category.metric]||0} ${unit}</div></div>`;
   }).join('');
 }
 async function renderSocialFeedTab(content){
-  content.innerHTML=`<div class="dash-empty">…</div>`;
   const feed=await ActivityService.listFeed();
-  content.innerHTML=feed.map(f=>`<div class="feed-row"><div>${f.icon}</div><div style="flex:1;">${LANG==='ar'?f.textAr:f.textEn}<div class="feed-time">${f.when} · demo</div></div></div>`).join('');
+  if(!feed.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
+  const authorUids=[...new Set(feed.filter(a=>a.uid!==currentUser.uid).map(a=>a.uid))];
+  const authorProfiles={};
+  await Promise.all(authorUids.map(async uid=>{ authorProfiles[uid]=await PublicProfileService.getProfile(uid); }));
+  content.innerHTML=feed.map(a=>{
+    const isMine=a.uid===currentUser.uid;
+    if(!isMine) a._authorName=(authorProfiles[a.uid]&&authorProfiles[a.uid].displayName)||'?';
+    return `<div class="feed-row"><div>${({workout:'🏋️',achievement:'🏆',challenge:'🎯',collection:'📦',friend_added:'🤝'})[a.type]||'•'}</div><div style="flex:1;">${activityLine(a,isMine)}<div class="feed-time">${relTimeFromTimestamp(a.createdAt)}</div></div></div>`;
+  }).join('');
 }
 async function renderSocialCompareTab(content){
   const friends=await FriendService.listFriends();
-  content.innerHTML=`<select class="setup-input" id="compareFriendSelect" style="margin-bottom:12px;">${friends.map(f=>`<option value="${f.id}">${f.name} (demo)</option>`).join('')}</select><div id="compareRows">…</div>`;
+  if(!friends.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
+  content.innerHTML=`<select class="setup-input" id="compareFriendSelect" style="margin-bottom:12px;">${friends.map(f=>`<option value="${f.uid}">${f.displayName}</option>`).join('')}</select><div id="compareRows">…</div>`;
   const sel=document.getElementById('compareFriendSelect');
   const draw=async()=>{
     const you=await computeUserStats();
-    const friend=friends.find(f=>f.id===sel.value)||friends[0];
-    document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',friend.name)+'</div>'+
-      LEADERBOARD_CATEGORIES.map(c=>{
-        const yv=you[c.metric]||0, fv=friend[c.metric]||0, max=Math.max(yv,fv,1);
+    const friend=friends.find(f=>f.uid===sel.value)||friends[0];
+    const fstats=friend.stats||{};
+    document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',friend.displayName)+'</div>'+
+      LEADERBOARD_CATEGORIES.filter(c=>!c.privacyKey||(friend.privacy&&friend.privacy[c.privacyKey]!==false)).map(c=>{
+        const yv=you[c.metric]||0, fv=fstats[c.metric]||0, max=Math.max(yv,fv,1);
         return `<div class="compare-row"><div>${c.icon} ${yv}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${yv/max*50}%;"></div><div class="compare-bar-them" style="width:${fv/max*50}%;"></div></div><div>${fv}</div></div>`;
       }).join('');
   };
   sel.addEventListener('change',draw);
   draw();
+}
+function renderSocialPrivacyTab(content){
+  const priv=P.publicProfile.privacy;
+  const rows=[
+    ['training','privacy_training'],['nutrition','privacy_nutrition'],['achievements','privacy_achievements'],
+    ['collection','privacy_collection'],['activity','privacy_activity'],['leaderboardGlobal','privacy_leaderboard_global']
+  ];
+  content.innerHTML=`
+    <div class="privacy-toggle-row"><span>${t('privacy_profile_visibility')}</span>
+      <select class="setup-input" id="privVisibilitySelect" style="width:auto;margin-bottom:0;">
+        <option value="private">${t('privacy_visibility_private')}</option>
+        <option value="friends">${t('privacy_visibility_friends')}</option>
+        <option value="public">${t('privacy_visibility_public')}</option>
+      </select>
+    </div>
+    ${rows.map(([key,label])=>`<div class="privacy-toggle-row"><span>${t(label)}</span><label class="toggle-switch"><input type="checkbox" data-priv="${key}" ${priv[key]?'checked':''}><span class="slider"></span></label></div>`).join('')}
+  `;
+  document.getElementById('privVisibilitySelect').value=priv.profileVisibility||'friends';
+  document.getElementById('privVisibilitySelect').addEventListener('change',(e)=>PublicProfileService.updatePrivacy({profileVisibility:e.target.value}));
+  content.querySelectorAll('[data-priv]').forEach(inp=>inp.addEventListener('change',(e)=>PublicProfileService.updatePrivacy({[e.target.dataset.priv]:e.target.checked})));
+}
+/* real friend profile view — reuses the same overlay/cardBody modal every
+   other detail screen (workout day, food day, calendar day) already uses. */
+async function openFriendProfile(uid){
+  document.getElementById('dayTitle').textContent=`👤 ${t('friend_profile_title')}`;
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`<div class="dash-empty">…</div>`;
+  overlay.classList.add('open');
+  const profile=await PublicProfileService.getProfile(uid);
+  if(!profile||profile.restricted){ document.getElementById('cardBody').innerHTML=`<div class="dash-empty">${t('friend_profile_hidden')}</div>`; return; }
+  const s=profile.stats||{};
+  const priv=profile.privacy||{};
+  const statBlocks=[
+    priv.training!==false ? {icon:'🏋️',label:LANG==='ar'?'تمارين':'Workouts',val:s.totalWorkouts||0} : null,
+    {icon:'🔥',label:LANG==='ar'?'أفضل سلسلة':'Best streak',val:s.bestStreak||0},
+    priv.nutrition!==false ? {icon:'🍽️',label:LANG==='ar'?'أيام تغذية':'Nutrition days',val:s.nutritionDaysHit||0} : null,
+    priv.achievements!==false ? {icon:'🏆',label:LANG==='ar'?'إنجازات':'Achievements',val:s.achievementsUnlocked||0} : null,
+    priv.collection!==false ? {icon:'📦',label:LANG==='ar'?'مقتنيات':'Collection',val:s.totalCollected||0} : null,
+    {icon:'⚡',label:'XP',val:s.xp||0},
+  ].filter(Boolean);
+  const titleLine=(profile.titles&&profile.titles.length) ? TITLES_CONFIG.filter(tc=>profile.titles.includes(tc.id)).map(tc=>`${tc.icon} ${LANG==='ar'?tc.nameAr:tc.nameEn}`).join(' · ') : '';
+  document.getElementById('cardBody').innerHTML=`
+    <div class="friend-profile-header">
+      <div class="friend-profile-avatar">${profile.avatar||'🙂'}</div>
+      <h2 style="margin:0;">${profile.displayName}</h2>
+      <div style="font-size:0.8rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Level'} ${s.level||1}${titleLine?' · '+titleLine:''}</div>
+    </div>
+    <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${b.val}</b><span>${b.label}</span></div>`).join('')}</div>
+    <button class="setup-btn" id="friendRemoveBtn" style="background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>
+  `;
+  document.getElementById('friendRemoveBtn').addEventListener('click',async()=>{
+    if(!confirm(t('confirm_remove_friend'))) return;
+    await FriendService.removeFriend(uid);
+    overlay.classList.remove('open');
+    renderSocialFriendsTab(document.getElementById('socialTabContent'));
+  });
 }
 
 const AGENDA_SLOTS=Array.from({length:24},(_,h)=>{
@@ -6262,7 +6683,7 @@ function collAddCatch(measurements){
     // real XP + achievement/challenge check for the new species — fire-and-
     // forget, matching this function's existing "never block the tap on a
     // network round-trip" pattern.
-    (async()=>{ await awardXP(XP_CONFIG.collection_unlock); await notifyNewUnlocks(); })();
+    (async()=>{ await awardXP(XP_CONFIG.collection_unlock); await notifyNewUnlocks(); if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{}); })();
   }
 }
 
