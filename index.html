@@ -722,6 +722,7 @@
       <div class="home-card" data-goto="profile"><span class="ic">👤</span><div class="ttl" data-i18n="card_profile"></div></div>
       <div class="home-card" data-goto="social"><span class="ic">👥</span><div class="ttl" data-i18n="card_social"></div></div>
       <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
+      <div class="home-card" data-goto="store"><span class="ic">🏪</span><div class="ttl" data-i18n="card_store"></div></div>
     </div>
   </section>
 
@@ -1020,6 +1021,120 @@
     </div>
   </section>
 
+  <style>
+    /* ============================================================
+       COSMETICS — approved designs ported from the review demo.
+       Rarity colors match RARITY_TIERS exactly (no separate palette).
+       ============================================================ */
+    :root{ --cos-common:#1f9d55; --cos-uncommon:#2f6fed; --cos-epic:#9b3ad6; --cos-mythic:#e0323b; --cos-legendary:#c8880b; }
+    .cos-hero{ position:relative; border-radius:18px; overflow:hidden; margin-bottom:16px; }
+    .cos-hero-bg{ position:absolute; inset:0; background:linear-gradient(160deg,#3a3f47,#22252a); }
+    .cos-hero-effect{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .cos-hero-scrim{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.62) 100%); }
+    .cos-hero-card{ position:relative; padding:22px 18px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; color:#fff; }
+    .cos-avatar-wrap{ position:relative; width:76px; height:76px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+    .cos-frame-ring{ position:absolute; inset:0; border-radius:50%; }
+    .cos-avatar{ position:relative; font-size:2rem; width:58px; height:58px; border-radius:50%; background:rgba(0,0,0,0.38) center/cover no-repeat; display:flex; align-items:center; justify-content:center; z-index:2; border:1px solid rgba(255,255,255,0.25); overflow:hidden; }
+    .cos-avatar-edit{ position:absolute; right:-2px; bottom:-2px; z-index:3; width:24px; height:24px; border-radius:50%; background:#fff; color:#111; border:2px solid var(--bg,#fff); font-size:0.65rem; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+    .cos-chip{ font-size:0.68rem; font-weight:700; padding:4px 11px; border-radius:999px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.16); backdrop-filter:blur(3px); display:inline-block; }
+    .cos-store-coins{ font-weight:800; font-size:0.85rem; }
+
+    .cos-rarity-group{ margin-bottom:22px; }
+    .cos-rarity-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+    .cos-rarity-head .dot{ width:10px; height:10px; border-radius:50%; flex:none; }
+    .cos-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+    .cos-card{ border:1px solid var(--border,#e2e2e2); border-radius:14px; overflow:hidden; background:var(--card,#fff); display:flex; flex-direction:column; }
+    .cos-card.is-equipped{ outline:2px solid var(--heading,#000); outline-offset:-1px; }
+    .cos-preview{ height:100px; position:relative; overflow:hidden; }
+    .cos-frame-preview{ height:100px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .cos-card-body{ padding:9px 10px 10px; }
+    .cos-card-name{ font-weight:700; font-size:0.82rem; margin-bottom:4px; }
+    .cos-tag{ font-size:0.58rem; font-weight:600; padding:2px 7px; border-radius:999px; background:var(--bg,#f5f5f5); color:var(--ink-soft); border:1px solid var(--border,#e2e2e2); margin-inline-end:4px; }
+    .cos-price{ font-weight:700; font-size:0.76rem; margin:6px 0; }
+    .cos-btn{ width:100%; font-weight:700; font-size:0.72rem; padding:7px 8px; border-radius:8px; border:1px solid var(--border,#e2e2e2); background:var(--bg,#f5f5f5); cursor:pointer; }
+    .cos-btn.primary{ background:var(--heading,#111); color:#fff; }
+    .cos-btn.equipped{ background:var(--cos-common); color:#fff; }
+    .cos-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+    .cos-title-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 4px; border-bottom:1px solid var(--border,#e2e2e2); }
+
+    /* -- backgrounds -- */
+    .bg-quiet-horizon{ background:linear-gradient(160deg,#565f6b 0%,#333a42 100%); }
+    .bg-quiet-horizon .cx-hz{ position:absolute; left:0; right:0; top:60%; height:1px; background:rgba(255,255,255,0.28); }
+    .bg-quiet-horizon .cx-glow{ position:absolute; left:50%; top:60%; width:140%; height:60%; transform:translate(-50%,-10%); background:radial-gradient(ellipse at center, rgba(255,255,255,0.10), transparent 70%); animation:cxBreathe 7s ease-in-out infinite; }
+    @keyframes cxBreathe{ 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
+    .bg-chalkline{ background:#2c2f34; background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px); background-size:16px 16px; }
+    .bg-chalkline .cx-sheen{ position:absolute; top:0; bottom:0; width:35%; background:linear-gradient(100deg,transparent,rgba(255,255,255,0.06),transparent); animation:cxSweep 9s linear infinite; }
+    .bg-tidepool{ background:linear-gradient(165deg,#0c3f3a 0%,#0f5a50 55%,#137764 100%); }
+    .bg-tidepool .cx-wave{ position:absolute; left:-15%; width:130%; height:26px; border-top:2px solid rgba(255,255,255,0.28); border-radius:50%; animation:cxSway 8s ease-in-out infinite; }
+    @keyframes cxSway{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(4%); } }
+    .bg-iron-grid{ background:#212327; background-image:linear-gradient(30deg,#2c2f34 12%,transparent 12.5%,transparent 87%,#2c2f34 87.5%,#2c2f34),linear-gradient(150deg,#2c2f34 12%,transparent 12.5%,transparent 87%,#2c2f34 87.5%,#2c2f34); background-size:34px 60px; }
+    .bg-iron-grid .cx-accent{ position:absolute; left:0; right:0; bottom:0; height:3px; background:linear-gradient(90deg,transparent,#d9ac5e,transparent); animation:cxPulse 3s ease-in-out infinite; }
+    .bg-iron-grid .cx-sheen{ position:absolute; top:0; bottom:0; width:30%; background:linear-gradient(100deg,transparent,rgba(255,255,255,0.07),transparent); animation:cxSweep 6s linear infinite; }
+    @keyframes cxPulse{ 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
+    @keyframes cxSweep{ 0%{ left:-40%; } 100%{ left:110%; } }
+    .bg-deep-current{ background:linear-gradient(200deg,#04222f 0%,#073e50 45%,#0a5e6b 100%); }
+    .bg-deep-current .cx-caustic{ position:absolute; width:70%; height:70%; border-radius:50%; background:radial-gradient(ellipse at center, rgba(255,255,255,0.12), transparent 70%); filter:blur(4px); animation:cxDriftBig 14s ease-in-out infinite alternate; }
+    .bg-deep-current .cx-caustic.b{ background:radial-gradient(ellipse at center, rgba(120,220,210,0.16), transparent 70%); animation-duration:18s; animation-direction:alternate-reverse; }
+    @keyframes cxDriftBig{ 0%{ transform:translate(-10%,-6%) scale(1);} 100%{ transform:translate(8%,10%) scale(1.15);} }
+    .cx-mote{ position:absolute; width:3px; height:3px; border-radius:50%; background:rgba(190,240,235,0.85); box-shadow:0 0 5px rgba(190,240,235,0.8); animation:cxRiseSlow 9s linear infinite; }
+    @keyframes cxRiseSlow{ 0%{ transform:translateY(0); opacity:0; } 12%{ opacity:0.9; } 100%{ transform:translateY(-140px); opacity:0; } }
+    .bg-forge-streak{ background:linear-gradient(165deg,#1c1414 0%,#291717 60%,#331a17 100%); }
+    .bg-forge-streak .cx-streak{ position:absolute; width:170%; height:6px; background:linear-gradient(90deg,transparent,#e2782e,#ffbf6b,transparent); opacity:0.85; animation:cxStreakPulse 3s ease-in-out infinite; filter:blur(0.3px); }
+    @keyframes cxStreakPulse{ 0%,100%{ opacity:0.3; } 50%{ opacity:0.95; } }
+    .cx-ember{ position:absolute; width:3px; height:3px; border-radius:50%; background:#ffb066; box-shadow:0 0 6px rgba(255,150,60,0.9); animation:cxRiseSlow 5.5s linear infinite; }
+    .bg-aurora{ background:radial-gradient(circle at 30% 15%,#1c2f56 0%,#0d1638 55%,#050813 100%); }
+    .bg-aurora .cx-ribbon{ position:absolute; left:-25%; width:150%; height:52px; background:linear-gradient(90deg,transparent,#49e3c4 20%,#8f7bf0 50%,#e5679a 78%,transparent); filter:blur(7px); opacity:0.65; border-radius:50%; animation:cxDrift 6s ease-in-out infinite alternate; }
+    .bg-aurora .cx-ribbon.b{ background:linear-gradient(90deg,transparent,#7be0ff 25%,#c58bff 60%,transparent); opacity:0.4; filter:blur(9px); animation-duration:8.5s; animation-direction:alternate-reverse; }
+    @keyframes cxDrift{ 0%{ transform:translateY(0) rotate(-4deg);} 100%{ transform:translateY(20px) rotate(4deg);} }
+    .cx-star{ position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; animation:cxTwinkle 3s ease-in-out infinite; }
+    @keyframes cxTwinkle{ 0%,100%{ opacity:0.25; } 50%{ opacity:1; } }
+    .bg-molten{ background:radial-gradient(circle at 50% 60%,#1a0f0c 0%,#0c0808 70%); }
+    .bg-molten .cx-heat{ position:absolute; left:20%; right:20%; bottom:-20%; top:20%; background:radial-gradient(ellipse at center, rgba(255,110,40,0.16), transparent 70%); filter:blur(6px); animation:cxHeatPulse 5s ease-in-out infinite; }
+    @keyframes cxHeatPulse{ 0%,100%{ transform:scale(1); opacity:0.6; } 50%{ transform:scale(1.12); opacity:1; } }
+    .cx-crack{ position:absolute; background:linear-gradient(90deg,#ff7a1a,#ffce54); filter:blur(1px); animation:cxGlow 1.8s ease-in-out infinite alternate; }
+    @keyframes cxGlow{ 0%{ opacity:0.35; } 100%{ opacity:1; } }
+    .bg-golden-horizon{ background:radial-gradient(circle at 50% 130%,#3d2a06 0%,#160f04 60%,#0a0a0a 100%); }
+    .bg-golden-horizon .cx-glowring{ position:absolute; left:50%; top:60%; width:220%; height:220%; transform:translate(-50%,-50%) rotate(0deg); background:conic-gradient(from 0deg, transparent 0deg, rgba(255,205,110,0.16) 40deg, transparent 90deg, transparent 270deg, rgba(255,205,110,0.1) 320deg, transparent 360deg); animation:cxSpin 22s linear infinite; }
+    @keyframes cxSpin{ from{ transform:translate(-50%,-50%) rotate(0deg);} to{ transform:translate(-50%,-50%) rotate(360deg);} }
+    .bg-golden-horizon .cx-sweep{ position:absolute; top:0; bottom:0; width:45%; background:linear-gradient(100deg,transparent,rgba(255,214,120,0.22),transparent); animation:cxSweep 5s linear infinite; }
+    .cx-spark{ position:absolute; border-radius:50%; background:#ffd678; box-shadow:0 0 6px 1px rgba(255,214,120,0.9); }
+    .cx-spark.near{ animation:cxTwinkle 2.4s ease-in-out infinite; }
+    .cx-spark.far{ animation:cxTwinkle 4.5s ease-in-out infinite; opacity:0.5; }
+    .bg-ascension{ background:linear-gradient(180deg,#050208 0%,#170a22 50%,#2c1035 100%); }
+    .bg-ascension .cx-amb{ position:absolute; left:50%; bottom:0; width:200%; height:120%; transform:translateX(-50%); background:radial-gradient(ellipse at 50% 100%, rgba(255,200,120,0.22), transparent 65%); animation:cxHeatPulse 6s ease-in-out infinite; }
+    .bg-ascension .cx-beam{ position:absolute; bottom:-10%; width:60%; height:150%; background:linear-gradient(0deg,rgba(255,220,150,0.55),transparent 72%); clip-path:polygon(46% 100%,54% 100%,80% 0%,20% 0%); animation:cxRise 3.4s ease-in-out infinite alternate; }
+    @keyframes cxRise{ 0%{ opacity:0.45; } 100%{ opacity:0.95; } }
+    .cx-p{ position:absolute; width:2px; height:2px; background:#ffdca0; border-radius:50%; animation:cxFloatup 4.5s linear infinite; }
+    @keyframes cxFloatup{ 0%{ transform:translateY(0); opacity:0; } 15%{ opacity:1; } 100%{ transform:translateY(-130px); opacity:0; } }
+    .bg-gentle-giant{ background:linear-gradient(180deg,#02202f 0%,#023550 45%,#04597a 75%,#0a6e93 100%); }
+    .bg-gentle-giant .cx-ray{ position:absolute; top:-20%; width:2px; height:170%; background:linear-gradient(180deg,rgba(255,255,255,0.4),transparent); transform:rotate(12deg); animation:cxRayFade 6s ease-in-out infinite; }
+    @keyframes cxRayFade{ 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
+    .bg-gentle-giant .cx-silhouette{ position:absolute; bottom:10px; left:12%; width:76%; height:36px; background:#052a3d; border-radius:50% 50% 40% 40%/70% 70% 30% 30%; opacity:0.85; animation:cxSwim 7s ease-in-out infinite; transform-origin:center; }
+    @keyframes cxSwim{ 0%,100%{ transform:translateX(0) scaleX(1);} 50%{ transform:translateX(3%) scaleX(1.02);} }
+    .cx-bubble{ position:absolute; border-radius:50%; background:rgba(220,245,255,0.55); animation:cxRiseSlow 7s linear infinite; }
+    .cx-spot{ position:absolute; width:3px; height:3px; background:#eaf6ff; border-radius:50%; opacity:0.6; }
+
+    /* -- frames -- */
+    .frame-frame-steel{ border:3px solid #cfd3d8; }
+    .frame-frame-twinband{ border:2px solid #7fb2ff; box-shadow:inset 0 0 0 2px rgba(255,255,255,0.15); }
+    .frame-frame-ember{ border:3px solid #c98bff; box-shadow:0 0 10px 1px rgba(201,139,255,0.55); animation:cxEpicPulse 2.6s ease-in-out infinite; }
+    @keyframes cxEpicPulse{ 0%,100%{ box-shadow:0 0 6px 0px rgba(201,139,255,0.4);} 50%{ box-shadow:0 0 14px 2px rgba(201,139,255,0.8);} }
+    .frame-frame-prism{ background:conic-gradient(from 0deg,#ff5f6d,#c86dff,#5f9dff,#ff5f6d); animation:cxSpin 5s linear infinite; box-shadow:0 0 14px 2px rgba(255,95,109,0.5); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px)); mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px)); }
+    .frame-frame-celestial{ background:conic-gradient(from 0deg,#ffe08a,#fff6d8,#d9a441,#ffe08a); animation:cxSpin 6s linear infinite; box-shadow:0 0 18px 3px rgba(255,210,110,0.65); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px)); mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 4px)); }
+    .cx-orbit-wrap{ position:absolute; inset:-8px; animation:cxSpin 4s linear infinite; }
+    .cx-orbit-dot{ position:absolute; width:4px; height:4px; border-radius:50%; background:#ffe9ad; box-shadow:0 0 6px 1px rgba(255,224,138,0.9); }
+
+    /* -- effects -- */
+    .cx-fx-glowpulse{ position:absolute; left:50%; top:50%; width:140%; height:140%; transform:translate(-50%,-50%); background:radial-gradient(ellipse at center, rgba(255,255,255,0.14), transparent 65%); animation:cxBreathe 5s ease-in-out infinite; }
+    .cx-particle-mote2{ position:absolute; width:3px; height:3px; border-radius:50%; background:rgba(255,255,255,0.75); box-shadow:0 0 4px rgba(255,255,255,0.6); animation:cxDriftSide 10s ease-in-out infinite; }
+    @keyframes cxDriftSide{ 0%,100%{ transform:translate(0,0); opacity:0.3; } 50%{ transform:translate(6px,-10px); opacity:0.9; } }
+    .cx-arc{ position:absolute; width:34px; height:2px; background:linear-gradient(90deg,transparent,#7fd6ff,#fff,#7fd6ff,transparent); opacity:0; filter:blur(0.3px); animation:cxArcFlash 4.5s ease-in-out infinite; }
+    @keyframes cxArcFlash{ 0%,88%,100%{ opacity:0; } 90%,94%{ opacity:0.95; } 92%{ opacity:0.3; } }
+    .cx-shootstar{ position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; box-shadow:-14px 3px 6px -2px rgba(255,255,255,0.8), -26px 6px 10px -4px rgba(255,255,255,0.4); animation:cxShoot 6s linear infinite; }
+    @keyframes cxShoot{ 0%{ transform:translate(0,0); opacity:0; } 2%{ opacity:1; } 22%{ transform:translate(-140px,70px); opacity:0; } 100%{ opacity:0; } }
+    .cx-fx-ambergold{ position:absolute; inset:0; background:radial-gradient(ellipse at 50% 100%, rgba(255,205,110,0.12), transparent 70%); animation:cxHeatPulse 7s ease-in-out infinite; }
+  </style>
+
   <!-- PROFILE (real — level/XP/streaks/achievements/titles, all derived from
        actual logged data via computeUserStats()) -->
   <section class="panel" id="panel-profile">
@@ -1034,15 +1149,27 @@
       <button class="setup-btn" id="profileGateSetupBtn" data-i18n="profile_gate_btn"></button>
     </div>
     <div id="profileStatsContent">
-      <div class="setup-card" style="text-align:center;">
-        <div style="font-size:2.2rem;">👤</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;">
-          <span id="profileUsernameDisplay" style="font-weight:700;color:var(--ink-soft);font-size:0.9rem;"></span>
-          <button type="button" id="profileEditUsernameBtn" class="icon-btn" style="width:26px;height:26px;font-size:0.75rem;" title="✏️">✏️</button>
+      <div class="cos-hero" id="profileHero">
+        <div class="cos-hero-bg" id="profileHeroBg"></div>
+        <div class="cos-hero-effect" id="profileHeroEffect"></div>
+        <div class="cos-hero-scrim"></div>
+        <div class="cos-hero-card">
+          <div class="cos-avatar-wrap">
+            <div class="cos-frame-ring" id="profileFrameRing"></div>
+            <div class="cos-avatar" id="profileAvatar">👤</div>
+            <button type="button" class="cos-avatar-edit" id="profileAvatarEditBtn" title="✏️">✏️</button>
+            <input type="file" accept="image/*" id="profileAvatarFileInput" class="hidden">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;">
+            <span id="profileUsernameDisplay" style="font-weight:700;font-size:0.9rem;"></span>
+            <button type="button" id="profileEditUsernameBtn" class="icon-btn" style="width:26px;height:26px;font-size:0.75rem;" title="✏️">✏️</button>
+          </div>
+          <div class="cos-chip" id="profileTitleChip"></div>
+          <h2 id="profileLevelLabel" style="margin:6px 0 2px;"></h2>
+          <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
+          <div id="profileXpLabel" style="font-size:0.75rem;margin-top:4px;"></div>
+          <div class="cos-chip" id="profileCoinsChip" style="margin-top:8px;cursor:pointer;"></div>
         </div>
-        <h2 id="profileLevelLabel" style="margin:6px 0 2px;"></h2>
-        <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
-        <div id="profileXpLabel" style="font-size:0.75rem;color:var(--ink-soft);margin-top:4px;"></div>
       </div>
       <div class="setup-card">
         <h3 id="profileStreaksTitle"></h3>
@@ -1067,6 +1194,18 @@
   <section class="panel" id="panel-challenges">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div id="challengesList"></div>
+  </section>
+
+  <!-- STORE (Coins + Cosmetics) -->
+  <section class="panel" id="panel-store">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span class="cos-store-coins" id="storeCoinsBadge"></span></div>
+    <div class="social-tabs" id="storeTabs">
+      <button type="button" class="social-tab active" data-store-tab="background" data-i18n="store_tab_backgrounds"></button>
+      <button type="button" class="social-tab" data-store-tab="frame" data-i18n="store_tab_frames"></button>
+      <button type="button" class="social-tab" data-store-tab="effect" data-i18n="store_tab_effects"></button>
+      <button type="button" class="social-tab" data-store-tab="title" data-i18n="store_tab_titles"></button>
+    </div>
+    <div id="storeContent"></div>
   </section>
 
   <!-- SOCIAL (DEMO MODE — see banner; friends/leaderboard/feed/comparison
@@ -1446,6 +1585,7 @@ async function bootApp(){
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
   else{ await storageSet('profile',JSON.stringify(P)); }
   migrateProgressionFields();
+  await migrateRewardValuesV2();
   launchApp();
 }
 if(fbAuth){
@@ -1596,7 +1736,7 @@ const I18N={
   card_todo:'الجدول',
   card_food:'نظام غذائي',
   card_workout:'التمارين',
-  card_progress:'التقدم',
+  card_progress:'التقدم', card_store:'المتجر',
   card_collections:'المقتنيات',
   card_profile:'ملفي',card_challenges:'التحديات',card_social:'الأصدقاء',
   profile_level:'المستوى {n}',profile_streaks_title:'🔥 سلاسل الاستمرار',
@@ -1607,6 +1747,10 @@ const I18N={
   challenges_title:'🎯 التحديات',challenges_empty:'ما فيه تحديات نشطة حالياً',
   challenge_progress:'{cur} / {target}',challenge_completed:'✅ مكتمل',
   social_tab_friends:'👥 الأصدقاء',social_tab_leaderboard:'🏆 المتصدرين',social_tab_feed:'📰 النشاط',social_tab_compare:'⚖️ مقارنة',
+  store_tab_backgrounds:'🖼️ الخلفيات',store_tab_frames:'⭕ الإطارات',store_tab_effects:'✨ التأثيرات',store_tab_titles:'🏷️ الألقاب',
+  store_owned:'✅ تملكه',store_equip:'تجهيز',store_equipped:'✓ مجهّز',store_unequip:'إلغاء التجهيز',store_buy:'شراء',store_not_enough:'coins غير كافية',store_exclusive:'حصري',
+  cos_rarity_common:'شائع',cos_rarity_uncommon:'غير شائع',cos_rarity_epic:'ملحمي',cos_rarity_mythic:'خرافي',cos_rarity_legendary:'أسطوري',
+  profile_no_title:'بدون لقب مجهّز',profile_remove_photo:'إزالة الصورة',
   friends_empty:'رصيدك فاضي — أضف أصدقاء عشان تنافسهم',
   lb_you:'أنت',compare_vs:'أنت ضد {name}',
   profile_setup_title:'👤 سوّي ملفك العام',profile_setup_body:'عشان تضيف أصدقاء وتظهر بالمتصدرين، لازم تختار اسم مستخدم فريد. ما أحد يشوف بياناتك الخاصة إلا اللي تسمح له.',
@@ -1721,7 +1865,7 @@ const I18N={
   card_todo:"Schedule",
   card_food:'Diet',
   card_workout:'Workout',
-  card_progress:'Progress',
+  card_progress:'Progress', card_store:'Store',
   card_collections:'Collections',
   card_profile:'Profile',card_challenges:'Challenges',card_social:'Friends',
   profile_level:'Level {n}',profile_streaks_title:'🔥 Streaks',
@@ -1732,6 +1876,10 @@ const I18N={
   challenges_title:'🎯 Challenges',challenges_empty:'No active challenges right now',
   challenge_progress:'{cur} / {target}',challenge_completed:'✅ Completed',
   social_tab_friends:'👥 Friends',social_tab_leaderboard:'🏆 Leaderboard',social_tab_feed:'📰 Activity',social_tab_compare:'⚖️ Compare',
+  store_tab_backgrounds:'🖼️ Backgrounds',store_tab_frames:'⭕ Frames',store_tab_effects:'✨ Effects',store_tab_titles:'🏷️ Titles',
+  store_owned:'✅ Owned',store_equip:'Equip',store_equipped:'✓ Equipped',store_unequip:'Unequip',store_buy:'Buy',store_not_enough:'Not enough coins',store_exclusive:'Exclusive',
+  cos_rarity_common:'Common',cos_rarity_uncommon:'Uncommon',cos_rarity_epic:'Epic',cos_rarity_mythic:'Mythic',cos_rarity_legendary:'Legendary',
+  profile_no_title:'No title equipped',profile_remove_photo:'Remove photo',
   friends_empty:'Your squad is empty — add friends to start competing',
   lb_you:'You',compare_vs:'You vs {name}',
   profile_setup_title:'👤 Set up your public profile',profile_setup_body:'To add friends and appear on leaderboards, pick a unique username. Nobody sees your private data unless you allow it.',
@@ -3262,6 +3410,7 @@ function enterSection(name){
   if(name==='challenges') renderChallengesSection();
   if(name==='social') renderSocialSection();
   if(name==='collections') enterCollections();
+  if(name==='store') renderStoreSection();
 }
 document.querySelectorAll('#panel-home .home-card, #panel-profile-hub .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
 document.getElementById('exercisePromptBanner').addEventListener('click',()=>{ showPanel('workout'); enterSection('workout'); });
@@ -4563,6 +4712,11 @@ async function notifyNewUnlocks(){
   const stats=await computeUserStats();
   const newAch=await checkAndAwardAchievements(stats);
   const {newlyCompleted}=await checkAndAwardChallenges();
+  // achievements/challenges above may have just pushed P.xp across a level
+  // boundary in this very call — recompute level fresh so that milestone
+  // isn't missed until the next event.
+  stats.xp=P.xp||0; stats.level=levelFromXP(stats.xp);
+  await checkAndAwardLevelRewards(stats);
   enqueueAchievements([
     ...newAch.map(a=>({...a,kind:'achievement'})),
     ...newlyCompleted.map(c=>({...c,kind:'challenge'}))
@@ -4881,6 +5035,37 @@ function migrateProgressionFields(){
   if(!P.lifetimeStats) P.lifetimeStats={waterDaysHit:0,nutritionDaysHit:0,challengesCompleted:0,longestHabitStreakEver:0};
   if(!P.achievements) P.achievements={};
   if(!P.challengeState) P.challengeState={};
+  if(P.coins===undefined) P.coins=0;
+  if(!P.inventory) P.inventory={};
+  if(!P.equipped) P.equipped={background:null,frame:null,effect:null,title:null};
+  if(!P.levelRewardsClaimed) P.levelRewardsClaimed={};
+}
+/* one-time top-up for accounts that already unlocked achievements/
+   challenges under the old, badly-balanced point values (a 100-workout
+   achievement paying 15 XP while a 5-workout challenge paid 100) —
+   never subtracts, only tops existing totals up to the new numbers, and
+   is guarded by its own flag so it can only ever run once per account. */
+async function migrateRewardValuesV2(){
+  migrateProgressionFields();
+  if(P._rewardMigrationV2Done) return;
+  const OLD_ACH_XP={first_workout:15,week_warrior:15,century:50,hydration_master:15,fisherman:15,rare_hunter:20,collector:25,unbreakable:30,champion:50,nutrition_machine:20,habit_builder:15,challenger:15};
+  let bonusXp=0, bonusCoins=0;
+  Object.keys(P.achievements||{}).forEach(id=>{
+    const a=ACHIEVEMENTS_CONFIG.find(x=>x.id===id); if(!a) return;
+    bonusXp += (a.xp - (OLD_ACH_XP[id]||0));
+    bonusCoins += (a.coins||0);
+  });
+  Object.keys(P.challengeState||{}).forEach(key=>{
+    if(!P.challengeState[key] || !P.challengeState[key].completed) return;
+    const id=key.split('|')[0];
+    const c=CHALLENGES_CONFIG.find(x=>x.id===id); if(!c) return;
+    bonusXp += (c.xp - 100);
+    bonusCoins += (c.coins||0);
+  });
+  if(bonusXp>0) P.xp=(P.xp||0)+bonusXp;
+  if(bonusCoins>0) P.coins=(P.coins||0)+bonusCoins;
+  P._rewardMigrationV2Done=true;
+  await storageSet('profile',JSON.stringify(P));
 }
 function updateNamedStreak(key){
   migrateProgressionFields();
@@ -4916,17 +5101,38 @@ function renderStreakBadge(){
    SAME event can never fire twice — there is no click-driven "+XP" anywhere;
    XP only ever follows a real, already-recorded completion. */
 const XP_CONFIG={
-  workout_complete:50, nutrition_day_complete:30, water_target_complete:20,
-  habit_complete:10, challenge_complete:100, collection_unlock:25, achievement_unlock:15
+  habit_complete:5, water_target_complete:10, nutrition_day_complete:15, workout_complete:25,
+  collection_unlock_common:10, collection_unlock_uncommon:30, collection_unlock_epic:90, collection_unlock_mythic:250, collection_unlock_legendary:1200,
+  achievement_unlock:15 // fallback only — every real achievement below specifies its own xp
+};
+/* coins are a SEPARATE economy from XP (cosmetic currency, not
+   progression currency) — daily actions (habit/water/nutrition/workout)
+   deliberately earn zero coins since they repeat forever; coins only
+   come from challenges, achievements, collection catches and level
+   milestones, all one-time or period-gated, so the Store's prices stay
+   meaningful instead of being flooded by routine daily behavior. */
+const COIN_CONFIG={
+  collection_unlock_common:10, collection_unlock_uncommon:40, collection_unlock_epic:120, collection_unlock_mythic:350, collection_unlock_legendary:1800
 };
 async function awardXP(amount){
   migrateProgressionFields();
   P.xp=(P.xp||0)+amount;
   await storageSet('profile',JSON.stringify(P));
 }
-/* cumulative XP required to REACH `level` — a formula, not a hand-written
-   table, so the level range is unbounded without maintenance. */
-function xpForLevel(level){ return Math.round(250*(level-1)*level); }
+async function awardCoins(amount){
+  migrateProgressionFields();
+  P.coins=(P.coins||0)+amount;
+  await storageSet('profile',JSON.stringify(P));
+}
+/* cumulative XP required to REACH `level` — a gentler power curve
+   (exponent 1.5) than a pure quadratic: a quadratic can't hit both
+   "level 5 in about a month" and "level 50 as a multi-year prestige
+   goal" at the same time for any coefficient, since the ratio between
+   its low and high ends is fixed by the shape. This curve was solved
+   against ~648 XP/week (a genuinely active user's real rate under the
+   XP_CONFIG/ACHIEVEMENTS_CONFIG/CHALLENGES_CONFIG values above) to land
+   L5≈1mo, L10≈3mo, L20≈9mo, L30≈1.4yr, L40≈2.1yr, L50≈2.9yr. */
+function xpForLevel(level){ return level<=1 ? 0 : Math.round(280*(Math.pow(level,1.5)-1)); }
 function levelFromXP(xp){ let l=1; while(xpForLevel(l+1)<=xp) l++; return l; }
 function levelProgress(xp){
   const level=levelFromXP(xp);
@@ -4973,19 +5179,23 @@ async function computeUserStats(){
    output. Nothing is ever manually marked "unlocked" — checkAndAwardAchievements()
    is the only writer of P.achievements, and only writes an id the FIRST time
    its check() goes true, which is what makes duplicate-award impossible. */
+/* xp/coins are difficulty-tiered, not arbitrary: trivial(first-time/
+   onboarding) → easy → moderate → hard → very hard → major → exceptional.
+   A 100-workout achievement (century) must pay dramatically more than a
+   5-workout challenge, which is exactly what these numbers do. */
 const ACHIEVEMENTS_CONFIG=[
-  {id:'first_workout', icon:'🏋️', nameEn:'First Workout', nameAr:'أول تمرين', descEn:'Complete your first workout', descAr:'أكمل أول تمرين', xp:15, check:s=>s.totalWorkouts>=1},
-  {id:'week_warrior', icon:'🔥', nameEn:'Week Warrior', nameAr:'محارب الأسبوع', descEn:'Complete 7 workouts total', descAr:'أكمل 7 تمارين', xp:15, check:s=>s.totalWorkouts>=7},
-  {id:'century', icon:'💯', nameEn:'Century', nameAr:'المئوية', descEn:'Complete 100 workouts', descAr:'أكمل 100 تمرين', xp:50, check:s=>s.totalWorkouts>=100},
-  {id:'hydration_master', icon:'💧', nameEn:'Hydration Master', nameAr:'سيد الترطيب', descEn:'Hit your water target 30 times', descAr:'حقق هدف الماء 30 مرة', xp:15, check:s=>s.waterDaysHit>=30},
-  {id:'fisherman', icon:'🐟', nameEn:'Fisherman', nameAr:'صياد', descEn:'Catch 10 fish/animals total', descAr:'اصطد 10 حيوانات', xp:15, check:s=>s.totalCatches>=10},
-  {id:'rare_hunter', icon:'💎', nameEn:'Rare Hunter', nameAr:'صائد النوادر', descEn:'Collect 5 epic-or-better species', descAr:'اجمع 5 أنواع ملحمية أو أعلى', xp:20, check:s=>s.rareOrBetterCount>=5},
-  {id:'collector', icon:'📦', nameEn:'Collector', nameAr:'الجامع', descEn:'Collect 50 species total', descAr:'اجمع 50 نوع', xp:25, check:s=>s.totalCollected>=50},
-  {id:'unbreakable', icon:'🔥', nameEn:'Unbreakable', nameAr:'لا يُكسر', descEn:'Reach a 30-day streak', descAr:'وصل لسلسلة 30 يوم', xp:30, check:s=>s.bestStreak>=30},
-  {id:'champion', icon:'👑', nameEn:'Champion', nameAr:'البطل', descEn:'Reach Level 20', descAr:'وصل للمستوى 20', xp:50, check:s=>s.level>=20},
-  {id:'nutrition_machine', icon:'🍽️', nameEn:'Nutrition Machine', nameAr:'آلة التغذية', descEn:'Complete your nutrition target 20 times', descAr:'حقق هدف التغذية 20 مرة', xp:20, check:s=>s.nutritionDaysHit>=20},
-  {id:'habit_builder', icon:'✅', nameEn:'Habit Builder', nameAr:'باني العادات', descEn:'Reach a 14-day habit streak', descAr:'وصل لسلسلة عادة 14 يوم', xp:15, check:s=>s.bestHabitStreak>=14},
-  {id:'challenger', icon:'🎯', nameEn:'Challenger', nameAr:'المتحدي', descEn:'Complete your first challenge', descAr:'أكمل أول تحدي', xp:15, check:s=>s.challengesCompleted>=1},
+  {id:'first_workout', icon:'🏋️', nameEn:'First Workout', nameAr:'أول تمرين', descEn:'Complete your first workout', descAr:'أكمل أول تمرين', xp:10, coins:10, check:s=>s.totalWorkouts>=1},
+  {id:'week_warrior', icon:'🔥', nameEn:'Week Warrior', nameAr:'محارب الأسبوع', descEn:'Complete 7 workouts total', descAr:'أكمل 7 تمارين', xp:40, coins:40, check:s=>s.totalWorkouts>=7},
+  {id:'century', icon:'💯', nameEn:'Century', nameAr:'المئوية', descEn:'Complete 100 workouts', descAr:'أكمل 100 تمرين', xp:1200, coins:1800, check:s=>s.totalWorkouts>=100},
+  {id:'hydration_master', icon:'💧', nameEn:'Hydration Master', nameAr:'سيد الترطيب', descEn:'Hit your water target 30 times', descAr:'حقق هدف الماء 30 مرة', xp:250, coins:300, check:s=>s.waterDaysHit>=30},
+  {id:'fisherman', icon:'🐟', nameEn:'Fisherman', nameAr:'صياد', descEn:'Catch 10 fish/animals total', descAr:'اصطد 10 حيوانات', xp:50, coins:60, check:s=>s.totalCatches>=10},
+  {id:'rare_hunter', icon:'💎', nameEn:'Rare Hunter', nameAr:'صائد النوادر', descEn:'Collect 5 epic-or-better species', descAr:'اجمع 5 أنواع ملحمية أو أعلى', xp:280, coins:350, check:s=>s.rareOrBetterCount>=5},
+  {id:'collector', icon:'📦', nameEn:'Collector', nameAr:'الجامع', descEn:'Collect 50 species total', descAr:'اجمع 50 نوع', xp:600, coins:750, check:s=>s.totalCollected>=50},
+  {id:'unbreakable', icon:'🔥', nameEn:'Unbreakable', nameAr:'لا يُكسر', descEn:'Reach a 30-day streak', descAr:'وصل لسلسلة 30 يوم', xp:500, coins:650, check:s=>s.bestStreak>=30},
+  {id:'champion', icon:'👑', nameEn:'Champion', nameAr:'البطل', descEn:'Reach Level 20', descAr:'وصل للمستوى 20', xp:2500, coins:4000, exclusiveCosmetic:'champions-ascension', check:s=>s.level>=20},
+  {id:'nutrition_machine', icon:'🍽️', nameEn:'Nutrition Machine', nameAr:'آلة التغذية', descEn:'Complete your nutrition target 20 times', descAr:'حقق هدف التغذية 20 مرة', xp:120, coins:140, check:s=>s.nutritionDaysHit>=20},
+  {id:'habit_builder', icon:'✅', nameEn:'Habit Builder', nameAr:'باني العادات', descEn:'Reach a 14-day habit streak', descAr:'وصل لسلسلة عادة 14 يوم', xp:130, coins:150, check:s=>s.bestHabitStreak>=14},
+  {id:'challenger', icon:'🎯', nameEn:'Challenger', nameAr:'المتحدي', descEn:'Complete your first challenge', descAr:'أكمل أول تحدي', xp:15, coins:15, check:s=>s.challengesCompleted>=1},
 ];
 /* the ONLY place P.achievements is written. Returns the list of newly
    unlocked achievements (empty if none) so the caller can show a toast. */
@@ -5001,7 +5211,12 @@ async function checkAndAwardAchievements(stats){
   }
   if(newlyUnlocked.length){
     const totalXp=newlyUnlocked.reduce((sum,a)=>sum+(a.xp||XP_CONFIG.achievement_unlock),0);
+    const totalCoins=newlyUnlocked.reduce((sum,a)=>sum+(a.coins||0),0);
     P.xp=(P.xp||0)+totalXp;
+    P.coins=(P.coins||0)+totalCoins;
+    newlyUnlocked.forEach(a=>{
+      if(a.exclusiveCosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[a.exclusiveCosmetic]) P.inventory[a.exclusiveCosmetic]={acquiredAt:new Date().toISOString(),source:'achievement'}; }
+    });
     await storageSet('profile',JSON.stringify(P));
   }
   return newlyUnlocked;
@@ -5029,11 +5244,16 @@ function unlockedTitles(stats){ return TITLES_CONFIG.filter(t=>stats[t.metric]>=
    when its progress (derived from actual daily-track docs) reaches target,
    and each period (identified by an explicit period key) can only ever be
    awarded once, guarded by P.challengeState. */
+/* challenges are REPEATABLE (every week/month), so per-instance reward
+   stays well below a comparable one-time achievement — otherwise a
+   recurring challenge would out-earn a genuine milestone every single
+   period, which is exactly the farming problem difficulty tiers exist
+   to prevent. */
 const CHALLENGES_CONFIG=[
-  {id:'weekly_workouts', period:'week', icon:'🏋️', nameEn:'5 Workouts This Week', nameAr:'5 تمارين هذا الأسبوع', target:5, xp:100, metric:'workoutsThisWeek'},
-  {id:'weekly_hydration', period:'week', icon:'💧', nameEn:'Hydration Week', nameAr:'أسبوع الترطيب', target:5, xp:100, metric:'waterDaysThisWeek'},
-  {id:'weekly_nutrition', period:'week', icon:'🍽️', nameEn:'Nutrition Streak', nameAr:'التزام التغذية', target:5, xp:100, metric:'nutritionDaysThisWeek'},
-  {id:'monthly_fishing', period:'month', icon:'🐟', nameEn:'Fishing Collector', nameAr:'جامع الأسماك', target:5, xp:100, metric:'distinctCatchesThisMonth'},
+  {id:'weekly_workouts', period:'week', icon:'🏋️', nameEn:'5 Workouts This Week', nameAr:'5 تمارين هذا الأسبوع', target:5, xp:130, coins:150, metric:'workoutsThisWeek'},
+  {id:'weekly_hydration', period:'week', icon:'💧', nameEn:'Hydration Week', nameAr:'أسبوع الترطيب', target:5, xp:40, coins:40, metric:'waterDaysThisWeek'},
+  {id:'weekly_nutrition', period:'week', icon:'🍽️', nameEn:'Nutrition Streak', nameAr:'التزام التغذية', target:5, xp:50, coins:50, metric:'nutritionDaysThisWeek'},
+  {id:'monthly_fishing', period:'month', icon:'🐟', nameEn:'Fishing Collector', nameAr:'جامع الأسماك', target:5, xp:100, coins:120, metric:'distinctCatchesThisMonth'},
 ];
 function currentPeriodKey(period){
   const now=new Date();
@@ -5081,11 +5301,39 @@ async function checkAndAwardChallenges(){
       P.challengeState[key]={completed:true,completedAt:new Date().toISOString(),value};
       P.lifetimeStats.challengesCompleted=(P.lifetimeStats.challengesCompleted||0)+1;
       P.xp=(P.xp||0)+c.xp;
+      P.coins=(P.coins||0)+(c.coins||0);
       newlyCompleted.push(c);
     }
   }
   if(newlyCompleted.length) await storageSet('profile',JSON.stringify(P));
   return {progress,newlyCompleted};
+}
+
+/* ================= LEVEL MILESTONE REWARDS =================
+   Every 5 levels, escalating in value — coins alone at the "off" fives
+   (5/15/25/35/45), coins + a free store cosmetic at the "on" tens
+   (10/20/30/40), and the biggest one-time payout + a Legendary cosmetic
+   + the already-existing "the_champion" title at 50. Guarded by
+   P.levelRewardsClaimed so each milestone can only ever fire once. */
+const LEVEL_REWARDS = {
+  5:{coins:50}, 10:{coins:150, cosmetic:'chalkline'}, 15:{coins:250}, 20:{coins:400, cosmetic:'iron-grid'},
+  25:{coins:600}, 30:{coins:900, cosmetic:'deep-current'}, 35:{coins:1100}, 40:{coins:1500, cosmetic:'aurora-current'},
+  45:{coins:1900}, 50:{coins:3000, cosmetic:'golden-horizon'}
+};
+async function checkAndAwardLevelRewards(stats){
+  migrateProgressionFields();
+  const claimed=P.levelRewardsClaimed;
+  let changed=false;
+  Object.keys(LEVEL_REWARDS).map(Number).forEach(lvl=>{
+    if(stats.level>=lvl && !claimed[lvl]){
+      const r=LEVEL_REWARDS[lvl];
+      claimed[lvl]=true; changed=true;
+      if(r.coins) P.coins=(P.coins||0)+r.coins;
+      if(r.cosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[r.cosmetic]) P.inventory[r.cosmetic]={acquiredAt:new Date().toISOString(),source:'level'}; }
+    }
+  });
+  if(changed) await storageSet('profile',JSON.stringify(P));
+  return claimed;
 }
 
 /* ================= PROFILE PANEL (real) ================= */
@@ -5143,7 +5391,82 @@ async function renderProfileSection(){
     const name=LANG==='ar'?a.nameAr:a.nameEn, desc=LANG==='ar'?a.descAr:a.descEn;
     return `<div class="ach-row${unlocked?'':' locked'}"><div class="ach-ic">${a.icon}</div><div style="flex:1;"><div class="ach-name">${name}</div><div class="ach-desc">${desc}</div></div><div class="ach-xp">${unlocked?'✓':'+'+a.xp+'xp'}</div></div>`;
   }).join('');
+
+  renderProfileCosmeticHero();
+  document.getElementById('profileCoinsChip').textContent=`🪙 ${(P.coins||0).toLocaleString()}`;
 }
+/* renders the equipped background/effect/frame/title on the Profile hero
+   card — reads ONLY from P.equipped/P.inventory, never mutates them, so
+   it's always safe to call from any re-render. */
+function renderProfileCosmeticHero(){
+  const bgEl=document.getElementById('profileHeroBg');
+  const fxEl=document.getElementById('profileHeroEffect');
+  const frameEl=document.getElementById('profileFrameRing');
+  const avatarEl=document.getElementById('profileAvatar');
+  const titleChip=document.getElementById('profileTitleChip');
+
+  const bgId=P.equipped&&P.equipped.background;
+  const bgItem=bgId&&COSMETICS_CATALOG.find(c=>c.id===bgId);
+  bgEl.innerHTML=''; bgEl.className='cos-hero-bg'+(bgItem?' '+bgItem.cls:'');
+  if(bgItem&&bgItem.mountEffect) bgItem.mountEffect(bgEl);
+
+  const fxId=P.equipped&&P.equipped.effect;
+  const fxItem=fxId&&COSMETICS_CATALOG.find(c=>c.id===fxId);
+  fxEl.innerHTML='';
+  if(fxItem&&fxItem.mountEffect) fxItem.mountEffect(fxEl);
+
+  const frameId=P.equipped&&P.equipped.frame;
+  const frameItem=frameId&&COSMETICS_CATALOG.find(c=>c.id===frameId);
+  frameEl.innerHTML=''; frameEl.className='cos-frame-ring'+(frameItem?' '+frameItem.cls:'');
+  if(frameItem&&frameItem.orbiters){
+    const wrap=document.createElement('div'); wrap.className='cx-orbit-wrap';
+    [0,90,180,270].forEach(deg=>{
+      const dot=document.createElement('div'); dot.className='cx-orbit-dot';
+      const rad=42; const rx=Math.cos(deg*Math.PI/180)*rad, ry=Math.sin(deg*Math.PI/180)*rad;
+      dot.style.left='calc(50% + '+rx+'px)'; dot.style.top='calc(50% + '+ry+'px)';
+      wrap.appendChild(dot);
+    });
+    frameEl.appendChild(wrap);
+  }
+
+  if(P.avatarPhoto){ avatarEl.style.backgroundImage=`url(${P.avatarPhoto})`; avatarEl.textContent=''; }
+  else { avatarEl.style.backgroundImage=''; avatarEl.textContent='👤'; }
+
+  const titleId=P.equipped&&P.equipped.title;
+  const titleCfg=titleId&&TITLES_CONFIG.find(x=>x.id===titleId);
+  titleChip.textContent = titleCfg ? (titleCfg.icon+' '+(LANG==='ar'?titleCfg.nameAr:titleCfg.nameEn)) : t('profile_no_title');
+}
+document.getElementById('profileAvatarEditBtn').addEventListener('click',()=>{
+  if(!P.avatarPhoto){ document.getElementById('profileAvatarFileInput').click(); return; }
+  document.getElementById('dayTitle').textContent='✏️ '+(LANG==='ar'?'صورة الملف الشخصي':'Profile photo');
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`
+    <button type="button" class="setup-btn" id="avatarChangeBtn">${LANG==='ar'?'تغيير الصورة':'Change photo'}</button>
+    <button type="button" class="setup-btn" id="avatarRemoveBtn" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">${t('profile_remove_photo')}</button>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('avatarChangeBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); document.getElementById('profileAvatarFileInput').click(); });
+  document.getElementById('avatarRemoveBtn').addEventListener('click',async()=>{
+    P.avatarPhoto=null; await storageSet('profile',JSON.stringify(P));
+    overlay.classList.remove('open'); renderProfileCosmeticHero();
+  });
+});
+document.getElementById('profileAvatarFileInput').addEventListener('change',async(e)=>{
+  const file=e.target.files&&e.target.files[0]; if(!file) return;
+  try{
+    const dataUrl=await new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
+    const img=await new Promise((resolve,reject)=>{ const im=new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=dataUrl; });
+    const size=160, canvas=document.createElement('canvas'); canvas.width=size; canvas.height=size;
+    const ctx=canvas.getContext('2d');
+    const side=Math.min(img.width,img.height);
+    const sx=(img.width-side)/2, sy=(img.height-side)/2;
+    ctx.drawImage(img,sx,sy,side,side,0,0,size,size);
+    P.avatarPhoto=canvas.toDataURL('image/jpeg',0.7);
+    await storageSet('profile',JSON.stringify(P));
+    renderProfileCosmeticHero();
+  }catch(err){ showToast(LANG==='ar'?'تعذر تحميل الصورة':'Could not load photo','error'); }
+  finally{ e.target.value=''; }
+});
 document.getElementById('profileEditUsernameBtn').addEventListener('click',openUsernameEditModal);
 function openUsernameEditModal(){
   const current=(P.publicProfile&&P.publicProfile.username)||'';
@@ -5185,6 +5508,200 @@ function openUsernameEditModal(){
   });
   inp.focus();
 }
+
+/* ================= COSMETICS / STORE (approved batch 1) =================
+   One catalog, one buy function, one equip function — the Store panel and
+   the Profile hero both read from the exact same P.inventory/P.equipped,
+   so there is never a second source of truth for what's owned/equipped.
+   `mountEffect(el)` builds each item's DOM/particles fresh into whatever
+   container it's given (a store preview card or the live Profile hero),
+   using the exact CSS classes approved in the review demo. */
+function cxAddEl(container,cls){ const d=document.createElement('div'); d.className=cls; container.appendChild(d); return d; }
+function cxScatter(container,cls,n,area){
+  for(let i=0;i<n;i++){
+    const s=cxAddEl(container,cls);
+    s.style.left=(Math.random()*90+2)+'%'; s.style.top=(Math.random()*(area||90)+2)+'%';
+    s.style.animationDelay=(Math.random()*3)+'s';
+  }
+}
+function cxScatterSized(container,cls,n,size,area){
+  for(let i=0;i<n;i++){
+    const s=cxAddEl(container,cls);
+    s.style.width=size+'px'; s.style.height=size+'px';
+    s.style.left=(Math.random()*90+2)+'%'; s.style.top=(Math.random()*(area||90)+2)+'%';
+    s.style.animationDelay=(Math.random()*4)+'s';
+  }
+}
+const COSMETICS_CATALOG=[
+  // ---- backgrounds ----
+  {id:'chalkline', type:'background', rarity:'common', nameEn:'Chalkline', nameAr:'خط الطباشير', descEn:'Grid texture + rare light sheen', descAr:'نسيج شبكي + بريق خفيف نادر', price:150, cls:'bg-chalkline', mountEffect:el=>cxAddEl(el,'cx-sheen')},
+  {id:'quiet-horizon', type:'background', rarity:'common', nameEn:'Quiet Horizon', nameAr:'الأفق الهادئ', descEn:'Soft gradient, faint horizon glow', descAr:'تدرج هادئ مع توهج أفق خفيف', price:180, cls:'bg-quiet-horizon', mountEffect:el=>{ cxAddEl(el,'cx-hz'); cxAddEl(el,'cx-glow'); }},
+  {id:'tidepool', type:'background', rarity:'uncommon', nameEn:'Tidepool', nameAr:'بركة المد', descEn:'Swaying wave bands', descAr:'أمواج متمايلة', price:650, cls:'bg-tidepool', mountEffect:el=>{
+    [[26,1],[58,0.7],[92,0.5]].forEach(([top,op],i)=>{ const w=cxAddEl(el,'cx-wave'); w.style.top=top+'px'; w.style.opacity=op; w.style.animationDelay=(i*0.6)+'s'; });
+  }},
+  {id:'iron-grid', type:'background', rarity:'uncommon', nameEn:'Iron Grid', nameAr:'شبكة حديدية', descEn:'Geometric pattern, pulsing gold line + sheen', descAr:'نمط هندسي مع خط ذهبي نابض', price:750, cls:'bg-iron-grid', mountEffect:el=>{ cxAddEl(el,'cx-accent'); cxAddEl(el,'cx-sheen'); }},
+  {id:'deep-current', type:'background', rarity:'epic', nameEn:'Deep Current', nameAr:'التيار العميق', descEn:'Drifting caustic light + rising motes', descAr:'ضوء متموج + جسيمات صاعدة', price:2200, cls:'bg-deep-current', mountEffect:el=>{
+    cxAddEl(el,'cx-caustic'); const b=cxAddEl(el,'cx-caustic'); b.classList.add('b'); cxScatter(el,'cx-mote',10,90);
+  }},
+  {id:'forge-streak', type:'background', rarity:'epic', nameEn:'Forge Streak', nameAr:'شرارة الفرن', descEn:'Pulsing energy streaks + embers', descAr:'خطوط طاقة نابضة + جمرات', price:2500, cls:'bg-forge-streak', mountEffect:el=>{
+    [[28,0],[65,0.9],[102,1.6]].forEach(([top,delay])=>{ const s=cxAddEl(el,'cx-streak'); s.style.top=top+'px'; s.style.left='-35%'; s.style.animationDelay=delay+'s'; });
+    cxScatter(el,'cx-ember',9,95);
+  }},
+  {id:'aurora-current', type:'background', rarity:'mythic', nameEn:'Aurora Current', nameAr:'تيار الشفق', descEn:'Twin drifting aurora ribbons + stars', descAr:'شريطا شفق متحركان + نجوم', price:6000, cls:'bg-aurora', mountEffect:el=>{
+    cxAddEl(el,'cx-ribbon'); const r2=cxAddEl(el,'cx-ribbon'); r2.classList.add('b'); r2.style.top='40px'; cxScatter(el,'cx-star',16,80);
+  }},
+  {id:'molten-core', type:'background', rarity:'mythic', nameEn:'Molten Core', nameAr:'اللب المنصهر', descEn:'Pulsing heat glow + glowing cracks', descAr:'توهج حراري + شقوق متوهجة', price:6500, cls:'bg-molten', mountEffect:el=>{
+    cxAddEl(el,'cx-heat');
+    [[8,18,64,3],[68,46,48,3],[26,78,52,2],[82,12,32,2],[46,60,40,2]].forEach(([l,top,w,h],i)=>{
+      const c=cxAddEl(el,'cx-crack'); c.style.left=l+'%'; c.style.top=top+'%'; c.style.width=w+'px'; c.style.height=h+'px';
+      c.style.transform='rotate('+(Math.random()*60-30)+'deg)'; c.style.animationDelay=(i*0.3)+'s';
+    });
+  }},
+  {id:'golden-horizon', type:'background', rarity:'legendary', nameEn:'Golden Horizon', nameAr:'الأفق الذهبي', descEn:'Rotating gold glow + shimmer + layered sparkle', descAr:'توهج ذهبي دوّار + بريق متعدد الطبقات', price:15000, cls:'bg-golden-horizon', mountEffect:el=>{
+    cxAddEl(el,'cx-glowring'); cxAddEl(el,'cx-sweep'); cxScatterSized(el,'cx-spark near',7,2.5,90); cxScatterSized(el,'cx-spark far',8,1.5,80);
+  }},
+  {id:'champions-ascension', type:'background', rarity:'legendary', nameEn:"Champion's Ascension", nameAr:'صعود البطل', descEn:'Ambient glow + rising beams + particles', descAr:'توهج محيط + أشعة صاعدة + جسيمات', price:null, exclusiveNote:'achievement:champion', cls:'bg-ascension', mountEffect:el=>{
+    cxAddEl(el,'cx-amb');
+    [[46,0],[50,0.4],[54,0.2]].forEach(([left,delay])=>{ const b=cxAddEl(el,'cx-beam'); b.style.left=left+'%'; b.style.transform='translateX(-50%)'; b.style.animationDelay=delay+'s'; });
+    for(let i=0;i<9;i++){ const p=cxAddEl(el,'cx-p'); p.style.left=(28+Math.random()*44)+'%'; p.style.animationDelay=(Math.random()*4.5)+'s'; }
+  }},
+  {id:'gentle-giant', type:'background', rarity:'legendary', nameEn:'The Gentle Giant', nameAr:'العملاق اللطيف', descEn:'Breathing silhouette, rays, rising bubbles', descAr:'ظل يتنفس، أشعة، فقاعات صاعدة', price:null, exclusiveNote:'boss:rhincodon_typus', cls:'bg-gentle-giant', mountEffect:el=>{
+    [20,55].forEach(left=>{ const r=cxAddEl(el,'cx-ray'); r.style.left=left+'%'; r.style.animationDelay=(left/30)+'s'; });
+    cxAddEl(el,'cx-silhouette'); cxScatter(el,'cx-spot',10,55);
+    for(let i=0;i<9;i++){ const b=cxAddEl(el,'cx-bubble'); const size=2+Math.random()*3; b.style.width=size+'px'; b.style.height=size+'px'; b.style.left=(10+Math.random()*80)+'%'; b.style.top=(60+Math.random()*35)+'%'; b.style.animationDelay=(Math.random()*7)+'s'; }
+  }},
+  // ---- frames ----
+  {id:'frame-steel', type:'frame', rarity:'common', nameEn:'Steel Ring', nameAr:'حلقة فولاذية', descEn:'Clean solid ring', descAr:'حلقة بسيطة نظيفة', price:200, cls:'frame-frame-steel'},
+  {id:'frame-twinband', type:'frame', rarity:'uncommon', nameEn:'Twin Band', nameAr:'الشريط المزدوج', descEn:'Layered double ring', descAr:'حلقة مزدوجة الطبقات', price:700, cls:'frame-frame-twinband'},
+  {id:'frame-ember', type:'frame', rarity:'epic', nameEn:'Ember Halo', nameAr:'هالة الجمر', descEn:'Glowing pulse ring', descAr:'حلقة نابضة متوهجة', price:2000, cls:'frame-frame-ember'},
+  {id:'frame-prism', type:'frame', rarity:'mythic', nameEn:'Prism Loop', nameAr:'حلقة المنشور', descEn:'Rotating multicolor gradient + glow', descAr:'حلقة دوّارة متعددة الألوان + توهج', price:5500, cls:'frame-frame-prism'},
+  {id:'frame-celestial', type:'frame', rarity:'legendary', nameEn:'Celestial Crown', nameAr:'التاج السماوي', descEn:'Rotating gold ring + orbiting sparkles', descAr:'حلقة ذهبية دوّارة + بريق يدور حولها', price:18000, cls:'frame-frame-celestial', orbiters:true},
+  // ---- effects ----
+  {id:'fx-soft-glow', type:'effect', rarity:'common', nameEn:'Soft Glow', nameAr:'توهج ناعم', descEn:'Gentle pulsing ambient glow', descAr:'توهج محيط ناعم نابض', price:130, mountEffect:el=>cxAddEl(el,'cx-fx-glowpulse')},
+  {id:'fx-floating-motes', type:'effect', rarity:'uncommon', nameEn:'Floating Motes', nameAr:'ذرات عائمة', descEn:'Slow drifting light particles', descAr:'جسيمات ضوئية بطيئة الحركة', price:420, mountEffect:el=>cxScatter(el,'cx-particle-mote2',6,90)},
+  {id:'fx-ember-drift', type:'effect', rarity:'epic', nameEn:'Ember Drift', nameAr:'انجراف الجمر', descEn:'Warm rising embers', descAr:'جمرات دافئة صاعدة', price:1200, mountEffect:el=>cxScatter(el,'cx-ember',9,95)},
+  {id:'fx-static-surge', type:'effect', rarity:'mythic', nameEn:'Static Surge', nameAr:'الشحنة الساكنة', descEn:'Occasional electric arcs + glow', descAr:'أقواس كهربائية عرضية + توهج', price:2900, mountEffect:el=>{
+    const a=cxAddEl(el,'cx-fx-ambergold'); a.style.background='radial-gradient(ellipse at 50% 0%, rgba(120,210,255,0.14), transparent 70%)';
+    [[10,15,0],[75,30,1.4],[40,70,2.7],[85,60,3.5]].forEach(([l,top,delay])=>{
+      const arc=cxAddEl(el,'cx-arc'); arc.style.left=l+'%'; arc.style.top=top+'%'; arc.style.transform='rotate('+(Math.random()*70-35)+'deg)'; arc.style.animationDelay=delay+'s';
+    });
+  }},
+  {id:'fx-starfall', type:'effect', rarity:'legendary', nameEn:'Starfall', nameAr:'سقوط النجوم', descEn:'Shooting stars + ambient glow + sparkle trail', descAr:'نجوم متساقطة + توهج + أثر بريق', price:5200, mountEffect:el=>{
+    cxAddEl(el,'cx-fx-ambergold');
+    [[20,10,0],[70,25,2.2],[45,55,4.1]].forEach(([l,top,delay])=>{ const s=cxAddEl(el,'cx-shootstar'); s.style.left=l+'%'; s.style.top=top+'%'; s.style.animationDelay=delay+'s'; });
+    cxScatter(el,'cx-star',10,70);
+  }},
+];
+const RARITY_ORDER_LIST=['common','uncommon','epic','mythic','legendary'];
+
+/* the ONLY place P.coins is spent and P.inventory is written for a
+   purchase — checks affordability/ownership synchronously right before
+   mutating so a double-click can't double-charge (the second call sees
+   the already-updated P.inventory/P.coins from the first). */
+async function buyCosmetic(id){
+  const item=COSMETICS_CATALOG.find(c=>c.id===id);
+  if(!item||item.price==null) throw new Error('not purchasable');
+  if(P.inventory[id]) throw new Error('already owned');
+  if((P.coins||0)<item.price) throw new Error(t('store_not_enough'));
+  P.coins-=item.price;
+  P.inventory[id]={acquiredAt:new Date().toISOString(),source:'store'};
+  await storageSet('profile',JSON.stringify(P));
+}
+async function equipCosmetic(slot,id){
+  if(id && !P.inventory[id]) throw new Error('not owned');
+  P.equipped=P.equipped||{}; P.equipped[slot]=id;
+  await storageSet('profile',JSON.stringify(P));
+}
+async function equipTitle(id){
+  const stats=await computeUserStats();
+  if(id && !unlockedTitles(stats).some(t2=>t2.id===id)) throw new Error('not unlocked');
+  P.equipped=P.equipped||{}; P.equipped.title=id;
+  await storageSet('profile',JSON.stringify(P));
+}
+let storeActiveTab='background';
+async function renderStoreSection(){
+  document.getElementById('storeCoinsBadge').textContent=`🪙 ${(P.coins||0).toLocaleString()}`;
+  document.querySelectorAll('#storeTabs .social-tab').forEach(b=>{
+    b.classList.toggle('active', b.dataset.storeTab===storeActiveTab);
+    b.onclick=()=>{ storeActiveTab=b.dataset.storeTab; renderStoreSection(); };
+  });
+  const content=document.getElementById('storeContent');
+  if(storeActiveTab==='title'){ renderStoreTitlesTab(content); return; }
+  const items=COSMETICS_CATALOG.filter(c=>c.type===storeActiveTab);
+  content.innerHTML='';
+  RARITY_ORDER_LIST.forEach(rar=>{
+    const list=items.filter(c=>c.rarity===rar);
+    if(!list.length) return;
+    const group=document.createElement('div'); group.className='cos-rarity-group';
+    group.innerHTML=`<div class="cos-rarity-head"><span class="dot" style="background:var(--cos-${rar});"></span><h3 style="margin:0;font-size:0.95rem;">${t('cos_rarity_'+rar)}</h3></div>`;
+    const grid=document.createElement('div'); grid.className='cos-grid';
+    list.forEach(it=>{
+      const owned=!!P.inventory[it.id];
+      const equipped=P.equipped&&P.equipped[it.type]===it.id;
+      const card=document.createElement('div'); card.className='cos-card'+(equipped?' is-equipped':'');
+      const name=LANG==='ar'?it.nameAr:it.nameEn, desc=LANG==='ar'?it.descAr:it.descEn;
+      const previewCls = it.type==='frame' ? 'cos-frame-preview' : 'cos-preview';
+      card.innerHTML=`
+        <div class="${previewCls}"></div>
+        <div class="cos-card-body">
+          <div class="cos-card-name">${name}</div>
+          <div>${it.exclusiveNote?`<span class="cos-tag">${t('store_exclusive')}</span>`:''}${owned?`<span class="cos-tag">${t('store_owned')}</span>`:''}</div>
+          <div class="cos-price">${desc}<br>${it.price!=null?it.price.toLocaleString()+' 🪙':'—'}</div>
+          <button type="button" class="cos-btn"></button>
+        </div>`;
+      grid.appendChild(card);
+      const previewEl=card.querySelector('.'+previewCls);
+      if(it.type==='frame'){
+        const ring=document.createElement('div'); ring.style.cssText='position:relative;width:64px;height:64px;';
+        const inner=document.createElement('div'); inner.className='cos-frame-ring '+it.cls; inner.style.cssText='position:absolute;inset:0;'; ring.appendChild(inner);
+        if(it.orbiters){
+          const wrap=document.createElement('div'); wrap.className='cx-orbit-wrap'; wrap.style.position='absolute';
+          [0,90,180,270].forEach(deg=>{ const dot=document.createElement('div'); dot.className='cx-orbit-dot'; const rad=36; dot.style.left='calc(50% + '+(Math.cos(deg*Math.PI/180)*rad)+'px)'; dot.style.top='calc(50% + '+(Math.sin(deg*Math.PI/180)*rad)+'px)'; wrap.appendChild(dot); });
+          ring.appendChild(wrap);
+        }
+        const av=document.createElement('div'); av.style.cssText='position:absolute;inset:8px;border-radius:50%;background:rgba(0,0,0,0.06);'; ring.appendChild(av);
+        previewEl.appendChild(ring);
+      } else {
+        previewEl.className=previewCls+(it.cls?' '+it.cls:'');
+        if(it.mountEffect) it.mountEffect(previewEl);
+      }
+      const btn=card.querySelector('.cos-btn');
+      if(it.exclusiveNote && !owned){
+        btn.textContent=t('store_exclusive'); btn.disabled=true;
+      } else if(owned){
+        btn.textContent=equipped?t('store_equipped'):t('store_equip');
+        if(equipped) btn.classList.add('equipped');
+        btn.addEventListener('click',async()=>{ await equipCosmetic(it.type, equipped?null:it.id); if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero(); renderStoreSection(); });
+      } else {
+        const canAfford=(P.coins||0)>=it.price;
+        btn.classList.add('primary'); btn.disabled=!canAfford;
+        btn.textContent=canAfford?t('store_buy'):t('store_not_enough');
+        btn.addEventListener('click',async()=>{
+          btn.disabled=true;
+          try{ await buyCosmetic(it.id); await equipCosmetic(it.type,it.id); showToast(name+(LANG==='ar'?' — تم الشراء':' purchased'),'success'); renderStoreSection(); }
+          catch(err){ showToast(err.message,'error'); btn.disabled=false; }
+        });
+      }
+    });
+    group.appendChild(grid);
+    content.appendChild(group);
+  });
+}
+function renderStoreTitlesTab(content){
+  computeUserStats().then(stats=>{
+    const earned=unlockedTitles(stats);
+    content.innerHTML='';
+    if(!earned.length){ content.innerHTML=`<div class="dash-empty">${t('profile_no_titles')}</div>`; return; }
+    earned.forEach(ti=>{
+      const equipped=P.equipped&&P.equipped.title===ti.id;
+      const row=document.createElement('div'); row.className='cos-title-row';
+      row.innerHTML=`<span>${ti.icon} ${LANG==='ar'?ti.nameAr:ti.nameEn}</span><button type="button" class="cos-btn" style="width:auto;padding:6px 14px;">${equipped?t('store_equipped'):t('store_equip')}</button>`;
+      row.querySelector('button').addEventListener('click',async()=>{ await equipTitle(equipped?null:ti.id); if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero(); renderStoreTitlesTab(content); });
+      content.appendChild(row);
+    });
+  });
+}
+document.getElementById('profileCoinsChip').addEventListener('click',()=>{ showPanel('store'); enterSection('store'); });
 
 /* ================= CHALLENGES PANEL (real) ================= */
 async function renderChallengesSection(){
@@ -6799,10 +7316,24 @@ function collAddCatch(measurements){
       const achievement=LANG==='ar'?sp.bossData.achievementAr:sp.bossData.achievementEn;
       showToast('🏆 '+(LANG==='ar'?`تم فتح إنجاز: ${achievement}`:`Achievement unlocked: ${achievement}`));
     }
-    // real XP + achievement/challenge check for the new species — fire-and-
-    // forget, matching this function's existing "never block the tap on a
-    // network round-trip" pattern.
-    (async()=>{ await awardXP(XP_CONFIG.collection_unlock); await notifyNewUnlocks(); if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{}); })();
+    // reward scales with the species' real rarity tier instead of a flat
+    // amount — a boss catch always pays at the top (legendary) tier
+    // regardless of its own listed rarity field, since bosses are the
+    // game's rarest, hardest encounters by design.
+    const rewardTier = (sp && sp.bossData) ? 'legendary' : (sp && sp.rarity) || 'common';
+    (async()=>{
+      await awardXP(XP_CONFIG['collection_unlock_'+rewardTier]||XP_CONFIG.collection_unlock_common);
+      await awardCoins(COIN_CONFIG['collection_unlock_'+rewardTier]||COIN_CONFIG.collection_unlock_common);
+      // the whale shark boss is the only boss wired to an exclusive
+      // cosmetic for this first batch — more bosses get their own
+      // cosmetic in a follow-up, each shown for approval before going live.
+      if(sp && sp.bossData && sp.id==='rhincodon_typus'){
+        P.inventory=P.inventory||{};
+        if(!P.inventory['gentle-giant']){ P.inventory['gentle-giant']={acquiredAt:new Date().toISOString(),source:'boss'}; await storageSet('profile',JSON.stringify(P)); }
+      }
+      await notifyNewUnlocks();
+      if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
+    })();
   }
 }
 
