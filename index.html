@@ -3095,8 +3095,8 @@ function showNextAchievement(){
   document.getElementById('achKicker').textContent=t(kickerKey);
   document.getElementById('achName').textContent=name;
   document.getElementById('achDesc').textContent=desc;
-  document.getElementById('achXp').textContent=`+${item.xp||0} XP`;
-  document.getElementById('achXp').classList.toggle('hidden',!item.xp);
+  document.getElementById('achXp').textContent=`+${item.xp||0} XP`+(item.coins?` · +${item.coins} 🪙`:'');
+  document.getElementById('achXp').classList.toggle('hidden',!item.xp && !item.coins);
   document.getElementById('achContinueBtn').textContent=t('ach_continue');
   const note=document.getElementById('achQueueNote');
   if(achievementQueue.length){ note.textContent=t('ach_queue_note').replace('{n}',achievementQueue.length); note.classList.remove('hidden'); }
@@ -5331,15 +5331,23 @@ async function checkAndAwardLevelRewards(stats){
   migrateProgressionFields();
   const claimed=P.levelRewardsClaimed;
   let changed=false;
+  const justClaimed=[];
   Object.keys(LEVEL_REWARDS).map(Number).forEach(lvl=>{
     if(stats.level>=lvl && !claimed[lvl]){
       const r=LEVEL_REWARDS[lvl];
       claimed[lvl]=true; changed=true;
       if(r.coins) P.coins=(P.coins||0)+r.coins;
       if(r.cosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[r.cosmetic]) P.inventory[r.cosmetic]={acquiredAt:new Date().toISOString(),source:'level'}; }
+      justClaimed.push({lvl,...r});
     }
   });
-  if(changed) await storageSet('profile',JSON.stringify(P));
+  if(changed){
+    await storageSet('profile',JSON.stringify(P));
+    justClaimed.forEach(r=>{
+      const parts=[]; if(r.coins) parts.push(`+${r.coins} 🪙`); if(r.cosmetic) parts.push(LANG==='ar'?'+ زينة مجانية':'+ free cosmetic');
+      showToast((LANG==='ar'?`🎉 المستوى ${r.lvl}: `:`🎉 Level ${r.lvl}: `)+parts.join(' '),'success');
+    });
+  }
   return claimed;
 }
 
@@ -5396,7 +5404,7 @@ async function renderProfileSection(){
   achList.innerHTML=ACHIEVEMENTS_CONFIG.map(a=>{
     const unlocked=!!P.achievements[a.id];
     const name=LANG==='ar'?a.nameAr:a.nameEn, desc=LANG==='ar'?a.descAr:a.descEn;
-    return `<div class="ach-row${unlocked?'':' locked'}"><div class="ach-ic">${a.icon}</div><div style="flex:1;"><div class="ach-name">${name}</div><div class="ach-desc">${desc}</div></div><div class="ach-xp">${unlocked?'✓':'+'+a.xp+'xp'}</div></div>`;
+    return `<div class="ach-row${unlocked?'':' locked'}"><div class="ach-ic">${a.icon}</div><div style="flex:1;"><div class="ach-name">${name}</div><div class="ach-desc">${desc}</div></div><div class="ach-xp">${unlocked?'✓':`+${a.xp}xp${a.coins?' · +'+a.coins+'🪙':''}`}</div></div>`;
   }).join('');
 
   renderProfileCosmeticHero();
@@ -5723,7 +5731,7 @@ async function renderChallengesSection(){
     const pct=Math.round(value/c.target*100);
     const name=LANG==='ar'?c.nameAr:c.nameEn;
     return `<div class="challenge-card${completed?' completed':''}">
-      <div class="challenge-head"><div class="challenge-name">${c.icon} ${name}</div><div class="challenge-xp-badge">+${c.xp} XP</div></div>
+      <div class="challenge-head"><div class="challenge-name">${c.icon} ${name}</div><div class="challenge-xp-badge">+${c.xp} XP${c.coins?' · +'+c.coins+' 🪙':''}</div></div>
       <div class="challenge-bar-track"><div class="challenge-bar-fill" style="width:${pct}%;"></div></div>
       <div class="challenge-progress-label">${completed?t('challenge_completed'):t('challenge_progress').replace('{cur}',value).replace('{target}',c.target)}</div>
     </div>`;
