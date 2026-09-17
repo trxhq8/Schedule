@@ -5281,7 +5281,13 @@ const PublicProfileService={
     if(uname===oldUname) return uname; // unchanged — nothing to do
     try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
     catch(e){ throw new Error(t('username_taken')); }
-    await usersCol().doc(currentUser.uid).set({username:uname, updatedAt:serverNow()},{merge:true});
+    // `uid` is included even though it never actually changes — a merge
+    // write against a doc that doesn't exist (e.g. local state says a
+    // profile exists but the Firestore doc was never actually created)
+    // is evaluated by the rules as a CREATE, which requires uid to be
+    // present and match; omitting it here caused exactly that write to
+    // be denied with a raw "Missing or insufficient permissions" error.
+    await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, username:uname, updatedAt:serverNow()},{merge:true});
     P.publicProfile.username=uname;
     await storageSet('profile',JSON.stringify(P));
     // best-effort: the new username is already claimed and saved above,
@@ -5295,7 +5301,7 @@ const PublicProfileService={
     if(!this.hasProfile()) return;
     P.publicProfile.privacy={...P.publicProfile.privacy, ...partial};
     await storageSet('profile',JSON.stringify(P));
-    await usersCol().doc(currentUser.uid).set({privacy:P.publicProfile.privacy, updatedAt:serverNow()},{merge:true});
+    await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, privacy:P.publicProfile.privacy, updatedAt:serverNow()},{merge:true});
     if(partial.leaderboardGlobal===false) await leaderboardEntriesCol().doc(currentUser.uid).delete().catch(()=>{});
     else if(partial.leaderboardGlobal===true) await this.syncStats();
   },
@@ -5307,7 +5313,7 @@ const PublicProfileService={
     try{
       const stats=await computeUserStats();
       const titles=unlockedTitles(stats).map(x=>x.id);
-      await usersCol().doc(currentUser.uid).set({stats,titles,updatedAt:serverNow()},{merge:true});
+      await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow()},{merge:true});
       if(P.publicProfile.privacy.leaderboardGlobal){
         await leaderboardEntriesCol().doc(currentUser.uid).set({
           uid:currentUser.uid, displayName:P.publicProfile.displayName, avatar:P.publicProfile.avatar,
