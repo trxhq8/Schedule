@@ -5263,23 +5263,32 @@ const PublicProfileService={
     await storageSet('profile',JSON.stringify(P));
     return uname;
   },
-  /* changes an ALREADY-claimed username. The old usernames/{name} doc is
-     deliberately left in place rather than deleted — the rules only ever
-     allow `create` on that collection (see the rules file), never
-     `update`/`delete`, so a released handle can never be reused anyway;
-     this just claims a second one and repoints users/{uid}.username at
-     it, the same create-fails-if-taken race protection as claimUsername. */
+  /* changes an ALREADY-claimed username. Claims the new handle first
+     (create-fails-if-taken, same race protection as claimUsername), only
+     repoints users/{uid}.username at it once that succeeds, and only
+     THEN releases the old handle — so a failed or interrupted change
+     never leaves the account's old username floating deleted while the
+     new one didn't actually go through. Freeing the old handle (instead
+     of leaving it reserved forever) needs the rules to allow deleting
+     your OWN usernames/{name} doc — see the rules file's `friendRequests`-
+     adjacent `usernames` match, updated alongside this. */
   async changeUsername(rawUsername){
     if(!fbDb||!currentUser) throw new Error('offline');
     if(!this.hasProfile()) throw new Error('no profile yet');
     const uname=String(rawUsername||'').trim().toLowerCase();
     if(!this.usernameRegex.test(uname)) throw new Error(t('username_invalid'));
-    if(uname===P.publicProfile.username) return uname; // unchanged — nothing to do
+    const oldUname=P.publicProfile.username;
+    if(uname===oldUname) return uname; // unchanged — nothing to do
     try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
     catch(e){ throw new Error(t('username_taken')); }
     await usersCol().doc(currentUser.uid).set({username:uname, updatedAt:serverNow()},{merge:true});
     P.publicProfile.username=uname;
     await storageSet('profile',JSON.stringify(P));
+    // best-effort: the new username is already claimed and saved above,
+    // so even if this fails (offline, rules not yet updated on an older
+    // deploy, etc.) the account is still left in a fully consistent state
+    // — the old handle just stays reserved instead of freeing up.
+    await usernamesCol().doc(oldUname).delete().catch(()=>{});
     return uname;
   },
   async updatePrivacy(partial){
