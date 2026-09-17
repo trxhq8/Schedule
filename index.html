@@ -3466,7 +3466,10 @@ function commitTimeSpan(c){
   return {start,end};
 }
 function daysIntersect(a,b){ return (a.days||[]).filter(d=>(b.days||[]).includes(d)); }
-function spansOverlap(s1,s2){ if(!s1||!s2) return true; return s1.start<s2.end && s2.start<s1.end; }
+/* an all-day commitment (no specific time — s1/s2 null) is a plain
+   "remember to do this today" reminder, not a block of time, so it can
+   never collide with a timed commitment or with another all-day one. */
+function spansOverlap(s1,s2){ if(!s1||!s2) return false; return s1.start<s2.end && s2.start<s1.end; }
 /* s1 = candidate's span, s2 = the existing commitment's span — named by
    ROLE (candidate/other), not by position, since "a/b" labels are easy to
    misread backwards (this tripped up even the test written for it). */
@@ -5800,7 +5803,7 @@ async function openCalendarDay(y,m,d){
 function calAutoLabelForSlot(slot,commitments){
   const [s0,s1]=slotRange(slot);
   const hits=commitments.filter(c=>{
-    if(!c.from||!c.to) return true; // all-day commitment (no time set) — applies to every slot
+    if(!c.from||!c.to) return false; // all-day commitment has no specific hour — it's a day-level reminder (shown separately above), never injected into an hourly slot
     const c0=parseHM(c.from),c1=parseHM(c.to);
     if(c1>c0) return s0<c1 && c0<s1;
     return (c0<s1) || (s0<c1);
