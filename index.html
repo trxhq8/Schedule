@@ -270,27 +270,9 @@
   .ex-table th{ font-family:var(--font-head); font-weight:800; color:var(--heading); text-align:start; padding:6px 4px; border-bottom:2px solid var(--line); }
   .ex-table td{ padding:7px 4px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; }
   .ex-table tr.ex-done td{ opacity:0.55; text-decoration:line-through; }
-  .set-log-tr td{ padding:0 4px 10px; border-bottom:1px solid var(--line); }
-  .set-log-block{ background:var(--bg); border-radius:12px; padding:10px; }
-  .set-log-last{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:8px; }
-  .fl-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-  .fl-label{ font-size:0.7rem; color:var(--ink-soft); width:44px; flex-shrink:0; }
-  .fl-stepper{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
-  .fl-step-btn{ width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-family:var(--font-head); font-weight:800; font-size:1rem; cursor:pointer; flex-shrink:0; }
-  .fl-step-btn:active{ transform:scale(0.9); }
-  .fl-value{ font-family:var(--font-head); font-weight:800; font-size:0.95rem; min-width:56px; text-align:center; color:var(--heading); }
-  .fl-edit-btn{ border:none; background:none; cursor:pointer; font-size:0.85em; padding:2px 4px; flex-shrink:0; opacity:0.6; }
-  .fl-chips{ display:flex; gap:5px; overflow-x:auto; margin:0 0 8px 52px; padding-bottom:2px; }
-  .fl-chip{ flex-shrink:0; border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:0.72rem; font-family:var(--font-head); font-weight:700; background:var(--card); color:var(--ink); cursor:pointer; }
-  .fl-chip.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
-  .fl-custom-input{ width:60px; border:1px solid var(--line); border-radius:8px; padding:5px 6px; font-family:var(--font-body); font-size:0.8rem; background:var(--card); color:var(--ink); }
-  .fl-slots{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-  .fl-slot{ border:1.5px dashed var(--line); border-radius:10px; padding:6px 10px; font-size:0.72rem; font-family:var(--font-head); font-weight:700; color:var(--ink-soft); cursor:pointer; background:var(--card); min-width:44px; text-align:center; }
-  .fl-slot.done{ border-style:solid; border-color:var(--accent-deep); background:var(--accent-deep); color:#fff; }
-  .fl-extra-toggle{ font-size:0.68rem; color:var(--ink-soft); text-decoration:underline; cursor:pointer; margin-top:6px; display:inline-block; }
-  .fl-extra-row{ display:flex; align-items:center; gap:8px; margin-top:8px; }
-  .fl-note-input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-family:var(--font-body); font-size:0.78rem; background:var(--card); color:var(--ink); }
+  .ex-table tr.ex-missed td{ opacity:0.5; text-decoration:line-through; color:#c0392b; }
   .ex-table input[type="checkbox"]{ width:18px; height:18px; }
+  .ex-table input[type="checkbox"]:disabled{ cursor:not-allowed; }
   .grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
   @media(max-width:480px){ .grid{grid-template-columns:repeat(4,1fr);} }
   .day-btn{ aspect-ratio:1; background:var(--card); border:1px solid var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:transform .15s ease; font-family:var(--font-head); position:relative; padding:4px; }
@@ -358,11 +340,15 @@
   .check-item .txt{ font-size:0.86rem; flex:1; }
   .check-item.done .txt{ text-decoration:line-through; color:var(--ink-soft); }
   .supp-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
-  .supp-chip{ flex:1; min-width:100px; text-align:center; padding:14px 10px; border-radius:14px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.85rem; box-shadow:var(--shadow); color:var(--ink); }
-  .supp-chip.done{ border-color:var(--gold); color:var(--gold); opacity:0.7; }
+  .supp-chip{ position:relative; flex:1; min-width:100px; text-align:center; padding:16px 10px 14px; border-radius:14px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:700; font-size:0.85rem; box-shadow:var(--shadow); color:var(--ink); }
+  .supp-chip.done{ border-color:var(--gold); color:var(--gold); }
   .supp-chip.done .label-text{ text-decoration:line-through; }
-  .supp-chip .ic{ font-size:1.3rem; display:block; margin-bottom:4px; cursor:pointer; border-radius:8px; }
-  .supp-chip .ic:hover{ background:var(--bg); }
+  .supp-check-mark{ display:block; font-size:1.1rem; margin-bottom:3px; }
+  /* small, separate corner button — deliberately far from the main chip
+     body so a tap meant for the checklist can never land on it by accident
+     (and vice versa); it only ever changes the icon, never the done state */
+  .supp-emoji-btn{ position:absolute; top:4px; inset-inline-end:4px; width:20px; height:20px; padding:0; font-size:0.72rem; line-height:1; border:1px solid var(--line); border-radius:50%; background:var(--card); color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .supp-emoji-btn:hover{ background:var(--bg); }
   .water-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; text-align:center; box-shadow:var(--shadow); margin-bottom:18px; }
   .water-card h3{ color:var(--water); font-size:0.95rem; margin:0 0 10px; }
   .water-cups{ font-size:1.4rem; letter-spacing:2px; margin-bottom:10px; min-height:28px; }
@@ -646,6 +632,7 @@
     </div>
     <div class="nav-actions">
       <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
+      <button class="icon-btn" id="profileHubBtn" title="Profile">👤</button>
       <button class="icon-btn" id="modeBtn" title="Mode">🌙</button>
       <button class="icon-btn lang-toggle" id="mainLangToggle" style="width:auto;padding:0 12px;border-radius:999px;">EN</button>
       <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
@@ -717,11 +704,24 @@
       <div class="home-card" data-goto="today"><span class="ic">✅</span><div class="ttl" data-i18n="card_todo"></div></div>
       <div class="home-card" data-goto="food"><span class="ic">🍽️</span><div class="ttl" data-i18n="card_food"></div></div>
       <div class="home-card" data-goto="workout"><span class="ic">🏋️</span><div class="ttl" data-i18n="card_workout"></div></div>
-      <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
       <div class="home-card" data-goto="collections"><span class="ic">🐾</span><div class="ttl" data-i18n="card_collections"></div></div>
-      <div class="home-card" data-goto="profile"><span class="ic">👤</span><div class="ttl" data-i18n="card_profile"></div></div>
       <div class="home-card" data-goto="challenges"><span class="ic">🎯</span><div class="ttl" data-i18n="card_challenges"></div></div>
+    </div>
+  </section>
+
+  <!-- PROFILE HUB — reached only via the 👤 icon in the top nav. Groups
+       Profile/Friends/My Progress under one entry point, separate from
+       Training/Challenges/Collection which stay as their own main
+       sections. Each tile below reuses the exact same showPanel+enterSection
+       call the old home-cards used for these three, so panel-profile,
+       panel-social and panel-progress themselves are completely untouched
+       — this is purely a new way IN, not a rebuilt destination. -->
+  <section class="panel" id="panel-profile-hub">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="home-cards">
+      <div class="home-card" data-goto="profile"><span class="ic">👤</span><div class="ttl" data-i18n="card_profile"></div></div>
       <div class="home-card" data-goto="social"><span class="ic">👥</span><div class="ttl" data-i18n="card_social"></div></div>
+      <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
     </div>
   </section>
 
@@ -2043,6 +2043,7 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
 });
 
 document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); refreshHome(); });
+document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPanel('profile-hub'); });
 /* Collections has its own back-stack (species → category → animals → home)
    instead of always jumping straight to home like every other section's
    back button, so it's wired separately below and skipped here. */
@@ -2955,188 +2956,47 @@ let exRowCounter=0;
    fresh history for the new variant instead of mixing incompatible logs. */
 function slugifyExerciseName(name){ return String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function exerciseId(typeKey,enName){ return typeKey+'|'+slugifyExerciseName(enName); }
-function parseSetCount(setsStr){ const m=String(setsStr||'').match(/\d+/); const n=m?parseInt(m[0],10):3; return Math.max(1,Math.min(6,n||3)); }
-/* fast-logging quick-pick presets. Weight/reps steppers snap to these first
-   when tapped, but the stepper +/- and the ✏️ custom-entry fallback both
-   still accept ANY value — these are just the fast path, never the only
-   path. */
-const FL_WEIGHT_QUICK=[10,15,20,25,30,35,40,45,50];
-const FL_REPS_QUICK=[6,8,10,12,15,20];
-const FL_WEIGHT_STEP=2.5, FL_REPS_STEP=1;
-function flClampWeight(v){ return Math.max(0,Math.min(300,v)); }
-function flClampReps(v){ return Math.max(1,Math.min(50,v)); }
-/* Chooses the value a stepper opens with: whatever's already staged/logged
-   in the FIRST not-yet-done set today beats last session's number, which
-   beats a plain default — so reopening a day you already started never
-   resets what you were mid-way through logging. */
-function flInitialValue(savedSets,setCount,last,field,fallback){
-  for(let i=0;i<setCount;i++){ const sv=savedSets[i]; if(sv&&sv[field]!=null) return sv[field]; }
-  if(last&&last[field]!=null) return last[field];
-  return fallback;
-}
-function exerciseTableHtml(list,timerSecs,showVideo,typeKey,logInputs){
+/* Training checklist: exercise name + a single ✅ per exercise — nothing
+   else. Persisted per exercise (dailyTrack.exerciseChecks[exId]) only for
+   TODAY's day, same scoping every other today-only feature (the done
+   toggle, feedback prompt) already uses. Once the day itself is marked
+   done, every checkbox here is rendered disabled and anything left
+   unchecked is shown crossed out — "not completed", permanently, for that
+   day — see the workoutDoneToggle handler in openWorkoutDay(). */
+function exerciseTableHtml(list,timerSecs,showVideo,typeKey,isToday){
   if(!list||!list.length) return '';
+  const locked = isToday && !!dailyTrack.workoutDone;
   let rows='';
   list.forEach(e=>{
     const p=parseExerciseRow(e[LANG]);
     const vid = showVideo ? videoIconHtml(e.en) : '';
     const timer = showVideo ? timerIconHtml(timerSecs) : '';
     const rid='exrow'+(exRowCounter++);
-    rows+=`<tr id="${rid}"><td>${p.name}${vid}${timer}</td><td>${p.sets}</td><td>${p.reps}</td><td style="text-align:center;"><input type="checkbox" onchange="document.getElementById('${rid}').classList.toggle('ex-done',this.checked)"></td></tr>`;
-    if(logInputs && typeKey){
+    if(isToday && typeKey){
       const exId=exerciseId(typeKey,parseExerciseRow(e.en).name);
-      const setCount=parseSetCount(p.sets);
-      const savedSets=(dailyTrack.workoutLog&&dailyTrack.workoutLog[exId])||[];
-      const last=(P.lastExerciseLog&&P.lastExerciseLog[exId])||null;
-      const lastText = last
-        ? (LANG==='ar'?`آخر مرة: ${last.weight}كغ × ${last.reps}`:`Last: ${last.weight}kg × ${last.reps}`)
-        : (LANG==='ar'?'ما فيه سجل سابق لهذا التمرين':'No previous log for this exercise yet');
-      const curWeight=flInitialValue(savedSets,setCount,last,'weight',20);
-      const curReps=flInitialValue(savedSets,setCount,last,'reps',10);
-      const meta=(dailyTrack.workoutMeta&&dailyTrack.workoutMeta[exId])||{};
-      const weightChips=FL_WEIGHT_QUICK.map(v=>`<span class="fl-chip${v===curWeight?' active':''}" data-exid="${exId}" data-field="weight" data-value="${v}">${v}</span>`).join('');
-      const repsChips=FL_REPS_QUICK.map(v=>`<span class="fl-chip${v===curReps?' active':''}" data-exid="${exId}" data-field="reps" data-value="${v}">${v}</span>`).join('');
-      const slots=Array.from({length:setCount},(_,i)=>{
-        const sv=savedSets[i]||{};
-        const done=sv.weight!=null&&sv.reps!=null;
-        return `<div class="fl-slot${done?' done':''}" data-exid="${exId}" data-set="${i}">${done?`✓ ${sv.weight}×${sv.reps}`:(LANG==='ar'?`مجموعة ${i+1}`:`Set ${i+1}`)}</div>`;
-      }).join('');
-      const weightUnit=LANG==='ar'?'كغ':'kg';
-      const setLogBlock=`<div class="set-log-block" data-exid="${exId}">
-        <div class="set-log-last">${lastText}</div>
-        <div class="fl-row">
-          <span class="fl-label">${LANG==='ar'?'الوزن':'Weight'}</span>
-          <div class="fl-stepper">
-            <button type="button" class="fl-step-btn" data-fl-action="dec" data-exid="${exId}" data-field="weight">−</button>
-            <span class="fl-value" data-exid="${exId}" data-field="weight" data-raw="${curWeight}">${curWeight} ${weightUnit}</span>
-            <button type="button" class="fl-step-btn" data-fl-action="inc" data-exid="${exId}" data-field="weight">+</button>
-          </div>
-          <button type="button" class="fl-edit-btn" data-fl-action="custom" data-exid="${exId}" data-field="weight" title="${LANG==='ar'?'إدخال يدوي':'Custom entry'}">✏️</button>
-        </div>
-        <div class="fl-chips">${weightChips}</div>
-        <div class="fl-row">
-          <span class="fl-label">${LANG==='ar'?'العدات':'Reps'}</span>
-          <div class="fl-stepper">
-            <button type="button" class="fl-step-btn" data-fl-action="dec" data-exid="${exId}" data-field="reps">−</button>
-            <span class="fl-value" data-exid="${exId}" data-field="reps" data-raw="${curReps}">${curReps}</span>
-            <button type="button" class="fl-step-btn" data-fl-action="inc" data-exid="${exId}" data-field="reps">+</button>
-          </div>
-          <button type="button" class="fl-edit-btn" data-fl-action="custom" data-exid="${exId}" data-field="reps" title="${LANG==='ar'?'إدخال يدوي':'Custom entry'}">✏️</button>
-        </div>
-        <div class="fl-chips">${repsChips}</div>
-        <div class="fl-slots">${slots}</div>
-        <span class="fl-extra-toggle" data-exid="${exId}">${LANG==='ar'?'+ RPE / ملاحظة':'+ RPE / note'}</span>
-        <div class="fl-extra-row hidden" data-exid="${exId}">
-          <span class="fl-label">RPE</span>
-          <div class="fl-stepper">
-            <button type="button" class="fl-step-btn" data-fl-action="dec" data-exid="${exId}" data-field="rpe">−</button>
-            <span class="fl-value" data-exid="${exId}" data-field="rpe" data-raw="${meta.rpe||''}">${meta.rpe||'—'}</span>
-            <button type="button" class="fl-step-btn" data-fl-action="inc" data-exid="${exId}" data-field="rpe">+</button>
-          </div>
-          <input type="text" class="fl-note-input" data-exid="${exId}" placeholder="${LANG==='ar'?'ملاحظة (اختياري)':'Note (optional)'}" value="${meta.note?meta.note.replace(/"/g,'&quot;'):''}">
-        </div>
-      </div>`;
-      rows+=`<tr class="set-log-tr"><td colspan="4">${setLogBlock}</td></tr>`;
+      const checked=!!(dailyTrack.exerciseChecks&&dailyTrack.exerciseChecks[exId]);
+      const rowClass = checked ? 'ex-done' : (locked ? 'ex-missed' : '');
+      rows+=`<tr id="${rid}"${rowClass?` class="${rowClass}"`:''}><td>${p.name}${vid}${timer}</td><td style="text-align:center;"><input type="checkbox" class="ex-check-input" data-exid="${exId}" ${checked?'checked':''} ${locked?'disabled':''}></td></tr>`;
+    } else {
+      // a plain, non-persisted preview checkbox for a non-today day (nothing to lock/save — there's no "today done" state for a day you're just previewing)
+      rows+=`<tr id="${rid}"><td>${p.name}${vid}${timer}</td><td style="text-align:center;"><input type="checkbox" onchange="document.getElementById('${rid}').classList.toggle('ex-done',this.checked)"></td></tr>`;
     }
   });
-  return `<table class="ex-table"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Checklist</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table class="ex-table"><thead><tr><th>Exercise</th><th>✓</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
-/* commits the exercise's currently-staged weight/reps stepper values into a
-   specific set slot (or clears that slot back to empty if it was already
-   done — a slot toggles, so a mis-tap is never permanent). This is the ONLY
-   place a set actually gets logged: the steppers/chips above only ever
-   change what's staged, never write to dailyTrack by themselves. */
-async function flCommitSlot(exId,setIdx){
-  const weightEl=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="weight"]`);
-  const repsEl=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="reps"]`);
-  const weight=parseFloat(weightEl.dataset.raw), reps=parseFloat(repsEl.dataset.raw);
-  dailyTrack.workoutLog=dailyTrack.workoutLog||{};
-  dailyTrack.workoutLog[exId]=dailyTrack.workoutLog[exId]||[];
-  const cur=dailyTrack.workoutLog[exId][setIdx];
-  const alreadyDone=cur&&cur.weight!=null&&cur.reps!=null;
-  dailyTrack.workoutLog[exId][setIdx]=alreadyDone?{weight:null,reps:null}:{weight,reps};
-  await saveDailyTrack();
-  const filled=dailyTrack.workoutLog[exId].filter(s=>s&&s.weight!=null&&s.reps!=null);
-  if(filled.length){
-    const latest=filled[filled.length-1];
-    P.lastExerciseLog=P.lastExerciseLog||{};
-    P.lastExerciseLog[exId]={weight:latest.weight,reps:latest.reps,date:todayKey()};
-    await storageSet('profile',JSON.stringify(P));
-  }
-  const slotEl=document.querySelector(`.fl-slot[data-exid="${cssEscape(exId)}"][data-set="${setIdx}"]`);
-  if(slotEl){
-    const nowDone=!alreadyDone;
-    slotEl.classList.toggle('done',nowDone);
-    slotEl.textContent=nowDone?`✓ ${weight}×${reps}`:(LANG==='ar'?`مجموعة ${setIdx+1}`:`Set ${setIdx+1}`);
-  }
-}
-function cssEscape(s){ return String(s).replace(/["\\]/g,'\\$&'); }
-function flSetStepperValue(exId,field,rawValue){
-  const el=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="${field}"]`);
-  if(!el) return;
-  el.dataset.raw=rawValue;
-  const unit = field==='weight' ? (LANG==='ar'?' كغ':' kg') : '';
-  el.textContent = (field==='rpe'&&(rawValue===''||rawValue==null)) ? '—' : rawValue+unit;
-  const flRow=el.closest('.fl-row');
-  const chipsRow=flRow&&flRow.nextElementSibling;
-  if(chipsRow&&chipsRow.classList.contains('fl-chips')){
-    chipsRow.querySelectorAll('.fl-chip').forEach(c=>c.classList.toggle('active',c.dataset.field===field&&+c.dataset.value===+rawValue));
-  }
-}
-/* delegated once — every fast-log block is fully rebuilt on each
-   openWorkoutDay() call, so one document-level listener (matched by class)
-   survives that instead of needing to be re-attached per render. */
-document.addEventListener('click',async(e)=>{
-  const chip=e.target.closest && e.target.closest('.fl-chip');
-  if(chip){ flSetStepperValue(chip.dataset.exid,chip.dataset.field,chip.dataset.value); return; }
-  const slot=e.target.closest && e.target.closest('.fl-slot');
-  if(slot){ await flCommitSlot(slot.dataset.exid,+slot.dataset.set); return; }
-  const stepBtn=e.target.closest && e.target.closest('.fl-step-btn');
-  if(stepBtn){
-    const {exid:exId,field}=stepBtn.dataset;
-    const el=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="${field}"]`);
-    const dir=stepBtn.dataset.flAction==='inc'?1:-1;
-    let raw=parseFloat(el.dataset.raw)||0;
-    if(field==='weight') raw=flClampWeight(raw+dir*FL_WEIGHT_STEP);
-    else if(field==='reps') raw=flClampReps(raw+dir*FL_REPS_STEP);
-    else raw=Math.max(1,Math.min(10,raw+dir));
-    flSetStepperValue(exId,field,raw);
-    if(field==='rpe'){
-      dailyTrack.workoutMeta=dailyTrack.workoutMeta||{};
-      dailyTrack.workoutMeta[exId]=dailyTrack.workoutMeta[exId]||{};
-      dailyTrack.workoutMeta[exId].rpe=raw;
-      await saveDailyTrack();
-    }
-    return;
-  }
-  const editBtn=e.target.closest && e.target.closest('.fl-edit-btn');
-  if(editBtn){
-    const {exid:exId,field}=editBtn.dataset;
-    const valEl=document.querySelector(`.fl-value[data-exid="${cssEscape(exId)}"][data-field="${field}"]`);
-    if(!valEl||valEl.querySelector('input')) return;
-    const raw=valEl.dataset.raw;
-    valEl.innerHTML=`<input type="number" inputmode="decimal" class="fl-custom-input" value="${raw}">`;
-    const inp=valEl.querySelector('input'); inp.focus(); inp.select();
-    const commit=()=>{ const v=parseFloat(inp.value); flSetStepperValue(exId,field,isNaN(v)?raw:(field==='weight'?flClampWeight(v):flClampReps(v))); };
-    inp.addEventListener('blur',commit,{once:true});
-    inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') inp.blur(); });
-    return;
-  }
-  const extraToggle=e.target.closest && e.target.closest('.fl-extra-toggle');
-  if(extraToggle){
-    const row=document.querySelector(`.fl-extra-row[data-exid="${cssEscape(extraToggle.dataset.exid)}"]`);
-    if(row) row.classList.toggle('hidden');
-    return;
-  }
-});
+/* the only place dailyTrack.exerciseChecks is written — a plain per-exercise
+   toggle, blocked entirely once the day is locked (the input itself is
+   `disabled` in that case, so this only ever fires while the day is still
+   open). */
 document.addEventListener('change',async(e)=>{
   const el=e.target;
-  if(!el.matches || !el.matches('.fl-note-input')) return;
+  if(!el.matches || !el.matches('.ex-check-input')) return;
   const exId=el.dataset.exid;
-  dailyTrack.workoutMeta=dailyTrack.workoutMeta||{};
-  dailyTrack.workoutMeta[exId]=dailyTrack.workoutMeta[exId]||{};
-  dailyTrack.workoutMeta[exId].note=el.value||'';
+  dailyTrack.exerciseChecks=dailyTrack.exerciseChecks||{};
+  dailyTrack.exerciseChecks[exId]=el.checked;
   await saveDailyTrack();
+  const row=el.closest('tr');
+  if(row) row.classList.toggle('ex-done',el.checked);
 });
 function timerIconHtml(seconds){
   seconds=seconds||60;
@@ -3349,7 +3209,7 @@ function enterSection(name){
   if(name==='social') renderSocialSection();
   if(name==='collections') enterCollections();
 }
-document.querySelectorAll('#panel-home .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
+document.querySelectorAll('#panel-home .home-card, #panel-profile-hub .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
 document.getElementById('exercisePromptBanner').addEventListener('click',()=>{ showPanel('workout'); enterSection('workout'); });
 document.getElementById('dailyRoutineToggleCard').addEventListener('click',()=>{
   const card=document.getElementById('todoSetupCard');
@@ -4590,11 +4450,10 @@ function openWorkoutDay(label,typeKey,isToday){
   }
   const base=workoutTypes[typeKey];
   const showVideoIcons = typeKey!=='rest' && !day.skippedByInjury;
-  const logInputs = isToday && showVideoIcons;
-  html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons,typeKey,logInputs)}</div>`;
-  if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons,typeKey,logInputs)}</div>`; }
+  html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons,typeKey,isToday)}</div>`;
+  if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons,typeKey,isToday)}</div>`; }
   if(base.tierNotes && !day.skippedByInjury && currentTier(typeKey)>=4){
-    html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 مستوى متقدم':'🔥 Advanced level'}</div>${exerciseTableHtml(base.tierBoost,60,true,typeKey,logInputs)}</div>`;
+    html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 مستوى متقدم':'🔥 Advanced level'}</div>${exerciseTableHtml(base.tierBoost,60,true,typeKey,isToday)}</div>`;
   }
   if(day.cardioFinisher){ const vid=videoIconHtml(day.cardioFinisher.en); html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 فينشر حرق دهون':'🔥 Fat-burn finisher'}</div><div class="content"><div>${day.cardioFinisher[LANG]}${vid}</div></div></div>`; }
   html+=`<div class="exercise"><div class="label">${t('closing')}</div><div class="content">${day.stretch[LANG]}${videoIconHtml(day.stretch.en)}</div></div>`;
@@ -4606,10 +4465,13 @@ function openWorkoutDay(label,typeKey,isToday){
   if(isToday){
     const toggle=document.getElementById('workoutDoneToggle');
     toggle.addEventListener('click',async()=>{
-      const done=await toggleWorkoutDone(typeKey);
-      toggle.classList.toggle('done',done);
-      toggle.querySelector('.box').textContent=done?'✓':'';
-      if(done && !dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
+      await toggleWorkoutDone(typeKey);
+      // full re-render: picks up the new workoutDone state for both the
+      // toggle itself AND the exercise checklist below it (locking it, and
+      // crossing out anything left unchecked, the moment the day is marked
+      // done — see exerciseTableHtml()'s `locked` flag) — never patched
+      // piecemeal, so the two can never fall out of sync with each other.
+      openWorkoutDay(label,typeKey,true);
     });
     if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
   }
@@ -4875,7 +4737,7 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
 });
 
 function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},xpAwarded:{}};
+const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},exerciseChecks:{},xpAwarded:{}};
 let dailyTrack={...DAILY_TRACK_DEFAULTS};
 async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
 async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
@@ -4922,10 +4784,11 @@ function renderSupChips(){
   if(!items.length){ row.classList.add('hidden'); return; }
   row.classList.remove('hidden');
   items.forEach(it=>{
+    const done=!!dailyTrack.supplements[it.key];
     const chip=document.createElement('div');
-    chip.className='supp-chip'+(dailyTrack.supplements[it.key]?' done':'');
-    chip.innerHTML=`<span class="ic" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Tap to change icon'}">${it.icon}</span><span class="label-text">${it.label}</span>`;
-    chip.querySelector('.ic').addEventListener('click',(e)=>{
+    chip.className='supp-chip'+(done?' done':'');
+    chip.innerHTML=`<button type="button" class="supp-emoji-btn" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Change icon'}">${it.icon}</button><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${it.label}</span>`;
+    chip.querySelector('.supp-emoji-btn').addEventListener('click',(e)=>{
       e.stopPropagation();
       openEmojiPicker(e.currentTarget,async(picked)=>{
         const list=(P.foodSetup.supOtherList||[]).slice();
@@ -4935,9 +4798,12 @@ function renderSupChips(){
         renderSupChips();
       });
     });
-    chip.addEventListener('click',()=>{
-      dailyTrack.supplements[it.key]=!dailyTrack.supplements[it.key];
-      chip.classList.toggle('done',dailyTrack.supplements[it.key]);
+    chip.addEventListener('click',(e)=>{
+      if(e.target.closest('.supp-emoji-btn')) return; // extra guard — the emoji button's own listener already stopPropagation()s, this just makes the separation explicit here too
+      const nowDone=!dailyTrack.supplements[it.key];
+      dailyTrack.supplements[it.key]=nowDone;
+      chip.classList.toggle('done',nowDone);
+      chip.querySelector('.supp-check-mark').textContent=nowDone?'✅':'⬜';
       saveDailyTrack();
     });
     row.appendChild(chip);
@@ -6079,21 +5945,35 @@ function renderHabits(){
     const row=document.createElement('div');
     row.className='habit-row'+(done?' done':'');
     row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${habitLabelText(h)}</div><div class="habit-streak" id="habitStreak_${h.id}"></div><button type="button" class="habit-remove">✕</button>`;
-    row.addEventListener('click',async(e)=>{
+    row.addEventListener('click',(e)=>{
       if(e.target.closest('.habit-remove')) return;
+      // optimistic: flip the in-memory state and repaint THIS row immediately,
+      // synchronously, before anything touches the network — the person
+      // sees their tap register instantly. Saving/XP/achievements happen in
+      // the background afterward and never block or delay the checkmark.
       dailyTrack.habits=dailyTrack.habits||{};
-      dailyTrack.habits[h.id]=!dailyTrack.habits[h.id];
-      await saveDailyTrack();
-      // XP only on the transition TO done, once per habit per day —
-      // unchecking never revokes XP already earned that day.
+      const nowDone=!dailyTrack.habits[h.id];
+      dailyTrack.habits[h.id]=nowDone;
+      row.classList.toggle('done',nowDone);
+      row.querySelector('.habit-box').textContent=nowDone?'✓':'';
+      // XP guard flag is also set synchronously, right here — so a second
+      // rapid click (while the first click's save is still in flight below)
+      // sees it already claimed and can never double-award, and two
+      // overlapping saves can never leave habits/xpAwarded inconsistent
+      // with each other since each save snapshots the whole (already
+      // fully-updated) dailyTrack object at call time, not at completion.
       dailyTrack.xpAwarded=dailyTrack.xpAwarded||{}; dailyTrack.xpAwarded.habits=dailyTrack.xpAwarded.habits||{};
-      if(dailyTrack.habits[h.id] && !dailyTrack.xpAwarded.habits[h.id]){
-        dailyTrack.xpAwarded.habits[h.id]=true;
-        await awardXP(XP_CONFIG.habit_complete);
+      const justEarnedXp = nowDone && !dailyTrack.xpAwarded.habits[h.id];
+      if(justEarnedXp) dailyTrack.xpAwarded.habits[h.id]=true;
+      (async()=>{
         await saveDailyTrack();
-        await notifyNewUnlocks();
-      }
-      renderHabits();
+        if(justEarnedXp){
+          await awardXP(XP_CONFIG.habit_complete);
+          await saveDailyTrack();
+          await notifyNewUnlocks();
+        }
+        renderHabits(); // refreshes streak counts once the background work settles — never blocks the initial checkmark above
+      })();
     });
     row.querySelector('.habit-remove').addEventListener('click',async(e)=>{
       e.stopPropagation();
