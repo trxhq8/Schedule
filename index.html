@@ -89,6 +89,9 @@
   .brand{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:0.9rem; }
   .nav-actions{ display:flex; gap:6px; }
   .icon-btn{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; color:var(--ink); }
+  .nav-xp-chip{ display:flex; align-items:center; gap:5px; height:26px; padding:0 9px; border-radius:999px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-head); font-weight:800; font-size:0.68rem; color:var(--ink); }
+  .nav-xp-chip .nav-xp-track{ width:34px; height:4px; border-radius:99px; background:var(--line); overflow:hidden; display:inline-block; }
+  .nav-xp-chip .nav-xp-fill{ display:block; height:100%; background:var(--heading); border-radius:99px; }
 
   /* ---- home ---- */
   .hero{ text-align:center; padding:22px 0 8px; animation:fadeUp .5s ease; }
@@ -628,6 +631,10 @@
   <div class="topnav-inner">
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="brand" id="brandLabel">🗓️</div>
+      <button type="button" class="nav-xp-chip hidden" id="navXpChip" title="Profile">
+        <span id="navXpLevel">⭐1</span>
+        <span class="nav-xp-track"><span class="nav-xp-fill" id="navXpFill"></span></span>
+      </button>
       <button class="icon-btn" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
     </div>
     <div class="nav-actions">
@@ -4724,6 +4731,7 @@ async function notifyNewUnlocks(){
   // isn't missed until the next event.
   stats.xp=P.xp||0; stats.level=levelFromXP(stats.xp);
   await checkAndAwardLevelRewards(stats);
+  renderNavXpChip();
   enqueueAchievements([
     ...newAch.map(a=>({...a,kind:'achievement'})),
     ...newlyCompleted.map(c=>({...c,kind:'challenge'}))
@@ -5363,6 +5371,7 @@ async function renderProfileSection(){
   gateCard.classList.add('hidden');
   statsContent.classList.remove('hidden');
   document.getElementById('profileUsernameDisplay').textContent='@'+((P.publicProfile&&P.publicProfile.username)||'');
+  renderNavXpChip();
   document.getElementById('profileStreaksTitle').textContent=t('profile_streaks_title');
   document.getElementById('profileStatsTitle').textContent=t('profile_stats_title');
   document.getElementById('profileTitlesTitle').textContent=t('profile_titles_title');
@@ -6490,7 +6499,26 @@ function refreshHome(){
   document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]}`;
   renderStreakBadge();
   renderDailySummary();
+  renderNavXpChip();
 }
+/* the small always-visible level/XP chip in the top nav, next to the
+   brand — so progress is visible from Home/any screen, not just the
+   Profile panel. Reads P.xp only (no network call), safe to call from
+   anywhere at any time; called from refreshHome() (every Home visit +
+   after most daily-action toggles already call refreshHome()),
+   renderProfileSection(), and notifyNewUnlocks() (the single
+   convergence point after every real completion event) so it's never
+   stale for more than a moment. */
+function renderNavXpChip(){
+  const chip=document.getElementById('navXpChip');
+  if(!chip||!currentUser) return;
+  chip.classList.remove('hidden');
+  const prog=levelProgress(P.xp||0);
+  document.getElementById('navXpLevel').textContent=`⭐${prog.level}`;
+  document.getElementById('navXpFill').style.width=prog.pct+'%';
+  chip.title=`${LANG==='ar'?'المستوى':'Level'} ${prog.level} · ${prog.current}/${prog.needed} XP`;
+}
+document.getElementById('navXpChip').addEventListener('click',()=>{ showPanel('profile'); enterSection('profile'); });
 /* ================= HOME DASHBOARD (Daily Summary) =================
    Single glance-and-know surface. Every number here is read from state that
    already exists elsewhere (today's menu, dailyTrack, foodSetup,
