@@ -1036,6 +1036,10 @@
     <div id="profileStatsContent">
       <div class="setup-card" style="text-align:center;">
         <div style="font-size:2.2rem;">👤</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;">
+          <span id="profileUsernameDisplay" style="font-weight:700;color:var(--ink-soft);font-size:0.9rem;"></span>
+          <button type="button" id="profileEditUsernameBtn" class="icon-btn" style="width:26px;height:26px;font-size:0.75rem;" title="✏️">✏️</button>
+        </div>
         <h2 id="profileLevelLabel" style="margin:6px 0 2px;"></h2>
         <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
         <div id="profileXpLabel" style="font-size:0.75rem;color:var(--ink-soft);margin-top:4px;"></div>
@@ -1609,6 +1613,7 @@ const I18N={
   profile_gate_title:'🔒 خلك تسوي اسم مستخدم الأول',profile_gate_btn:'سوّي اسم المستخدم',
   profile_gate_body:'لسا ما سويت اسم مستخدم لملفك. ما راح تقدر تشوف مستواك (XP)، الإنجازات، والإحصائيات إلا بعد ما تسويه — بياناتك وتقدمك محفوظين وما راح يضيعون.',
   username_ph:'اسم المستخدم (إنجليزي، بدون مسافات)',username_checking:'نتأكد إنه متاح…',username_available:'✅ متاح',username_taken:'🚫 محجوز، جرب غيره',username_invalid:'اسم المستخدم لازم يكون ٣-٢٠ حرف إنجليزي/رقم/شرطة سفلية',
+  edit_username_title:'✏️ غيّر اسم المستخدم',
   displayname_ph:'اسمك يظهر للأصدقاء',avatar_label:'اختر شكل',save_profile_btn:'حفظ الملف',
   search_username_ph:'ابحث باسم المستخدم',search_btn:'بحث',user_not_found:'ما لقينا هالمستخدم',
   send_request_btn:'➕ إضافة صديق',request_sent_btn:'⏳ تم الإرسال',already_friends_btn:'✅ أصدقاء',
@@ -1733,6 +1738,7 @@ const I18N={
   profile_gate_title:'🔒 Set up a username first',profile_gate_btn:'Set up username',
   profile_gate_body:"You haven't set a username for your profile yet. Your level, XP, achievements and stats stay hidden until you do — nothing is lost, your progress is safely saved and will show up right after.",
   username_ph:'Username (letters/numbers, no spaces)',username_checking:'Checking availability…',username_available:'✅ Available',username_taken:"🚫 That username is taken — try another",username_invalid:'Username must be 3-20 letters/numbers/underscore',
+  edit_username_title:'✏️ Change username',
   displayname_ph:'Your name, shown to friends',avatar_label:'Pick a look',save_profile_btn:'Save profile',
   search_username_ph:'Search by username',search_btn:'Search',user_not_found:"Couldn't find that user",
   send_request_btn:'➕ Add friend',request_sent_btn:'⏳ Sent',already_friends_btn:'✅ Friends',
@@ -5093,6 +5099,7 @@ async function renderProfileSection(){
   }
   gateCard.classList.add('hidden');
   statsContent.classList.remove('hidden');
+  document.getElementById('profileUsernameDisplay').textContent='@'+((P.publicProfile&&P.publicProfile.username)||'');
   document.getElementById('profileStreaksTitle').textContent=t('profile_streaks_title');
   document.getElementById('profileStatsTitle').textContent=t('profile_stats_title');
   document.getElementById('profileTitlesTitle').textContent=t('profile_titles_title');
@@ -5136,6 +5143,47 @@ async function renderProfileSection(){
     const name=LANG==='ar'?a.nameAr:a.nameEn, desc=LANG==='ar'?a.descAr:a.descEn;
     return `<div class="ach-row${unlocked?'':' locked'}"><div class="ach-ic">${a.icon}</div><div style="flex:1;"><div class="ach-name">${name}</div><div class="ach-desc">${desc}</div></div><div class="ach-xp">${unlocked?'✓':'+'+a.xp+'xp'}</div></div>`;
   }).join('');
+}
+document.getElementById('profileEditUsernameBtn').addEventListener('click',openUsernameEditModal);
+function openUsernameEditModal(){
+  const current=(P.publicProfile&&P.publicProfile.username)||'';
+  document.getElementById('dayTitle').textContent=t('edit_username_title');
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`
+    <input type="text" class="setup-input" id="editUsernameInput" autocomplete="off" value="${current}">
+    <div class="username-check-msg" id="editUsernameMsg"></div>
+    <button type="button" class="setup-btn" id="editUsernameSaveBtn" disabled>${t('save_profile_btn')}</button>
+  `;
+  overlay.classList.add('open');
+  const inp=document.getElementById('editUsernameInput');
+  const msgEl=document.getElementById('editUsernameMsg');
+  const saveBtn=document.getElementById('editUsernameSaveBtn');
+  let checkToken=0, debounceT=null;
+  const runCheck=async()=>{
+    const val=inp.value.trim().toLowerCase();
+    if(!val){ msgEl.textContent=''; msgEl.className='username-check-msg'; saveBtn.disabled=true; return; }
+    if(val===current){ msgEl.textContent=''; msgEl.className='username-check-msg'; saveBtn.disabled=true; return; } // unchanged — nothing to save
+    if(!PublicProfileService.usernameRegex.test(val)){ msgEl.textContent=t('username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; return; }
+    msgEl.textContent=t('username_checking'); msgEl.className='username-check-msg'; saveBtn.disabled=true;
+    const myToken=++checkToken;
+    const res=await PublicProfileService.checkUsernameAvailable(val);
+    if(myToken!==checkToken) return; // a newer keystroke already superseded this check
+    if(res.ok){ msgEl.textContent=t('username_available'); msgEl.className='username-check-msg ok'; saveBtn.disabled=false; }
+    else{ msgEl.textContent=t(res.reason==='taken'?'username_taken':'username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; }
+  };
+  inp.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(runCheck,400); });
+  saveBtn.addEventListener('click',async()=>{
+    saveBtn.disabled=true;
+    try{
+      await PublicProfileService.changeUsername(inp.value);
+      showToast(LANG==='ar'?'تم تغيير اسم المستخدم ✅':'Username updated ✅','success');
+      overlay.classList.remove('open');
+      renderProfileSection();
+    }catch(e){
+      msgEl.textContent=e.message; msgEl.className='username-check-msg bad'; saveBtn.disabled=false;
+    }
+  });
+  inp.focus();
 }
 
 /* ================= CHALLENGES PANEL (real) ================= */
@@ -5212,6 +5260,25 @@ const PublicProfileService={
       privacy, stats, titles, createdAt:serverNow(), updatedAt:serverNow()
     });
     P.publicProfile={username:uname, displayName:displayName||uname, avatar:avatar||'🙂', privacy};
+    await storageSet('profile',JSON.stringify(P));
+    return uname;
+  },
+  /* changes an ALREADY-claimed username. The old usernames/{name} doc is
+     deliberately left in place rather than deleted — the rules only ever
+     allow `create` on that collection (see the rules file), never
+     `update`/`delete`, so a released handle can never be reused anyway;
+     this just claims a second one and repoints users/{uid}.username at
+     it, the same create-fails-if-taken race protection as claimUsername. */
+  async changeUsername(rawUsername){
+    if(!fbDb||!currentUser) throw new Error('offline');
+    if(!this.hasProfile()) throw new Error('no profile yet');
+    const uname=String(rawUsername||'').trim().toLowerCase();
+    if(!this.usernameRegex.test(uname)) throw new Error(t('username_invalid'));
+    if(uname===P.publicProfile.username) return uname; // unchanged — nothing to do
+    try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
+    catch(e){ throw new Error(t('username_taken')); }
+    await usersCol().doc(currentUser.uid).set({username:uname, updatedAt:serverNow()},{merge:true});
+    P.publicProfile.username=uname;
     await storageSet('profile',JSON.stringify(P));
     return uname;
   },
