@@ -1074,7 +1074,7 @@
     .cos-tag{ font-size:0.58rem; font-weight:600; padding:2px 7px; border-radius:999px; background:var(--bg,#f5f5f5); color:var(--ink-soft); border:1px solid var(--border,#e2e2e2); margin-inline-end:4px; }
     .cos-price{ font-weight:700; font-size:0.76rem; margin:6px 0; }
     .cos-btn{ width:100%; font-weight:700; font-size:0.72rem; padding:7px 8px; border-radius:8px; border:1px solid var(--border,#e2e2e2); background:var(--bg,#f5f5f5); cursor:pointer; }
-    .cos-btn.primary{ background:var(--heading,#111); color:#fff; }
+    .cos-btn.primary{ background:var(--accent-deep,#111); color:#fff; }
     .cos-btn.equipped{ background:var(--cos-common); color:#fff; }
     .cos-btn:disabled{ opacity:0.4; cursor:not-allowed; }
     .cos-title-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 4px; border-bottom:1px solid var(--border,#e2e2e2); }
@@ -6324,7 +6324,7 @@ async function renderSocialChallengesTab(content){
       <input type="number" class="setup-input" id="challengeTargetInput" min="1" value="5" placeholder="${t('challenge_target_ph')}">
       <button class="setup-btn" id="challengeStartBtn">${t('challenge_start_btn')}</button>
     </div>` : `<div class="dash-empty">${t('friends_empty')}</div>`;
-  content.innerHTML = startHtml + `<div id="challengesList"><div class="dash-empty">…</div></div>`;
+  content.innerHTML = startHtml + `<div id="friendChallengesList"><div class="dash-empty">…</div></div>`;
   if(friends.length){
     document.getElementById('challengeStartBtn').addEventListener('click',async()=>{
       const friendUid=document.getElementById('challengeFriendSelect').value;
@@ -6336,7 +6336,7 @@ async function renderSocialChallengesTab(content){
     });
   }
   const challenges=await ChallengeService.listMine();
-  const listEl=document.getElementById('challengesList');
+  const listEl=document.getElementById('friendChallengesList');
   if(!challenges.length){ listEl.innerHTML=`<div class="dash-empty">${t('no_challenges_yet')}</div>`; return; }
   const me=currentUser.uid;
   const rendered=await Promise.all(challenges.map(async ch=>{
