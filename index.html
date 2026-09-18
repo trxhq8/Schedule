@@ -1778,6 +1778,7 @@ const I18N={
   social_tab_friends:'👥 الأصدقاء',social_tab_leaderboard:'🏆 المتصدرين',social_tab_feed:'📰 النشاط',social_tab_compare:'⚖️ مقارنة',
   store_tab_backgrounds:'🖼️ الخلفيات',store_tab_frames:'⭕ الإطارات',store_tab_effects:'✨ التأثيرات',store_tab_titles:'🏷️ الألقاب',
   store_owned:'✅ تملكه',store_equip:'تجهيز',store_equipped:'✓ مجهّز',store_unequip:'إلغاء التجهيز',store_buy:'شراء',store_not_enough:'coins غير كافية',store_exclusive:'حصري',
+  store_confirm_title:'🪙 تأكيد الشراء',store_confirm_body:'بتشتري "{name}" مقابل {price} coin. ما تقدر ترجعها بعد الشراء.',store_confirm_yes:'أيه، اشتري',store_confirm_no:'إلغاء',
   cos_rarity_common:'شائع',cos_rarity_uncommon:'غير شائع',cos_rarity_epic:'ملحمي',cos_rarity_mythic:'خرافي',cos_rarity_legendary:'أسطوري',
   profile_no_title:'بدون لقب مجهّز',profile_remove_photo:'إزالة الصورة',
   friends_empty:'رصيدك فاضي — أضف أصدقاء عشان تنافسهم',
@@ -1907,6 +1908,7 @@ const I18N={
   social_tab_friends:'👥 Friends',social_tab_leaderboard:'🏆 Leaderboard',social_tab_feed:'📰 Activity',social_tab_compare:'⚖️ Compare',
   store_tab_backgrounds:'🖼️ Backgrounds',store_tab_frames:'⭕ Frames',store_tab_effects:'✨ Effects',store_tab_titles:'🏷️ Titles',
   store_owned:'✅ Owned',store_equip:'Equip',store_equipped:'✓ Equipped',store_unequip:'Unequip',store_buy:'Buy',store_not_enough:'Not enough coins',store_exclusive:'Exclusive',
+  store_confirm_title:'🪙 Confirm purchase',store_confirm_body:'Buy "{name}" for {price} coins? This can\'t be undone.',store_confirm_yes:'Yes, buy it',store_confirm_no:'Cancel',
   cos_rarity_common:'Common',cos_rarity_uncommon:'Uncommon',cos_rarity_epic:'Epic',cos_rarity_mythic:'Mythic',cos_rarity_legendary:'Legendary',
   profile_no_title:'No title equipped',profile_remove_photo:'Remove photo',
   friends_empty:'Your squad is empty — add friends to start competing',
@@ -5651,6 +5653,28 @@ const COSMETICS_CATALOG=[
 ];
 const RARITY_ORDER_LIST=['common','uncommon','epic','mythic','legendary'];
 
+/* Epic-and-up purchases are big enough (1,500+ coins, days-to-weeks of
+   saving) that a misclick would genuinely sting — ask first. Common/
+   Uncommon stay one-click since a 150-750 coin mistake is trivial to
+   recover from. Reuses the app's one shared modal (#overlay/#cardBody)
+   rather than inventing a second dialog system. Resolves true/false. */
+const STORE_CONFIRM_RARITIES=['epic','mythic','legendary'];
+function confirmPurchase(item,name){
+  if(!STORE_CONFIRM_RARITIES.includes(item.rarity)) return Promise.resolve(true);
+  return new Promise(resolve=>{
+    document.getElementById('dayTitle').textContent=t('store_confirm_title');
+    document.getElementById('daySubtitle').textContent='';
+    document.getElementById('cardBody').innerHTML=`
+      <p class="dash-empty" style="text-align:center;">${t('store_confirm_body').replace('{name}',name).replace('{price}',item.price.toLocaleString())}</p>
+      <button type="button" class="setup-btn" id="storeConfirmYesBtn">${t('store_confirm_yes')}</button>
+      <button type="button" class="setup-btn" id="storeConfirmNoBtn" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">${t('store_confirm_no')}</button>
+    `;
+    overlay.classList.add('open');
+    document.getElementById('storeConfirmYesBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); resolve(true); });
+    document.getElementById('storeConfirmNoBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); resolve(false); });
+  });
+}
+
 /* the ONLY place P.coins is spent and P.inventory is written for a
    purchase — checks affordability/ownership synchronously right before
    mutating so a double-click can't double-charge (the second call sees
@@ -5734,6 +5758,8 @@ async function renderStoreSection(){
         btn.classList.add('primary'); btn.disabled=!canAfford;
         btn.textContent=canAfford?t('store_buy'):t('store_not_enough');
         btn.addEventListener('click',async()=>{
+          const ok=await confirmPurchase(it,name);
+          if(!ok) return;
           btn.disabled=true;
           try{ await buyCosmetic(it.id); await equipCosmetic(it.type,it.id); showToast(name+(LANG==='ar'?' — تم الشراء':' purchased'),'success'); renderStoreSection(); }
           catch(err){ showToast(err.message,'error'); btn.disabled=false; }
