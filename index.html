@@ -142,6 +142,9 @@
   .habit-add-row{ display:flex; gap:8px; margin-top:10px; }
   .habit-add-row input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.82rem; background:var(--bg); color:var(--ink); }
   .habit-add-row button{ border:none; background:var(--accent-deep); color:#fff; border-radius:10px; padding:0 14px; cursor:pointer; font-weight:700; }
+  .habit-yesterday-toggle{ font-size:0.74rem; color:var(--accent); cursor:pointer; text-align:center; padding-top:6px; font-weight:600; }
+  .habit-yesterday-list{ margin-top:6px; padding-top:6px; border-top:1px dashed var(--line); }
+  .habit-yesterday-label{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:4px; }
 
   /* ---- profile / XP / achievements / challenges / social (demo) ---- */
   .xp-bar-track{ width:100%; height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:8px; }
@@ -715,6 +718,8 @@
       <div class="dash-card">
         <div class="dash-card-title" id="dashHabitsTitle"></div>
         <div id="dashHabitsList"></div>
+        <div class="habit-yesterday-toggle hidden" id="habitYesterdayToggle"></div>
+        <div class="habit-yesterday-list hidden" id="dashHabitsYesterdayList"></div>
         <div class="habit-add-row">
           <input type="text" id="dashHabitAdd" data-i18n-ph="habit_add_ph">
           <button type="button" id="dashHabitAddBtn">➕</button>
@@ -1810,6 +1815,8 @@ const I18N={
   dash_workout_title:'🏋️ تمرين اليوم',
   dash_water_title:'💧 الماء',
   dash_habits_title:'✅ عاداتي',
+  habit_yesterday_toggle:'📅 نسيت أمس؟ سجّله الحين ({date})',
+  habit_yesterday_label:'تعويض يوم أمس — {date}',
   habit_add_ph:'عادة جديدة... مثل قراءة، تمرين',
   dash_supp_mini:'💊 مكملات',dash_commit_mini:'📌 التزامات اليوم',
   dash_no_workout_setup:'أعد إعداد جدول تمارينك',
@@ -1940,6 +1947,8 @@ const I18N={
   dash_workout_title:'🏋️ Today\'s workout',
   dash_water_title:'💧 Water',
   dash_habits_title:'✅ My Habits',
+  habit_yesterday_toggle:'📅 Forgot yesterday? Log it now ({date})',
+  habit_yesterday_label:'Catching up — {date}',
   habit_add_ph:'New habit... e.g. Read, Train',
   dash_supp_mini:'💊 Supplements',dash_commit_mini:'📌 Commitments today',
   dash_no_workout_setup:'Set up your training schedule',
@@ -6729,6 +6738,67 @@ function renderHabits(){
       P.lifetimeStats.longestHabitStreakEver=bestNow;
       await storageSet('profile',JSON.stringify(P));
     }
+  });
+  renderHabitsYesterdayToggle();
+}
+/* ---- yesterday catch-up: lets a person who forgot to open the app mark a
+   habit done for YESTERDAY only (not any earlier day), so a real completion
+   isn't lost to a missed streak just because they didn't check the box in
+   time. Writes directly into yesterday's own daily-track doc — the same
+   doc computeHabitStreaks() reads — so the streak repairs itself the
+   moment this is toggled. XP is guarded per-doc exactly like the normal
+   today flow, so re-opening this can never double-award. */
+function yesterdayTrackKey(){ const d=new Date(); d.setDate(d.getDate()-1); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function yesterdayDateLabel(){
+  const d=new Date(); d.setDate(d.getDate()-1);
+  return d.toLocaleDateString(LANG==='ar'?'ar-SA':'en-US',{month:'short',day:'numeric'});
+}
+async function loadYesterdayTrack(){
+  try{ const v=await storageGet(yesterdayTrackKey()); if(v) return JSON.parse(v); }catch(e){}
+  return {habits:{},xpAwarded:{habits:{}}};
+}
+function renderHabitsYesterdayToggle(){
+  const toggle=document.getElementById('habitYesterdayToggle');
+  if(!toggle) return;
+  const habits=P.habits||[];
+  if(!habits.length){ toggle.classList.add('hidden'); return; }
+  toggle.classList.remove('hidden');
+  toggle.textContent = t('habit_yesterday_toggle').replace('{date}', yesterdayDateLabel());
+  toggle.onclick = async ()=>{
+    const box=document.getElementById('dashHabitsYesterdayList');
+    const willShow = box.classList.contains('hidden');
+    box.classList.toggle('hidden');
+    if(willShow) await renderHabitsYesterdayList();
+  };
+}
+async function renderHabitsYesterdayList(){
+  const box=document.getElementById('dashHabitsYesterdayList'); if(!box) return;
+  const habits=P.habits||[];
+  const yKey=yesterdayTrackKey();
+  const yDoc=await loadYesterdayTrack();
+  box.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>`;
+  habits.forEach(h=>{
+    const done=!!(yDoc.habits&&yDoc.habits[h.id]);
+    const row=document.createElement('div');
+    row.className='habit-row'+(done?' done':'');
+    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${habitLabelText(h)}</div>`;
+    row.addEventListener('click', async ()=>{
+      yDoc.habits=yDoc.habits||{};
+      const nowDone=!yDoc.habits[h.id];
+      yDoc.habits[h.id]=nowDone;
+      row.classList.toggle('done',nowDone);
+      row.querySelector('.habit-box').textContent=nowDone?'✓':'';
+      yDoc.xpAwarded=yDoc.xpAwarded||{}; yDoc.xpAwarded.habits=yDoc.xpAwarded.habits||{};
+      const justEarnedXp = nowDone && !yDoc.xpAwarded.habits[h.id];
+      if(justEarnedXp) yDoc.xpAwarded.habits[h.id]=true;
+      await storageSet(yKey, JSON.stringify(yDoc));
+      if(justEarnedXp){
+        await awardXP(XP_CONFIG.habit_complete);
+        await notifyNewUnlocks();
+      }
+      renderHabits();
+    });
+    box.appendChild(row);
   });
 }
 /* walks backward day-by-day (capped at 60 days) checking each real
