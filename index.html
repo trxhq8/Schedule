@@ -5486,7 +5486,12 @@ function renderProfileCosmeticHero(){
   const frameId=P.equipped&&P.equipped.frame;
   const frameItem=frameId&&COSMETICS_CATALOG.find(c=>c.id===frameId);
   frameEl.innerHTML=''; frameEl.className='cos-frame-ring'+(frameItem?' '+frameItem.cls:'');
+  const oldOrbitWrap=frameEl.parentElement.querySelector('.cx-orbit-wrap'); if(oldOrbitWrap) oldOrbitWrap.remove();
   if(frameItem&&frameItem.orbiters){
+    // mounted as a SIBLING of frameEl, not a child — frameEl carries a CSS
+    // mask (to cut the ring band) which clips any child down to that same
+    // thin band, so orbit dots placed inside it were invisible except when
+    // crossing the ring line. Store preview already does it this way.
     const wrap=document.createElement('div'); wrap.className='cx-orbit-wrap';
     [0,90,180,270].forEach(deg=>{
       const dot=document.createElement('div'); dot.className='cx-orbit-dot';
@@ -5494,7 +5499,7 @@ function renderProfileCosmeticHero(){
       dot.style.left='calc(50% + '+rx+'px)'; dot.style.top='calc(50% + '+ry+'px)';
       wrap.appendChild(dot);
     });
-    frameEl.appendChild(wrap);
+    frameEl.parentElement.appendChild(wrap);
   }
 
   if(P.avatarPhoto){ avatarEl.style.backgroundImage=`url(${P.avatarPhoto})`; avatarEl.textContent=''; }
