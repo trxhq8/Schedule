@@ -697,6 +697,7 @@
           <div class="dash-workout-name" id="dashWorkoutName"></div>
           <div class="dash-toggle" id="dashWorkoutToggle"></div>
         </div>
+        <div class="habit-yesterday-toggle hidden" id="workoutYesterdayToggle"></div>
       </div>
 
       <div class="dash-card">
@@ -917,9 +918,12 @@
           <span class="today-square-kcal" id="todaySquareKcal"></span>
         </div>
         <div class="checklist" id="mealChecklist"></div>
+        <div class="habit-yesterday-toggle hidden" id="nutritionYesterdayToggle"></div>
       </div>
       <div class="week-cards" id="foodGrid"></div>
       <div class="supp-row" id="supChipsRow"></div>
+      <div class="habit-yesterday-toggle hidden" id="suppYesterdayToggle"></div>
+      <div class="habit-yesterday-list hidden" id="suppYesterdayList"></div>
       <div class="water-card">
         <h3 id="waterTitle"></h3>
         <div class="water-cups" id="waterCups"></div>
@@ -936,6 +940,9 @@
           <input type="number" step="0.1" id="weightInput">
           <button id="saveWeightBtn" data-i18n="save"></button>
         </div>
+        <label class="weight-yesterday-check" id="weightYesterdayRow" style="display:flex;align-items:center;gap:6px;font-size:0.76rem;color:var(--ink-soft);margin-top:6px;">
+          <input type="checkbox" id="weightYesterdayCheck"><span id="weightYesterdayLabel"></span>
+        </label>
         <div class="log-list" id="logList"></div>
       </div>
 
@@ -1817,6 +1824,9 @@ const I18N={
   dash_habits_title:'✅ عاداتي',
   habit_yesterday_toggle:'📅 نسيت أمس؟ سجّله الحين ({date})',
   habit_yesterday_label:'تعويض يوم أمس — {date}',
+  weight_yesterday_label:'هذا الوزن كان لأمس ({date})',
+  yesterday_marked_done:'✅ تم تسجيله لأمس',
+  yesterday_unmarked:'تم إلغاء تسجيل أمس',
   habit_add_ph:'عادة جديدة... مثل قراءة، تمرين',
   dash_supp_mini:'💊 مكملات',dash_commit_mini:'📌 التزامات اليوم',
   dash_no_workout_setup:'أعد إعداد جدول تمارينك',
@@ -1949,6 +1959,9 @@ const I18N={
   dash_habits_title:'✅ My Habits',
   habit_yesterday_toggle:'📅 Forgot yesterday? Log it now ({date})',
   habit_yesterday_label:'Catching up — {date}',
+  weight_yesterday_label:'This weight was from yesterday ({date})',
+  yesterday_marked_done:'✅ Logged for yesterday',
+  yesterday_unmarked:'Removed yesterday\'s entry',
   habit_add_ph:'New habit... e.g. Read, Train',
   dash_supp_mini:'💊 Supplements',dash_commit_mini:'📌 Commitments today',
   dash_no_workout_setup:'Set up your training schedule',
@@ -4352,10 +4365,13 @@ function renderFoodSection(){
   document.getElementById('todaySquareKcal').textContent = `~${Math.round(v.calories)} ${LANG==='ar'?'سعرة':'kcal'}`;
   renderMealChecklist(idx,v);
   renderSupChips();
+  renderNutritionYesterdayToggle();
+  renderSupplementsYesterdayToggle();
   document.getElementById('waterTitle').textContent=t('water_title').replace('{n}',P.foodSetup.waterTarget);
   renderWater();
   buildFoodGrid(idx);
   loadWeightLog();
+  renderWeightYesterdayRow();
 }
 
 wireMulti('#obExGoalGrid','data-exgoal',()=>{ P._exGoals=[...document.querySelectorAll('#obExGoalGrid .ob-choice.selected')].map(c=>c.dataset.exgoal); });
@@ -4959,18 +4975,34 @@ document.getElementById('weightInput').addEventListener('keydown',e=>{
 });
 document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
   const inp=document.getElementById('weightInput'); const val=parseFloat(inp.value); if(!val||val<=0) return;
-  weightLog.push({kg:val,date:new Date().toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'})});
-  await storageSet('weight-log',JSON.stringify(weightLog));
-  inp.value='';
-  if(P.foodSetup){
-    P.foodSetup.weight=val;
-    await storageSet('profile',JSON.stringify(P));
+  const forYesterday=document.getElementById('weightYesterdayCheck').checked;
+  if(forYesterday){
+    await saveWeightForYesterday(val);
+  } else {
+    weightLog.push({kg:val,date:new Date().toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'})});
+    await storageSet('weight-log',JSON.stringify(weightLog));
+    dailyTrack.weightLoggedToday=true;
+    await saveDailyTrack();
+    if(P.foodSetup){
+      P.foodSetup.weight=val;
+      await storageSet('profile',JSON.stringify(P));
+    }
   }
+  inp.value='';
+  document.getElementById('weightYesterdayCheck').checked=false;
   renderFoodSection();
 });
+function renderWeightYesterdayRow(){
+  const row=document.getElementById('weightYesterdayRow'); if(!row) return;
+  const label=document.getElementById('weightYesterdayLabel');
+  label.textContent=t('weight_yesterday_label').replace('{date}',yesterdayDateLabel());
+  const check=document.getElementById('weightYesterdayCheck');
+  if(dailyTrack.yesterdayWeightLogged){ row.style.display='none'; }
+  else { row.style.display='flex'; check.checked=false; }
+}
 
 function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},exerciseChecks:{},xpAwarded:{}};
+const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},exerciseChecks:{},xpAwarded:{},weightLoggedToday:false,yesterdayWeightLogged:false};
 let dailyTrack={...DAILY_TRACK_DEFAULTS};
 async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
 async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
@@ -5126,18 +5158,27 @@ async function migrateRewardValuesV2(){
   P._rewardMigrationV2Done=true;
   await storageSet('profile',JSON.stringify(P));
 }
-function updateNamedStreak(key){
+function dateFromKey(k){ if(!k) return null; const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
+/* generic core behind updateNamedStreak() below — takes an explicit date so
+   the "catch up yesterday" flows can safely backfill a streak without
+   risking today's real completion (never moves lastDate backward if a
+   more recent day is already recorded, and a same-day re-entry is still
+   a no-op either way). */
+function updateNamedStreakForDate(key,targetDate){
   migrateProgressionFields();
-  const today=dateKeyOf(new Date());
   const s=P.streaks[key]=P.streaks[key]||{current:0,longest:0,lastDate:''};
-  if(s.lastDate===today) return s; // already counted today — no double-increment
-  const y=new Date(); y.setDate(y.getDate()-1);
-  const yesterday=dateKeyOf(y);
-  s.current = (s.lastDate===yesterday) ? s.current+1 : 1;
+  const targetKey=dateKeyOf(targetDate);
+  if(s.lastDate===targetKey) return s; // already counted this day — no double-increment
+  const lastDateObj=dateFromKey(s.lastDate);
+  if(lastDateObj && lastDateObj>targetDate) return s; // never rewind past a more recent completion
+  const dayBefore=new Date(targetDate); dayBefore.setDate(dayBefore.getDate()-1);
+  const dayBeforeKey=dateKeyOf(dayBefore);
+  s.current = (s.lastDate===dayBeforeKey) ? s.current+1 : 1;
   s.longest = Math.max(s.longest, s.current);
-  s.lastDate = today;
+  s.lastDate = targetKey;
   return s;
 }
+function updateNamedStreak(key){ return updateNamedStreakForDate(key,new Date()); }
 async function updateStreak(){
   const s=updateNamedStreak('workout');
   P.streakCount=s.current; P.lastStreakDate=s.lastDate; // kept in sync for renderStreakBadge/back-compat readers
@@ -6651,6 +6692,7 @@ function renderDailySummary(){
       toggle.textContent=done?'✓':'';
       toggle.classList.toggle('done',done);
     };
+    renderWorkoutYesterdayToggle();
   }
 
   // ---- water (same dailyTrack.water state as the Food panel's water card) ----
@@ -6760,7 +6802,127 @@ function yesterdayDateLabel(){
 }
 async function loadYesterdayTrack(){
   try{ const v=await storageGet(yesterdayTrackKey()); if(v) return JSON.parse(v); }catch(e){}
-  return {habits:{},xpAwarded:{habits:{}}};
+  return {habits:{},supplements:{},xpAwarded:{habits:{}}};
+}
+function yesterdayDateObj(){ const d=new Date(); d.setDate(d.getDate()-1); return d; }
+
+/* ---- workout catch-up: same "yesterday only" idea as habits, but a
+   single toggle (no per-exercise checklist) — reconstructs which workout
+   type yesterday actually was via workoutTypeForDate() so completions/
+   streak stay attributed to the right day, without touching today's
+   live dailyTrack. */
+function renderWorkoutYesterdayToggle(){
+  const toggle=document.getElementById('workoutYesterdayToggle');
+  if(!toggle||!P.workoutSetup) return;
+  toggle.classList.remove('hidden');
+  toggle.textContent=t('habit_yesterday_toggle').replace('{date}',yesterdayDateLabel());
+  toggle.onclick=async()=>{
+    const yKey=yesterdayTrackKey();
+    const yDoc=await loadYesterdayTrack();
+    const nowDone=!yDoc.workoutDone;
+    yDoc.workoutDone=nowDone;
+    let justEarnedXp=false;
+    if(nowDone && !yDoc.completionCounted){
+      yDoc.completionCounted=true;
+      justEarnedXp=true;
+    }
+    await storageSet(yKey,JSON.stringify(yDoc));
+    if(justEarnedXp){
+      const yTypeKey=workoutTypeForDate(yesterdayDateObj(),P.workoutSetup);
+      migrateProgressionFields();
+      P.workoutCompletions=P.workoutCompletions||{push:0,pull:0,legs:0};
+      P.workoutCompletions[yTypeKey]=(P.workoutCompletions[yTypeKey]||0)+1;
+      const s=updateNamedStreakForDate('workout',yesterdayDateObj());
+      P.streakCount=s.current; P.lastStreakDate=s.lastDate;
+      await storageSet('profile',JSON.stringify(P));
+      await awardXP(XP_CONFIG.workout_complete);
+      await notifyNewUnlocks();
+      renderStreakBadge();
+    }
+    showToast(nowDone ? t('yesterday_marked_done') : t('yesterday_unmarked'));
+  };
+}
+
+/* ---- nutrition catch-up: single toggle (not per-meal — yesterday's exact
+   personalized meal slots aren't reconstructed here), same idempotent
+   xpAwarded guard pattern as everything else. */
+function renderNutritionYesterdayToggle(){
+  const toggle=document.getElementById('nutritionYesterdayToggle');
+  if(!toggle) return;
+  toggle.classList.remove('hidden');
+  toggle.textContent=t('habit_yesterday_toggle').replace('{date}',yesterdayDateLabel());
+  toggle.onclick=async()=>{
+    const yKey=yesterdayTrackKey();
+    const yDoc=await loadYesterdayTrack();
+    yDoc.xpAwarded=yDoc.xpAwarded||{};
+    const nowDone=!yDoc.xpAwarded.nutrition;
+    if(nowDone){
+      yDoc.xpAwarded.nutrition=true;
+      await storageSet(yKey,JSON.stringify(yDoc));
+      migrateProgressionFields();
+      updateNamedStreakForDate('nutrition',yesterdayDateObj());
+      P.lifetimeStats.nutritionDaysHit=(P.lifetimeStats.nutritionDaysHit||0)+1;
+      await storageSet('profile',JSON.stringify(P));
+      await awardXP(XP_CONFIG.nutrition_day_complete);
+      await notifyNewUnlocks();
+    } else {
+      await storageSet(yKey,JSON.stringify(yDoc));
+    }
+    showToast(nowDone ? t('yesterday_marked_done') : t('yesterday_unmarked'));
+  };
+}
+
+/* ---- supplements catch-up: per-supplement toggle list, exactly like the
+   habits pattern (static list, no XP tied to supplements today either). */
+function renderSupplementsYesterdayToggle(){
+  const toggle=document.getElementById('suppYesterdayToggle');
+  const fs=P.foodSetup||{};
+  const items=(fs.supOtherList||[]).map((s,i)=>({key:'other'+i,label:s.text,icon:s.emoji||'💊'}));
+  if(!toggle||!items.length){ if(toggle) toggle.classList.add('hidden'); return; }
+  toggle.classList.remove('hidden');
+  toggle.textContent=t('habit_yesterday_toggle').replace('{date}',yesterdayDateLabel());
+  toggle.onclick=async()=>{
+    const box=document.getElementById('suppYesterdayList');
+    const willShow=box.classList.contains('hidden');
+    box.classList.toggle('hidden');
+    if(willShow) await renderSupplementsYesterdayList(items);
+  };
+}
+async function renderSupplementsYesterdayList(items){
+  const box=document.getElementById('suppYesterdayList'); if(!box) return;
+  const yKey=yesterdayTrackKey();
+  const yDoc=await loadYesterdayTrack();
+  yDoc.supplements=yDoc.supplements||{};
+  box.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>`;
+  items.forEach(it=>{
+    const done=!!yDoc.supplements[it.key];
+    const chip=document.createElement('div');
+    chip.className='supp-chip'+(done?' done':'');
+    chip.innerHTML=`<span class="supp-emoji-btn">${it.icon}</span><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${it.label}</span>`;
+    chip.addEventListener('click',async()=>{
+      const nowDone=!yDoc.supplements[it.key];
+      yDoc.supplements[it.key]=nowDone;
+      chip.classList.toggle('done',nowDone);
+      chip.querySelector('.supp-check-mark').textContent=nowDone?'✅':'⬜';
+      await storageSet(yKey,JSON.stringify(yDoc));
+    });
+    box.appendChild(chip);
+  });
+}
+
+/* ---- weight catch-up: weightLog has no real per-entry date, just a
+   display string, so ordering has to be maintained by hand — if today's
+   weight was already logged (dailyTrack.weightLoggedToday), the backfilled
+   yesterday entry is inserted BEFORE it instead of appended, so the array
+   stays chronological. Guarded so yesterday can only be logged once. */
+async function saveWeightForYesterday(val){
+  const label=yesterdayDateObj().toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'});
+  const entry={kg:val,date:label};
+  if(dailyTrack.weightLoggedToday && weightLog.length){ weightLog.splice(weightLog.length-1,0,entry); }
+  else { weightLog.push(entry); }
+  await storageSet('weight-log',JSON.stringify(weightLog));
+  dailyTrack.yesterdayWeightLogged=true;
+  await saveDailyTrack();
 }
 function renderHabitsYesterdayToggle(){
   const toggle=document.getElementById('habitYesterdayToggle');
