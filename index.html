@@ -1127,6 +1127,10 @@
     @keyframes cxHeatPulse{ 0%,100%{ transform:scale(1); opacity:0.6; } 50%{ transform:scale(1.12); opacity:1; } }
     .cx-crack{ position:absolute; background:linear-gradient(90deg,#ff7a1a,#ffce54); filter:blur(1px); animation:cxGlow 1.8s ease-in-out infinite alternate; }
     @keyframes cxGlow{ 0%{ opacity:0.35; } 100%{ opacity:1; } }
+    /* foreground rock silhouette — closes the "flat gradient, no depth layer"
+       gap flagged in the design review; gives Molten Core a second, nearer
+       layer instead of just the heat glow + cracks sitting on one plane. */
+    .bg-molten .cx-rockline{ position:absolute; left:0; right:0; bottom:0; height:16%; background:linear-gradient(180deg,rgba(255,140,60,0.4) 0%,#0c0808 12%); clip-path:polygon(0% 100%,0% 40%,15% 60%,30% 30%,45% 55%,60% 20%,78% 50%,100% 25%,100% 100%); }
     .bg-golden-horizon{ background:radial-gradient(circle at 50% 130%,#3d2a06 0%,#160f04 60%,#0a0a0a 100%); }
     .bg-golden-horizon .cx-glowring{ position:absolute; left:50%; top:60%; width:220%; height:220%; transform:translate(-50%,-50%) rotate(0deg); background:conic-gradient(from 0deg, transparent 0deg, rgba(255,205,110,0.16) 40deg, transparent 90deg, transparent 270deg, rgba(255,205,110,0.1) 320deg, transparent 360deg); animation:cxSpin 22s linear infinite; }
     @keyframes cxSpin{ from{ transform:translate(-50%,-50%) rotate(0deg);} to{ transform:translate(-50%,-50%) rotate(360deg);} }
@@ -1141,12 +1145,21 @@
     .cx-spark{ position:absolute; border-radius:50%; background:#ffd678; box-shadow:0 0 6px 1px rgba(255,214,120,0.9); }
     .cx-spark.near{ animation:cxTwinkle 2.4s ease-in-out infinite; }
     .cx-spark.far{ animation:cxTwinkle 4.5s ease-in-out infinite; opacity:0.5; }
-    .bg-ascension{ background:linear-gradient(180deg,#050208 0%,#170a22 50%,#2c1035 100%); }
+    .bg-ascension{ background:radial-gradient(ellipse at 50% 100%,#2c1035 0%,#170a22 55%,#050208 100%); }
     .bg-ascension .cx-amb{ position:absolute; left:50%; bottom:0; width:200%; height:120%; transform:translateX(-50%); background:radial-gradient(ellipse at 50% 100%, rgba(255,200,120,0.22), transparent 65%); animation:cxHeatPulse 6s ease-in-out infinite; }
-    .bg-ascension .cx-beam{ position:absolute; bottom:-10%; width:60%; height:150%; background:linear-gradient(0deg,rgba(255,220,150,0.55),transparent 72%); clip-path:polygon(46% 100%,54% 100%,80% 0%,20% 0%); animation:cxRise 3.4s ease-in-out infinite alternate; }
+    .bg-ascension .cx-beam{ position:absolute; bottom:-10%; width:16%; height:150%; background:linear-gradient(0deg,rgba(255,220,150,0.55),transparent 72%); clip-path:polygon(46% 100%,54% 100%,80% 0%,20% 0%); animation:cxRise 3.4s ease-in-out infinite alternate; }
     @keyframes cxRise{ 0%{ opacity:0.45; } 100%{ opacity:0.95; } }
     .cx-p{ position:absolute; width:2px; height:2px; background:#ffdca0; border-radius:50%; animation:cxFloatup 4.5s linear infinite; }
     @keyframes cxFloatup{ 0%{ transform:translateY(0); opacity:0; } 15%{ opacity:1; } 100%{ transform:translateY(-130px); opacity:0; } }
+    /* v2 upgrade — closes the "still one composition layer" gap flagged in
+       the design review: a rotating sunburst layer + an expanding shockwave
+       ring + gold confetti, on top of the existing amb/beam/particle layers. */
+    .bg-ascension .cx-burst{ position:absolute; left:50%; bottom:-30%; width:260%; height:160%; transform:translateX(-50%); background:conic-gradient(from 0deg, transparent 0deg, rgba(255,205,110,0.18) 15deg, transparent 30deg, transparent 165deg, rgba(255,205,110,0.18) 180deg, transparent 195deg, transparent 330deg, rgba(255,205,110,0.13) 345deg, transparent 360deg); animation:cxAscBurstSpin 18s linear infinite; }
+    @keyframes cxAscBurstSpin{ from{ transform:translateX(-50%) rotate(0deg); } to{ transform:translateX(-50%) rotate(360deg); } }
+    .bg-ascension .cx-shockring{ position:absolute; left:50%; bottom:8%; border-radius:50%; border:2px solid rgba(255,215,150,0.55); transform:translateX(-50%); animation:cxShockPulse 3s ease-out infinite; }
+    @keyframes cxShockPulse{ 0%{ width:16px; height:16px; opacity:0.9; } 100%{ width:200px; height:70px; opacity:0; } }
+    .cx-confettigold{ position:absolute; width:5px; height:8px; animation:cxConfettiFall 4.2s ease-in infinite; }
+    @keyframes cxConfettiFall{ 0%{ transform:translateY(-10%) rotate(0deg); opacity:0; } 10%{ opacity:1; } 100%{ transform:translateY(480%) rotate(480deg); opacity:0; } }
     .bg-gentle-giant{ background:linear-gradient(180deg,#02202f 0%,#023550 45%,#04597a 75%,#0a6e93 100%); }
     .bg-gentle-giant .cx-ray{ position:absolute; top:-20%; width:2px; height:170%; background:linear-gradient(180deg,rgba(255,255,255,0.4),transparent); transform:rotate(12deg); animation:cxRayFade 6s ease-in-out infinite; }
     @keyframes cxRayFade{ 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
@@ -1154,6 +1167,79 @@
     @keyframes cxSwim{ 0%,100%{ transform:translateX(0) scaleX(1);} 50%{ transform:translateX(3%) scaleX(1.02);} }
     .cx-bubble{ position:absolute; border-radius:50%; background:rgba(220,245,255,0.55); animation:cxRiseSlow 7s linear infinite; }
     .cx-spot{ position:absolute; width:3px; height:3px; background:#eaf6ff; border-radius:50%; opacity:0.6; }
+    /* foreground kelp strands — a nearer layer than the ray/silhouette/bubble
+       plane, for parity with Champion's Ascension's depth upgrade below. */
+    .bg-gentle-giant .cx-kelp{ position:absolute; bottom:0; width:5px; background:linear-gradient(180deg,#03405a,#022235); border-radius:3px 3px 0 0; transform-origin:bottom; animation:cxSway 6s ease-in-out infinite; }
+
+    /* ============================================================
+       NEW COSMETICS — from the full design-review pass. Epic/Mythic
+       additions plus a from-scratch Legendary set (Aurora Throne,
+       Eclipse Core, Verdant Sanctum, Tempest Crown) replacing Golden
+       Horizon, which read as "brighter version of Mythic" rather than
+       a real step up. Each Legendary is a genuine layered scene:
+       foreground/midground/background, not one gradient + particles.
+       ============================================================ */
+    @keyframes cxDriftX{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(-14px); } }
+    @keyframes cxDriftXRev{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(14px); } }
+    @keyframes cxNebulaDrift1{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(24px,-14px); } }
+    @keyframes cxNebulaDrift2{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(-20px,10px); } }
+    @keyframes cxNebulaDrift3{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(12px,18px); } }
+    @keyframes cxFlashBolt{ 0%,97%,100%{ opacity:0; } 97.3%{ opacity:0.3; } 97.6%{ opacity:0.05; } 98%{ opacity:0.2; } 98.3%{ opacity:0; } }
+    @keyframes cxLanternFlicker{ 0%,100%{ opacity:0.85; } 45%{ opacity:1; } 50%{ opacity:0.68; } 55%{ opacity:0.95; } }
+    @keyframes cxGridDrift{ from{ background-position:0 0; } to{ background-position:-76px -132px; } }
+    @keyframes cxScanSweep{ 0%{ top:-40%; } 100%{ top:100%; } }
+
+    /* -- Epic: Overdrive Grid -- */
+    .bg-overdrive{ background:linear-gradient(160deg,#1a1f2b 0%,#0d1117 100%); }
+    .bg-overdrive .cx-hexgrid{ position:absolute; inset:-20%; background-image:linear-gradient(30deg,rgba(255,150,70,0.28) 1px,transparent 1px),linear-gradient(150deg,rgba(255,150,70,0.28) 1px,transparent 1px); background-size:38px 66px; animation:cxGridDrift 14s linear infinite; }
+    .bg-overdrive .cx-scan{ position:absolute; left:0; right:0; height:40%; top:-40%; background:linear-gradient(180deg,transparent,rgba(120,200,255,0.18),transparent); animation:cxScanSweep 4s ease-in-out infinite; }
+    .bg-overdrive .cx-pulsedot{ position:absolute; left:50%; top:50%; width:8px; height:8px; margin:-4px; border-radius:50%; background:#ff8a3d; box-shadow:0 0 12px 4px rgba(255,138,61,0.6); animation:cxBreathe 3s ease-in-out infinite; }
+
+    /* -- Mythic: Runic Ascension -- */
+    .bg-runic{ background:radial-gradient(ellipse at 50% 60%,#241d12 0%,#0a0805 75%); }
+    .bg-runic .cx-fog{ position:absolute; left:0; right:0; bottom:0; height:40%; background:linear-gradient(0deg,rgba(60,50,30,0.4),transparent); filter:blur(3px); }
+    .bg-runic .cx-runering{ position:absolute; left:50%; top:55%; width:150px; height:150px; margin:-75px; border-radius:50%; border:2px dashed rgba(214,178,94,0.55); animation:cxSpinPlain 20s linear infinite; }
+    .bg-runic .cx-runering.b{ width:110px; height:110px; margin:-55px; border-style:solid; border-width:1px; animation-direction:reverse; animation-duration:14s; opacity:0.6; }
+
+    /* -- Legendary: Aurora Throne -- */
+    .bg-aurora-throne{ background:radial-gradient(ellipse at 50% 20%,#0f1a33 0%,#050810 75%); }
+    .bg-aurora-throne .cx-mountains{ position:absolute; left:0; right:0; bottom:0; width:100%; height:55%; }
+    .bg-aurora-throne .cx-mountains.far{ opacity:0.7; animation:cxDriftX 14s ease-in-out infinite; }
+    .bg-aurora-throne .cx-mountains.near{ height:42%; animation:cxDriftXRev 10s ease-in-out infinite; }
+    .bg-aurora-throne .cx-ribbon{ position:absolute; left:-5%; right:-5%; top:8%; height:38%; filter:blur(5px); animation:cxDrift 9s ease-in-out infinite alternate; }
+    .bg-aurora-throne .cx-reflect{ position:absolute; left:0; right:0; bottom:0; height:12%; background:linear-gradient(180deg,rgba(167,139,250,0.18),transparent); }
+
+    /* -- Legendary: Eclipse Core (flagship) -- */
+    .bg-eclipse-core{ background:radial-gradient(ellipse at 50% 45%,#140a22 0%,#040308 78%); }
+    .bg-eclipse-core .cx-nebula{ position:absolute; width:55%; height:55%; border-radius:50%; filter:blur(22px); mix-blend-mode:screen; opacity:0.55; }
+    .bg-eclipse-core .cx-nebula.n1{ left:8%; top:12%; background:radial-gradient(circle,#ff5fae,transparent 70%); animation:cxNebulaDrift1 13s ease-in-out infinite; }
+    .bg-eclipse-core .cx-nebula.n2{ left:45%; top:32%; background:radial-gradient(circle,#5fc9ff,transparent 70%); animation:cxNebulaDrift2 16s ease-in-out infinite; }
+    .bg-eclipse-core .cx-nebula.n3{ left:22%; top:42%; background:radial-gradient(circle,#c9a24a,transparent 70%); animation:cxNebulaDrift3 19s ease-in-out infinite; }
+    .bg-eclipse-core .cx-disc{ position:absolute; left:50%; top:50%; width:70px; height:70px; margin:-35px; border-radius:50%; background:#0a0812; box-shadow:0 0 0 2px rgba(255,236,196,0.85),0 0 24px 6px rgba(255,236,196,0.35),0 0 60px 20px rgba(180,150,255,0.18); animation:cxHeatPulse 5s ease-in-out infinite; }
+
+    /* -- Legendary: Verdant Sanctum -- */
+    .bg-verdant{ background:radial-gradient(ellipse at 50% 30%,#0e2420 0%,#040907 78%); }
+    .bg-verdant .cx-pillar{ position:absolute; top:0; bottom:0; width:15%; }
+    .bg-verdant .cx-pillar.left{ left:0; }
+    .bg-verdant .cx-pillar.right{ right:0; }
+    .bg-verdant .cx-godray{ position:absolute; top:-10%; width:22%; height:130%; background:linear-gradient(160deg,rgba(255,238,190,0.22),transparent 70%); filter:blur(4px); animation:cxBreathe 7s ease-in-out infinite; }
+    .bg-verdant .cx-godray.r1{ left:30%; transform:rotate(8deg); }
+    .bg-verdant .cx-godray.r2{ left:55%; transform:rotate(-6deg); animation-delay:1.5s; }
+    .bg-verdant .cx-groundglow{ position:absolute; left:50%; bottom:-10%; width:70%; height:40%; transform:translateX(-50%); background:radial-gradient(ellipse at center, rgba(120,255,190,0.28), transparent 70%); animation:cxBreathe 5s ease-in-out infinite; }
+    .bg-verdant .cx-spore{ position:absolute; border-radius:50%; background:#c8ffb0; box-shadow:0 0 6px rgba(200,255,176,0.8); animation:cxRiseSlow 8s ease-in-out infinite; }
+    .bg-verdant .cx-spore.far{ opacity:0.4; }
+    .bg-verdant .cx-spore.near{ filter:blur(1.2px); opacity:0.9; }
+
+    /* -- Legendary: Tempest Crown -- */
+    .bg-tempest{ background:linear-gradient(180deg,#1b2430 0%,#070a10 75%); }
+    .bg-tempest .cx-cloud{ position:absolute; left:-10%; right:-10%; height:32%; background:linear-gradient(180deg,rgba(190,205,222,0.32),transparent); filter:blur(5px); }
+    .bg-tempest .cx-cloud.c1{ top:2%; animation:cxSway 16s ease-in-out infinite; }
+    .bg-tempest .cx-cloud.c2{ top:14%; height:26%; opacity:0.8; background:linear-gradient(180deg,rgba(150,170,195,0.28),transparent); animation:cxSway 12s ease-in-out infinite reverse; }
+    .bg-tempest .cx-boltflash{ position:absolute; inset:0; background:rgba(210,225,255,0.85); opacity:0; animation:cxFlashBolt 9s linear infinite; }
+    .bg-tempest .cx-sea{ position:absolute; left:0; right:0; bottom:0; width:100%; height:38%; }
+    .bg-tempest .cx-foam{ position:absolute; left:0; right:0; bottom:36%; height:2px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.8),transparent); background-size:60% 100%; animation:cxFoamShimmer 5s linear infinite; }
+    @keyframes cxFoamShimmer{ 0%{ background-position:-60% 0; } 100%{ background-position:160% 0; } }
+    .bg-tempest .cx-lantern{ position:absolute; left:50%; bottom:38%; width:10px; height:14px; margin-left:-5px; border-radius:3px; background:radial-gradient(circle,#ffdd8a,#c98a2e); box-shadow:0 0 16px 6px rgba(255,200,110,0.55); animation:cxLanternFlicker 3s ease-in-out infinite; }
 
     /* -- frames -- */
     .frame-frame-steel{ border:3px solid #cfd3d8; }
@@ -5418,7 +5504,7 @@ async function checkAndAwardChallenges(){
 const LEVEL_REWARDS = {
   5:{coins:50}, 10:{coins:150, cosmetic:'chalkline'}, 15:{coins:250}, 20:{coins:400, cosmetic:'iron-grid'},
   25:{coins:600}, 30:{coins:900, cosmetic:'deep-current'}, 35:{coins:1100}, 40:{coins:1500, cosmetic:'aurora-current'},
-  45:{coins:1900}, 50:{coins:3000, cosmetic:'golden-horizon'}
+  45:{coins:1900}, 50:{coins:3000, cosmetic:'eclipse-core'}
 };
 async function checkAndAwardLevelRewards(stats){
   migrateProgressionFields();
@@ -5657,31 +5743,57 @@ const COSMETICS_CATALOG=[
   {id:'deep-current', type:'background', rarity:'epic', nameEn:'Deep Current', nameAr:'التيار العميق', descEn:'Drifting caustic light + rising motes', descAr:'ضوء متموج + جسيمات صاعدة', price:2200, cls:'bg-deep-current', mountEffect:el=>{
     cxAddEl(el,'cx-caustic'); const b=cxAddEl(el,'cx-caustic'); b.classList.add('b'); cxScatter(el,'cx-mote',10,90);
   }},
-  {id:'forge-streak', type:'background', rarity:'epic', nameEn:'Forge Streak', nameAr:'شرارة الفرن', descEn:'Pulsing energy streaks + embers', descAr:'خطوط طاقة نابضة + جمرات', price:2500, cls:'bg-forge-streak', mountEffect:el=>{
-    [[28,0],[65,0.9],[102,1.6]].forEach(([top,delay])=>{ const s=cxAddEl(el,'cx-streak'); s.style.top=top+'px'; s.style.left='-35%'; s.style.animationDelay=delay+'s'; });
-    cxScatter(el,'cx-ember',9,95);
-  }},
   {id:'aurora-current', type:'background', rarity:'mythic', nameEn:'Aurora Current', nameAr:'تيار الشفق', descEn:'Twin drifting aurora ribbons + stars', descAr:'شريطا شفق متحركان + نجوم', price:6000, cls:'bg-aurora', mountEffect:el=>{
     cxAddEl(el,'cx-ribbon'); const r2=cxAddEl(el,'cx-ribbon'); r2.classList.add('b'); r2.style.top='40px'; cxScatter(el,'cx-star',16,80);
   }},
-  {id:'molten-core', type:'background', rarity:'mythic', nameEn:'Molten Core', nameAr:'اللب المنصهر', descEn:'Pulsing heat glow + glowing cracks', descAr:'توهج حراري + شقوق متوهجة', price:6500, cls:'bg-molten', mountEffect:el=>{
-    cxAddEl(el,'cx-heat');
+  {id:'molten-core', type:'background', rarity:'mythic', nameEn:'Molten Core', nameAr:'اللب المنصهر', descEn:'Pulsing heat glow + foreground rock silhouette + glowing cracks', descAr:'توهج حراري + ظل صخري أمامي + شقوق متوهجة', price:6500, cls:'bg-molten', mountEffect:el=>{
+    cxAddEl(el,'cx-heat'); cxAddEl(el,'cx-rockline');
     [[8,18,64,3],[68,46,48,3],[26,78,52,2],[82,12,32,2],[46,60,40,2]].forEach(([l,top,w,h],i)=>{
       const c=cxAddEl(el,'cx-crack'); c.style.left=l+'%'; c.style.top=top+'%'; c.style.width=w+'px'; c.style.height=h+'px';
       c.style.transform='rotate('+(Math.random()*60-30)+'deg)'; c.style.animationDelay=(i*0.3)+'s';
     });
   }},
-  {id:'golden-horizon', type:'background', rarity:'legendary', nameEn:'Golden Horizon', nameAr:'الأفق الذهبي', descEn:'Rotating gold glow + shimmer + layered sparkle', descAr:'توهج ذهبي دوّار + بريق متعدد الطبقات', price:15000, cls:'bg-golden-horizon', mountEffect:el=>{
-    cxAddEl(el,'cx-glowring'); cxAddEl(el,'cx-sweep'); cxScatterSized(el,'cx-spark near',7,2.5,90); cxScatterSized(el,'cx-spark far',8,1.5,80);
+  {id:'overdrive-grid', type:'background', rarity:'epic', nameEn:'Overdrive Grid', nameAr:'الشبكة المتقدمة', descEn:'Scrolling tech grid + scanline sweep + pulsing accent', descAr:'شبكة تقنية متحركة + مسح ضوئي + نبضة لون', price:2400, cls:'bg-overdrive', mountEffect:el=>{
+    cxAddEl(el,'cx-hexgrid'); cxAddEl(el,'cx-scan'); cxAddEl(el,'cx-pulsedot');
   }},
-  {id:'champions-ascension', type:'background', rarity:'legendary', nameEn:"Champion's Ascension", nameAr:'صعود البطل', descEn:'Ambient glow + rising beams + particles', descAr:'توهج محيط + أشعة صاعدة + جسيمات', price:null, exclusiveNote:'achievement:champion', cls:'bg-ascension', mountEffect:el=>{
-    cxAddEl(el,'cx-amb');
-    [[46,0],[50,0.4],[54,0.2]].forEach(([left,delay])=>{ const b=cxAddEl(el,'cx-beam'); b.style.left=left+'%'; b.style.transform='translateX(-50%)'; b.style.animationDelay=delay+'s'; });
+  {id:'runic-ascension', type:'background', rarity:'mythic', nameEn:'Runic Ascension', nameAr:'صعود الرموز', descEn:'Dual counter-rotating rune circles on dark stone + fog + rising embers', descAr:'دائرتا رموز متعاكستا الدوران على حجر داكن + ضباب + جمرات صاعدة', price:6800, cls:'bg-runic', mountEffect:el=>{
+    cxAddEl(el,'cx-fog'); cxAddEl(el,'cx-runering'); const r2=cxAddEl(el,'cx-runering'); r2.classList.add('b'); cxScatter(el,'cx-ember',10,70);
+  }},
+  {id:'aurora-throne', type:'background', rarity:'legendary', nameEn:'Aurora Throne', nameAr:'عرش الشفق', descEn:'Parallax dual-layer mountains + a real flowing aurora ribbon + reflection + depth-of-field motes', descAr:'جبال متوازية بطبقتين + شريط شفق حقيقي متدفق + انعكاس + جسيمات بعمق', price:16000, cls:'bg-aurora-throne', mountEffect:el=>{
+    el.innerHTML+=`<svg class="cx-mountains far" viewBox="0 0 300 100" preserveAspectRatio="none"><polygon points="0,100 0,55 40,35 80,58 120,30 160,50 200,25 240,52 270,38 300,60 300,100" fill="#141d33"/></svg>
+    <svg class="cx-mountains near" viewBox="0 0 300 100" preserveAspectRatio="none"><polygon points="0,100 0,70 50,45 100,68 150,40 210,66 260,42 300,68 300,100" fill="#0b0f1c"/></svg>
+    <svg class="cx-ribbon" viewBox="0 0 300 120" preserveAspectRatio="none"><defs><linearGradient id="auroraThroneGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.65"/><stop offset="50%" stop-color="#a78bfa" stop-opacity="0.55"/><stop offset="100%" stop-color="#5fc9ff" stop-opacity="0.5"/></linearGradient></defs><path d="M0,40 C60,10 100,55 160,30 C210,10 250,45 300,25 L300,70 C250,85 210,55 160,72 C100,92 60,55 0,80 Z" fill="url(#auroraThroneGrad)"/></svg>
+    <div class="cx-reflect"></div>`;
+    cxScatter(el,'cx-star',14,60);
+    for(let i=0;i<10;i++){ const m=cxAddEl(el,'cx-mote'); const s=1+Math.random()*2; m.style.width=s+'px'; m.style.height=s+'px'; m.style.left=(10+Math.random()*80)+'%'; m.style.top=(60+Math.random()*30)+'%'; m.style.animationDelay=(Math.random()*6)+'s'; }
+  }},
+  {id:'eclipse-core', type:'background', rarity:'legendary', nameEn:'Eclipse Core', nameAr:'قلب الكسوف', descEn:'Three nebula clouds drifting on independent paths + a single eclipsed disc with a breathing corona — the flagship', descAr:'ثلاث سحب سديمية تتحرك بمسارات مستقلة + قرص كسوف بهالة نابضة — القطعة الرائدة', price:19000, cls:'bg-eclipse-core', mountEffect:el=>{
+    el.innerHTML+=`<div class="cx-nebula n1"></div><div class="cx-nebula n2"></div><div class="cx-nebula n3"></div><div class="cx-disc"></div>`;
+    cxScatter(el,'cx-star',10,70);
+  }},
+  {id:'verdant-sanctum', type:'background', rarity:'legendary', nameEn:'Verdant Sanctum', nameAr:'المعبد الأخضر', descEn:'Pillar-framed mystical forest, volumetric light shafts, and 3 depth layers of glowing spores', descAr:'غابة صوفية تؤطرها أعمدة + أشعة ضوء حجمية + جراثيم متوهجة بثلاث طبقات عمق', price:15500, cls:'bg-verdant', mountEffect:el=>{
+    el.innerHTML+=`<svg class="cx-pillar left" viewBox="0 0 40 120" preserveAspectRatio="none"><polygon points="0,120 4,0 22,0 26,120" fill="#04140f"/></svg>
+    <svg class="cx-pillar right" viewBox="0 0 40 120" preserveAspectRatio="none"><polygon points="14,120 18,0 36,0 40,120" fill="#04140f"/></svg>
+    <div class="cx-godray r1"></div><div class="cx-godray r2"></div><div class="cx-groundglow"></div>`;
+    for(let i=0;i<6;i++){ const s=cxAddEl(el,'cx-spore far'); s.style.width=s.style.height='2px'; s.style.left=(20+Math.random()*60)+'%'; s.style.top=(30+Math.random()*40)+'%'; s.style.animationDelay=(Math.random()*8)+'s'; }
+    for(let i=0;i<6;i++){ const s=cxAddEl(el,'cx-spore near'); const sz=3+Math.random()*2; s.style.width=s.style.height=sz+'px'; s.style.left=(15+Math.random()*70)+'%'; s.style.top=(40+Math.random()*40)+'%'; s.style.animationDelay=(Math.random()*8)+'s'; }
+  }},
+  {id:'tempest-crown', type:'background', rarity:'legendary', nameEn:'Tempest Crown', nameAr:'تاج العاصفة', descEn:'Storm at sea — drifting clouds, a rare subtle lightning flash, shimmering foam, and a warm lantern anchor. Ties to the app\'s own fishing world', descAr:'عاصفة في البحر — غيوم متحركة، برق خافت نادر، رغوة متلألئة، وفانوس دافئ — مرتبطة بعالم الصيد في التطبيق', price:16500, cls:'bg-tempest', mountEffect:el=>{
+    el.innerHTML+=`<div class="cx-cloud c1"></div><div class="cx-cloud c2"></div><div class="cx-boltflash"></div>
+    <svg class="cx-sea" viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M0,30 Q40,10 80,28 T160,26 T240,30 T300,20 L300,60 L0,60 Z" fill="#0a1420"/></svg>
+    <div class="cx-foam"></div><div class="cx-lantern"></div>`;
+  }},
+  {id:'champions-ascension', type:'background', rarity:'legendary', nameEn:"Champion's Ascension", nameAr:'صعود البطل', descEn:'Rotating sunburst + shockwave ring + 5 beams + gold confetti', descAr:'توهج شمسي دوّار + حلقة صدمة + 5 أشعة + قصاصات ذهبية', price:null, exclusiveNote:'achievement:champion', cls:'bg-ascension', mountEffect:el=>{
+    cxAddEl(el,'cx-amb'); cxAddEl(el,'cx-burst');
+    for(let i=0;i<3;i++){ const s=cxAddEl(el,'cx-shockring'); s.style.animationDelay=(i*1)+'s'; }
+    [30,42,50,58,70].forEach((left,i)=>{ const b=cxAddEl(el,'cx-beam'); b.style.left=left+'%'; b.style.animationDelay=(i*0.25)+'s'; });
+    ['#ffd98a','#fff2c9','#e8b95b'].forEach(c=>{ for(let j=0;j<4;j++){ const cf=cxAddEl(el,'cx-confettigold'); cf.style.background=c; cf.style.left=(20+Math.random()*60)+'%'; cf.style.animationDelay=(Math.random()*4)+'s'; } });
     for(let i=0;i<9;i++){ const p=cxAddEl(el,'cx-p'); p.style.left=(28+Math.random()*44)+'%'; p.style.animationDelay=(Math.random()*4.5)+'s'; }
   }},
-  {id:'gentle-giant', type:'background', rarity:'legendary', nameEn:'The Gentle Giant', nameAr:'العملاق اللطيف', descEn:'Breathing silhouette, rays, rising bubbles', descAr:'ظل يتنفس، أشعة، فقاعات صاعدة', price:null, exclusiveNote:'boss:rhincodon_typus', cls:'bg-gentle-giant', mountEffect:el=>{
+  {id:'gentle-giant', type:'background', rarity:'legendary', nameEn:'The Gentle Giant', nameAr:'العملاق اللطيف', descEn:'Breathing silhouette, rays, foreground kelp, rising bubbles', descAr:'ظل يتنفس، أشعة، أعشاب بحرية أمامية، فقاعات صاعدة', price:null, exclusiveNote:'boss:rhincodon_typus', cls:'bg-gentle-giant', mountEffect:el=>{
     [20,55].forEach(left=>{ const r=cxAddEl(el,'cx-ray'); r.style.left=left+'%'; r.style.animationDelay=(left/30)+'s'; });
     cxAddEl(el,'cx-silhouette'); cxScatter(el,'cx-spot',10,55);
+    [[8,34],[18,26],[80,30],[90,22]].forEach(([left,h],i)=>{ const k=cxAddEl(el,'cx-kelp'); k.style.left=left+'%'; k.style.height=h+'px'; k.style.animationDelay=(i*0.7)+'s'; });
     for(let i=0;i<9;i++){ const b=cxAddEl(el,'cx-bubble'); const size=2+Math.random()*3; b.style.width=size+'px'; b.style.height=size+'px'; b.style.left=(10+Math.random()*80)+'%'; b.style.top=(60+Math.random()*35)+'%'; b.style.animationDelay=(Math.random()*7)+'s'; }
   }},
   // ---- frames ----
