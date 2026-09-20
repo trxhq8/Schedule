@@ -7849,6 +7849,10 @@ async function renderCollSpeciesDetail(){
       <button class="coll-counter-btn" id="collIncBtn">+</button>
     </div>
     <div class="coll-counter-label">${LANG==='ar'?cat.countLabelAr:cat.countLabelEn}</div>
+    <div class="log-form" style="max-width:260px;margin:0 auto 18px;">
+      <input type="number" min="1" step="1" inputmode="numeric" id="collBulkInput" placeholder="${LANG==='ar'?'رقم كبير؟ اكتبه هنا':'Got a big number? Type it here'}">
+      <button id="collBulkAddBtn">${LANG==='ar'?'إضافة':'Add'}</button>
+    </div>
 
     <div class="coll-records-grid">${recordsHtml}</div>
 
@@ -7866,6 +7870,16 @@ async function renderCollSpeciesDetail(){
   `;
   document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
   document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
+  document.getElementById('collBulkAddBtn').addEventListener('click',()=>{
+    const inp=document.getElementById('collBulkInput');
+    const n=parseInt(inp.value,10);
+    if(!n||n<=0) return;
+    collAddCatchBulk(n);
+    inp.value='';
+  });
+  document.getElementById('collBulkInput').addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ e.preventDefault(); document.getElementById('collBulkAddBtn').click(); }
+  });
   document.getElementById('collLogSaveBtn').addEventListener('click',()=>{
     const measurements={};
     cat.measurements.forEach(m=>{
@@ -7888,6 +7902,36 @@ function collToggleVariant(variantId){
   collSaveCategory(collCurrentCat);
 }
 
+/* shared by both single-tap and bulk add — a species only ever pays its
+   XP/coin reward on the FIRST catch (checked by the caller via
+   wasCollected before any catches were pushed), so bulk-adding a large
+   number the same way a real angler would back-log a season's worth of
+   catches can never be used to farm rewards: catch #2 through #N (single
+   or bulk) always cost the same nothing they always have. */
+function collGrantFirstCatchReward(sp){
+  if(sp && sp.bossData){
+    const achievement=LANG==='ar'?sp.bossData.achievementAr:sp.bossData.achievementEn;
+    showToast('🏆 '+(LANG==='ar'?`تم فتح إنجاز: ${achievement}`:`Achievement unlocked: ${achievement}`));
+  }
+  // reward scales with the species' real rarity tier instead of a flat
+  // amount — a boss catch always pays at the top (legendary) tier
+  // regardless of its own listed rarity field, since bosses are the
+  // game's rarest, hardest encounters by design.
+  const rewardTier = (sp && sp.bossData) ? 'legendary' : (sp && sp.rarity) || 'common';
+  (async()=>{
+    await awardXP(XP_CONFIG['collection_unlock_'+rewardTier]||XP_CONFIG.collection_unlock_common);
+    await awardCoins(COIN_CONFIG['collection_unlock_'+rewardTier]||COIN_CONFIG.collection_unlock_common);
+    // the whale shark boss is the only boss wired to an exclusive
+    // cosmetic for this first batch — more bosses get their own
+    // cosmetic in a follow-up, each shown for approval before going live.
+    if(sp && sp.bossData && sp.id==='rhincodon_typus'){
+      P.inventory=P.inventory||{};
+      if(!P.inventory['gentle-giant']){ P.inventory['gentle-giant']={acquiredAt:new Date().toISOString(),source:'boss'}; await storageSet('profile',JSON.stringify(P)); }
+    }
+    await notifyNewUnlocks();
+    if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
+  })();
+}
 function collAddCatch(measurements){
   const rec=collRecord(collCurrentSpecies);
   if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
@@ -7896,31 +7940,26 @@ function collAddCatch(measurements){
   rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:measurements||{}});
   renderCollSpeciesDetail();     // instant feedback — never block the tap on a network round-trip
   collSaveCategory(collCurrentCat);
-  if(!wasCollected){
-    const sp=collSpeciesInfo(collCurrentCat,collCurrentSpecies);
-    if(sp && sp.bossData){
-      const achievement=LANG==='ar'?sp.bossData.achievementAr:sp.bossData.achievementEn;
-      showToast('🏆 '+(LANG==='ar'?`تم فتح إنجاز: ${achievement}`:`Achievement unlocked: ${achievement}`));
-    }
-    // reward scales with the species' real rarity tier instead of a flat
-    // amount — a boss catch always pays at the top (legendary) tier
-    // regardless of its own listed rarity field, since bosses are the
-    // game's rarest, hardest encounters by design.
-    const rewardTier = (sp && sp.bossData) ? 'legendary' : (sp && sp.rarity) || 'common';
-    (async()=>{
-      await awardXP(XP_CONFIG['collection_unlock_'+rewardTier]||XP_CONFIG.collection_unlock_common);
-      await awardCoins(COIN_CONFIG['collection_unlock_'+rewardTier]||COIN_CONFIG.collection_unlock_common);
-      // the whale shark boss is the only boss wired to an exclusive
-      // cosmetic for this first batch — more bosses get their own
-      // cosmetic in a follow-up, each shown for approval before going live.
-      if(sp && sp.bossData && sp.id==='rhincodon_typus'){
-        P.inventory=P.inventory||{};
-        if(!P.inventory['gentle-giant']){ P.inventory['gentle-giant']={acquiredAt:new Date().toISOString(),source:'boss'}; await storageSet('profile',JSON.stringify(P)); }
-      }
-      await notifyNewUnlocks();
-      if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
-    })();
-  }
+  if(!wasCollected) collGrantFirstCatchReward(collSpeciesInfo(collCurrentCat,collCurrentSpecies));
+}
+/* the "type a number" box next to the +/- counter — for someone backfilling
+   a real count (e.g. "I've actually caught this fish 50 times") who isn't
+   going to tap + fifty times. Pushes all N catch entries in one pass and
+   saves/renders/checks-for-reward exactly once, not once per unit, so a
+   big number stays cheap and never spams the achievement/streak checks. */
+function collAddCatchBulk(n){
+  n=Math.floor(n);
+  if(!n||n<=0) return;
+  const MAX_BULK=1000; // sanity guard against a fat-fingered/typo'd number
+  n=Math.min(n,MAX_BULK);
+  const rec=collRecord(collCurrentSpecies);
+  if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
+  const wasCollected=collIsCollected(rec);
+  rec.catches=rec.catches||[];
+  for(let i=0;i<n;i++) rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:{}});
+  renderCollSpeciesDetail();
+  collSaveCategory(collCurrentCat);
+  if(!wasCollected) collGrantFirstCatchReward(collSpeciesInfo(collCurrentCat,collCurrentSpecies));
 }
 
 function renderBossModalBody(sp, justCaught){
