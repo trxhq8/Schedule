@@ -1880,6 +1880,20 @@ function analyzeAllergyTextLocal(text){
     subNoteAr:`⚠️ شيلنا "${text}" — بديلها: ${subText.ar}`,
     subNoteEn:`⚠️ Removed "${text}" — substitute: ${subText.en}`};
 }
+/* the ONLY sanctioned way any user-typed or Firestore-sourced string (a
+   friend's display name, a custom habit/supplement label, anything a
+   person typed rather than something this app's own code wrote) is
+   allowed to reach innerHTML. Escapes the 5 characters that matter for
+   both text content AND attribute-value contexts (a friend's name is
+   also used inside <option value="...">/select rows, so quotes must be
+   escaped too, not just angle brackets) — this is real entity-escaping,
+   not CSS/visual hiding, so the browser can never parse the escaped
+   output as markup. Every call site that interpolates one of those
+   values into an HTML template string must wrap it in this. */
+function escapeHtml(str){
+  if(str==null) return '';
+  return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 function showErr(msg){
   /* Known-benign noise: browsers with storage disabled/partitioned (data:
      URLs, some private-browsing modes) throw the moment ANY code touches
@@ -5136,7 +5150,7 @@ function renderSupChips(){
     const done=!!dailyTrack.supplements[it.key];
     const chip=document.createElement('div');
     chip.className='supp-chip'+(done?' done':'');
-    chip.innerHTML=`<button type="button" class="supp-emoji-btn" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Change icon'}">${it.icon}</button><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${it.label}</span>`;
+    chip.innerHTML=`<button type="button" class="supp-emoji-btn" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Change icon'}">${it.icon}</button><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${escapeHtml(it.label)}</span>`;
     chip.querySelector('.supp-emoji-btn').addEventListener('click',(e)=>{
       e.stopPropagation();
       openEmojiPicker(e.currentTarget,async(picked)=>{
@@ -6398,13 +6412,18 @@ function relTimeFromTimestamp(ts){
   return Math.floor(hrs/24)+(LANG==='ar'?'ي':'d');
 }
 function activityLine(a, isMine){
-  const who=isMine?t('activity_you'):(a._authorName||'?');
+  // who/withName trace back to a Firestore-stored displayName — escaped
+  // here, once, so every branch below (and any future one) is covered
+  // without having to remember to wrap each return individually.
+  const who=isMine?t('activity_you'):escapeHtml(a._authorName||'?');
+  const withName=escapeHtml((a.data&&a.data.withName)||'?');
+  const dataName=a.data&&a.data.name?escapeHtml(a.data.name):'';
   if(a.type==='workout') return `🏋️ ${who} ${t('act_workout')}`;
-  if(a.type==='achievement') return `🏆 ${who} ${t('act_achievement')}${a.data&&a.data.name?': '+a.data.name:''}`;
-  if(a.type==='challenge') return `🎯 ${who} ${t('act_challenge')}${a.data&&a.data.name?': '+a.data.name:''}`;
+  if(a.type==='achievement') return `🏆 ${who} ${t('act_achievement')}${dataName?': '+dataName:''}`;
+  if(a.type==='challenge') return `🎯 ${who} ${t('act_challenge')}${dataName?': '+dataName:''}`;
   if(a.type==='collection') return `📦 ${who} ${t('act_collection')}`;
-  if(a.type==='friend_added') return `🤝 ${who} ${t('act_friend_added').replace('{name}',(a.data&&a.data.withName)||'?')}`;
-  if(a.type==='friend_challenge_started') return `🎯 ${who} ${t('act_friend_challenge_started').replace('{name}',(a.data&&a.data.withName)||'?')}`;
+  if(a.type==='friend_added') return `🤝 ${who} ${t('act_friend_added').replace('{name}',withName)}`;
+  if(a.type==='friend_challenge_started') return `🎯 ${who} ${t('act_friend_challenge_started').replace('{name}',withName)}`;
   return `• ${who}`;
 }
 async function renderSocialFriendsTab(content){
@@ -6416,14 +6435,14 @@ async function renderSocialFriendsTab(content){
   <div id="friendSearchResult"></div>`;
   if(incoming.length){
     html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('incoming_requests_title')}</h3>`;
-    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${(r.profile&&r.profile.displayName)||r.fromUid}</div></div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
+    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.fromUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
   }
   if(outgoing.length){
     html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('outgoing_requests_title')}</h3>`;
-    html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${(r.profile&&r.profile.displayName)||r.toUid}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
+    html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.toUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
   }
   html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('social_tab_friends')}</h3>`;
-  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${f.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${f.displayName}</div><div style="font-size:0.7rem;color:var(--ink-soft);">Lvl ${(f.stats&&f.stats.level)||1} · ${(f.stats&&f.stats.xp)||0} XP</div></div></div>`).join('')
+  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${f.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(f.displayName)}</div><div style="font-size:0.7rem;color:var(--ink-soft);">Lvl ${(f.stats&&f.stats.level)||1} · ${(f.stats&&f.stats.xp)||0} XP</div></div></div>`).join('')
     : `<div class="dash-empty">${t('friends_empty')}</div>`;
   content.innerHTML=html;
 
@@ -6452,7 +6471,7 @@ async function renderSocialFriendsTab(content){
       : status==='outgoing' ? `<span class="friend-action-btn reject" style="cursor:default;">${t('request_sent_btn')}</span>`
       : status==='incoming' ? `<button class="friend-action-btn accept" id="searchAcceptBtn">${t('accept_btn')}</button>`
       : `<button class="friend-action-btn accept" id="searchAddBtn">${t('send_request_btn')}</button>`;
-    resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${result.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${result.displayName||result.username}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
+    resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${result.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(result.displayName||result.username)}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
     const addBtn=document.getElementById('searchAddBtn');
     if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; await FriendService.sendRequest(result.uid); doSearch(); });
     const accBtn=document.getElementById('searchAcceptBtn');
@@ -6479,7 +6498,7 @@ async function renderSocialLeaderboardTab(content){
   rowsEl.innerHTML=rows.map((r,i)=>{
     const rank=medals[i]||(i+1);
     const unit=LANG==='ar'?category.unitAr:category.unitEn;
-    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${r.avatar}</div><div class="lb-name">${r.name}</div><div class="lb-value">${r[category.metric]||0} ${unit}</div></div>`;
+    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${r.avatar}</div><div class="lb-name">${escapeHtml(r.name)}</div><div class="lb-value">${r[category.metric]||0} ${unit}</div></div>`;
   }).join('');
 }
 async function renderSocialFeedTab(content){
@@ -6497,13 +6516,13 @@ async function renderSocialFeedTab(content){
 async function renderSocialCompareTab(content){
   const friends=await FriendService.listFriends();
   if(!friends.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
-  content.innerHTML=`<select class="setup-input" id="compareFriendSelect" style="margin-bottom:12px;">${friends.map(f=>`<option value="${f.uid}">${f.displayName}</option>`).join('')}</select><div id="compareRows">…</div>`;
+  content.innerHTML=`<select class="setup-input" id="compareFriendSelect" style="margin-bottom:12px;">${friends.map(f=>`<option value="${f.uid}">${escapeHtml(f.displayName)}</option>`).join('')}</select><div id="compareRows">…</div>`;
   const sel=document.getElementById('compareFriendSelect');
   const draw=async()=>{
     const you=await computeUserStats();
     const friend=friends.find(f=>f.uid===sel.value)||friends[0];
     const fstats=friend.stats||{};
-    document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',friend.displayName)+'</div>'+
+    document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',escapeHtml(friend.displayName))+'</div>'+
       LEADERBOARD_CATEGORIES.filter(c=>!c.privacyKey||(friend.privacy&&friend.privacy[c.privacyKey]!==false)).map(c=>{
         const yv=you[c.metric]||0, fv=fstats[c.metric]||0, max=Math.max(yv,fv,1);
         return `<div class="compare-row"><div>${c.icon} ${yv}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${yv/max*50}%;"></div><div class="compare-bar-them" style="width:${fv/max*50}%;"></div></div><div>${fv}</div></div>`;
@@ -6537,7 +6556,7 @@ async function renderSocialChallengesTab(content){
   const startHtml = friends.length ? `
     <div class="setup-card" style="padding:12px;margin-bottom:14px;">
       <h3 style="font-size:0.85rem;margin-top:0;">${t('new_challenge_title')}</h3>
-      <select class="setup-input" id="challengeFriendSelect">${friends.map(f=>`<option value="${f.uid}">${f.displayName}</option>`).join('')}</select>
+      <select class="setup-input" id="challengeFriendSelect">${friends.map(f=>`<option value="${f.uid}">${escapeHtml(f.displayName)}</option>`).join('')}</select>
       <select class="setup-input" id="challengeMetricSelect">${LEADERBOARD_CATEGORIES.map(c=>`<option value="${c.id}">${c.icon} ${LANG==='ar'?c.labelAr:c.labelEn}</option>`).join('')}</select>
       <input type="number" class="setup-input" id="challengeTargetInput" min="1" value="5" placeholder="${t('challenge_target_ph')}">
       <button class="setup-btn" id="challengeStartBtn">${t('challenge_start_btn')}</button>
@@ -6561,7 +6580,7 @@ async function renderSocialChallengesTab(content){
     const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===ch.metric)||LEADERBOARD_CATEGORIES[0];
     const myProgress=await ChallengeService.syncMyProgress(ch);
     const theirProgress=(ch.progress&&ch.progress[ch.otherUid])||0;
-    const otherName=(ch.otherProfile&&ch.otherProfile.displayName)||'?';
+    const otherName=escapeHtml((ch.otherProfile&&ch.otherProfile.displayName)||'?');
     const otherAvatar=(ch.otherProfile&&ch.otherProfile.avatar)||'🙂';
     const max=Math.max(myProgress,theirProgress,ch.target,1);
     let status;
@@ -6602,7 +6621,7 @@ async function openFriendProfile(uid){
   document.getElementById('cardBody').innerHTML=`
     <div class="friend-profile-header">
       <div class="friend-profile-avatar">${profile.avatar||'🙂'}</div>
-      <h2 style="margin:0;">${profile.displayName}</h2>
+      <h2 style="margin:0;">${escapeHtml(profile.displayName)}</h2>
       <div style="font-size:0.8rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Level'} ${s.level||1}${titleLine?' · '+titleLine:''}</div>
     </div>
     <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${b.val}</b><span>${b.label}</span></div>`).join('')}</div>
@@ -6870,7 +6889,7 @@ function renderHabits(){
     const done=!!(dailyTrack.habits&&dailyTrack.habits[h.id]);
     const row=document.createElement('div');
     row.className='habit-row'+(done?' done':'');
-    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${habitLabelText(h)}</div><div class="habit-streak" id="habitStreak_${h.id}"></div><button type="button" class="habit-remove">✕</button>`;
+    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${escapeHtml(habitLabelText(h))}</div><div class="habit-streak" id="habitStreak_${h.id}"></div><button type="button" class="habit-remove">✕</button>`;
     row.addEventListener('click',(e)=>{
       if(e.target.closest('.habit-remove')) return;
       // optimistic: flip the in-memory state and repaint THIS row immediately,
@@ -7102,7 +7121,7 @@ async function renderSupplementsYesterdayList(items){
     const done=!!yDoc.supplements[it.key];
     const chip=document.createElement('div');
     chip.className='supp-chip'+(done?' done':'');
-    chip.innerHTML=`<span class="supp-emoji-btn">${it.icon}</span><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${it.label}</span>`;
+    chip.innerHTML=`<span class="supp-emoji-btn">${it.icon}</span><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${escapeHtml(it.label)}</span>`;
     chip.addEventListener('click',async()=>{
       const nowDone=!yDoc.supplements[it.key];
       yDoc.supplements[it.key]=nowDone;
@@ -7152,7 +7171,7 @@ async function renderHabitsYesterdayList(){
     const done=!!(yDoc.habits&&yDoc.habits[h.id]);
     const row=document.createElement('div');
     row.className='habit-row'+(done?' done':'');
-    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${habitLabelText(h)}</div>`;
+    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${escapeHtml(habitLabelText(h))}</div>`;
     row.addEventListener('click', async ()=>{
       yDoc.habits=yDoc.habits||{};
       const nowDone=!yDoc.habits[h.id];
