@@ -1528,7 +1528,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.15.1';
+const APP_VERSION='v1.16.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1777,6 +1777,7 @@ async function bootApp(){
   migrateProgressionFields();
   await migrateRewardValuesV2();
   renderAppBackground();
+  migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
   launchApp();
 }
 if(fbAuth){
@@ -1976,6 +1977,8 @@ const I18N={
   privacy_title:'🔒 خصوصيتي',privacy_profile_visibility:'من يشوف ملفي',privacy_visibility_private:'خاص',privacy_visibility_friends:'الأصدقاء بس',privacy_visibility_public:'عام',
   privacy_training:'التمارين',privacy_nutrition:'التغذية',privacy_achievements:'الإنجازات',privacy_collection:'المقتنيات',privacy_activity:'نشاطي',privacy_leaderboard_global:'المتصدرين العام',
   friend_profile_title:'ملف الصديق',friend_profile_hidden:'هذا القسم خاص',
+  view_collection_btn:'عرض المقتنيات',friend_collection_title:'مقتنيات الصديق',read_only_tag:'👁️ عرض فقط',back_generic:'رجوع',
+  friend_collection_hidden:'هذا الصديق خفى مقتنياته',friend_collection_error:'ما قدرنا نجيب المقتنيات الحين',coll_undiscovered:'غير مكتشف',
   lb_scope_friends:'أصدقاء',lb_scope_global:'عام',
   activity_you:'أنت',
   act_workout:'أكمل تمرين',act_achievement:'فتح إنجاز',act_challenge:'أكمل تحدي',act_streak:'وصل لسلسلة {n} يوم',act_friend_added:'صار صديق مع {name}',act_collection:'أضاف مقتنى جديد',
@@ -2117,6 +2120,8 @@ const I18N={
   privacy_title:'🔒 My privacy',privacy_profile_visibility:'Who can see my profile',privacy_visibility_private:'Private',privacy_visibility_friends:'Friends only',privacy_visibility_public:'Public',
   privacy_training:'Training',privacy_nutrition:'Nutrition',privacy_achievements:'Achievements',privacy_collection:'Collection',privacy_activity:'My activity',privacy_leaderboard_global:'Global leaderboard',
   friend_profile_title:"Friend's profile",friend_profile_hidden:'This section is private',
+  view_collection_btn:'View Collection',friend_collection_title:"Friend's Collection",read_only_tag:'👁️ Read-only',back_generic:'Back',
+  friend_collection_hidden:'This friend has hidden their collection',friend_collection_error:'Could not load the collection right now',coll_undiscovered:'Undiscovered',
   lb_scope_friends:'Friends',lb_scope_global:'Global',
   activity_you:'You',
   act_workout:'completed a workout',act_achievement:'unlocked an achievement',act_challenge:'completed a challenge',act_streak:'reached a {n}-day streak',act_friend_added:'became friends with {name}',act_collection:'added a new collection item',
@@ -6135,6 +6140,7 @@ const PublicProfileService={
     });
     P.publicProfile={username:uname, displayName:displayName||uname, avatar:avatar||'🙂', privacy};
     await storageSet('profile',JSON.stringify(P));
+    migratePublicCollectionMirrors(); // so a collection built before claiming a username is visible right away
     return uname;
   },
   /* changes an ALREADY-claimed username. Claims the new handle first
@@ -6693,14 +6699,72 @@ async function openFriendProfile(uid){
       <div style="font-size:0.8rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Level'} ${s.level||1}${titleLine?' · '+titleLine:''}</div>
     </div>
     <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${b.val}</b><span>${b.label}</span></div>`).join('')}</div>
+    ${priv.collection!==false ? `<button class="setup-btn" id="viewFriendCollectionBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:10px;">🐾 ${t('view_collection_btn')}</button>` : ''}
     <button class="setup-btn" id="friendRemoveBtn" style="background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>
   `;
+  const viewCollBtn=document.getElementById('viewFriendCollectionBtn');
+  if(viewCollBtn) viewCollBtn.addEventListener('click',()=>openFriendCollectionView(uid,profile.displayName));
   document.getElementById('friendRemoveBtn').addEventListener('click',async()=>{
     if(!confirm(t('confirm_remove_friend'))) return;
     await FriendService.removeFriend(uid);
     overlay.classList.remove('open');
     renderSocialFriendsTab(document.getElementById('socialTabContent'));
   });
+}
+/* ================= FRIEND COLLECTION — READ-ONLY VIEW =================
+   Deliberately a separate, self-contained renderer rather than reusing
+   the owner's own collRoot/collGroups/collSpeciesGrid/collSpeciesDetail
+   stack (which is built entirely around the shared collCatData/
+   collCurrentCat/collStack globals for MY OWN collection) — piggybacking
+   on that shared state for a friend's data would risk it leaking into or
+   getting clobbered by the owner's own in-progress collection view.
+   Reads ONLY users/{uid}/publicCollection/{catId} — the minimal derived
+   mirror (species id + collected + a plain catch count), never the
+   private users/{uid}/data/* collection docs. No control here can write
+   anything: no counters, no upload, no save — purely a display. */
+async function openFriendCollectionView(uid,displayName){
+  document.getElementById('dayTitle').textContent=`🐾 ${t('friend_collection_title')}`;
+  document.getElementById('daySubtitle').textContent=t('read_only_tag');
+  document.getElementById('cardBody').innerHTML=`<div class="dash-empty">…</div>`;
+  const backRow=`<button type="button" class="setup-btn" id="friendCollBackBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:14px;">‹ ${t('back_generic')}</button>`;
+  try{
+    const results=await Promise.all(ANIMAL_CATEGORIES.map(async cat=>{
+      try{
+        const doc=await fbDb.collection('users').doc(uid).collection('publicCollection').doc(cat.id).get();
+        return {cat, species: doc.exists?(doc.data().species||{}):{}, denied:false};
+      }catch(e){ return {cat, species:null, denied:true}; } // Rules rejected the read — privacy off, not friends (anymore), or offline
+    }));
+    if(results.every(r=>r.denied)){
+      document.getElementById('cardBody').innerHTML=backRow+`<div class="dash-empty">${t('friend_collection_hidden')}</div>`;
+      document.getElementById('friendCollBackBtn').addEventListener('click',()=>openFriendProfile(uid));
+      return;
+    }
+    let html=`<div style="text-align:center;font-weight:700;margin-bottom:4px;">${escapeHtml(displayName)}</div><div style="text-align:center;font-size:0.75rem;color:var(--ink-soft);margin-bottom:14px;">${t('read_only_tag')}</div>`;
+    results.forEach(({cat,species,denied})=>{
+      if(denied) return;
+      const list=collSpeciesList(cat.id);
+      if(!list.length) return;
+      const collectedCount=Object.keys(species).length;
+      const sorted=list.slice().sort((a,b)=>RARITY_TIERS[b.rarity].order-RARITY_TIERS[a.rarity].order);
+      html+=`<h3 style="font-size:0.9rem;margin:16px 0 8px;">${cat.icon} ${collCatName(cat)} <span style="font-weight:400;color:var(--ink-soft);font-size:0.75rem;">(${collectedCount}/${list.length})</span></h3>`;
+      html+=`<div class="coll-species-grid">${sorted.map(sp=>{
+        const info=species[sp.id];
+        const tier=RARITY_TIERS[sp.rarity];
+        const thumbInner=info?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon);
+        return `<div class="coll-species-card tier-${sp.rarity} ${info?'collected':'locked'}" style="cursor:default;">
+          <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
+          <div class="thumb">${thumbInner}</div>
+          <div class="name">${escapeHtml(collName(sp))}</div>
+          <div class="meta">${info?(info.catchCount+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
+        </div>`;
+      }).join('')}</div>`;
+    });
+    document.getElementById('cardBody').innerHTML=backRow+html;
+    document.getElementById('friendCollBackBtn').addEventListener('click',()=>openFriendProfile(uid));
+  }catch(e){
+    document.getElementById('cardBody').innerHTML=backRow+`<div class="dash-empty">${t('friend_collection_error')}</div>`;
+    document.getElementById('friendCollBackBtn').addEventListener('click',()=>openFriendProfile(uid));
+  }
 }
 
 const AGENDA_SLOTS=Array.from({length:24},(_,h)=>{
@@ -7507,7 +7571,63 @@ async function collLoadCategory(catId){
   collCatData=raw?JSON.parse(raw):{};
   return collCatData;
 }
-async function collSaveCategory(catId){ await storageSet('collections:animals:'+catId, JSON.stringify(collCatData)); }
+async function collSaveCategory(catId){
+  await storageSet('collections:animals:'+catId, JSON.stringify(collCatData));
+  // the private save above has already succeeded and must never be rolled
+  // back or blocked by the mirror write failing (e.g. offline) — caught
+  // here, at the call site, so callers that DO need to know about a real
+  // failure (the backfill migration below) can still let it propagate.
+  try{ await syncPublicCollectionMirror(catId, collCatData); }
+  catch(e){ /* offline/transient — the next successful save or backfill recomputes and converges */ }
+}
+/* Derives the friend-visible mirror doc from the private collection data
+   and overwrites it wholesale — this is a pure recomputation (not an
+   increment/merge of deltas), so it's naturally idempotent: running it
+   twice, or after a dropped/offline write, always converges to the same
+   correct result on the next successful call. Only species/collected/
+   catchCount ever leave the private record — no photos, measurements,
+   catch history, bait, notes, XP or coins. Deliberately does NOT catch
+   its own errors — callers decide whether a failure is safe to ignore
+   (collSaveCategory) or must block a "done" flag from being set
+   (migratePublicCollectionMirrors). */
+async function syncPublicCollectionMirror(catId, data){
+  if(!fbDb||!currentUser) return;
+  const species={};
+  Object.keys(data||{}).forEach(speciesId=>{
+    const rec=data[speciesId];
+    if(rec && rec.catches && rec.catches.length>0){
+      species[speciesId]={collected:true, catchCount:rec.catches.length};
+    }
+  });
+  await fbDb.collection('users').doc(currentUser.uid).collection('publicCollection').doc(catId)
+    .set({species, updatedAt:serverNow()});
+}
+/* One-time backfill so existing users (whose collections predate this
+   feature) get a publicCollection mirror without re-saving every category
+   by hand. Guarded by a persisted flag purely as an efficiency shortcut,
+   NOT for correctness — unlike the XP/coins migration, this recompute is
+   a deterministic derived projection of the current private data, so
+   re-running it (flag lost, retried after a failure, etc.) can never
+   double-count or corrupt anything; it just rewrites the same mirror.
+   Crucially, the flag is only ever persisted AFTER every category's write
+   has actually succeeded — syncPublicCollectionMirror's errors are left
+   to propagate here on purpose, so a rules-permission failure (e.g. the
+   Firestore Rules for this new path haven't been deployed yet) or an
+   offline failure leaves the flag unset and the whole backfill retries
+   from scratch on the next boot, instead of being wrongly marked done. */
+async function migratePublicCollectionMirrors(){
+  if(!fbDb||!currentUser) return;
+  if(P._publicCollectionMirrorDone) return;
+  try{
+    for(const cat of ANIMAL_CATEGORIES){
+      const raw=await storageGet('collections:animals:'+cat.id);
+      const data=raw?JSON.parse(raw):{};
+      await syncPublicCollectionMirror(cat.id, data);
+    }
+    P._publicCollectionMirrorDone=true;
+    await storageSet('profile',JSON.stringify(P));
+  }catch(e){ /* offline/transient/permission-denied — retried on next boot since the flag was never persisted */ }
+}
 function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false,variantState:{}}; }
 function collIsCollected(record){ return !!(record.catches&&record.catches.length>0); }
 function collBest(record,key){
