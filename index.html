@@ -7867,6 +7867,7 @@ async function renderCollSpeciesDetail(){
 
     <input type="file" accept="image/*" class="hidden" id="collPhotoInput">
     <button class="setup-btn" id="collUploadBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-top:16px;">📷 ${LANG==='ar'?'ارفع صورتك':'Upload my photo'}</button>
+    ${rec.hasPhoto?`<button class="setup-btn" id="collRemovePhotoBtn" style="background:var(--card);color:#c0392b;border:1px solid #c0392b;margin-top:10px;">🗑️ ${LANG==='ar'?'إزالة الصورة':'Remove photo'}</button>`:''}
   `;
   document.getElementById('collIncBtn').addEventListener('click',()=>collAddCatch({}));
   document.getElementById('collDecBtn').addEventListener('click',collRemoveLastCatch);
@@ -7890,6 +7891,23 @@ async function renderCollSpeciesDetail(){
   });
   document.getElementById('collUploadBtn').addEventListener('click',()=>document.getElementById('collPhotoInput').click());
   document.getElementById('collPhotoInput').addEventListener('change',collHandlePhotoUpload);
+  const removeBtn=document.getElementById('collRemovePhotoBtn');
+  if(removeBtn) removeBtn.addEventListener('click',collRemovePhoto);
+}
+/* undoes an accidental upload — only clears the photo itself (hasPhoto +
+   the stored image), never touches the catch count/collected status,
+   since a wrong photo doesn't mean the catch itself was wrong. Uses the
+   same confirm dialog as everywhere else destructive in this app. */
+async function collRemovePhoto(){
+  if(!confirm(LANG==='ar'?'تأكيد إزالة الصورة؟':'Remove this photo?')) return;
+  const rec=collRecord(collCurrentSpecies);
+  if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
+  rec.hasPhoto=false;
+  collPhotoCache[collCurrentCat+':'+collCurrentSpecies]=null;
+  renderCollSpeciesDetail();
+  await storageSet('collection-photo:'+collCurrentCat+':'+collCurrentSpecies, JSON.stringify(null));
+  await collSaveCategory(collCurrentCat);
+  showToast(LANG==='ar'?'تم إزالة الصورة':'Photo removed');
 }
 
 function collToggleVariant(variantId){
