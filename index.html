@@ -49,6 +49,25 @@
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{ margin:0; background:var(--bg); font-family:var(--font-body); color:var(--ink); padding:0 0 60px; min-height:100vh; }
+  /* ================= APP-WIDE EQUIPPED BACKGROUND =================
+     The equipped Store background used to render ONLY inside the Profile
+     hero card. Fixed, full-viewport, painted first in the DOM so every
+     panel's own cards (still solid var(--bg) — untouched, zero readability
+     risk) sit on top of it in the gaps/margins around them. Falls back to
+     plain var(--bg) with nothing equipped, so an unequipped account looks
+     exactly as it did before. Declared here, BEFORE the .bg-* cosmetic
+     classes further down, so a cosmetic class combined with .app-bg-layer
+     always wins on source order — never edit a .bg-* rule to "fix" this,
+     move this block instead. */
+  .app-bg-layer{ position:fixed; inset:0; z-index:-2; overflow:hidden; background:var(--bg); }
+  .app-bg-scrim{ position:fixed; inset:0; z-index:-1; pointer-events:none; background:transparent; }
+  .app-bg-scrim.active{ background:linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 22%, rgba(0,0,0,0.15) 78%, rgba(0,0,0,0.55) 100%); }
+  /* every cosmetic background is dark-themed regardless of the app's own
+     light/dark toggle, so "loose" text with no card behind it (the Home
+     greeting sits directly on the page, not inside a card) needs to be
+     forced light while a background is equipped — otherwise dark-mode-off
+     users would get dark ink text on a dark cosmetic image. */
+  body.app-bg-active #heroTitle{ color:#fff; text-shadow:0 1px 8px rgba(0,0,0,0.6); }
   .wrap{max-width:760px; margin:0 auto; padding:0 14px;}
   .hidden{display:none !important;}
   h1,h2,h3{font-family:var(--font-head);}
@@ -592,6 +611,9 @@
 </style>
 </head>
 <body>
+
+<div class="app-bg-layer" id="appBgLayer"></div>
+<div class="app-bg-scrim" id="appBgScrim"></div>
 
 <!-- ============ SETTINGS ============ -->
 <div class="overlay" id="settingsOverlay">
@@ -1715,6 +1737,7 @@ async function bootApp(){
   else{ await storageSet('profile',JSON.stringify(P)); }
   migrateProgressionFields();
   await migrateRewardValuesV2();
+  renderAppBackground();
   launchApp();
 }
 if(fbAuth){
@@ -5868,6 +5891,25 @@ async function equipCosmetic(slot,id){
   if(id && !P.inventory[id]) throw new Error('not owned');
   P.equipped=P.equipped||{}; P.equipped[slot]=id;
   await storageSet('profile',JSON.stringify(P));
+  if(slot==='background') renderAppBackground();
+}
+/* app-wide mirror of renderProfileCosmeticHero()'s background layer —
+   same catalog item, same mountEffect function, just pointed at a fixed
+   full-viewport layer instead of the Profile hero card, so the equipped
+   background is visible everywhere, not only on the Profile panel.
+   Individual panel cards stay on their own solid var(--bg) fill (untouched)
+   so nothing readability-sensitive was touched except the loose Home
+   greeting text (see the body.app-bg-active CSS rule). */
+function renderAppBackground(){
+  const el=document.getElementById('appBgLayer');
+  const scrim=document.getElementById('appBgScrim');
+  if(!el||!scrim) return;
+  const bgId=P.equipped&&P.equipped.background;
+  const bgItem=bgId&&COSMETICS_CATALOG.find(c=>c.id===bgId);
+  el.innerHTML=''; el.className='app-bg-layer'+(bgItem?' '+bgItem.cls:'');
+  if(bgItem&&bgItem.mountEffect) bgItem.mountEffect(el);
+  scrim.classList.toggle('active',!!bgItem);
+  document.body.classList.toggle('app-bg-active',!!bgItem);
 }
 async function equipTitle(id){
   const stats=await computeUserStats();
