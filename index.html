@@ -5389,6 +5389,7 @@ async function computeUserStats(){
     totalSpecies:coll.totalSpecies,
     rareOrBetterCount,
     legendaryCount:coll.legendaryCount,
+    maxSpeciesCatchCount:coll.maxSpeciesCatchCount,
   };
 }
 
@@ -5406,7 +5407,14 @@ const ACHIEVEMENTS_CONFIG=[
   {id:'week_warrior', icon:'🔥', nameEn:'Week Warrior', nameAr:'محارب الأسبوع', descEn:'Complete 7 workouts total', descAr:'أكمل 7 تمارين', xp:40, coins:40, check:s=>s.totalWorkouts>=7},
   {id:'century', icon:'💯', nameEn:'Century', nameAr:'المئوية', descEn:'Complete 100 workouts', descAr:'أكمل 100 تمرين', xp:1200, coins:1800, check:s=>s.totalWorkouts>=100},
   {id:'hydration_master', icon:'💧', nameEn:'Hydration Master', nameAr:'سيد الترطيب', descEn:'Hit your water target 30 times', descAr:'حقق هدف الماء 30 مرة', xp:250, coins:300, check:s=>s.waterDaysHit>=30},
-  {id:'fisherman', icon:'🐟', nameEn:'Fisherman', nameAr:'صياد', descEn:'Catch 10 fish/animals total', descAr:'اصطد 10 حيوانات', xp:50, coins:60, check:s=>s.totalCatches>=10},
+  /* split from the old single "fisherman" (which fired off raw catch count,
+     so someone who caught ONE species 10 times got the same trophy as
+     someone with 10 different species — confusing, reported by a user).
+     Now two clearly different trophies: persistence (same species,
+     repeatable skill) vs. exploration (real variety) — see
+     maxSpeciesCatchCount vs totalCollected in computeCollectionStats(). */
+  {id:'persistent_angler', icon:'🎣', nameEn:'Persistent Angler', nameAr:'الصياد المثابر', descEn:'Catch the SAME species 10 times', descAr:'اصطد نفس النوع 10 مرات', xp:40, coins:50, check:s=>s.maxSpeciesCatchCount>=10},
+  {id:'species_explorer', icon:'🐟', nameEn:'Species Explorer', nameAr:'مستكشف الأنواع', descEn:'Catch 10 DIFFERENT species', descAr:'اصطد 10 أنواع مختلفة', xp:80, coins:100, check:s=>s.totalCollected>=10},
   {id:'rare_hunter', icon:'💎', nameEn:'Rare Hunter', nameAr:'صائد النوادر', descEn:'Collect 5 epic-or-better species', descAr:'اجمع 5 أنواع ملحمية أو أعلى', xp:280, coins:350, check:s=>s.rareOrBetterCount>=5},
   {id:'collector', icon:'📦', nameEn:'Collector', nameAr:'الجامع', descEn:'Collect 50 species total', descAr:'اجمع 50 نوع', xp:600, coins:750, check:s=>s.totalCollected>=50},
   {id:'unbreakable', icon:'🔥', nameEn:'Unbreakable', nameAr:'لا يُكسر', descEn:'Reach a 30-day streak', descAr:'وصل لسلسلة 30 يوم', xp:500, coins:650, check:s=>s.bestStreak>=30},
@@ -7507,7 +7515,7 @@ function renderCollRoot(){
    here AND by the Profile/Achievements/Challenges systems, so "how many
    species has this user collected" is never computed two different ways. */
 async function computeCollectionStats(){
-  let totalCollected=0, totalSpecies=0, legendaryCount=0;
+  let totalCollected=0, totalSpecies=0, legendaryCount=0, maxSpeciesCatchCount=0;
   const catchSums={}, rarityCounts={}, perCategory={};
   for(const cat of ANIMAL_CATEGORIES){
     const raw=await storageGet('collections:animals:'+cat.id);
@@ -7520,6 +7528,11 @@ async function computeCollectionStats(){
       if(rec&&collIsCollected(rec)){
         got++;
         catchSum+=rec.catches.length;
+        // tracked separately from catchSum (which is per-CATEGORY, not
+        // per-species) so "caught 10 of the same species" can be told
+        // apart from "caught 10 fish total across a category" — see the
+        // persistent_angler vs species_explorer achievements below.
+        if(rec.catches.length>maxSpeciesCatchCount) maxSpeciesCatchCount=rec.catches.length;
         rarityCounts[sp.rarity]=(rarityCounts[sp.rarity]||0)+1;
         if(sp.rarity==='legendary') legendaryCount++;
       }
@@ -7528,7 +7541,7 @@ async function computeCollectionStats(){
     catchSums[cat.id]=catchSum;
     perCategory[cat.id]={collected:got,total};
   }
-  return {totalCollected,totalSpecies,catchSums,legendaryCount,rarityCounts,perCategory,
+  return {totalCollected,totalSpecies,catchSums,legendaryCount,rarityCounts,perCategory,maxSpeciesCatchCount,
     totalCatches:Object.values(catchSums).reduce((a,b)=>a+b,0)};
 }
 async function renderCollAnimals(){
