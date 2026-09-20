@@ -278,13 +278,6 @@
   .log-row .diff.up{ color:var(--diff-up); } .log-row .diff.down{ color:var(--diff-down); }
   .log-empty{ text-align:center; color:var(--ink-soft); font-size:0.8rem; padding:10px 0; }
 
-  .week-cards{ display:flex; flex-wrap:wrap; justify-content:center; gap:12px; overflow-x:auto; padding:8px 4px 16px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
-  .week-card{ flex:0 0 108px; scroll-snap-align:center; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px 10px; text-align:center; cursor:pointer; box-shadow:var(--shadow); transition:transform .15s ease; font-family:var(--font-head); }
-  .week-card:hover{ transform:translateY(-3px); }
-  .week-card .wc-icon{ font-size:1.8rem; display:block; margin-bottom:8px; }
-  .week-card .wc-day{ font-weight:800; color:var(--heading); font-size:0.95rem; }
-  .week-card.wc-today{ flex:0 0 128px; transform:scale(1.05); border-color:var(--heading); outline:2px solid var(--heading); outline-offset:2px; }
-  .week-card.wc-special{ border-color:var(--gold); }
   .today-square{ background:var(--card); border:2px solid var(--heading); border-radius:20px; padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
   .today-square-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
   .today-square-day{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1.1rem; }
@@ -943,7 +936,6 @@
         <div class="checklist" id="mealChecklist"></div>
         <div class="yesterday-catchup-block hidden" id="nutritionYesterdayToggle"></div>
       </div>
-      <div class="week-cards" id="foodGrid"></div>
       <div class="supp-row" id="supChipsRow"></div>
       <div class="habit-yesterday-toggle hidden" id="suppYesterdayToggle"></div>
       <div class="habit-yesterday-list hidden" id="suppYesterdayList"></div>
@@ -2268,7 +2260,6 @@ document.getElementById('mainLangToggle').addEventListener('click',async()=>{
   LANG=LANG==='ar'?'en':'ar'; P.lang=LANG; applyI18n(); await storageSet('profile',JSON.stringify(P));
   refreshHome();
   renderCalendar();
-  if(P.foodSetup) buildFoodGrid(todayWeekdayIndex());
   if(P.workoutSetup) buildWorkoutGrid();
   refreshCollectionsCurrentView();
   // same class of bug as the duration grid below: these bake DAY_NAMES[LANG]
@@ -4530,7 +4521,6 @@ function renderFoodSection(){
   document.getElementById('waterTitle').textContent=t('water_title').replace('{n}',P.foodSetup.waterTarget);
   renderWater();
   renderWaterYesterdayRow();
-  buildFoodGrid(idx);
   loadWeightLog();
   renderWeightYesterdayRow();
 }
@@ -4755,18 +4745,6 @@ function renderWorkoutSection(){
   buildWorkoutGrid();
 }
 
-function buildFoodGrid(todayIdx){
-  const grid=document.getElementById('foodGrid'); grid.innerHTML='';
-  DAY_NAMES[LANG].forEach((name,i)=>{
-    if(i===todayIdx) return; // today lives in the big square above, not in this row
-    const v=getDayMenu(i);
-    const b=document.createElement('div');
-    b.className='week-card'+(v.tag?' wc-special':'');
-    b.innerHTML=`<span class="wc-icon">${v.tag?'⭐':'📅'}</span><div class="wc-day">${name}</div>`;
-    b.addEventListener('click',()=>openFoodDay(name,v));
-    grid.appendChild(b);
-  });
-}
 function buildWorkoutGrid(){
   const grid=document.getElementById('workoutGrid'); grid.innerHTML='';
   const idx=todayWeekdayIndex();
@@ -4824,61 +4802,6 @@ function calorieTarget(){
     return applyCalorieSafetyLimits(tdee+dailyKcalAdjustForRate(plan.weeklyRateKg), fs.sex);
   }
   return applyCalorieSafetyLimits(fs.goal==='lose' ? tdee-450 : tdee+450, fs.sex);
-}
-function openFoodDay(label,v){
-  document.getElementById('dayTitle').textContent=`${label} 🍽️`;
-  document.getElementById('daySubtitle').textContent=v.tag==='special'?t('special_day'):'';
-  currentDayMeals=v.meals.map(m=>({...m}));
-  currentDaySwapHistory={};
-  document.getElementById('cardBody').innerHTML=`<div class="total-kcal" id="dayTotalKcal"></div><div id="mealBlocks"></div>`;
-  renderDayTotals();
-  currentDayMeals.forEach((_,i)=>renderMealBlock(i));
-  overlay.classList.add('open');
-}
-let currentDayMeals=[];
-let currentDaySwapHistory={};
-/* single source of truth for the day-detail header: ALWAYS recomputed from
-   whatever is currently in currentDayMeals (never a value captured once at
-   open-time), so a swap that changes one meal's calories is immediately
-   reflected in the total — there is no separate cached "day total" that can
-   drift out of sync with the meals actually shown. */
-function renderDayTotals(){
-  const el=document.getElementById('dayTotalKcal'); if(!el) return;
-  const totals=calculateDailyNutrition(currentDayMeals);
-  const supKcal=getSupplementCalorieContribution();
-  const mealsKcalLabel=`~${Math.round(totals.calories)} ${LANG==='ar'?'سعرة':'kcal'}`;
-  const supLabel=supKcal>0?` + ${Math.round(supKcal)} ${LANG==='ar'?'سعرة مكملات':'kcal supplements'} = ~${Math.round(totals.calories+supKcal)} ${LANG==='ar'?'سعرة إجمالي':'kcal total'}`:'';
-  el.textContent=`${mealsKcalLabel}${supLabel} · 🥩${Math.round(totals.protein)}${LANG==='ar'?'غ':'g'} · 🍞${Math.round(totals.carbs)}${LANG==='ar'?'غ':'g'} · 🧈${Math.round(totals.fat)}${LANG==='ar'?'غ':'g'}`;
-}
-/* real swap: pulls from the actual food database via getSwapOptions, which
-   applies the exact same allergen/dislike/diet filtering as generation —
-   a swap can never bypass a restriction. Recently-shown foods for this slot
-   are tracked so repeated presses cycle through real variety instead of
-   bouncing between the same couple of items. */
-function swapMealAt(i){
-  const cur=currentDayMeals[i];
-  const shown=new Set(currentDaySwapHistory[cur.slotKey]||[]);
-  const options=getSwapOptions(cur.slotKey,cur,shown,6);
-  if(!options.length){
-    showToast(LANG==='ar'?'ما فيه بدائل آمنة لهالوجبة بقيودك الحالية':'No safe alternatives available for this meal with your current restrictions','error');
-    return;
-  }
-  const next=options[0];
-  currentDayMeals[i]=next;
-  currentDaySwapHistory[cur.slotKey]=[...shown, mealIdentity(next)].slice(-30);
-  renderMealBlock(i);
-  renderDayTotals();
-}
-function renderMealBlock(i){
-  const m=currentDayMeals[i];
-  const container=document.getElementById('mealBlocks'); if(!container) return;
-  const label=SLOT_LABELS_BY_KEY[m.slotKey]?SLOT_LABELS_BY_KEY[m.slotKey][LANG]:m.slotKey;
-  const dishName=mealDisplayName(m,LANG);
-  const ingredientLine=m.recipeName?`<div class="meal-ingredients">${mealItemsLabel(m.items,LANG)}</div>`:'';
-  let block=document.getElementById('mealBlock'+i);
-  if(!block){ block=document.createElement('div'); block.className='meal'; block.id='mealBlock'+i; container.appendChild(block); }
-  block.innerHTML=`<div class="label"><span>${label}</span></div><div class="content">${dishName}</div>${ingredientLine}<div class="meal-macro-line">${mealMacroLabel(m)}</div>`;
-  block.innerHTML+=`<button type="button" class="edit-btn" style="margin-top:6px;" onclick="swapMealAt(${i})">🔄 ${LANG==='ar'?'استبدال الوجبة':'Swap meal'}</button>`;
 }
 function openWorkoutDay(label,typeKey,isToday){
   const day=adaptDay(typeKey);
