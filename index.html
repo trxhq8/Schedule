@@ -1468,6 +1468,10 @@
       <span></span>
       <button class="lang-toggle" id="authLangToggle">EN</button>
     </div>
+    <div class="hidden" id="inAppBrowserWarning" style="background:#fff3cd;border:1px solid #e0c25a;color:#6b5510;border-radius:12px;padding:10px 12px;font-size:0.78rem;line-height:1.6;margin-bottom:14px;">
+      <div data-i18n="in_app_browser_warning"></div>
+      <button type="button" id="copyLinkBtn" data-i18n="copy_link_btn" style="margin-top:8px;background:#6b5510;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.74rem;cursor:pointer;font-weight:700;"></button>
+    </div>
     <h2 data-i18n="auth_title" style="text-align:center;color:var(--heading);font-size:1.15rem;margin:0 0 16px;"></h2>
     <button class="ob-btn" id="googleSignInBtn" type="button" style="background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-bottom:14px;">🔵 <span data-i18n="auth_google"></span></button>
     <div style="display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink-soft);font-size:0.78rem;">
@@ -1665,6 +1669,39 @@ function signUpErrorMessage(e){
   return LANG==='ar'?'ما قدرنا ننشئ الحساب — تأكد من الإيميل وحاول مرة ثانية':"Couldn't create the account — check your email and try again";
 }
 function showAuthError(msg){ const el=document.getElementById('authValMsg'); if(el) el.textContent=msg; }
+/* in-app browsers (WhatsApp/Instagram/TikTok/Facebook/Line/Snapchat's
+   built-in webview, or a generic Android WebView) are the single most
+   common real-world cause of "it asks me to sign in every single time" —
+   several of them don't persist localStorage/IndexedDB the way a real
+   browser tab does, so Firebase Auth's LOCAL persistence (already
+   correctly configured above) has nothing to actually persist TO. There
+   is no code fix for that from inside the page — the actual fix is
+   opening the link in a real browser — so this just detects the known
+   signatures and tells the person plainly, with a one-tap way to grab
+   the link for pasting into Chrome/Safari. */
+function isLikelyInAppBrowser(){
+  const ua=navigator.userAgent||'';
+  return /FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|musical_ly|KAKAOTALK|; wv\)/i.test(ua);
+}
+function checkInAppBrowserWarning(){
+  const el=document.getElementById('inAppBrowserWarning');
+  if(!el || !isLikelyInAppBrowser()) return;
+  el.classList.remove('hidden');
+  applyI18n();
+}
+document.getElementById('copyLinkBtn') && document.getElementById('copyLinkBtn').addEventListener('click',async()=>{
+  try{
+    await navigator.clipboard.writeText(location.href);
+    showToast(t('link_copied'));
+  }catch(e){
+    // clipboard API is exactly the kind of thing a restricted in-app
+    // webview also blocks — rather than a disruptive native prompt()
+    // (itself unavailable in some embedded contexts), just show the raw
+    // link inline so it can be selected and copied by hand.
+    showAuthError(location.href);
+  }
+});
+checkInAppBrowserWarning();
 if(document.getElementById('googleSignInBtn')){
   document.getElementById('googleSignInBtn').addEventListener('click',async()=>{
     if(!fbAuth) return;
@@ -1878,6 +1915,9 @@ window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.messa
 const I18N={
  ar:{ next:'التالي',back:'رجوع',save:'حفظ',back_home:'🏠 الرئيسية',back_generic:'‹ رجوع',edit_setup:'⚙️ عدّل الإعداد',
   auth_title:'📅 سجّل دخول عشان جدولك يتزامن بين أجهزتك',auth_google:'تسجيل الدخول بـ Google',auth_or:'أو',
+  in_app_browser_warning:'⚠️ يبدو إنك فاتح الرابط من داخل تطبيق ثاني (واتساب، انستقرام، تيك توك...) — هالمتصفحات أحياناً ما تحفظ تسجيل دخولك، فيطلب منك تسجيل الدخول من جديد كل مرة. لأفضل تجربة، افتح الرابط في متصفحك الحقيقي (Chrome أو Safari).',
+  copy_link_btn:'📋 نسخ الرابط',
+  link_copied:'✅ انسخ الرابط، الحين الصقه في المتصفح',
   auth_email_ph:'Email',auth_password_ph:'Password',auth_password_confirm_ph:'تأكيد كلمة المرور (لإنشاء حساب فقط)',
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
@@ -2016,6 +2056,9 @@ const I18N={
  },
  en:{ next:'Next',back:'Back',save:'Save',back_home:'🏠 Home',back_generic:'‹ Back',edit_setup:'⚙️ Edit setup',
   auth_title:'📅 Sign in to sync your schedule across devices',auth_google:'Sign in with Google',auth_or:'or',
+  in_app_browser_warning:'⚠️ Looks like you opened this link inside another app (WhatsApp, Instagram, TikTok...). Those built-in browsers sometimes don\'t save your sign-in, so it keeps asking you to log in again. For the best experience, open this link in your real browser (Chrome or Safari).',
+  copy_link_btn:'📋 Copy link',
+  link_copied:'✅ Link copied — paste it into your browser',
   auth_email_ph:'Email',auth_password_ph:'Password',auth_password_confirm_ph:'Confirm password (sign up only)',
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
