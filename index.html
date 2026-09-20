@@ -1528,7 +1528,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.15.0';
+const APP_VERSION='v1.15.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1559,7 +1559,16 @@ async function storageSet(key,value){
   _mem[key]=value;
   try{ localStorage.setItem('planner_'+key,value); }catch(e){}
   if(currentUser&&fbDb){
-    try{ await fsDataRef(key).set({value}); }catch(e){ /* offline — Firestore's own queue retries when back online */ }
+    // {merge:true} is required, not optional: the 'profile' doc also
+    // carries top-level `xp`/`coins` fields (see reconcileXpCoinsFromFirestore/
+    // incrementXpCoins below) alongside this generic `value` blob field.
+    // A plain .set({value}) REPLACES the whole document, silently wiping
+    // those sibling fields on the very next unrelated profile save (e.g.
+    // toggling a habit). merge:true only ever touches the `value` field,
+    // leaving xp/coins (or anything else ever added alongside it) intact.
+    // Harmless no-op difference for every other key, which only ever has
+    // this one field anyway.
+    try{ await fsDataRef(key).set({value},{merge:true}); }catch(e){ /* offline — Firestore's own queue retries when back online */ }
     return;
   }
   try{ if(window.storage&&window.storage.set){ await window.storage.set(key,value,false); return; } }catch(e){}
@@ -1764,6 +1773,7 @@ async function bootApp(){
   const pv=await storageGet('profile');
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
   else{ await storageSet('profile',JSON.stringify(P)); }
+  await reconcileXpCoinsFromFirestore();
   migrateProgressionFields();
   await migrateRewardValuesV2();
   renderAppBackground();
@@ -5255,6 +5265,7 @@ async function migrateRewardValuesV2(){
   if(bonusCoins>0) P.coins=(P.coins||0)+bonusCoins;
   P._rewardMigrationV2Done=true;
   await storageSet('profile',JSON.stringify(P));
+  await incrementXpCoins(bonusXp>0?bonusXp:0, bonusCoins>0?bonusCoins:0);
 }
 function dateFromKey(k){ if(!k) return null; const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
 /* generic core behind updateNamedStreak() below — takes an explicit date so
@@ -5312,15 +5323,64 @@ const XP_CONFIG={
 const COIN_CONFIG={
   collection_unlock_common:10, collection_unlock_uncommon:40, collection_unlock_epic:120, collection_unlock_mythic:350, collection_unlock_legendary:1800
 };
+/* ================= XP/COINS: AUTHORITATIVE TOP-LEVEL FIELDS =================
+   XP and coins used to live only inside the JSON-blob `value` field of the
+   'profile' doc, saved via a plain whole-document overwrite — so two
+   devices (or two rapid actions racing on one device) awarding XP/coins
+   around the same time could silently lose one side's award, whichever
+   write landed at Firestore last. Firestore's FieldValue.increment() is
+   atomic server-side regardless of write ordering, so XP/coins now ALSO
+   live as real top-level `xp`/`coins` fields on that same doc, updated
+   only via increment — never via a read-modify-write of a cached number.
+   Every other field (achievements, challengeState, inventory, equipped,
+   habits, setup, settings) deliberately stays in the blob for now; this
+   migration is scoped to XP/coins only. */
+async function incrementXpCoins(deltaXp,deltaCoins){
+  if(!fbDb||!currentUser) return; // no Firestore session — the blob + in-memory P are the only record in that mode, same as before
+  const updates={};
+  if(deltaXp) updates.xp=firebase.firestore.FieldValue.increment(deltaXp);
+  if(deltaCoins) updates.coins=firebase.firestore.FieldValue.increment(deltaCoins);
+  if(!Object.keys(updates).length) return;
+  try{ await fsDataRef('profile').set(updates,{merge:true}); }
+  catch(e){ /* offline — Firestore's own write queue retries when back online; the optimistic P.xp/P.coins already applied locally in the meantime */ }
+}
+/* idempotent by construction, not by a client-memory flag: the PRESENCE
+   of the top-level xp/coins fields on the Firestore doc itself is the
+   migration marker, so this is safe to run on every boot, on every
+   device, any number of times.
+   - Fields don't exist yet (brand-new account, or an existing account
+     that hasn't been touched by this code yet): seed them once from
+     whatever the blob currently says. If this write is interrupted, the
+     fields still won't exist next boot, so retrying just repeats this
+     same safe seed — never a double-add, since it's a plain set of an
+     absolute value, not an increment.
+   - Fields already exist (this device already migrated, or another
+     device did): they are authoritative — read them into P.xp/P.coins,
+     and never copy the blob's (possibly stale/lower) numbers over them. */
+async function reconcileXpCoinsFromFirestore(){
+  if(!fbDb||!currentUser) return;
+  try{
+    const doc=await fsDataRef('profile').get();
+    const data=doc.exists?doc.data():{};
+    if(data.xp===undefined||data.coins===undefined){
+      await fsDataRef('profile').set({xp:P.xp||0,coins:P.coins||0},{merge:true});
+    } else {
+      P.xp=data.xp||0;
+      P.coins=data.coins||0;
+    }
+  }catch(e){ /* offline/transient — blob-derived P.xp/P.coins remain the local fallback until the next successful boot */ }
+}
 async function awardXP(amount){
   migrateProgressionFields();
   P.xp=(P.xp||0)+amount;
   await storageSet('profile',JSON.stringify(P));
+  await incrementXpCoins(amount,0);
 }
 async function awardCoins(amount){
   migrateProgressionFields();
   P.coins=(P.coins||0)+amount;
   await storageSet('profile',JSON.stringify(P));
+  await incrementXpCoins(0,amount);
 }
 /* cumulative XP required to REACH `level` — a gentler power curve
    (exponent 1.5) than a pure quadratic: a quadratic can't hit both
@@ -5424,6 +5484,7 @@ async function checkAndAwardAchievements(stats){
       if(a.exclusiveCosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[a.exclusiveCosmetic]) P.inventory[a.exclusiveCosmetic]={acquiredAt:new Date().toISOString(),source:'achievement'}; }
     });
     await storageSet('profile',JSON.stringify(P));
+    await incrementXpCoins(totalXp,totalCoins);
   }
   return newlyUnlocked;
 }
@@ -5499,6 +5560,7 @@ async function checkAndAwardChallenges(){
   migrateProgressionFields();
   const progress=await computeChallengeProgress();
   const newlyCompleted=[];
+  let deltaXp=0, deltaCoins=0;
   for(const c of CHALLENGES_CONFIG){
     const key=c.id+'|'+currentPeriodKey(c.period);
     if(P.challengeState[key]&&P.challengeState[key].completed) continue;
@@ -5508,10 +5570,14 @@ async function checkAndAwardChallenges(){
       P.lifetimeStats.challengesCompleted=(P.lifetimeStats.challengesCompleted||0)+1;
       P.xp=(P.xp||0)+c.xp;
       P.coins=(P.coins||0)+(c.coins||0);
+      deltaXp+=c.xp; deltaCoins+=(c.coins||0);
       newlyCompleted.push(c);
     }
   }
-  if(newlyCompleted.length) await storageSet('profile',JSON.stringify(P));
+  if(newlyCompleted.length){
+    await storageSet('profile',JSON.stringify(P));
+    await incrementXpCoins(deltaXp,deltaCoins);
+  }
   return {progress,newlyCompleted};
 }
 
@@ -5530,18 +5596,20 @@ async function checkAndAwardLevelRewards(stats){
   migrateProgressionFields();
   const claimed=P.levelRewardsClaimed;
   let changed=false;
+  let deltaCoins=0;
   const justClaimed=[];
   Object.keys(LEVEL_REWARDS).map(Number).forEach(lvl=>{
     if(stats.level>=lvl && !claimed[lvl]){
       const r=LEVEL_REWARDS[lvl];
       claimed[lvl]=true; changed=true;
-      if(r.coins) P.coins=(P.coins||0)+r.coins;
+      if(r.coins){ P.coins=(P.coins||0)+r.coins; deltaCoins+=r.coins; }
       if(r.cosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[r.cosmetic]) P.inventory[r.cosmetic]={acquiredAt:new Date().toISOString(),source:'level'}; }
       justClaimed.push({lvl,...r});
     }
   });
   if(changed){
     await storageSet('profile',JSON.stringify(P));
+    await incrementXpCoins(0,deltaCoins);
     justClaimed.forEach(r=>{
       const parts=[]; if(r.coins) parts.push(`+${r.coins} 🪙`); if(r.cosmetic) parts.push(LANG==='ar'?'+ زينة مجانية':'+ free cosmetic');
       showToast((LANG==='ar'?`🎉 المستوى ${r.lvl}: `:`🎉 Level ${r.lvl}: `)+parts.join(' '),'success');
