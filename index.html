@@ -143,6 +143,7 @@
   .habit-add-row input{ flex:1; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.82rem; background:var(--bg); color:var(--ink); }
   .habit-add-row button{ border:none; background:var(--accent-deep); color:#fff; border-radius:10px; padding:0 14px; cursor:pointer; font-weight:700; }
   .habit-yesterday-toggle{ font-size:0.74rem; color:var(--accent); cursor:pointer; text-align:center; padding-top:6px; font-weight:600; }
+  .yesterday-catchup-block{ margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); }
   .habit-yesterday-list{ margin-top:6px; padding-top:6px; border-top:1px dashed var(--line); }
   .habit-yesterday-label{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:4px; }
 
@@ -697,7 +698,7 @@
           <div class="dash-workout-name" id="dashWorkoutName"></div>
           <div class="dash-toggle" id="dashWorkoutToggle"></div>
         </div>
-        <div class="habit-yesterday-toggle hidden" id="workoutYesterdayToggle"></div>
+        <div class="yesterday-catchup-block hidden" id="workoutYesterdayToggle"></div>
       </div>
 
       <div class="dash-card">
@@ -918,7 +919,7 @@
           <span class="today-square-kcal" id="todaySquareKcal"></span>
         </div>
         <div class="checklist" id="mealChecklist"></div>
-        <div class="habit-yesterday-toggle hidden" id="nutritionYesterdayToggle"></div>
+        <div class="yesterday-catchup-block hidden" id="nutritionYesterdayToggle"></div>
       </div>
       <div class="week-cards" id="foodGrid"></div>
       <div class="supp-row" id="supChipsRow"></div>
@@ -932,6 +933,7 @@
           <div class="water-count" id="waterCount"></div>
           <button class="water-btn" id="waterPlus">+</button>
         </div>
+        <div class="yesterday-catchup-block hidden" id="waterYesterdayRow"></div>
       </div>
       <div class="log-card">
         <h3 data-i18n="weight_log_title"></h3>
@@ -1913,6 +1915,9 @@ const I18N={
   weight_yesterday_label:'هذا الوزن كان لأمس ({date})',
   yesterday_marked_done:'✅ تم تسجيله لأمس',
   yesterday_unmarked:'تم إلغاء تسجيل أمس',
+  workout_yesterday_item:'تمرين الأمس',
+  nutrition_yesterday_item:'التغذية أمس مكتملة',
+  water_yesterday_item:'هدف الماء لأمس',
   habit_add_ph:'عادة جديدة... مثل قراءة، تمرين',
   dash_supp_mini:'💊 مكملات',dash_commit_mini:'📌 التزامات اليوم',
   dash_no_workout_setup:'أعد إعداد جدول تمارينك',
@@ -2048,6 +2053,9 @@ const I18N={
   weight_yesterday_label:'This weight was from yesterday ({date})',
   yesterday_marked_done:'✅ Logged for yesterday',
   yesterday_unmarked:'Removed yesterday\'s entry',
+  workout_yesterday_item:'Yesterday\'s workout',
+  nutrition_yesterday_item:'Yesterday\'s nutrition complete',
+  water_yesterday_item:'Yesterday\'s water target',
   habit_add_ph:'New habit... e.g. Read, Train',
   dash_supp_mini:'💊 Supplements',dash_commit_mini:'📌 Commitments today',
   dash_no_workout_setup:'Set up your training schedule',
@@ -4455,6 +4463,7 @@ function renderFoodSection(){
   renderSupplementsYesterdayToggle();
   document.getElementById('waterTitle').textContent=t('water_title').replace('{n}',P.foodSetup.waterTarget);
   renderWater();
+  renderWaterYesterdayRow();
   buildFoodGrid(idx);
   loadWeightLog();
   renderWeightYesterdayRow();
@@ -6919,20 +6928,34 @@ async function loadYesterdayTrack(){
 function yesterdayDateObj(){ const d=new Date(); d.setDate(d.getDate()-1); return d; }
 
 /* ---- workout catch-up: same "yesterday only" idea as habits, but a
-   single toggle (no per-exercise checklist) — reconstructs which workout
-   type yesterday actually was via workoutTypeForDate() so completions/
-   streak stay attributed to the right day, without touching today's
-   live dailyTrack. */
-function renderWorkoutYesterdayToggle(){
+   single checkbox row (no per-exercise checklist) — reconstructs which
+   workout type yesterday actually was via workoutTypeForDate() so
+   completions/streak stay attributed to the right day, without touching
+   today's live dailyTrack. Renders its OWN checked/unchecked state up
+   front (fetched from yesterday's doc) instead of a stateless link, so
+   it's actually possible to see whether yesterday is already logged. */
+async function renderWorkoutYesterdayToggle(){
   const toggle=document.getElementById('workoutYesterdayToggle');
   if(!toggle||!P.workoutSetup) return;
   toggle.classList.remove('hidden');
-  toggle.textContent=t('habit_yesterday_toggle').replace('{date}',yesterdayDateLabel());
-  toggle.onclick=async()=>{
-    const yKey=yesterdayTrackKey();
-    const yDoc=await loadYesterdayTrack();
+  const yKey=yesterdayTrackKey();
+  // fetched ONCE and kept in memory for the life of this render — every
+  // click mutates this same object synchronously before saving, exactly
+  // like dailyTrack does for today. Re-fetching from storage inside the
+  // click handler (the previous approach) raced: several quick clicks
+  // would each read the same stale snapshot and the last save to land
+  // would silently overwrite the others.
+  const yDoc=await loadYesterdayTrack();
+  const paint=()=>{
+    const done=!!yDoc.workoutDone;
+    toggle.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>
+      <div class="habit-row${done?' done':''}" id="workoutYesterdayRow"><div class="habit-box">${done?'✓':''}</div><div class="habit-label">${t('workout_yesterday_item')}</div></div>`;
+    document.getElementById('workoutYesterdayRow').addEventListener('click',onClick);
+  };
+  const onClick=async()=>{
     const nowDone=!yDoc.workoutDone;
     yDoc.workoutDone=nowDone;
+    paint();
     let justEarnedXp=false;
     if(nowDone && !yDoc.completionCounted){
       yDoc.completionCounted=true;
@@ -6951,37 +6974,90 @@ function renderWorkoutYesterdayToggle(){
       await notifyNewUnlocks();
       renderStreakBadge();
     }
-    showToast(nowDone ? t('yesterday_marked_done') : t('yesterday_unmarked'));
   };
+  paint();
 }
 
-/* ---- nutrition catch-up: single toggle (not per-meal — yesterday's exact
-   personalized meal slots aren't reconstructed here), same idempotent
-   xpAwarded guard pattern as everything else. */
-function renderNutritionYesterdayToggle(){
+/* ---- nutrition catch-up: single checkbox row (not per-meal — yesterday's
+   exact personalized meal slots aren't reconstructed here), same idempotent
+   xpAwarded guard pattern as everything else, and the same one-fetch-then-
+   mutate-in-memory fix as the workout row above. */
+async function renderNutritionYesterdayToggle(){
   const toggle=document.getElementById('nutritionYesterdayToggle');
   if(!toggle) return;
   toggle.classList.remove('hidden');
-  toggle.textContent=t('habit_yesterday_toggle').replace('{date}',yesterdayDateLabel());
-  toggle.onclick=async()=>{
-    const yKey=yesterdayTrackKey();
-    const yDoc=await loadYesterdayTrack();
+  const yKey=yesterdayTrackKey();
+  const yDoc=await loadYesterdayTrack();
+  const paint=()=>{
+    const done=!!(yDoc.xpAwarded&&yDoc.xpAwarded.nutrition);
+    toggle.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>
+      <div class="habit-row${done?' done':''}" id="nutritionYesterdayRow"><div class="habit-box">${done?'✓':''}</div><div class="habit-label">${t('nutrition_yesterday_item')}</div></div>`;
+    document.getElementById('nutritionYesterdayRow').addEventListener('click',onClick);
+  };
+  const onClick=async()=>{
     yDoc.xpAwarded=yDoc.xpAwarded||{};
     const nowDone=!yDoc.xpAwarded.nutrition;
+    yDoc.xpAwarded.nutrition=nowDone;
+    paint();
+    await storageSet(yKey,JSON.stringify(yDoc));
     if(nowDone){
-      yDoc.xpAwarded.nutrition=true;
-      await storageSet(yKey,JSON.stringify(yDoc));
       migrateProgressionFields();
       updateNamedStreakForDate('nutrition',yesterdayDateObj());
       P.lifetimeStats.nutritionDaysHit=(P.lifetimeStats.nutritionDaysHit||0)+1;
       await storageSet('profile',JSON.stringify(P));
       await awardXP(XP_CONFIG.nutrition_day_complete);
       await notifyNewUnlocks();
+    }
+  };
+  paint();
+}
+
+/* ---- water catch-up: +/- adjuster for yesterday's total, same target-hit
+   XP/streak guard as adjustWater() but pointed at yesterday's doc/date.
+   Same one-fetch-then-mutate-in-memory fix — rapid +/- taps used to each
+   re-read storage from scratch and race each other, so most taps were
+   silently lost (14 taps landing at 0.5L instead of 3.5L in testing). */
+async function renderWaterYesterdayRow(){
+  const box=document.getElementById('waterYesterdayRow');
+  if(!box) return;
+  box.classList.remove('hidden');
+  const yKey=yesterdayTrackKey();
+  const yDoc=await loadYesterdayTrack();
+  const target=(P.foodSetup&&P.foodSetup.waterTarget)||3.5;
+  const paint=()=>{
+    const amount=yDoc.water||0;
+    const done=amount>=target;
+    box.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>
+      <div class="habit-row${done?' done':''}" style="cursor:default;"><div class="habit-box">${done?'✓':''}</div><div class="habit-label">${t('water_yesterday_item')}</div></div>
+      <div class="dash-water-row" style="margin-top:6px;">
+        <div class="water-count" id="waterYesterdayCount" style="font-size:0.9rem;">${amount.toFixed(2)} / ${target} L</div>
+        <div class="dash-water-btns">
+          <button type="button" class="dash-water-btn" id="waterYesterdayMinus">−0.25L</button>
+          <button type="button" class="dash-water-btn" id="waterYesterdayPlus">+0.25L</button>
+        </div>
+      </div>`;
+    document.getElementById('waterYesterdayPlus').addEventListener('click',()=>adjust(0.25));
+    document.getElementById('waterYesterdayMinus').addEventListener('click',()=>adjust(-0.25));
+  };
+  const adjust=async(delta)=>{
+    yDoc.water=Math.max(0,Math.min(8,+((yDoc.water||0)+delta).toFixed(2)));
+    paint();
+    const wasAwarded=!!(yDoc.xpAwarded&&yDoc.xpAwarded.water);
+    if(yDoc.water>=target && !wasAwarded){
+      yDoc.xpAwarded=yDoc.xpAwarded||{};
+      yDoc.xpAwarded.water=true;
+      await storageSet(yKey,JSON.stringify(yDoc));
+      migrateProgressionFields();
+      updateNamedStreakForDate('water',yesterdayDateObj());
+      P.lifetimeStats.waterDaysHit=(P.lifetimeStats.waterDaysHit||0)+1;
+      await storageSet('profile',JSON.stringify(P));
+      await awardXP(XP_CONFIG.water_target_complete);
+      await notifyNewUnlocks();
     } else {
       await storageSet(yKey,JSON.stringify(yDoc));
     }
-    showToast(nowDone ? t('yesterday_marked_done') : t('yesterday_unmarked'));
   };
+  paint();
 }
 
 /* ---- supplements catch-up: per-supplement toggle list, exactly like the
