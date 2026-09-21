@@ -109,7 +109,7 @@
   .nav-actions{ display:flex; gap:6px; }
   .icon-btn{ width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; color:var(--ink); }
   .profile-bar{ display:flex; align-items:center; gap:12px; width:100%; max-width:760px; margin:10px auto 0; padding:10px 14px; border-radius:16px; border:1px solid var(--line); background:var(--card); cursor:pointer; font-family:var(--font-body); text-align:start; }
-  .profile-bar-avatar{ flex:none; width:46px; height:46px; border-radius:50%; background:var(--bg) center/cover no-repeat; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border:1px solid var(--line); overflow:hidden; }
+  .profile-bar-avatar{ position:relative; flex:none; width:46px; height:46px; border-radius:50%; background:var(--bg) center/cover no-repeat; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border:1px solid var(--line); overflow:hidden; }
   .profile-bar-info{ flex:1; min-width:0; }
   .profile-bar-toprow{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; }
   .profile-bar-level{ font-family:var(--font-head); font-weight:800; font-size:0.9rem; color:var(--ink); }
@@ -1148,6 +1148,7 @@
     .cos-btn.primary{ background:var(--accent-deep,#111); color:#fff; }
     .cos-btn.equipped{ background:var(--cos-common); color:#fff; }
     .cos-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+    .cos-preview-btn{ margin-bottom:6px; background:transparent; color:var(--ink-soft); }
     .bg-locked-tier{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-radius:12px; background:var(--bg,#f5f5f5); border:1px dashed var(--border,#e2e2e2); font-size:0.78rem; color:var(--ink-soft); }
     .cos-title-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 4px; border-bottom:1px solid var(--border,#e2e2e2); }
 
@@ -1580,7 +1581,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.17.1';
+const APP_VERSION='v1.18.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2016,6 +2017,7 @@ const I18N={
   social_tab_friends:'👥 الأصدقاء',social_tab_leaderboard:'🏆 المتصدرين',social_tab_feed:'📰 النشاط',social_tab_compare:'⚖️ مقارنة',
   store_tab_backgrounds:'🖼️ الخلفيات',store_tab_frames:'⭕ الإطارات',store_tab_effects:'✨ التأثيرات',store_tab_titles:'🏷️ الألقاب',
   store_owned:'✅ تملكه',store_equip:'تجهيز',store_equipped:'✓ مجهّز',store_unequip:'إلغاء التجهيز',store_buy:'شراء',store_not_enough:'coins غير كافية',store_exclusive:'حصري',
+  store_preview:'معاينة',store_preview_toast:'معاينة: {name} (٦ ثواني)',store_preview_ended:'انتهت المعاينة',
   store_confirm_title:'🪙 تأكيد الشراء',store_confirm_body:'بتشتري "{name}" مقابل {price} coin. ما تقدر ترجعها بعد الشراء.',store_confirm_yes:'أيه، اشتري',store_confirm_no:'إلغاء',
   cos_rarity_common:'شائع',cos_rarity_uncommon:'غير شائع',cos_rarity_epic:'ملحمي',cos_rarity_mythic:'خرافي',cos_rarity_legendary:'أسطوري',
   profile_no_title:'بدون لقب مجهّز',profile_remove_photo:'إزالة الصورة',
@@ -2165,6 +2167,7 @@ const I18N={
   social_tab_friends:'👥 Friends',social_tab_leaderboard:'🏆 Leaderboard',social_tab_feed:'📰 Activity',social_tab_compare:'⚖️ Compare',
   store_tab_backgrounds:'🖼️ Backgrounds',store_tab_frames:'⭕ Frames',store_tab_effects:'✨ Effects',store_tab_titles:'🏷️ Titles',
   store_owned:'✅ Owned',store_equip:'Equip',store_equipped:'✓ Equipped',store_unequip:'Unequip',store_buy:'Buy',store_not_enough:'Not enough coins',store_exclusive:'Exclusive',
+  store_preview:'Preview',store_preview_toast:'Previewing: {name} (6s)',store_preview_ended:'Preview ended',
   store_confirm_title:'🪙 Confirm purchase',store_confirm_body:'Buy "{name}" for {price} coins? This can\'t be undone.',store_confirm_yes:'Yes, buy it',store_confirm_no:'Cancel',
   cos_rarity_common:'Common',cos_rarity_uncommon:'Uncommon',cos_rarity_epic:'Epic',cos_rarity_mythic:'Mythic',cos_rarity_legendary:'Legendary',
   profile_no_title:'No title equipped',profile_remove_photo:'Remove photo',
@@ -2622,6 +2625,7 @@ function usernameSoftGateActive(){
   return typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile() && !isBrandNewAccount();
 }
 function showPanel(name){
+  revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
   if(usernameHardGateActive()) name='social';
   document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0});
   // the 🏠 button is a shortcut back to Home — pointless (and confusing)
@@ -6126,6 +6130,52 @@ function renderAppBackground(){
   scrim.classList.toggle('active',!!bgItem);
   document.body.classList.toggle('app-bg-active',!!bgItem);
 }
+/* ---- Store "try before you buy" preview — purely visual, never touches
+   P.equipped/P.inventory or Firestore. Backgrounds preview app-wide (the
+   real #appBgLayer, same as an actual equip) since that's the honest way
+   to judge one; frames preview on the always-visible top-nav avatar chip
+   so it's seen without leaving the Store. Auto-reverts to whatever is
+   REALLY equipped after a few seconds. */
+let cosmeticPreviewTimer=null;
+function revertCosmeticPreview(){
+  clearTimeout(cosmeticPreviewTimer); cosmeticPreviewTimer=null;
+  renderAppBackground();
+  const avatarEl=document.getElementById('profileBarAvatar');
+  const oldRing=avatarEl.querySelector('.cos-frame-ring'); if(oldRing) oldRing.remove();
+  const oldOrbit=avatarEl.querySelector('.cx-orbit-wrap'); if(oldOrbit) oldOrbit.remove();
+}
+function previewCosmetic(item){
+  revertCosmeticPreview();
+  const name=LANG==='ar'?item.nameAr:item.nameEn;
+  showToast('👁️ '+t('store_preview_toast').replace('{name}',name));
+  if(item.type==='background'){
+    const el=document.getElementById('appBgLayer');
+    const scrim=document.getElementById('appBgScrim');
+    el.innerHTML=''; el.className='app-bg-layer '+item.cls;
+    if(item.mountEffect) item.mountEffect(el);
+    scrim.classList.add('active');
+    document.body.classList.add('app-bg-active');
+  } else if(item.type==='frame'){
+    const avatarEl=document.getElementById('profileBarAvatar');
+    const ring=document.createElement('div'); ring.className='cos-frame-ring '+item.cls;
+    avatarEl.appendChild(ring);
+    if(item.orbiters){
+      const wrap=document.createElement('div'); wrap.className='cx-orbit-wrap';
+      [0,90,180,270].forEach(deg=>{
+        const dot=document.createElement('div'); dot.className='cx-orbit-dot';
+        const rad=23;
+        dot.style.left='calc(50% + '+(Math.cos(deg*Math.PI/180)*rad)+'px)';
+        dot.style.top='calc(50% + '+(Math.sin(deg*Math.PI/180)*rad)+'px)';
+        wrap.appendChild(dot);
+      });
+      avatarEl.appendChild(wrap);
+    }
+  }
+  cosmeticPreviewTimer=setTimeout(()=>{
+    revertCosmeticPreview();
+    showToast(t('store_preview_ended'));
+  },6000);
+}
 async function equipTitle(id){
   const stats=await computeUserStats();
   if(id && !unlockedTitles(stats).some(t2=>t2.id===id)) throw new Error('not unlocked');
@@ -6161,9 +6211,12 @@ async function renderStoreSection(){
           <div class="cos-card-name">${name}</div>
           <div>${it.exclusiveNote?`<span class="cos-tag">${t('store_exclusive')}</span>`:''}${owned?`<span class="cos-tag">${t('store_owned')}</span>`:''}</div>
           <div class="cos-price">${desc}<br>${it.price!=null?it.price.toLocaleString()+' 🪙':'—'}</div>
-          <button type="button" class="cos-btn"></button>
+          ${(it.type==='background'||it.type==='frame')?`<button type="button" class="cos-btn cos-preview-btn">👁️ ${t('store_preview')}</button>`:''}
+          <button type="button" class="cos-btn cos-btn-main"></button>
         </div>`;
       grid.appendChild(card);
+      const previewBtn=card.querySelector('.cos-preview-btn');
+      if(previewBtn) previewBtn.addEventListener('click',()=>previewCosmetic(it));
       const previewEl=card.querySelector('.'+previewCls);
       if(it.type==='frame'){
         const ring=document.createElement('div'); ring.style.cssText='position:relative;width:64px;height:64px;';
@@ -6179,7 +6232,7 @@ async function renderStoreSection(){
         previewEl.className=previewCls+(it.cls?' '+it.cls:'');
         if(it.mountEffect) it.mountEffect(previewEl);
       }
-      const btn=card.querySelector('.cos-btn');
+      const btn=card.querySelector('.cos-btn-main');
       if(it.exclusiveNote && !owned){
         btn.textContent=t('store_exclusive'); btn.disabled=true;
       } else if(owned){
