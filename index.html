@@ -1580,7 +1580,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.17.0';
+const APP_VERSION='v1.17.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3888,8 +3888,8 @@ function renderCommitList(){
     const conflictBadge=conflictedSet.has(c) ? `<span style="color:var(--err);font-weight:700;">${t('conflict_badge')}</span> ` : '';
     const chip=document.createElement('div'); chip.className='tag-chip commit-chip';
     chip.innerHTML=`<span>${conflictBadge}📌 ${c.label} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})${c.hard===false?' 🔓':''}</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
-    chip.querySelector('.pin-btn').addEventListener('click',()=>{ c.pinned=!c.pinned; renderCommitList(); });
-    chip.querySelector('button:last-child').addEventListener('click',()=>{ P._commitments.splice(i,1); renderCommitList(); });
+    chip.querySelector('.pin-btn').addEventListener('click',()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); });
+    chip.querySelector('button:last-child').addEventListener('click',()=>{ P._commitments.splice(i,1); renderCommitList(); persistCommitments(); });
     box.appendChild(chip);
   });
 }
@@ -3927,6 +3927,21 @@ function finalizeAddCommitment(candidate){
   P._commitments=[...(P._commitments||[]),candidate];
   resetCommitForm();
   renderCommitList();
+  persistCommitments();
+}
+/* Previously "Add" only touched the draft P._commitments — it visibly
+   appeared as a chip, which looked saved, but nothing was written to
+   P.todoSetup (what commitmentsForDate/commitmentsForToday actually read)
+   or to storage until the separate "Save" button below was ALSO clicked.
+   A commitment added but not explicitly saved afterward was silently lost
+   on next load. Every mutation (add/remove/pin) now calls this so each
+   action is persisted immediately, the same way every other list in the
+   app already behaves — the "Save" button just closes the card now. */
+async function persistCommitments(){
+  P.todoSetup={commitments:P._commitments||[]};
+  await storageSet('profile',JSON.stringify(P));
+  renderCalendar();
+  refreshHome();
 }
 /* reused for every conflict prompt in the app (new commitment vs existing,
    and the retroactive "⚠️ Conflict" badge in renderCommitList) — shows every
