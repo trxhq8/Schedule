@@ -143,6 +143,45 @@
   .dash-row-mini{ display:flex; gap:10px; }
   .dash-mini{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 10px; text-align:center; font-size:0.8rem; font-weight:700; box-shadow:var(--shadow); cursor:pointer; }
   .dash-mini .n{ display:block; font-family:var(--font-head); font-size:1.05rem; margin-top:2px; }
+
+  /* ---- home dashboard v2: To-Do centerpiece + preview cards ---- */
+  .home-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:20px; }
+  #homeTodoCard{ order:-1; } /* mobile: To-Do is the headline card, shown first regardless of source order */
+  @media(min-width:860px){
+    .home-grid{ grid-template-columns:1fr 1.7fr 1fr; align-items:start; gap:14px; }
+    #homeSchedulePreview{ grid-column:1; grid-row:1; }
+    #homeDietTrainingPreview{ grid-column:1; grid-row:2; }
+    #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 3; }
+    #homeChallengesPreview{ grid-column:3; grid-row:1; }
+    #homeCollectionPreview{ grid-column:3; grid-row:2; }
+  }
+  .home-todo-wrap{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow); }
+  .home-todo-wrap #dashboardSummary{ margin-top:14px; }
+  .home-todo-wrap .dash-card{ box-shadow:none; }
+  .home-todo-bar{ height:8px; border-radius:999px; background:var(--bg); border:1px solid var(--line); overflow:hidden; }
+  .home-todo-bar-fill{ height:100%; background:var(--accent-deep); transition:width .3s ease; }
+  .home-preview-card{ cursor:pointer; transition:transform .15s ease; }
+  .home-preview-card:hover{ transform:translateY(-3px); }
+  .home-preview-title{ font-family:var(--font-head); font-weight:800; font-size:0.85rem; color:var(--heading); display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .home-preview-sub{ font-size:0.72rem; color:var(--ink-soft); margin-bottom:4px; }
+  .home-preview-bar{ height:6px; border-radius:999px; background:var(--bg); border:1px solid var(--line); overflow:hidden; margin:6px 0 4px; }
+  .home-preview-bar-fill{ height:100%; background:var(--accent-deep); }
+  .home-preview-row{ display:flex; justify-content:space-between; font-size:0.75rem; color:var(--ink-soft); padding:2px 0; }
+  .home-preview-dt-split{ display:flex; gap:14px; }
+  .home-preview-dt-half{ flex:1; cursor:pointer; }
+  .home-todo-schedule-row{ display:flex; align-items:center; gap:8px; font-size:0.78rem; padding:6px 0; color:var(--ink-soft); border-top:1px solid var(--line); }
+  .home-todo-schedule-row:first-child{ border-top:none; margin-top:4px; }
+  .home-todo-schedule-row .t{ font-weight:700; color:var(--heading); min-width:52px; }
+
+  /* ---- bottom nav (mobile) ---- */
+  #bottomNav{ display:none; }
+  @media(max-width:759px){
+    #bottomNav{ position:fixed; left:0; right:0; bottom:0; z-index:45; display:flex; justify-content:space-around; background:color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter:blur(10px); border-top:1px solid var(--line); padding:8px 4px calc(8px + env(safe-area-inset-bottom)); }
+    body.has-bottom-nav{ padding-bottom:64px; }
+  }
+  .bottom-nav-item{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.65rem; color:var(--ink-soft); background:none; border:none; cursor:pointer; padding:4px 10px; font-family:var(--font-head); font-weight:700; }
+  .bottom-nav-item .ic{ font-size:1.25rem; }
+  .bottom-nav-item.active{ color:var(--heading); }
   .dash-workout-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .dash-workout-name{ font-size:0.85rem; }
   .dash-toggle{ width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:var(--bg); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-weight:800; }
@@ -615,7 +654,7 @@
     <h2 data-i18n="settings_title"></h2>
     <div style="margin-top:14px;">
       <label style="font-family:var(--font-head);font-weight:700;font-size:0.85rem;color:var(--ink);display:block;margin-bottom:10px;" data-i18n="bg_color_label"></label>
-      <div class="color-swatch-grid" id="colorSwatchGrid"></div>
+      <div id="bgSelectorContainer"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:14px;">
       <button class="ob-btn" id="exportBtn" type="button" style="flex:1;background:var(--card);color:var(--heading);border:1px solid var(--heading);font-size:0.8rem;padding:10px;">⬇️ <span data-i18n="backup_export"></span></button>
@@ -696,6 +735,15 @@
       <div class="day-badge hidden" id="streakBadge" style="background:var(--gold);margin-inline-start:8px;"></div>
     </div>
 
+    <div class="home-grid" id="homeGrid">
+    <div class="dash-card home-preview-card" id="homeSchedulePreview" data-goto="today"></div>
+    <div class="dash-card home-preview-card" id="homeDietTrainingPreview"></div>
+    <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges"></div>
+    <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections"></div>
+
+    <div class="home-todo-wrap" id="homeTodoCard">
+      <div class="dash-card-title"><span id="homeTodoTitle"></span><span id="homeTodoProgressLabel" style="font-weight:700;"></span></div>
+      <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
     <div id="dashboardSummary">
       <div class="dash-card" id="dashCalCard">
         <div class="dash-card-title" id="dashCalTitle"></div>
@@ -743,13 +791,8 @@
         </div>
       </div>
     </div>
-
-    <div class="home-cards">
-      <div class="home-card" data-goto="today"><span class="ic">✅</span><div class="ttl" data-i18n="card_todo"></div></div>
-      <div class="home-card" data-goto="food"><span class="ic">🍽️</span><div class="ttl" data-i18n="card_food"></div></div>
-      <div class="home-card" data-goto="workout"><span class="ic">🏋️</span><div class="ttl" data-i18n="card_workout"></div></div>
-      <div class="home-card" data-goto="collections"><span class="ic">🐾</span><div class="ttl" data-i18n="card_collections"></div></div>
-      <div class="home-card" data-goto="challenges"><span class="ic">🎯</span><div class="ttl" data-i18n="card_challenges"></div></div>
+    <div id="homeTodoScheduleRows"></div>
+    </div>
     </div>
   </section>
 
@@ -1105,6 +1148,7 @@
     .cos-btn.primary{ background:var(--accent-deep,#111); color:#fff; }
     .cos-btn.equipped{ background:var(--cos-common); color:#fff; }
     .cos-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+    .bg-locked-tier{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-radius:12px; background:var(--bg,#f5f5f5); border:1px dashed var(--border,#e2e2e2); font-size:0.78rem; color:var(--ink-soft); }
     .cos-title-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 4px; border-bottom:1px solid var(--border,#e2e2e2); }
 
     /* -- backgrounds -- */
@@ -1453,6 +1497,14 @@
 
 <footer class="hidden" id="mainFooter">🌱<div style="font-size:0.6rem;opacity:0.4;margin-top:4px;" id="footerVersion"></div></footer>
 
+<!-- ============ BOTTOM NAV (mobile app-shell navigation) ============ -->
+<nav id="bottomNav" class="hidden">
+  <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic">🏠</span><span data-i18n="bottom_nav_home"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="workout"><span class="ic">🏋️</span><span data-i18n="bottom_nav_training"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="profile"><span class="ic">👤</span><span data-i18n="bottom_nav_profile"></span></button>
+</nav>
+
 <!-- ============ SIGN IN (cross-device sync via Firebase) ============ -->
 <div class="ob-overlay" id="authOverlay">
   <div class="ob-card">
@@ -1528,7 +1580,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.16.0';
+const APP_VERSION='v1.17.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1939,7 +1991,13 @@ const I18N={
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   mode_light:'فاتح',mode_dark:'داكن',
-  settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 لون الخلفية',backup_export:'تصدير',backup_import:'استيراد',
+  settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
+  bg_tier_basic:'أساسي',bg_locked_empty:'ما عندك خلفيات من هذا المستوى بعد',bg_goto_store:'روح للمتجر',
+  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_profile:'حسابي',
+  home_todo_title:'✅ المهام اليوم',home_schedule_title:'📅 الجدول',home_dt_title:'🍽️ الأكل والتمرين',home_challenges_title:'🎯 التحديات',home_collection_title:'🐾 المقتنيات',
+  home_events_count:'{n} أحداث اليوم',home_no_events:'ما عندك أحداث اليوم',home_next_event:'التالي:',
+  home_no_challenges:'لا يوجد تحديات نشطة',home_no_collection_yet:'ابدأ تجمع أول اكتشاف',home_latest_discovery:'آخر اكتشاف:',
+  home_training_done:'✅ خلّصت تمرين اليوم',home_training_pending:'لم يبدأ',home_no_training_setup:'ما جهزت خطة تمرين',home_no_food_setup:'ما جهزت خطة أكل',
   ach_sound_label:'🔊 صوت الإنجازات',
   ach_unlocked_kicker:'إنجاز جديد',challenge_complete_kicker:'تحدي مكتمل',ach_continue:'متابعة',ach_queue_note:'في انتظارك {n} أكثر',
   card_todo:'الجدول',
@@ -2082,7 +2140,13 @@ const I18N={
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   mode_light:'Light',mode_dark:'Dark',
-  settings_title:'⚙️ Settings',bg_color_label:'🎨 Background color',backup_export:'Export',backup_import:'Import',
+  settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
+  bg_tier_basic:'Basic',bg_locked_empty:"You don't own any of these yet",bg_goto_store:'Go to store',
+  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_profile:'Profile',
+  home_todo_title:'✅ Today',home_schedule_title:'📅 Schedule',home_dt_title:'🍽️ Diet & training',home_challenges_title:'🎯 Challenges',home_collection_title:'🐾 Collection',
+  home_events_count:'{n} events today',home_no_events:'Nothing scheduled today',home_next_event:'Next:',
+  home_no_challenges:'No active challenges',home_no_collection_yet:'Start your first discovery',home_latest_discovery:'Latest:',
+  home_training_done:'✅ Today\'s training done',home_training_pending:'Not started',home_no_training_setup:'No training plan set up',home_no_food_setup:'No food plan set up',
   ach_sound_label:'🔊 Achievement sound',
   ach_unlocked_kicker:'Achievement Unlocked',challenge_complete_kicker:'Challenge Complete',ach_continue:'Continue',ach_queue_note:'{n} more waiting',
   card_todo:"Schedule",
@@ -2256,7 +2320,7 @@ function applyTheme(palette,mode,font){
   const f=FONTS.classic;
   r.setProperty('--font-head',f.head); r.setProperty('--font-body',f.body);
   const mb=document.getElementById('modeBtn'); if(mb) mb.textContent=mode==='dark'?'☀️':'🌙';
-  if(document.getElementById('colorSwatchGrid')) buildColorSwatchGrid();
+  if(document.getElementById('bgSelectorContainer')) renderBackgroundSelector();
 }
 
 /* ================= PROFILE ================= */
@@ -2314,7 +2378,7 @@ document.getElementById('mainLangToggle').addEventListener('click',async()=>{
 
 document.getElementById('settingsBtn').addEventListener('click',()=>{
   document.getElementById('settingsOverlay').classList.add('open');
-  buildColorSwatchGrid();
+  renderBackgroundSelector();
   P.settings=P.settings||{achSoundEnabled:true,achSoundVolume:0.7};
   document.getElementById('achSoundToggle').checked=P.settings.achSoundEnabled!==false;
   document.getElementById('achSoundVolume').value=Math.round((P.settings.achSoundVolume!=null?P.settings.achSoundVolume:0.7)*100);
@@ -2348,23 +2412,86 @@ const BG_SWATCHES=[
   {name:'slate', light:'#e9edf2', dark:'#10161d'},
   {name:'mint', light:'#e6f5ee', dark:'#0d1a14'}
 ];
-function buildColorSwatchGrid(){
-  const grid=document.getElementById('colorSwatchGrid'); if(!grid) return;
-  grid.innerHTML='';
+/* Redesigned Settings background picker — Basic (flat colors, always
+   available) plus the SAME rarity tiers as the Store/Collection
+   (RARITY_ORDER_LIST/RARITY_TIERS), showing only cosmetics this user
+   actually owns (P.inventory) and reading/writing the exact same
+   P.equipped.background the Store and renderAppBackground() use — one
+   authoritative source, never a second disconnected list. */
+function renderBackgroundSelector(){
+  const root=document.getElementById('bgSelectorContainer'); if(!root) return;
+  root.innerHTML='';
   const activeMode=P.mode==='dark'?'dark':'light';
   const currentBg=(P.customBg&&P.customBg[activeMode])||PALETTES.mono[activeMode].bg;
+  const equippedBgId=P.equipped&&P.equipped.background;
+
+  const basicHead=document.createElement('div'); basicHead.className='cos-rarity-head';
+  basicHead.innerHTML=`<span class="dot" style="background:var(--ink-soft);"></span><h3 style="margin:0;font-size:0.9rem;">${t('bg_tier_basic')}</h3>`;
+  root.appendChild(basicHead);
+  const swatchGrid=document.createElement('div'); swatchGrid.className='color-swatch-grid'; swatchGrid.style.marginBottom='20px';
   BG_SWATCHES.forEach(sw=>{
     const el=document.createElement('div');
-    el.className='color-swatch'+(sw[activeMode]===currentBg?' selected':'');
+    // a basic swatch only reads as "selected" while no cosmetic background
+    // is equipped — a cosmetic bg visually covers the flat color entirely
+    // (see renderAppBackground/body.app-bg-active), so showing a basic
+    // swatch as active while a cosmetic is equipped would be misleading.
+    el.className='color-swatch'+((!equippedBgId&&sw[activeMode]===currentBg)?' selected':'');
     el.style.background=`linear-gradient(135deg, ${sw.light} 50%, ${sw.dark} 50%)`;
     el.title=sw.name;
     el.addEventListener('click',async()=>{
       P.customBg={light:sw.light,dark:sw.dark};
+      if(equippedBgId) await equipCosmetic('background',null); // unequip so the flat color is actually visible
       applyTheme(P.palette,P.mode,P.font);
       await storageSet('profile',JSON.stringify(P));
     });
-    grid.appendChild(el);
+    swatchGrid.appendChild(el);
   });
+  root.appendChild(swatchGrid);
+
+  RARITY_ORDER_LIST.forEach(rar=>{
+    const tierItems=COSMETICS_CATALOG.filter(c=>c.type==='background'&&c.rarity===rar);
+    const owned=tierItems.filter(it=>P.inventory&&P.inventory[it.id]);
+    const group=document.createElement('div'); group.className='cos-rarity-group';
+    group.innerHTML=`<div class="cos-rarity-head"><span class="dot" style="background:var(--cos-${rar});"></span><h3 style="margin:0;font-size:0.9rem;">${t('cos_rarity_'+rar)}</h3></div>`;
+    if(!owned.length){
+      const locked=document.createElement('div'); locked.className='bg-locked-tier';
+      locked.innerHTML=`<span>${t('bg_locked_empty')}</span><button type="button" class="cos-btn primary" style="width:auto;padding:6px 14px;">${t('bg_goto_store')}</button>`;
+      locked.querySelector('button').addEventListener('click',()=>goToStoreRarity(rar));
+      group.appendChild(locked);
+    } else {
+      const grid=document.createElement('div'); grid.className='cos-grid';
+      owned.forEach(it=>{
+        const equipped=equippedBgId===it.id;
+        const name=LANG==='ar'?it.nameAr:it.nameEn;
+        const card=document.createElement('div'); card.className='cos-card'+(equipped?' is-equipped':'');
+        card.innerHTML=`
+          <div class="cos-preview${it.cls?' '+it.cls:''}"></div>
+          <div class="cos-card-body">
+            <div class="cos-card-name">${escapeHtml(name)}</div>
+            <button type="button" class="cos-btn${equipped?' equipped':''}">${equipped?t('store_equipped'):t('store_equip')}</button>
+          </div>`;
+        const previewEl=card.querySelector('.cos-preview');
+        if(it.mountEffect) it.mountEffect(previewEl);
+        const btn=card.querySelector('.cos-btn');
+        if(!equipped) btn.addEventListener('click',async()=>{ await equipCosmetic('background',it.id); renderBackgroundSelector(); });
+        grid.appendChild(card);
+      });
+      group.appendChild(grid);
+    }
+    root.appendChild(group);
+  });
+}
+/* Jumps straight to the Store, scrolled to the given rarity's background
+   group — used by the empty/locked state above so "you own nothing here"
+   never dead-ends the user. */
+function goToStoreRarity(rar){
+  document.getElementById('settingsOverlay').classList.remove('open');
+  storeActiveTab='background';
+  showPanel('store'); enterSection('store');
+  setTimeout(()=>{
+    const target=document.querySelector('.cos-rarity-group[data-rarity="'+rar+'"]');
+    if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
 }
 document.getElementById('demoResetBtn').addEventListener('click',()=>{
   const bar=document.getElementById('demoConfirmBar');
@@ -2500,7 +2627,9 @@ function showPanel(name){
   // the 🏠 button is a shortcut back to Home — pointless (and confusing)
   // to show while already on Home, so it only appears everywhere else.
   const homeBtnEl=document.getElementById('homeBtn'); if(homeBtnEl) homeBtnEl.classList.toggle('hidden', name==='home');
+  document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.toggle('active', b.dataset.goto===name));
 }
+document.querySelectorAll('#bottomNav .bottom-nav-item').forEach(b=>b.addEventListener('click',()=>{ showPanel(b.dataset.goto); enterSection(b.dataset.goto); }));
 
 /* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
 const DAY_NAMES={ ar:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'], en:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'] };
@@ -5118,7 +5247,17 @@ function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-
 const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},exerciseChecks:{},xpAwarded:{},weightLoggedToday:false,yesterdayWeightLogged:false};
 let dailyTrack={...DAILY_TRACK_DEFAULTS};
 async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
-async function saveDailyTrack(){ await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
+async function saveDailyTrack(){
+  await storageSet(todayKey(),JSON.stringify(dailyTrack));
+  // dailyTrack is the single source every daily-progress mutation writes
+  // through (habits/water/food/exercise/supplements), so this is the one
+  // chokepoint where the Home To-Do progress header and the Diet+training
+  // preview card can be kept in sync without every individual toggle
+  // handler needing to know Home even exists. Safe to call from any panel
+  // — the elements are static DOM, just invisible while Home isn't shown.
+  renderHomeTodoProgress();
+  renderHomeDietTrainingPreview();
+}
 
 function renderMealChecklist(idx,v){
   const mc=document.getElementById('mealChecklist'); mc.innerHTML='';
@@ -5992,7 +6131,7 @@ async function renderStoreSection(){
   RARITY_ORDER_LIST.forEach(rar=>{
     const list=items.filter(c=>c.rarity===rar);
     if(!list.length) return;
-    const group=document.createElement('div'); group.className='cos-rarity-group';
+    const group=document.createElement('div'); group.className='cos-rarity-group'; group.dataset.rarity=rar;
     group.innerHTML=`<div class="cos-rarity-head"><span class="dot" style="background:var(--cos-${rar});"></span><h3 style="margin:0;font-size:0.95rem;">${t('cos_rarity_'+rar)}</h3></div>`;
     const grid=document.createElement('div'); grid.className='cos-grid';
     list.forEach(it=>{
@@ -6901,8 +7040,155 @@ function refreshHome(){
   document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]}`;
   renderStreakBadge();
   renderDailySummary();
+  renderHomeTodoProgress();
+  renderHomeTodoScheduleRows();
+  renderHomeSchedulePreview();
+  renderHomeDietTrainingPreview();
+  renderHomeChallengesPreview();
+  renderHomeCollectionPreview();
   renderNavXpChip();
 }
+/* Home v2 preview cards — Home is a navigation/overview layer over the
+   EXISTING sections; every function below only READS state that already
+   exists elsewhere (dailyTrack, P.todoSetup.commitments, CHALLENGES_CONFIG/
+   P.challengeState, the per-category collections:animals:* docs) and never
+   computes or stores anything new. Only the Schedule-preview card is
+   date-picker-aware (via homeSelectedDate) — habits/water/food/exercise/
+   supplements are hardcoded to "today" everywhere else in the app (see
+   dailyTrack/todayKey()), so making the whole To-Do card retroactive for
+   arbitrary dates would mean touching five separate systems' storage keys,
+   well beyond a Home redesign. */
+let homeSelectedDate=new Date();
+function computeHomeTodoProgress(){
+  let done=0,total=0;
+  if(P.habits&&P.habits.length){ total++; if(P.habits.every(h=>dailyTrack.habits&&dailyTrack.habits[h.id])) done++; }
+  total++; const waterTarget=(P.foodSetup&&P.foodSetup.waterTarget)||3.5; if((dailyTrack.water||0)>=waterTarget) done++;
+  if(P.foodSetup){ total++; const idx=todayWeekdayIndex(); const v=getTodayMenu(idx); const doneFlags=dailyTrack.meals||[]; if(v.meals.every((_,i)=>doneFlags[i])) done++; }
+  if(P.workoutSetup){ total++; if(dailyTrack.workoutDone) done++; }
+  const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
+  if(supList.length){ total++; if(supList.every((s,i)=>dailyTrack.supplements['other'+i])) done++; }
+  return {done,total};
+}
+function renderHomeTodoProgress(){
+  const titleEl=document.getElementById('homeTodoTitle'); if(!titleEl) return;
+  titleEl.textContent=t('home_todo_title');
+  const {done,total}=computeHomeTodoProgress();
+  document.getElementById('homeTodoProgressLabel').textContent=total?`${done} / ${total}`:'';
+  document.getElementById('homeTodoBarFill').style.width=(total?Math.round(done/total*100):0)+'%';
+}
+function renderHomeTodoScheduleRows(){
+  const el=document.getElementById('homeTodoScheduleRows'); if(!el) return;
+  const commits=commitmentsForToday().slice().sort((a,b)=>{
+    const sa=commitTimeSpan(a),sb=commitTimeSpan(b);
+    return (sa?sa.start:9999)-(sb?sb.start:9999);
+  });
+  el.innerHTML=commits.map(c=>{
+    const timeLabel=c.from?formatTime12h(c.from):'';
+    return `<div class="home-todo-schedule-row"><span class="t">${timeLabel}</span><span>${escapeHtml(c.label)}</span></div>`;
+  }).join('');
+}
+function renderHomeSchedulePreview(){
+  const el=document.getElementById('homeSchedulePreview'); if(!el) return;
+  const commits=commitmentsForDate(homeSelectedDate).slice().sort((a,b)=>{
+    const sa=commitTimeSpan(a),sb=commitTimeSpan(b);
+    return (sa?sa.start:9999)-(sb?sb.start:9999);
+  });
+  let html=`<div class="home-preview-title">${t('home_schedule_title')}</div>`;
+  if(!commits.length){
+    html+=`<div class="home-preview-sub">${t('home_no_events')}</div>`;
+  } else {
+    html+=`<div class="home-preview-sub">${t('home_events_count').replace('{n}',commits.length)}</div>`;
+    commits.slice(0,3).forEach(c=>{
+      const timeLabel=c.from?formatTime12h(c.from):'';
+      html+=`<div class="home-preview-row"><span>${escapeHtml(c.label)}</span><span>${timeLabel}</span></div>`;
+    });
+  }
+  el.innerHTML=html;
+}
+function renderHomeDietTrainingPreview(){
+  const el=document.getElementById('homeDietTrainingPreview'); if(!el) return;
+  let html=`<div class="home-preview-title">${t('home_dt_title')}</div><div class="home-preview-dt-split">`;
+  html+='<div class="home-preview-dt-half" data-goto="food">';
+  if(!P.foodSetup){
+    html+=`<div class="home-preview-sub">${t('home_no_food_setup')}</div>`;
+  } else {
+    const idx=todayWeekdayIndex();
+    const v=getTodayMenu(idx);
+    const doneFlags=dailyTrack.meals||[];
+    let consumed=0; v.meals.forEach((m,i)=>{ if(doneFlags[i]) consumed+=(m.calories||0); });
+    const planned=Math.round(v.calories);
+    const pct=planned?Math.min(100,Math.round(consumed/planned*100)):0;
+    html+=`<div class="home-preview-sub">${Math.round(consumed)} / ${planned} kcal</div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
+  }
+  html+='</div><div class="home-preview-dt-half" data-goto="workout">';
+  if(!P.workoutSetup){
+    html+=`<div class="home-preview-sub">${t('home_no_training_setup')}</div>`;
+  } else {
+    const typeKey=workoutTypeForDate(new Date(),P.workoutSetup);
+    const day=adaptDay(typeKey);
+    const doneText=dailyTrack.workoutDone?t('home_training_done'):`${day.icon} ${day.name[LANG]} — ${t('home_training_pending')}`;
+    html+=`<div class="home-preview-sub">${doneText}</div>`;
+  }
+  html+='</div></div>';
+  el.innerHTML=html;
+  el.querySelectorAll('[data-goto]').forEach(sub=>sub.addEventListener('click',(e)=>{ e.stopPropagation(); showPanel(sub.dataset.goto); enterSection(sub.dataset.goto); }));
+}
+function getHomeChallengesPreview(progress){
+  const active=CHALLENGES_CONFIG.map(c=>{
+    const key=c.id+'|'+currentPeriodKey(c.period);
+    const state=(P.challengeState||{})[key];
+    if(state&&state.completed) return null;
+    const value=progress[c.metric]||0;
+    const pct=Math.min(100,Math.round(value/c.target*100));
+    return {name:LANG==='ar'?c.nameAr:c.nameEn,value,target:c.target,pct};
+  }).filter(Boolean);
+  active.sort((a,b)=>b.pct-a.pct);
+  return {count:active.length,closest:active[0]||null};
+}
+async function renderHomeChallengesPreview(){
+  const el=document.getElementById('homeChallengesPreview'); if(!el) return;
+  const progress=await computeChallengeProgress();
+  const {count,closest}=getHomeChallengesPreview(progress);
+  let html=`<div class="home-preview-title">${t('home_challenges_title')}</div>`;
+  if(!closest){
+    html+=`<div class="home-preview-sub">${t('home_no_challenges')}</div>`;
+  } else {
+    html+=`<div class="home-preview-sub">${count}</div><div class="home-preview-row"><span>${escapeHtml(closest.name)}</span><span>${closest.value}/${closest.target}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${closest.pct}%"></div></div>`;
+  }
+  el.innerHTML=html;
+}
+async function getHomeCollectionPreview(){
+  let totalCollected=0,totalSpecies=0,latestName=null,latestDate=null;
+  for(const cat of ANIMAL_CATEGORIES){
+    const raw=await storageGet('collections:animals:'+cat.id);
+    const data=raw?JSON.parse(raw):{};
+    const list=collSpeciesList(cat.id);
+    totalSpecies+=list.length;
+    list.forEach(sp=>{
+      const rec=data[sp.id];
+      if(rec&&rec.catches&&rec.catches.length>0){
+        totalCollected++;
+        const last=collLastDate(rec);
+        if(last&&(!latestDate||last>latestDate)){ latestDate=last; latestName=collName(sp); }
+      }
+    });
+  }
+  return {totalCollected,totalSpecies,latestName};
+}
+async function renderHomeCollectionPreview(){
+  const el=document.getElementById('homeCollectionPreview'); if(!el) return;
+  const {totalCollected,totalSpecies,latestName}=await getHomeCollectionPreview();
+  let html=`<div class="home-preview-title">${t('home_collection_title')}</div>`;
+  if(!totalCollected){
+    html+=`<div class="home-preview-sub">${t('home_no_collection_yet')}</div>`;
+  } else {
+    const pct=totalSpecies?Math.round(totalCollected/totalSpecies*100):0;
+    html+=`<div class="home-preview-sub">${totalCollected} / ${totalSpecies}</div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
+    if(latestName) html+=`<div class="home-preview-row"><span>${t('home_latest_discovery')}</span><span>${escapeHtml(latestName)}</span></div>`;
+  }
+  el.innerHTML=html;
+}
+document.querySelectorAll('.home-preview-card[data-goto]').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
 /* the small always-visible level/XP chip in the top nav, next to the
    brand — so progress is visible from Home/any screen, not just the
    Profile panel. Reads P.xp only (no network call), safe to call from
@@ -7364,6 +7650,8 @@ function launchApp(){
   document.getElementById('mainNav').classList.remove('hidden');
   document.getElementById('mainWrap').classList.remove('hidden');
   document.getElementById('mainFooter').classList.remove('hidden');
+  document.getElementById('bottomNav').classList.remove('hidden');
+  document.body.classList.add('has-bottom-nav');
   const fv=document.getElementById('footerVersion'); if(fv) fv.textContent=APP_VERSION;
   refreshHome();
   showPanel('home');
