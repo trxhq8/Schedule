@@ -848,6 +848,15 @@
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="commit_to_date"></label><input type="date" class="setup-input" id="commitToDate"></div>
         </div>
         <button class="setup-btn" id="commitAddBtn" type="button" data-i18n="add_commit" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);"></button>
+
+        <div class="setup-btn" id="bulkImportToggle" style="margin-top:14px;background:var(--card);color:var(--ink-soft);border:1px dashed var(--line);cursor:pointer;text-align:center;" data-i18n="bulk_import_toggle"></div>
+        <div class="hidden" id="bulkImportCard" style="margin-top:10px;">
+          <p class="sub" style="margin-bottom:6px;" data-i18n="bulk_import_hint"></p>
+          <textarea id="bulkImportText" rows="6" style="width:100%;font-family:var(--font-body);font-size:0.78rem;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);box-sizing:border-box;" data-i18n-ph="bulk_import_ph"></textarea>
+          <div class="val-msg" id="bulkImportError" style="color:var(--err);margin-top:6px;"></div>
+          <button class="setup-btn" id="bulkImportBtn" type="button" data-i18n="bulk_import_btn" style="margin-top:8px;"></button>
+        </div>
+
         <button class="setup-btn" id="todoSetupSave" data-i18n="save" style="margin-top:14px;"></button>
       </div>
 
@@ -1581,7 +1590,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.18.0';
+const APP_VERSION='v1.19.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1995,6 +2004,13 @@ const I18N={
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
   bg_tier_basic:'أساسي',bg_locked_empty:'ما عندك خلفيات من هذا المستوى بعد',bg_goto_store:'روح للمتجر',
   bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_profile:'حسابي',
+  bulk_import_toggle:'📋 إضافة عدة أشياء دفعة وحدة',
+  bulk_import_hint:'كل سطر: العنوان | التاريخ (أو التاريخ من | التاريخ إلى للمدى المتواصل)، مثال: اجتماع النادي | 2026-10-05',
+  bulk_import_ph:'اجتماع النادي | 2026-10-05\nرحلة | 2027-01-23 | 2027-01-30',
+  bulk_import_btn:'استورد الكل',
+  bulk_import_empty:'اكتب سطر وحد على الأقل',
+  bulk_import_error:'تأكد من صيغة السطور: {lines}',
+  bulk_import_success:'تمت إضافة {n} عنصر ✅',
   home_todo_title:'✅ المهام اليوم',home_schedule_title:'📅 الجدول',home_dt_title:'🍽️ الأكل والتمرين',home_challenges_title:'🎯 التحديات',home_collection_title:'🐾 المقتنيات',
   home_events_count:'{n} أحداث اليوم',home_no_events:'ما عندك أحداث اليوم',home_next_event:'التالي:',
   home_no_challenges:'لا يوجد تحديات نشطة',home_no_collection_yet:'ابدأ تجمع أول اكتشاف',home_latest_discovery:'آخر اكتشاف:',
@@ -2145,6 +2161,13 @@ const I18N={
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
   bg_tier_basic:'Basic',bg_locked_empty:"You don't own any of these yet",bg_goto_store:'Go to store',
   bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_profile:'Profile',
+  bulk_import_toggle:'📋 Add several at once',
+  bulk_import_hint:'One per line: Label | Date (or Label | Start date | End date for a continuous range), e.g. Club meeting | 2026-10-05',
+  bulk_import_ph:'Club meeting | 2026-10-05\nTrip | 2027-01-23 | 2027-01-30',
+  bulk_import_btn:'Import all',
+  bulk_import_empty:'Write at least one line',
+  bulk_import_error:'Check the format of lines: {lines}',
+  bulk_import_success:'{n} items added ✅',
   home_todo_title:'✅ Today',home_schedule_title:'📅 Schedule',home_dt_title:'🍽️ Diet & training',home_challenges_title:'🎯 Challenges',home_collection_title:'🐾 Collection',
   home_events_count:'{n} events today',home_no_events:'Nothing scheduled today',home_next_event:'Next:',
   home_no_challenges:'No active challenges',home_no_collection_yet:'Start your first discovery',home_latest_discovery:'Latest:',
@@ -3947,6 +3970,43 @@ async function persistCommitments(){
   renderCalendar();
   refreshHome();
 }
+/* Bulk import — one line per commitment: "label | YYYY-MM-DD" for a
+   single day, or "label | YYYY-MM-DD | YYYY-MM-DD" for a continuous
+   range. `days` is derived automatically from the actual date(s) given
+   (never guessed/extrapolated into a recurring pattern beyond what's
+   written), so a single date only ever matches that exact date and a
+   range only ever matches days inside it — same commitment model as the
+   manual form, just entered many at once. All-day (no from/to time),
+   matching what "no specific time" means elsewhere in this form. */
+document.getElementById('bulkImportToggle').addEventListener('click',()=>{
+  document.getElementById('bulkImportCard').classList.toggle('hidden');
+});
+document.getElementById('bulkImportBtn').addEventListener('click',()=>{
+  const raw=document.getElementById('bulkImportText').value;
+  const errEl=document.getElementById('bulkImportError'); errEl.textContent='';
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length);
+  if(!lines.length){ errEl.textContent=t('bulk_import_empty'); return; }
+  const dateRe=/^\d{4}-\d{2}-\d{2}$/;
+  const errors=[]; const toAdd=[];
+  lines.forEach((line,idx)=>{
+    const parts=line.split('|').map(p=>p.trim());
+    const label=parts[0];
+    const startStr=parts[1];
+    const endStr=parts[2]||parts[1];
+    if(!label||!startStr||!dateRe.test(startStr)||!dateRe.test(endStr)){ errors.push(String(idx+1)); return; }
+    const start=new Date(startStr+'T00:00:00'), end=new Date(endStr+'T00:00:00');
+    if(isNaN(start)||isNaN(end)||end<start){ errors.push(String(idx+1)); return; }
+    const daysSet=new Set();
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) daysSet.add((d.getDay()+1)%7);
+    toAdd.push({label, from:null, to:null, days:Array.from(daysSet).sort((a,b)=>a-b), fromDate:startStr, toDate:endStr, hard:true, pinned:false});
+  });
+  if(errors.length){ errEl.textContent=t('bulk_import_error').replace('{lines}',errors.join('، ')); return; }
+  P._commitments=[...(P._commitments||[]),...toAdd];
+  renderCommitList();
+  persistCommitments();
+  document.getElementById('bulkImportText').value='';
+  showToast(t('bulk_import_success').replace('{n}',toAdd.length));
+});
 /* reused for every conflict prompt in the app (new commitment vs existing,
    and the retroactive "⚠️ Conflict" badge in renderCommitList) — shows every
    simultaneous conflict at once rather than nagging one at a time, and
