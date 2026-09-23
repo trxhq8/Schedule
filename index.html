@@ -642,6 +642,50 @@
 
   .coll-toolbar-secondary{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 
+  /* ============ V2 polish: mobile ergonomics, touch, Arabic ============ */
+  /* iOS Safari zooms the whole page when an input under 16px is focused */
+  @media (pointer:coarse){
+    input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), select, textarea{ font-size:16px !important; }
+  }
+  /* toasts: a floating pill that clears the bottom nav and the home indicator,
+     instead of a full-width bar pinned over the nav */
+  #toastBanner{ left:16px !important; right:16px !important; bottom:calc(16px + env(safe-area-inset-bottom)) !important; max-width:520px; margin:0 auto; border-radius:14px; padding:12px 16px !important; font-size:13px !important; font-family:var(--font-body); box-shadow:0 10px 30px rgba(0,0,0,0.22); animation:toastIn .22s ease; }
+  @keyframes toastIn{ from{ transform:translateY(10px); opacity:0; } to{ transform:none; opacity:1; } }
+  @media(max-width:759px){
+    body.has-bottom-nav{ padding-bottom:calc(72px + env(safe-area-inset-bottom)); }
+    body.has-bottom-nav #toastBanner{ bottom:calc(80px + env(safe-area-inset-bottom)) !important; }
+    body.has-bottom-nav #restTimerBar{ bottom:calc(64px + env(safe-area-inset-bottom)) !important; }
+  }
+  /* hover lifts stick after a tap on touch screens; hover-only controls are
+     invisible there, so show them */
+  @media (hover:none){
+    .home-card:hover, .home-preview-card:hover, .coll-species-card:hover, .coll-cat-card:hover{ transform:none !important; }
+    .commit-chip .pin-btn{ opacity:1; }
+  }
+  .home-preview-card:active, .home-card:active{ transform:scale(0.985); }
+  /* tap targets (~40px) for the small controls people hit every day */
+  .home-date-picker button{ width:40px; height:40px; }
+  .close-btn{ width:40px; height:40px; left:auto; inset-inline-end:10px; }
+  .habit-box{ width:26px; height:26px; }
+  .habit-remove{ padding:8px 10px; }
+  .dash-water-btn{ min-height:38px; padding:6px 14px; font-size:0.8rem; }
+  .tag-chip button{ padding:4px 8px; }
+  .bottom-nav-item{ min-width:64px; min-height:48px; font-size:0.7rem; }
+  /* the iOS toolbar eats the bottom of 88vh modals; dvh accounts for it
+     (browsers without dvh just keep the 88vh rule above) */
+  .card{ max-height:88dvh; }
+  /* keep signed numbers and units in reading order inside RTL rows */
+  .num{ unicode-bidi:isolate; direction:ltr; display:inline-block; }
+  /* earned-XP feedback: a small pill + a pulse on the nav XP bar */
+  .xp-float{ position:fixed; top:calc(84px + env(safe-area-inset-top)); left:50%; z-index:70; transform:translateX(-50%); background:var(--accent-deep); color:#fff; font-family:var(--font-head); font-weight:800; font-size:0.85rem; padding:6px 14px; border-radius:999px; box-shadow:0 8px 22px rgba(0,0,0,0.22); pointer-events:none; animation:xpFloat 1.45s ease forwards; direction:ltr; }
+  /* first frame is fully visible on purpose — if the animation clock ever
+     stalls (throttled/background frame), the pill still shows instead of
+     sitting invisible at opacity 0 */
+  @keyframes xpFloat{ 0%{ opacity:1; transform:translate(-50%,8px) scale(.94); } 14%{ transform:translate(-50%,0) scale(1); } 72%{ opacity:1; } 100%{ opacity:0; transform:translate(-50%,-16px); } }
+  .xp-pulse{ animation:xpPulse .9s ease; }
+  @keyframes xpPulse{ 0%{ filter:brightness(1); } 35%{ filter:brightness(1.8); box-shadow:0 0 0 3px rgba(0,0,0,0.08); } 100%{ filter:brightness(1); } }
+  @media (prefers-reduced-motion:reduce){ .xp-float, .xp-pulse, #toastBanner{ animation:none; } }
+
   .coll-mode-toggle{ display:flex; gap:8px; margin-bottom:14px; }
   .coll-mode-btn{ flex:1; font-family:var(--font-head); font-weight:700; font-size:0.78rem; padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); cursor:pointer; transition:background .15s ease,color .15s ease; }
   .coll-mode-btn.active{ background:var(--accent-deep); color:#fff; border-color:var(--heading); }
@@ -741,7 +785,7 @@
         <span class="profile-bar-coins" id="profileBarCoins">🪙 0</span>
       </div>
       <div class="profile-bar-xp-track"><div class="profile-bar-xp-fill" id="profileBarXpFill"></div></div>
-      <div class="profile-bar-xp-label" id="profileBarXpLabel">0 / 0 XP</div>
+      <div class="profile-bar-xp-label" id="profileBarXpLabel" dir="ltr">0 / 0 XP</div>
     </div>
   </button>
   <div id="demoConfirmBar" class="hidden" style="max-width:760px;margin:8px auto 0;background:#fdf0ee;border:1px solid #d9a79e;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -774,7 +818,7 @@
     <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections"></div>
 
     <div class="home-todo-wrap" id="homeTodoCard">
-      <div class="dash-card-title"><span id="homeTodoTitle"></span><span id="homeTodoProgressLabel" style="font-weight:700;"></span></div>
+      <div class="dash-card-title"><span id="homeTodoTitle"></span><span id="homeTodoProgressLabel" class="num" style="font-weight:700;"></span></div>
       <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
     <div id="dashboardSummary">
       <div class="dash-card" id="dashCalCard">
@@ -801,8 +845,8 @@
         <div class="dash-water-row">
           <div class="water-count" id="dashWaterCount" style="font-size:1rem;"></div>
           <div class="dash-water-btns">
-            <button type="button" class="dash-water-btn" id="dashWaterMinus">−0.25L</button>
-            <button type="button" class="dash-water-btn" id="dashWaterPlus">+0.25L</button>
+            <button type="button" class="dash-water-btn" id="dashWaterMinus" dir="ltr">−0.25L</button>
+            <button type="button" class="dash-water-btn" id="dashWaterPlus" dir="ltr">+0.25L</button>
           </div>
         </div>
       </div>
@@ -1628,7 +1672,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.22.0';
+const APP_VERSION='v1.23.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2054,7 +2098,7 @@ function showErr(msg){
 function showToast(msg,type){
   let el=document.getElementById('toastBanner');
   if(!el){ el=document.createElement('div'); el.id='toastBanner'; el.style.cssText='position:fixed;bottom:0;left:0;right:0;color:#fff;padding:10px;font-size:12px;z-index:9999;text-align:center;'; document.body.appendChild(el); }
-  el.style.background = type==='error' ? '#c0392b' : '#4c6350';
+  el.style.background = type==='error' ? '#c0392b' : '#1a1a1a';
   el.textContent=(type==='error'?'⚠️ ':'✅ ')+msg;
   clearTimeout(showToast._t);
   showToast._t=setTimeout(()=>{ if(el&&el.parentNode) el.parentNode.removeChild(el); },3500);
@@ -2088,6 +2132,9 @@ const I18N={
   home_no_challenges:'لا يوجد تحديات نشطة',home_no_collection_yet:'ابدأ تجمع أول اكتشاف',home_latest_discovery:'آخر اكتشاف:',
   home_training_done:'✅ خلّصت تمرين اليوم',home_training_pending:'لم يبدأ',home_no_training_setup:'ما جهزت خطة تمرين',home_no_food_setup:'ما جهزت خطة أكل',
   home_weight_title:'الوزن',home_weight_ph:'أدخل الوزن (كجم)',home_weight_saved:'انحفظ وزنك ✅',
+  home_challenges_active:'{n} تحديات نشطة',confirm_remove_habit:'تبي تحذف هالعادة؟ سجلها بيختفي من هنا.',
+  xp_gain:'+{n} XP',level_up_kicker:'⬆️ مستوى جديد',level_up_title:'وصلت المستوى {n}',level_up_desc:'استمر — كل يوم تسويه يقربك أكثر.',
+  water_goal_done:'💧 خلّصت هدف الماء اليوم',coll_new_species:'🎉 اكتشاف جديد: {name}',
   ach_sound_label:'🔊 صوت الإنجازات',
   ach_unlocked_kicker:'إنجاز جديد',challenge_complete_kicker:'تحدي مكتمل',ach_continue:'متابعة',ach_queue_note:'في انتظارك {n} أكثر',
   card_todo:'الجدول',
@@ -2126,7 +2173,7 @@ const I18N={
   privacy_title:'🔒 خصوصيتي',privacy_profile_visibility:'من يشوف ملفي',privacy_visibility_private:'خاص',privacy_visibility_friends:'الأصدقاء بس',privacy_visibility_public:'عام',
   privacy_training:'التمارين',privacy_nutrition:'التغذية',privacy_achievements:'الإنجازات',privacy_collection:'المقتنيات',privacy_activity:'نشاطي',privacy_leaderboard_global:'المتصدرين العام',
   friend_profile_title:'ملف الصديق',friend_profile_hidden:'هذا القسم خاص',
-  view_collection_btn:'عرض المقتنيات',friend_collection_title:'مقتنيات الصديق',read_only_tag:'👁️ عرض فقط',back_generic:'رجوع',
+  view_collection_btn:'عرض المقتنيات',friend_collection_title:'مقتنيات الصديق',read_only_tag:'👁️ عرض فقط',
   friend_collection_hidden:'هذا الصديق خفى مقتنياته',friend_collection_error:'ما قدرنا نجيب المقتنيات الحين',coll_undiscovered:'غير مكتشف',
   lb_scope_friends:'أصدقاء',lb_scope_global:'عام',
   activity_you:'أنت',
@@ -2246,6 +2293,9 @@ const I18N={
   home_no_challenges:'No active challenges',home_no_collection_yet:'Start your first discovery',home_latest_discovery:'Latest:',
   home_training_done:'✅ Today\'s training done',home_training_pending:'Not started',home_no_training_setup:'No training plan set up',home_no_food_setup:'No food plan set up',
   home_weight_title:'Weight',home_weight_ph:'Enter weight (kg)',home_weight_saved:'Weight saved ✅',
+  home_challenges_active:'{n} active',confirm_remove_habit:'Delete this habit? Its history will disappear from here.',
+  xp_gain:'+{n} XP',level_up_kicker:'⬆️ Level up',level_up_title:'You reached level {n}',level_up_desc:'Keep going — every day you show up counts.',
+  water_goal_done:"💧 Today's water goal done",coll_new_species:'🎉 New discovery: {name}',
   ach_sound_label:'🔊 Achievement sound',
   ach_unlocked_kicker:'Achievement Unlocked',challenge_complete_kicker:'Challenge Complete',ach_continue:'Continue',ach_queue_note:'{n} more waiting',
   card_todo:"Schedule",
@@ -2284,7 +2334,7 @@ const I18N={
   privacy_title:'🔒 My privacy',privacy_profile_visibility:'Who can see my profile',privacy_visibility_private:'Private',privacy_visibility_friends:'Friends only',privacy_visibility_public:'Public',
   privacy_training:'Training',privacy_nutrition:'Nutrition',privacy_achievements:'Achievements',privacy_collection:'Collection',privacy_activity:'My activity',privacy_leaderboard_global:'Global leaderboard',
   friend_profile_title:"Friend's profile",friend_profile_hidden:'This section is private',
-  view_collection_btn:'View Collection',friend_collection_title:"Friend's Collection",read_only_tag:'👁️ Read-only',back_generic:'Back',
+  view_collection_btn:'View Collection',friend_collection_title:"Friend's Collection",read_only_tag:'👁️ Read-only',
   friend_collection_hidden:'This friend has hidden their collection',friend_collection_error:'Could not load the collection right now',coll_undiscovered:'Undiscovered',
   lb_scope_friends:'Friends',lb_scope_global:'Global',
   activity_you:'You',
@@ -2668,7 +2718,7 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
   e.target.value='';
 });
 
-document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); refreshHome(); });
+document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); });
 document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPanel('profile-hub'); });
 document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ showPanel('social'); enterSection('social'); });
 /* Collections has its own back-stack (species → category → animals → home)
@@ -2685,8 +2735,7 @@ document.querySelectorAll('.back-btn').forEach(b=>{
     const panelEl=b.closest('.panel');
     const name=panelEl&&panelEl.id.replace('panel-','');
     const parent=PANEL_PARENT[name]||'home';
-    showPanel(parent);
-    if(parent==='home') refreshHome();
+    showPanel(parent); // showPanel('home') refreshes Home itself
   });
 });
 /* true only for an account that has never actually used any real feature
@@ -3583,7 +3632,7 @@ function showNextAchievement(){
   const item=achievementQueue.shift();
   if(!item){ achievementModalShowing=false; document.getElementById('achievementOverlay').classList.remove('open'); return; }
   achievementModalShowing=true;
-  const kickerKey=item.kind==='challenge' ? 'challenge_complete_kicker' : 'ach_unlocked_kicker';
+  const kickerKey=item.kind==='challenge' ? 'challenge_complete_kicker' : item.kind==='level' ? 'level_up_kicker' : 'ach_unlocked_kicker';
   const name=LANG==='ar'?(item.nameAr||item.descAr):(item.nameEn||item.descEn);
   const desc=LANG==='ar'?(item.descAr||''):(item.descEn||'');
   document.getElementById('achTrophyIcon').textContent=item.icon||'🏆';
@@ -5518,7 +5567,8 @@ function renderSupChips(){
 function renderWater(){
   const target=(P.foodSetup&&P.foodSetup.waterTarget)||3.5;
   const c=dailyTrack.water||0;
-  document.getElementById('waterCount').textContent=`${c.toFixed(2)} / ${target} L`;
+  const wc=document.getElementById('waterCount'); wc.dir='ltr';
+  wc.textContent=`${c.toFixed(2)} / ${target} L`;
   const step=0.25, total=Math.round(target/step), filled=Math.round(c/step);
   let cups=''; for(let i=0;i<total;i++) cups+=i<filled?'💧':'<span style="opacity:0.25;">💧</span>';
   document.getElementById('waterCups').innerHTML=cups;
@@ -5535,6 +5585,7 @@ async function adjustWater(delta){
   if(dailyTrack.water>=target && !(dailyTrack.xpAwarded&&dailyTrack.xpAwarded.water)){
     dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
     dailyTrack.xpAwarded.water=true;
+    showToast(t('water_goal_done'));
     updateNamedStreak('water');
     await awardXP(XP_CONFIG.water_target_complete);
     P.lifetimeStats.waterDaysHit=(P.lifetimeStats.waterDaysHit||0)+1;
@@ -5708,8 +5759,38 @@ async function reconcileXpCoinsFromFirestore(){
 async function awardXP(amount){
   migrateProgressionFields();
   P.xp=(P.xp||0)+amount;
+  celebrateProgress();
   await storageSet('profile',JSON.stringify(P));
   await incrementXpCoins(amount,0);
+}
+/* Feedback for earning XP — watches the XP value itself rather than hooking
+   each award path, because achievements/challenges/level rewards add to
+   P.xp directly. First call only records a baseline (so a page load never
+   "celebrates" XP you already had). Shows a small "+N XP" pill for any gain
+   and a real level-up moment (reusing the achievement modal) on a new level. */
+let lastSeenXp=null, lastSeenLevel=null;
+function celebrateProgress(){
+  if(!currentUser) return;
+  const xp=P.xp||0;
+  if(lastSeenXp===null){ lastSeenXp=xp; lastSeenLevel=levelFromXP(xp); return; }
+  const delta=xp-lastSeenXp;
+  lastSeenXp=xp;
+  if(delta>0) showXpFloat(delta);
+  const lvl=levelFromXP(xp);
+  if(lvl>lastSeenLevel){
+    const title=t('level_up_title').replace('{n}',lvl), desc=t('level_up_desc');
+    enqueueAchievements([{kind:'level', icon:'⬆️', nameAr:title, nameEn:title, descAr:desc, descEn:desc}]);
+  }
+  lastSeenLevel=lvl;
+}
+function showXpFloat(n){
+  const el=document.createElement('div');
+  el.className='xp-float';
+  el.textContent=t('xp_gain').replace('{n}',n);
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1500);
+  const fill=document.getElementById('profileBarXpFill');
+  if(fill){ fill.classList.remove('xp-pulse'); void fill.offsetWidth; fill.classList.add('xp-pulse'); }
 }
 async function awardCoins(amount){
   migrateProgressionFields();
@@ -6315,6 +6396,10 @@ function renderAppBackground(){
    REALLY equipped after a few seconds. */
 let cosmeticPreviewTimer=null;
 function revertCosmeticPreview(){
+  // showPanel calls this on EVERY tab switch; without this guard it rebuilt
+  // the whole animated background (dozens of nodes, animations restarting)
+  // each time even when no preview was running
+  if(!cosmeticPreviewTimer) return;
   clearTimeout(cosmeticPreviewTimer); cosmeticPreviewTimer=null;
   renderAppBackground();
   const avatarEl=document.getElementById('profileBarAvatar');
@@ -6858,7 +6943,6 @@ function initProfileSetupCard(){
         // usernameSoftGateActive() both immediately return false, so
         // send the person straight into the normal app instead of leaving
         // them sitting on the setup screen they just finished.
-        refreshHome();
         showPanel('home');
       }catch(e){
         msgEl.textContent=e.message; msgEl.className='username-check-msg bad'; saveBtn.disabled=false;
@@ -7118,7 +7202,7 @@ async function openFriendCollectionView(uid,displayName){
   document.getElementById('dayTitle').textContent=`🐾 ${t('friend_collection_title')}`;
   document.getElementById('daySubtitle').textContent=t('read_only_tag');
   document.getElementById('cardBody').innerHTML=`<div class="dash-empty">…</div>`;
-  const backRow=`<button type="button" class="setup-btn" id="friendCollBackBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:14px;">‹ ${t('back_generic')}</button>`;
+  const backRow=`<button type="button" class="setup-btn" id="friendCollBackBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:14px;">${t('back_generic')}</button>`;
   try{
     const results=await Promise.all(ANIMAL_CATEGORIES.map(async cat=>{
       try{
@@ -7408,9 +7492,16 @@ async function saveWeightForDate(dateObj,val){
   }
   renderLog(); renderChart(); renderChart('progressWeightChart',160);
 }
+let homeWeightTaskState='';
 async function renderHomeWeightTask(){
   const el=document.getElementById('homeWeightTask'); if(!el) return;
   const logged=await isWeightLoggedForDate(homeSelectedDate);
+  // saveDailyTrack() calls this on every habit/water tap — rebuilding the
+  // input each time wiped whatever the user was in the middle of typing,
+  // so only rebuild when the date or logged-state actually changed
+  const state=homeSelectedDate.toDateString()+'|'+logged+'|'+LANG;
+  if(state===homeWeightTaskState && el.innerHTML) return;
+  homeWeightTaskState=state;
   if(logged){ el.classList.add('hidden'); el.innerHTML=''; return; }
   el.classList.remove('hidden');
   el.innerHTML=`<div class="dash-card-title">⚖️ ${t('home_weight_title')}</div>
@@ -7479,7 +7570,7 @@ function renderHomeDietTrainingPreview(){
     let consumed=0; v.meals.forEach((m,i)=>{ if(doneFlags[i]) consumed+=(m.calories||0); });
     const planned=Math.round(v.calories);
     const pct=planned?Math.min(100,Math.round(consumed/planned*100)):0;
-    html+=`<div class="home-preview-sub">${Math.round(consumed)} / ${planned} kcal</div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
+    html+=`<div class="home-preview-sub"><span class="num">${Math.round(consumed)} / ${planned}</span> ${LANG==='ar'?'سعرة':'kcal'}</div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
   }
   html+='</div><div class="home-preview-dt-half">';
   if(!P.workoutSetup){
@@ -7516,7 +7607,7 @@ async function renderHomeChallengesPreview(){
   if(!closest){
     html+=`<div class="home-preview-sub">${t('home_no_challenges')}</div>`;
   } else {
-    html+=`<div class="home-preview-sub">${count}</div><div class="home-preview-row"><span>${escapeHtml(closest.name)}</span><span>${closest.value}/${closest.target}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${closest.pct}%"></div></div>`;
+    html+=`<div class="home-preview-sub">${t('home_challenges_active').replace('{n}',count)}</div><div class="home-preview-row"><span>${escapeHtml(closest.name)}</span><span class="num">${closest.value}/${closest.target}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${closest.pct}%"></div></div>`;
   }
   el.innerHTML=html;
 }
@@ -7546,7 +7637,7 @@ async function renderHomeCollectionPreview(){
     html+=`<div class="home-preview-sub">${t('home_no_collection_yet')}</div>`;
   } else {
     const pct=totalSpecies?Math.round(totalCollected/totalSpecies*100):0;
-    html+=`<div class="home-preview-sub">${totalCollected} / ${totalSpecies}</div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
+    html+=`<div class="home-preview-sub"><span class="num">${totalCollected} / ${totalSpecies}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
     if(latestName) html+=`<div class="home-preview-row"><span>${t('home_latest_discovery')}</span><span>${escapeHtml(latestName)}</span></div>`;
   }
   el.innerHTML=html;
@@ -7564,6 +7655,7 @@ function renderNavXpChip(){
   const bar=document.getElementById('profileBar');
   if(!bar||!currentUser) return;
   bar.classList.remove('hidden');
+  celebrateProgress(); // catches XP added outside awardXP (achievements, challenges, level rewards)
   const prog=levelProgress(P.xp||0);
   document.getElementById('profileBarLevel').textContent=`⭐ ${LANG==='ar'?'مستوى':'Lv'} ${prog.level}`;
   document.getElementById('profileBarCoins').textContent=`🪙 ${(P.coins||0).toLocaleString()}`;
@@ -7635,7 +7727,8 @@ function renderDailySummary(){
   // ---- water (same dailyTrack.water state as the Food panel's water card) ----
   const waterTarget=(P.foodSetup&&P.foodSetup.waterTarget)||3.5;
   const w=dailyTrack.water||0;
-  document.getElementById('dashWaterCount').textContent=`${w.toFixed(2)} / ${waterTarget} L`;
+  const dwc=document.getElementById('dashWaterCount'); dwc.dir='ltr';
+  dwc.textContent=`${w.toFixed(2)} / ${waterTarget} L`;
 
   // ---- supplements mini badge ----
   const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
@@ -7649,8 +7742,11 @@ function renderDailySummary(){
 
   renderHabits();
 }
-document.getElementById('dashWaterPlus').addEventListener('click',()=>{ dailyTrack.water=Math.min(8,+((dailyTrack.water||0)+0.25).toFixed(2)); renderDailySummary(); saveDailyTrack(); });
-document.getElementById('dashWaterMinus').addEventListener('click',()=>{ dailyTrack.water=Math.max(0,+((dailyTrack.water||0)-0.25).toFixed(2)); renderDailySummary(); saveDailyTrack(); });
+// these used to mutate dailyTrack.water directly, bypassing adjustWater —
+// so hitting the water goal from Home (the main screen) never awarded its
+// XP, water streak or lifetime water-day. Same single source as Food now.
+document.getElementById('dashWaterPlus').addEventListener('click',()=>adjustWater(0.25));
+document.getElementById('dashWaterMinus').addEventListener('click',()=>adjustWater(-0.25));
 document.querySelectorAll('#dashboardSummary .dash-mini[data-goto]').forEach(el=>el.addEventListener('click',()=>{ showPanel(el.dataset.goto); enterSection(el.dataset.goto); }));
 
 /* ---- habits: per-day completion lives in dailyTrack.habits (same doc as
@@ -7703,6 +7799,9 @@ function renderHabits(){
     });
     row.querySelector('.habit-remove').addEventListener('click',async(e)=>{
       e.stopPropagation();
+      // the ✕ sits right next to the row that toggles the habit — one slip
+      // used to delete it instantly with no way back
+      if(!confirm(t('confirm_remove_habit'))) return;
       P.habits=(P.habits||[]).filter(x=>x.id!==h.id);
       await storageSet('profile',JSON.stringify(P));
       renderHabits();
@@ -7735,7 +7834,9 @@ function renderHabits(){
 function yesterdayTrackKey(){ const d=new Date(); d.setDate(d.getDate()-1); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function yesterdayDateLabel(){
   const d=new Date(); d.setDate(d.getDate()-1);
-  return d.toLocaleDateString(LANG==='ar'?'ar-SA':'en-US',{month:'short',day:'numeric'});
+  // ar-EG, not ar-SA: ar-SA defaults to the Hijri calendar, so this one
+  // label showed a different calendar from every other date in the app
+  return d.toLocaleDateString(LANG==='ar'?'ar-EG':'en-US',{month:'short',day:'numeric'});
 }
 async function loadYesterdayTrack(){
   try{ const v=await storageGet(yesterdayTrackKey()); if(v) return JSON.parse(v); }catch(e){}
@@ -7848,8 +7949,8 @@ async function renderWaterYesterdayRow(){
       <div class="dash-water-row" style="margin-top:6px;">
         <div class="water-count" id="waterYesterdayCount" style="font-size:0.9rem;">${amount.toFixed(2)} / ${target} L</div>
         <div class="dash-water-btns">
-          <button type="button" class="dash-water-btn" id="waterYesterdayMinus">−0.25L</button>
-          <button type="button" class="dash-water-btn" id="waterYesterdayPlus">+0.25L</button>
+          <button type="button" class="dash-water-btn" id="waterYesterdayMinus" dir="ltr">−0.25L</button>
+          <button type="button" class="dash-water-btn" id="waterYesterdayPlus" dir="ltr">+0.25L</button>
         </div>
       </div>`;
     document.getElementById('waterYesterdayPlus').addEventListener('click',()=>adjust(0.25));
@@ -7975,6 +8076,10 @@ async function renderHabitsYesterdayList(){
 /* walks backward day-by-day (capped at 60 days) checking each real
    daily-track doc for this habit's completion — stops the moment a habit's
    chain breaks (or a day has no record at all). Nothing here is guessed. */
+/* Days older than yesterday can't change during a session (only yesterday
+   has a catch-up editor), so they're cached after the first read. This ran
+   on every water/habit tap and re-downloaded up to 60 docs each time. */
+const pastDayDocCache={};
 async function computeHabitStreaks(){
   const habits=P.habits||[];
   const streaks={}; habits.forEach(h=>streaks[h.id]=0);
@@ -7988,7 +8093,11 @@ async function computeHabitStreaks(){
     const d=new Date(); d.setDate(d.getDate()-back);
     const key=`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
     let doc=null;
-    try{ const v=await storageGet(key); if(v) doc=JSON.parse(v); }catch(e){}
+    if(back>=2 && key in pastDayDocCache){ doc=pastDayDocCache[key]; }
+    else{
+      try{ const v=await storageGet(key); if(v) doc=JSON.parse(v); }catch(e){}
+      if(back>=2 && doc) pastDayDocCache[key]=doc; // never cache a miss (might just be offline)
+    }
     if(!doc) break;
     [...stillCounting].forEach(hid=>{
       if(doc.habits&&doc.habits[hid]) streaks[hid]++;
@@ -8016,8 +8125,10 @@ function launchApp(){
   document.getElementById('bottomNav').classList.remove('hidden');
   document.body.classList.add('has-bottom-nav');
   const fv=document.getElementById('footerVersion'); if(fv) fv.textContent=APP_VERSION;
-  refreshHome();
-  showPanel('home');
+  // language + theme must be applied even when the username gate redirects
+  // this to Social (refreshHome, which normally does it, won't run then)
+  applyI18n(); applyTheme(P.palette,P.mode,P.font);
+  showPanel('home'); // refreshes Home itself — calling refreshHome() first rendered it twice
   // username-first, brand-new accounts ONLY: a sign-up that has never
   // signed in before lands directly on the profile-setup screen instead
   // of the home dashboard, and showPanel/enterSection refuse to leave it
@@ -8760,6 +8871,10 @@ function collGrantFirstCatchReward(sp){
   if(sp && sp.bossData){
     const achievement=LANG==='ar'?sp.bossData.achievementAr:sp.bossData.achievementEn;
     showToast('🏆 '+(LANG==='ar'?`تم فتح إنجاز: ${achievement}`:`Achievement unlocked: ${achievement}`));
+  } else if(sp){
+    // a first discovery used to pass silently for every non-boss species
+    const tier=RARITY_TIERS[sp.rarity];
+    showToast(t('coll_new_species').replace('{name}',(tier?tier.icon+' ':'')+collName(sp)));
   }
   // reward scales with the species' real rarity tier instead of a flat
   // amount — a boss catch always pays at the top (legendary) tier
