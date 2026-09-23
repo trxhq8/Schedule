@@ -145,6 +145,9 @@
   .dash-mini .n{ display:block; font-family:var(--font-head); font-size:1.05rem; margin-top:2px; }
 
   /* ---- home dashboard v2: To-Do centerpiece + preview cards ---- */
+  .home-date-picker{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:10px; }
+  .home-date-picker button{ background:var(--card); border:1px solid var(--line); border-radius:50%; width:30px; height:30px; font-size:1.1rem; line-height:1; cursor:pointer; color:var(--heading); }
+  .home-date-picker span{ font-family:var(--font-head); font-weight:700; font-size:0.88rem; color:var(--heading); min-width:130px; text-align:center; }
   .home-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:20px; }
   #homeTodoCard{ order:-1; } /* mobile: To-Do is the headline card, shown first regardless of source order */
   @media(min-width:860px){
@@ -277,6 +280,8 @@
   .edit-btn{ font-family:var(--font-head); font-weight:700; font-size:0.75rem; background:none; border:none; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
 
   section.panel{ display:none; padding-top:6px; } section.panel.active{ display:block; animation:fadeUp .3s ease; }
+  body.dt-combined #panel-workout .back-row{ display:none; }
+  body.dt-combined #panel-workout{ margin-top:28px; padding-top:20px; border-top:1px solid var(--line); }
 
   .setup-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px 16px; box-shadow:var(--shadow); margin-bottom:16px; }
   .setup-card h3{ color:var(--heading); font-size:1rem; margin:0 0 4px; }
@@ -756,9 +761,15 @@
       <div class="day-badge hidden" id="streakBadge" style="background:var(--gold);margin-inline-start:8px;"></div>
     </div>
 
+    <div class="home-date-picker" id="homeDatePicker">
+      <button type="button" id="homeDatePrev" aria-label="prev day">‹</button>
+      <span id="homeDateLabel"></span>
+      <button type="button" id="homeDateNext" aria-label="next day">›</button>
+    </div>
+
     <div class="home-grid" id="homeGrid">
     <div class="dash-card home-preview-card" id="homeSchedulePreview" data-goto="today"></div>
-    <div class="dash-card home-preview-card" id="homeDietTrainingPreview"></div>
+    <div class="dash-card home-preview-card" id="homeDietTrainingPreview" data-goto="diettraining"></div>
     <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges"></div>
     <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections"></div>
 
@@ -812,6 +823,7 @@
         </div>
       </div>
     </div>
+    <div class="dash-card hidden" id="homeWeightTask"></div>
     <div id="homeTodoScheduleRows"></div>
     </div>
     </div>
@@ -1038,7 +1050,12 @@
     </div>
   </section>
 
-  <!-- WORKOUT (fully independent top-level section) -->
+  <!-- WORKOUT — a fully independent panel on its own (reachable via
+       showPanel('workout') internally, e.g. exerciseWorkoutBanner), but
+       ALSO shown stacked directly below panel-food (same DOM order,
+       both simply display:block) when showPanel('diettraining') is used
+       — see the dt-combined body class below. Nothing here is duplicated
+       or moved; it's the exact same panel, just two ways to reveal it. -->
   <section class="panel" id="panel-workout">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <!-- setup -->
@@ -1532,7 +1549,7 @@
 <nav id="bottomNav" class="hidden">
   <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic">🏠</span><span data-i18n="bottom_nav_home"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
-  <button type="button" class="bottom-nav-item" data-goto="workout"><span class="ic">🏋️</span><span data-i18n="bottom_nav_training"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="diettraining"><span class="ic">🍽️</span><span data-i18n="bottom_nav_diettraining"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="profile"><span class="ic">👤</span><span data-i18n="bottom_nav_profile"></span></button>
 </nav>
 
@@ -1611,7 +1628,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.20.0';
+const APP_VERSION='v1.21.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1852,6 +1869,12 @@ if(document.getElementById('googleSignInBtn')){
 }
 async function bootApp(){
   await loadDailyTrack();
+  // previously only loaded when the Food panel first rendered — now that
+  // Home's Weight task can read/write weightLog before the user ever
+  // opens Food, it MUST be loaded during boot, or a save from Home would
+  // push onto an empty in-memory array and overwrite (destroy) the real
+  // Firestore history on the next storageSet('weight-log', ...).
+  await loadWeightLog();
   await loadFoodDraft();
   const pv=await storageGet('profile');
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
@@ -2040,7 +2063,7 @@ const I18N={
   mode_light:'فاتح',mode_dark:'داكن',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
   bg_tier_basic:'أساسي',bg_locked_empty:'ما عندك خلفيات من هذا المستوى بعد',bg_goto_store:'روح للمتجر',
-  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_profile:'حسابي',
+  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_diettraining:'الأكل والتمرين',bottom_nav_profile:'حسابي',
   bulk_import_toggle:'📋 إضافة عدة أشياء دفعة وحدة',
   bulk_import_hint:'كل سطر: العنوان | التاريخ (أو التاريخ من | التاريخ إلى للمدى المتواصل)، مثال: اجتماع النادي | 2026-10-05',
   bulk_import_ph:'اجتماع النادي | 2026-10-05\nرحلة | 2027-01-23 | 2027-01-30',
@@ -2052,6 +2075,7 @@ const I18N={
   home_events_count:'{n} أحداث اليوم',home_no_events:'ما عندك أحداث اليوم',home_next_event:'التالي:',
   home_no_challenges:'لا يوجد تحديات نشطة',home_no_collection_yet:'ابدأ تجمع أول اكتشاف',home_latest_discovery:'آخر اكتشاف:',
   home_training_done:'✅ خلّصت تمرين اليوم',home_training_pending:'لم يبدأ',home_no_training_setup:'ما جهزت خطة تمرين',home_no_food_setup:'ما جهزت خطة أكل',
+  home_weight_title:'الوزن',home_weight_ph:'أدخل الوزن (كجم)',home_weight_saved:'انحفظ وزنك ✅',
   ach_sound_label:'🔊 صوت الإنجازات',
   ach_unlocked_kicker:'إنجاز جديد',challenge_complete_kicker:'تحدي مكتمل',ach_continue:'متابعة',ach_queue_note:'في انتظارك {n} أكثر',
   card_todo:'الجدول',
@@ -2197,7 +2221,7 @@ const I18N={
   mode_light:'Light',mode_dark:'Dark',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
   bg_tier_basic:'Basic',bg_locked_empty:"You don't own any of these yet",bg_goto_store:'Go to store',
-  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_profile:'Profile',
+  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_diettraining:'Diet & training',bottom_nav_profile:'Profile',
   bulk_import_toggle:'📋 Add several at once',
   bulk_import_hint:'One per line: Label | Date (or Label | Start date | End date for a continuous range), e.g. Club meeting | 2026-10-05',
   bulk_import_ph:'Club meeting | 2026-10-05\nTrip | 2027-01-23 | 2027-01-30',
@@ -2209,6 +2233,7 @@ const I18N={
   home_events_count:'{n} events today',home_no_events:'Nothing scheduled today',home_next_event:'Next:',
   home_no_challenges:'No active challenges',home_no_collection_yet:'Start your first discovery',home_latest_discovery:'Latest:',
   home_training_done:'✅ Today\'s training done',home_training_pending:'Not started',home_no_training_setup:'No training plan set up',home_no_food_setup:'No food plan set up',
+  home_weight_title:'Weight',home_weight_ph:'Enter weight (kg)',home_weight_saved:'Weight saved ✅',
   ach_sound_label:'🔊 Achievement sound',
   ach_unlocked_kicker:'Achievement Unlocked',challenge_complete_kicker:'Challenge Complete',ach_continue:'Continue',ach_queue_note:'{n} more waiting',
   card_todo:"Schedule",
@@ -2687,11 +2712,29 @@ function usernameSoftGateActive(){
 function showPanel(name){
   revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
   if(usernameHardGateActive()) name='social';
-  document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+name).classList.add('active'); window.scrollTo({top:0});
+  document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+  if(name==='diettraining'){
+    // Diet+Training is not a separate panel — it's the existing Food and
+    // Workout panels shown stacked together (Food first, Workout below),
+    // exactly the same DOM/render functions either reaches on its own.
+    document.getElementById('panel-food').classList.add('active');
+    document.getElementById('panel-workout').classList.add('active');
+    document.body.classList.add('dt-combined');
+  } else {
+    document.body.classList.remove('dt-combined');
+    document.getElementById('panel-'+name).classList.add('active');
+  }
+  window.scrollTo({top:0});
   // the 🏠 button is a shortcut back to Home — pointless (and confusing)
   // to show while already on Home, so it only appears everywhere else.
   const homeBtnEl=document.getElementById('homeBtn'); if(homeBtnEl) homeBtnEl.classList.toggle('hidden', name==='home');
   document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.toggle('active', b.dataset.goto===name));
+  // Home must always be current the moment it's shown, from EVERY entry
+  // point (bottom nav, back buttons, the 🏠 shortcut, programmatic calls)
+  // — previously only the standalone #homeBtn handler called refreshHome()
+  // itself, so e.g. the bottom-nav Home tab could show a stale selected
+  // date/dashboard. One hook here covers every current and future path.
+  if(name==='home') refreshHome();
 }
 document.querySelectorAll('#bottomNav .bottom-nav-item').forEach(b=>b.addEventListener('click',()=>{ showPanel(b.dataset.goto); enterSection(b.dataset.goto); }));
 
@@ -3849,6 +3892,7 @@ function enterSection(name){
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
+  if(name==='diettraining'){ renderFoodSection(); renderWorkoutSection(); }
   if(name==='progress') renderProgressSection();
   if(name==='profile') renderProfileSection();
   if(name==='challenges') renderChallengesSection();
@@ -5337,14 +5381,7 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
   if(forYesterday){
     await saveWeightForYesterday(val);
   } else {
-    weightLog.push({kg:val,date:new Date().toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'})});
-    await storageSet('weight-log',JSON.stringify(weightLog));
-    dailyTrack.weightLoggedToday=true;
-    await saveDailyTrack();
-    if(P.foodSetup){
-      P.foodSetup.weight=val;
-      await storageSet('profile',JSON.stringify(P));
-    }
+    await saveWeightForDate(new Date(),val);
   }
   inp.value='';
   document.getElementById('weightYesterdayCheck').checked=false;
@@ -5373,6 +5410,7 @@ async function saveDailyTrack(){
   // — the elements are static DOM, just invisible while Home isn't shown.
   renderHomeTodoProgress();
   renderHomeDietTrainingPreview();
+  if(document.getElementById('homeWeightTask')) renderHomeWeightTask();
 }
 
 function renderMealChecklist(idx,v){
@@ -7203,16 +7241,44 @@ function refreshHome(){
   document.getElementById('heroTitle').textContent=(LANG==='ar'?'هلا فيك! 👋':'Hi there! 👋');
   const idx=todayWeekdayIndex();
   document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]}`;
+  homeSelectedDate=new Date(); // always re-enter Home on today; browsing other dates only lasts within the visit
   renderStreakBadge();
   renderDailySummary();
-  renderHomeTodoProgress();
-  renderHomeTodoScheduleRows();
-  renderHomeSchedulePreview();
+  renderHomeDateDependent();
   renderHomeDietTrainingPreview();
   renderHomeChallengesPreview();
   renderHomeCollectionPreview();
   renderNavXpChip();
 }
+function homeDateLabel(dateObj){
+  const today=new Date();
+  const label=dateObj.toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'long'});
+  if(isSameCalendarDate(dateObj,today)) return (LANG==='ar'?'اليوم — ':'Today — ')+label;
+  const yesterday=new Date(today); yesterday.setDate(today.getDate()-1);
+  const tomorrow=new Date(today); tomorrow.setDate(today.getDate()+1);
+  if(isSameCalendarDate(dateObj,yesterday)) return (LANG==='ar'?'أمس — ':'Yesterday — ')+label;
+  if(isSameCalendarDate(dateObj,tomorrow)) return (LANG==='ar'?'باكر — ':'Tomorrow — ')+label;
+  return label;
+}
+/* The single place anything date-selection-dependent on Home re-renders
+   from — the Schedule preview/rows (both sources: commitments + agenda),
+   and the Weight task. Habits/water/food/exercise/supplements stay
+   today-only (see the note above getScheduleItemsForDate/computeHomeTodoProgress) —
+   making those genuinely retroactive would mean reworking five separate
+   systems' storage, well beyond what was asked here. */
+async function renderHomeDateDependent(){
+  const labelEl=document.getElementById('homeDateLabel'); if(labelEl) labelEl.textContent=homeDateLabel(homeSelectedDate);
+  await renderHomeSchedulePreview();
+  await renderHomeTodoScheduleRows();
+  await renderHomeWeightTask();
+  await renderHomeTodoProgress();
+}
+document.getElementById('homeDatePrev').addEventListener('click',()=>{
+  const d=new Date(homeSelectedDate); d.setDate(d.getDate()-1); homeSelectedDate=d; renderHomeDateDependent();
+});
+document.getElementById('homeDateNext').addEventListener('click',()=>{
+  const d=new Date(homeSelectedDate); d.setDate(d.getDate()+1); homeSelectedDate=d; renderHomeDateDependent();
+});
 /* Home v2 preview cards — Home is a navigation/overview layer over the
    EXISTING sections; every function below only READS state that already
    exists elsewhere (dailyTrack, P.todoSetup.commitments, CHALLENGES_CONFIG/
@@ -7224,7 +7290,96 @@ function refreshHome(){
    arbitrary dates would mean touching five separate systems' storage keys,
    well beyond a Home redesign. */
 let homeSelectedDate=new Date();
-function computeHomeTodoProgress(){
+function isSameCalendarDate(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+/* The Schedule has TWO real data sources — recurring commitments
+   (P.todoSetup.commitments) and per-date free-text hourly notes
+   (dailyTrack.agenda, edited from the calendar's hour-by-hour view,
+   openCalSlotEdit). Home's To-Do previously only read commitments, so an
+   item added via the hourly agenda editor never showed up here — this
+   merges both, exactly the same two sources openCalendarDay() already
+   shows together for its own day-detail popup. */
+async function getAgendaForDate(dateObj){
+  let agenda;
+  if(isSameCalendarDate(dateObj,new Date())){ agenda=dailyTrack.agenda||{}; }
+  else{
+    const key=calDateKey(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
+    try{ const v=await storageGet(key); agenda=v?(JSON.parse(v).agenda||{}):{}; }catch(e){ agenda={}; }
+  }
+  return Object.entries(agenda)
+    .filter(([slot,note])=>note!=null&&note!=='')
+    .map(([slot,note])=>({time:slotRange(slot)[0],label:note,timeLabel:formatTime12h(slot.split('-')[0])}));
+}
+async function getScheduleItemsForDate(dateObj){
+  const commits=commitmentsForDate(dateObj).map(c=>({
+    time:c.from?commitTimeSpan(c).start:-1, label:c.label, timeLabel:c.from?formatTime12h(c.from):''
+  }));
+  const notes=await getAgendaForDate(dateObj);
+  return commits.concat(notes).sort((a,b)=>(a.time<0?9999:a.time)-(b.time<0?9999:b.time));
+}
+/* Weight — reuses the SAME weightLog array/chart the Progress/Food panel
+   already has (never a second store). Old entries have no real date
+   (see saveWeightForYesterday's comment) and are left exactly as they
+   are; every NEW entry from here on also carries isoDate, so "does date
+   X already have an entry" can be answered precisely going forward.
+   "Logged for date X" itself is answered by the SAME per-day
+   dailyTrack.weightLoggedToday flag every other daily system already
+   uses — for today that's the live dailyTrack global, for any other
+   date it's that date's own daily-track doc (identical pattern to
+   commitmentsForDate/getAgendaForDate above). */
+async function isWeightLoggedForDate(dateObj){
+  if(isSameCalendarDate(dateObj,new Date())) return !!dailyTrack.weightLoggedToday;
+  const key=calDateKey(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
+  try{ const v=await storageGet(key); return v?!!JSON.parse(v).weightLoggedToday:false; }catch(e){ return false; }
+}
+async function saveWeightForDate(dateObj,val){
+  const iso=isoDateStr(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
+  const existingIdx=weightLog.findIndex(e=>e.isoDate===iso);
+  if(existingIdx>=0){
+    weightLog[existingIdx].kg=val;
+  } else {
+    const entry={kg:val,date:dateObj.toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'}),isoDate:iso};
+    let insertAt=weightLog.length;
+    for(let i=weightLog.length-1;i>=0;i--){
+      if(weightLog[i].isoDate && weightLog[i].isoDate>iso) insertAt=i;
+      else if(weightLog[i].isoDate) break;
+    }
+    weightLog.splice(insertAt,0,entry);
+  }
+  await storageSet('weight-log',JSON.stringify(weightLog));
+  if(isSameCalendarDate(dateObj,new Date())){
+    dailyTrack.weightLoggedToday=true;
+    await saveDailyTrack();
+    if(P.foodSetup){ P.foodSetup.weight=val; await storageSet('profile',JSON.stringify(P)); }
+  } else {
+    const key=calDateKey(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
+    let dt={}; try{ const v=await storageGet(key); dt=v?JSON.parse(v):{}; }catch(e){ dt={}; }
+    dt.weightLoggedToday=true;
+    await storageSet(key,JSON.stringify(dt));
+  }
+  renderLog(); renderChart(); renderChart('progressWeightChart',160);
+}
+async function renderHomeWeightTask(){
+  const el=document.getElementById('homeWeightTask'); if(!el) return;
+  const logged=await isWeightLoggedForDate(homeSelectedDate);
+  if(logged){ el.classList.add('hidden'); el.innerHTML=''; return; }
+  el.classList.remove('hidden');
+  el.innerHTML=`<div class="dash-card-title">⚖️ ${t('home_weight_title')}</div>
+    <div style="display:flex;gap:8px;">
+      <input type="number" step="0.1" id="homeWeightInput" placeholder="${t('home_weight_ph')}" style="flex:1;min-width:0;">
+      <button type="button" class="setup-btn" id="homeWeightSaveBtn" style="width:auto;padding:0 16px;">${t('save')}</button>
+    </div>`;
+  const inp=document.getElementById('homeWeightInput');
+  const save=async()=>{
+    const val=parseFloat(inp.value); if(!val||val<=0) return;
+    await saveWeightForDate(homeSelectedDate,val);
+    await renderHomeWeightTask();
+    await renderHomeTodoProgress();
+    showToast(t('home_weight_saved'));
+  };
+  document.getElementById('homeWeightSaveBtn').addEventListener('click',save);
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); save(); } });
+}
+async function computeHomeTodoProgress(){
   let done=0,total=0;
   if(P.habits&&P.habits.length){ total++; if(P.habits.every(h=>dailyTrack.habits&&dailyTrack.habits[h.id])) done++; }
   total++; const waterTarget=(P.foodSetup&&P.foodSetup.waterTarget)||3.5; if((dailyTrack.water||0)>=waterTarget) done++;
@@ -7232,40 +7387,31 @@ function computeHomeTodoProgress(){
   if(P.workoutSetup){ total++; if(dailyTrack.workoutDone) done++; }
   const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
   if(supList.length){ total++; if(supList.every((s,i)=>dailyTrack.supplements['other'+i])) done++; }
+  total++; if(await isWeightLoggedForDate(homeSelectedDate)) done++;
   return {done,total};
 }
-function renderHomeTodoProgress(){
+async function renderHomeTodoProgress(){
   const titleEl=document.getElementById('homeTodoTitle'); if(!titleEl) return;
   titleEl.textContent=t('home_todo_title');
-  const {done,total}=computeHomeTodoProgress();
+  const {done,total}=await computeHomeTodoProgress();
   document.getElementById('homeTodoProgressLabel').textContent=total?`${done} / ${total}`:'';
   document.getElementById('homeTodoBarFill').style.width=(total?Math.round(done/total*100):0)+'%';
 }
-function renderHomeTodoScheduleRows(){
+async function renderHomeTodoScheduleRows(){
   const el=document.getElementById('homeTodoScheduleRows'); if(!el) return;
-  const commits=commitmentsForToday().slice().sort((a,b)=>{
-    const sa=commitTimeSpan(a),sb=commitTimeSpan(b);
-    return (sa?sa.start:9999)-(sb?sb.start:9999);
-  });
-  el.innerHTML=commits.map(c=>{
-    const timeLabel=c.from?formatTime12h(c.from):'';
-    return `<div class="home-todo-schedule-row"><span class="t">${timeLabel}</span><span>${escapeHtml(c.label)}</span></div>`;
-  }).join('');
+  const items=await getScheduleItemsForDate(homeSelectedDate);
+  el.innerHTML=items.map(it=>`<div class="home-todo-schedule-row"><span class="t">${it.timeLabel}</span><span>${escapeHtml(it.label)}</span></div>`).join('');
 }
-function renderHomeSchedulePreview(){
+async function renderHomeSchedulePreview(){
   const el=document.getElementById('homeSchedulePreview'); if(!el) return;
-  const commits=commitmentsForDate(homeSelectedDate).slice().sort((a,b)=>{
-    const sa=commitTimeSpan(a),sb=commitTimeSpan(b);
-    return (sa?sa.start:9999)-(sb?sb.start:9999);
-  });
+  const items=await getScheduleItemsForDate(homeSelectedDate);
   let html=`<div class="home-preview-title">${t('home_schedule_title')}</div>`;
-  if(!commits.length){
+  if(!items.length){
     html+=`<div class="home-preview-sub">${t('home_no_events')}</div>`;
   } else {
-    html+=`<div class="home-preview-sub">${t('home_events_count').replace('{n}',commits.length)}</div>`;
-    commits.slice(0,3).forEach(c=>{
-      const timeLabel=c.from?formatTime12h(c.from):'';
-      html+=`<div class="home-preview-row"><span>${escapeHtml(c.label)}</span><span>${timeLabel}</span></div>`;
+    html+=`<div class="home-preview-sub">${t('home_events_count').replace('{n}',items.length)}</div>`;
+    items.slice(0,3).forEach(it=>{
+      html+=`<div class="home-preview-row"><span>${escapeHtml(it.label)}</span><span>${it.timeLabel}</span></div>`;
     });
   }
   el.innerHTML=html;
@@ -7273,7 +7419,7 @@ function renderHomeSchedulePreview(){
 function renderHomeDietTrainingPreview(){
   const el=document.getElementById('homeDietTrainingPreview'); if(!el) return;
   let html=`<div class="home-preview-title">${t('home_dt_title')}</div><div class="home-preview-dt-split">`;
-  html+='<div class="home-preview-dt-half" data-goto="food">';
+  html+='<div class="home-preview-dt-half">';
   if(!P.foodSetup){
     html+=`<div class="home-preview-sub">${t('home_no_food_setup')}</div>`;
   } else {
@@ -7285,7 +7431,7 @@ function renderHomeDietTrainingPreview(){
     const pct=planned?Math.min(100,Math.round(consumed/planned*100)):0;
     html+=`<div class="home-preview-sub">${Math.round(consumed)} / ${planned} kcal</div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
   }
-  html+='</div><div class="home-preview-dt-half" data-goto="workout">';
+  html+='</div><div class="home-preview-dt-half">';
   if(!P.workoutSetup){
     html+=`<div class="home-preview-sub">${t('home_no_training_setup')}</div>`;
   } else {
@@ -7296,7 +7442,9 @@ function renderHomeDietTrainingPreview(){
   }
   html+='</div></div>';
   el.innerHTML=html;
-  el.querySelectorAll('[data-goto]').forEach(sub=>sub.addEventListener('click',(e)=>{ e.stopPropagation(); showPanel(sub.dataset.goto); enterSection(sub.dataset.goto); }));
+  // the whole card is one click target now (data-goto="diettraining" on
+  // the outer element, handled by the generic .home-preview-card[data-goto]
+  // delegate below) — no more separate half-click zones.
 }
 function getHomeChallengesPreview(progress){
   const active=CHALLENGES_CONFIG.map(c=>{
