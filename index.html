@@ -721,7 +721,7 @@
   <div class="topnav-inner">
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="brand" id="brandLabel">🗓️</div>
-      <button class="icon-btn" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
+      <button class="icon-btn hidden" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
     </div>
     <div class="nav-actions">
       <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
@@ -1628,7 +1628,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.21.0';
+const APP_VERSION='v1.22.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1668,7 +1668,13 @@ async function storageSet(key,value){
     // leaving xp/coins (or anything else ever added alongside it) intact.
     // Harmless no-op difference for every other key, which only ever has
     // this one field anyway.
-    try{ await fsDataRef(key).set({value},{merge:true}); }catch(e){ /* offline — Firestore's own queue retries when back online */ }
+    // NOT awaited on purpose: with enablePersistence the write is applied to
+    // the local cache (and visible to every later read) the moment set() is
+    // called, and queued durably in IndexedDB for sync — but the returned
+    // promise only resolves once the SERVER acknowledges it. Awaiting it
+    // froze every save (checkmarks, XP, toasts) for as long as the user was
+    // offline. Durability is identical either way; only the UI wait changes.
+    try{ fsDataRef(key).set({value},{merge:true}).catch(()=>{}); }catch(e){}
     return;
   }
   try{ if(window.storage&&window.storage.set){ await window.storage.set(key,value,false); return; } }catch(e){}
@@ -2027,6 +2033,12 @@ function escapeHtml(str){
   if(str==null) return '';
   return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
+/* Other users fully control their own avatar/stats/progress fields (rules
+   only check that you write your OWN docs, not what's in them) — so any of
+   those reaching innerHTML on someone else's screen must be escaped or
+   coerced to a real number, never interpolated raw. */
+function safeAvatar(a){ return escapeHtml(a||'🙂'); }
+function safeNum(n){ const v=Number(n); return isFinite(v)?v:0; }
 function showErr(msg){
   /* Known-benign noise: browsers with storage disabled/partitioned (data:
      URLs, some private-browsing modes) throw the moment ANY code touches
@@ -2581,6 +2593,9 @@ function goToStoreRarity(rar){
     if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
   },80);
 }
+// the demo wipe deletes the profile + daily tracks — a developer tool, never
+// something to leave one tap away in every real user's top nav
+if(new URLSearchParams(location.search).get('demo')==='1') document.getElementById('demoResetBtn').classList.remove('hidden');
 document.getElementById('demoResetBtn').addEventListener('click',()=>{
   const bar=document.getElementById('demoConfirmBar');
   document.getElementById('demoConfirmText').textContent = LANG==='ar'
@@ -3995,7 +4010,7 @@ function renderCommitList(){
     const rangeLabel=(c.fromDate||c.toDate) ? ` [${c.fromDate||'…'} → ${c.toDate||'…'}]` : '';
     const conflictBadge=conflictedSet.has(c) ? `<span style="color:var(--err);font-weight:700;">${t('conflict_badge')}</span> ` : '';
     const chip=document.createElement('div'); chip.className='tag-chip commit-chip';
-    chip.innerHTML=`<span>${conflictBadge}📌 ${c.label} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})${c.hard===false?' 🔓':''}</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
+    chip.innerHTML=`<span>${conflictBadge}📌 ${escapeHtml(c.label)} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})${c.hard===false?' 🔓':''}</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
     chip.querySelector('.pin-btn').addEventListener('click',()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); });
     chip.querySelector('button:last-child').addEventListener('click',()=>{ P._commitments.splice(i,1); renderCommitList(); persistCommitments(); });
     box.appendChild(chip);
@@ -4099,12 +4114,12 @@ function showConflictModal(candidate, overlaps, bufferIssues, handlers){
   let html=`<div class="dash-empty" style="margin-bottom:10px;">${t('conflict_body')}</div>`;
   overlaps.forEach((cf,idx)=>{
     html+=`<div class="challenge-card">
-      <div style="font-weight:700;margin-bottom:8px;">📌 ${candidate.label} (${formatCommitRange(candidate)})<br>📌 ${cf.other.label} (${formatCommitRange(cf.other)})</div>
+      <div style="font-weight:700;margin-bottom:8px;">📌 ${escapeHtml(candidate.label)} (${formatCommitRange(candidate)})<br>📌 ${escapeHtml(cf.other.label)} (${formatCommitRange(cf.other)})</div>
       <div id="conflictActions_${idx}" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>`;
   });
   bufferIssues.forEach(cf=>{
-    html+=`<div class="warn-chip">${candidate.label} ↔ ${cf.other.label}: ${cf.gap} min ${LANG==='ar'?'بس بينهم':'gap only'}</div>`;
+    html+=`<div class="warn-chip">${escapeHtml(candidate.label)} ↔ ${escapeHtml(cf.other.label)}:${cf.gap} min ${LANG==='ar'?'بس بينهم':'gap only'}</div>`;
   });
   html+=`<button type="button" class="setup-btn" id="conflictKeepBtn">${t('conflict_keep_both')}</button>`;
   html+=`<button type="button" class="ob-btn secondary" id="conflictCancelBtn">${t('conflict_cancel')}</button>`;
@@ -4669,7 +4684,7 @@ function setupTagInput(fieldId,addBtnId,chipsId,getArr,setArr,onChange){
     chipsEl.innerHTML='';
     arr.forEach((val,i)=>{
       const chip=document.createElement('div'); chip.className='tag-chip';
-      chip.innerHTML=`<span>${val}</span><button type="button">✕</button>`;
+      chip.innerHTML=`<span>${escapeHtml(val)}</span><button type="button">✕</button>`;
       chip.querySelector('button').addEventListener('click',()=>{ const a=getArr().slice(); a.splice(i,1); setArr(a); render(); if(onChange) onChange(); });
       chipsEl.appendChild(chip);
     });
@@ -4707,7 +4722,7 @@ function setupEmojiTagInput(fieldId,addBtnId,chipsId,getArr,setArr,defaultEmoji,
     chipsEl.innerHTML='';
     arr.forEach((item,i)=>{
       const chip=document.createElement('div'); chip.className='tag-chip';
-      chip.innerHTML=`<button type="button" class="emoji-pick" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Tap to change icon'}">${item.emoji||defaultEmoji}</button><span>${item.text}</span><button type="button">✕</button>`;
+      chip.innerHTML=`<button type="button" class="emoji-pick" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Tap to change icon'}">${escapeHtml(item.emoji||defaultEmoji)}</button><span>${escapeHtml(item.text)}</span><button type="button">✕</button>`;
       chip.querySelector('.emoji-pick').addEventListener('click',(e)=>{
         e.stopPropagation();
         openEmojiPicker(e.currentTarget,(picked)=>{
@@ -5284,7 +5299,7 @@ function renderLog(){
   weightLog.slice().reverse().forEach((e,idx)=>{
     const ri=weightLog.length-1-idx; const prev=ri>0?weightLog[ri-1].kg:(sv0!=null?sv0:e.kg);
     const diff=(e.kg-prev).toFixed(1);
-    html+=`<div class="log-row"><span>${e.date}</span><span class="kg">${e.kg} ${t('kg')}</span><span class="diff ${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff}</span></div>`;
+    html+=`<div class="log-row"><span>${escapeHtml(e.date)}</span><span class="kg">${safeNum(e.kg)} ${t('kg')}</span><span class="diff ${diff>=0?'up':'down'}">${diff>=0?'+':''}${diff}</span></div>`;
   });
   list.innerHTML=html;
 }
@@ -5399,9 +5414,29 @@ function renderWeightYesterdayRow(){
 function todayKey(){ const d=new Date(); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 const DAILY_TRACK_DEFAULTS={meals:[false,false,false,false,false],supplements:{},water:0,workoutDone:false,agenda:{},feedbackGiven:false,completionCounted:false,mealOverrides:{},habits:{},workoutLog:{},workoutMeta:{},exerciseChecks:{},xpAwarded:{},weightLoggedToday:false,yesterdayWeightLogged:false};
 let dailyTrack={...DAILY_TRACK_DEFAULTS};
-async function loadDailyTrack(){ try{ const v=await storageGet(todayKey()); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){} }
+/* dailyTrack belongs to ONE specific day. It used to be loaded once at boot
+   but always saved to todayKey() — so an app left open past midnight wrote
+   yesterday's habits/water/xpAwarded flags into the new day's doc. Now the
+   in-memory data always saves back to the day it was loaded for, and a
+   rollover check swaps in the new day's doc as soon as the day changes. */
+let dailyTrackKey=todayKey();
+async function loadDailyTrack(){
+  dailyTrackKey=todayKey();
+  dailyTrack={...DAILY_TRACK_DEFAULTS};
+  try{ const v=await storageGet(dailyTrackKey); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){}
+}
+async function checkDayRollover(){
+  if(!currentUser || todayKey()===dailyTrackKey) return;
+  await loadDailyTrack();
+  if(document.getElementById('panel-home').classList.contains('active')) refreshHome();
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkDayRollover(); });
+window.addEventListener('focus',checkDayRollover);
+setInterval(checkDayRollover,60000);
 async function saveDailyTrack(){
-  await storageSet(todayKey(),JSON.stringify(dailyTrack));
+  const key=dailyTrackKey;
+  await storageSet(key,JSON.stringify(dailyTrack));
+  if(key!==todayKey()) checkDayRollover();
   // dailyTrack is the single source every daily-progress mutation writes
   // through (habits/water/food/exercise/supplements), so this is the one
   // chokepoint where the Home To-Do progress header and the Diet+training
@@ -5420,7 +5455,7 @@ function renderMealChecklist(idx,v){
     const displayText=mealDisplayName(m,LANG);
     const item=document.createElement('div');
     item.className='check-item'+(dailyTrack.meals[i]?' done':'');
-    item.innerHTML=`<button type="button" class="meal-swap-btn" title="${LANG==='ar'?'بدّل هالوجبة':'Swap this meal'}">🔄</button><div class="box">${dailyTrack.meals[i]?'✓':''}</div><div class="txt"><div>${label}: ${displayText}</div><div class="meal-macro-line">${mealMacroLabel(m)}</div></div>`;
+    item.innerHTML=`<button type="button" class="meal-swap-btn" title="${LANG==='ar'?'بدّل هالوجبة':'Swap this meal'}">🔄</button><div class="box">${dailyTrack.meals[i]?'✓':''}</div><div class="txt"><div>${label}: ${escapeHtml(displayText)}</div><div class="meal-macro-line">${mealMacroLabel(m)}</div></div>`;
     item.querySelector('.meal-swap-btn').addEventListener('click',(e)=>{
       e.stopPropagation();
       swapSingleTodayMeal(m.slotKey);
@@ -5639,8 +5674,10 @@ async function incrementXpCoins(deltaXp,deltaCoins){
   if(deltaXp) updates.xp=firebase.firestore.FieldValue.increment(deltaXp);
   if(deltaCoins) updates.coins=firebase.firestore.FieldValue.increment(deltaCoins);
   if(!Object.keys(updates).length) return;
-  try{ await fsDataRef('profile').set(updates,{merge:true}); }
-  catch(e){ /* offline — Firestore's own write queue retries when back online; the optimistic P.xp/P.coins already applied locally in the meantime */ }
+  // not awaited, same reason as storageSet: the increment is applied to the
+  // local cache immediately and queued durably; awaiting only waited for the
+  // server ack, which froze every reward flow while offline
+  try{ fsDataRef('profile').set(updates,{merge:true}).catch(()=>{}); }catch(e){}
 }
 /* idempotent by construction, not by a client-memory flag: the PRESENCE
    of the top-level xp/coins fields on the Firestore doc itself is the
@@ -6240,6 +6277,11 @@ async function buyCosmetic(id){
   P.coins-=item.price;
   P.inventory[id]={acquiredAt:new Date().toISOString(),source:'store'};
   await storageSet('profile',JSON.stringify(P));
+  // the top-level coins field is the authoritative balance (see
+  // reconcileXpCoinsFromFirestore) — without this atomic decrement the
+  // spend only ever touched the blob, and the next boot restored the full
+  // pre-purchase balance, making every purchase free after a refresh.
+  await incrementXpCoins(0,-item.price);
 }
 async function equipCosmetic(slot,id){
   if(id && !P.inventory[id]) throw new Error('not owned');
@@ -6700,11 +6742,18 @@ const ChallengeService={
     const myStats=await computeUserStats();
     const friendProfile=await PublicProfileService.getProfile(friendUid);
     const friendStats=(friendProfile&&friendProfile.stats)||{};
+    // `metric` arrives as a LEADERBOARD_CATEGORIES id ('training'), which is
+    // also what the list view uses for its label — but the actual stats
+    // field is that category's .metric ('totalWorkouts'). Reading stats by
+    // the category id always gave 0, so every non-XP challenge was stuck.
+    // statKey is stored on new docs; legacy docs without it keep their old
+    // (0-based) behaviour rather than suddenly jumping to a lifetime total.
+    const statKey=(LEADERBOARD_CATEGORIES.find(c=>c.id===metric)||{}).metric||metric;
     const doc={
       createdBy:me,
       participantUids:[me,friendUid],
-      metric, target,
-      startValues:{[me]:myStats[metric]||0, [friendUid]:friendStats[metric]||0},
+      metric, statKey, target,
+      startValues:{[me]:myStats[statKey]||0, [friendUid]:friendStats[statKey]||0},
       progress:{[me]:0, [friendUid]:0},
       createdAt:serverNow(), updatedAt:serverNow()
     };
@@ -6731,7 +6780,7 @@ const ChallengeService={
     const me=currentUser.uid;
     const start=(challenge.startValues&&challenge.startValues[me])||0;
     const stats=await computeUserStats();
-    const current=Math.max(0,(stats[challenge.metric]||0)-start);
+    const current=Math.max(0,(stats[challenge.statKey||challenge.metric]||0)-start);
     if(challenge.progress&&challenge.progress[me]===current) return current;
     try{ await friendChallengesCol().doc(challenge.id).update({['progress.'+me]:current, updatedAt:serverNow()}); }catch(e){}
     return current;
@@ -6851,14 +6900,14 @@ async function renderSocialFriendsTab(content){
   <div id="friendSearchResult"></div>`;
   if(incoming.length){
     html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('incoming_requests_title')}</h3>`;
-    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.fromUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
+    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.fromUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
   }
   if(outgoing.length){
     html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('outgoing_requests_title')}</h3>`;
-    html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${(r.profile&&r.profile.avatar)||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.toUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
+    html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.toUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
   }
   html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('social_tab_friends')}</h3>`;
-  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${f.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(f.displayName)}</div><div style="font-size:0.7rem;color:var(--ink-soft);">Lvl ${(f.stats&&f.stats.level)||1} · ${(f.stats&&f.stats.xp)||0} XP</div></div></div>`).join('')
+  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${safeAvatar(f.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(f.displayName)}</div><div style="font-size:0.7rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Lvl'} ${safeNum(f.stats&&f.stats.level)||1} · ${safeNum(f.stats&&f.stats.xp)} XP</div></div></div>`).join('')
     : `<div class="dash-empty">${t('friends_empty')}</div>`;
   content.innerHTML=html;
 
@@ -6887,7 +6936,7 @@ async function renderSocialFriendsTab(content){
       : status==='outgoing' ? `<span class="friend-action-btn reject" style="cursor:default;">${t('request_sent_btn')}</span>`
       : status==='incoming' ? `<button class="friend-action-btn accept" id="searchAcceptBtn">${t('accept_btn')}</button>`
       : `<button class="friend-action-btn accept" id="searchAddBtn">${t('send_request_btn')}</button>`;
-    resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${result.avatar||'🙂'}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(result.displayName||result.username)}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
+    resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${safeAvatar(result.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(result.displayName||result.username)}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
     const addBtn=document.getElementById('searchAddBtn');
     if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; await FriendService.sendRequest(result.uid); doSearch(); });
     const accBtn=document.getElementById('searchAcceptBtn');
@@ -6914,7 +6963,7 @@ async function renderSocialLeaderboardTab(content){
   rowsEl.innerHTML=rows.map((r,i)=>{
     const rank=medals[i]||(i+1);
     const unit=LANG==='ar'?category.unitAr:category.unitEn;
-    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${r.avatar}</div><div class="lb-name">${escapeHtml(r.name)}</div><div class="lb-value">${r[category.metric]||0} ${unit}</div></div>`;
+    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${safeAvatar(r.avatar)}</div><div class="lb-name">${escapeHtml(r.name)}</div><div class="lb-value">${safeNum(r[category.metric])} ${unit}</div></div>`;
   }).join('');
 }
 async function renderSocialFeedTab(content){
@@ -6940,7 +6989,7 @@ async function renderSocialCompareTab(content){
     const fstats=friend.stats||{};
     document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',escapeHtml(friend.displayName))+'</div>'+
       LEADERBOARD_CATEGORIES.filter(c=>!c.privacyKey||(friend.privacy&&friend.privacy[c.privacyKey]!==false)).map(c=>{
-        const yv=you[c.metric]||0, fv=fstats[c.metric]||0, max=Math.max(yv,fv,1);
+        const yv=safeNum(you[c.metric]), fv=safeNum(fstats[c.metric]), max=Math.max(yv,fv,1);
         return `<div class="compare-row"><div>${c.icon} ${yv}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${yv/max*50}%;"></div><div class="compare-bar-them" style="width:${fv/max*50}%;"></div></div><div>${fv}</div></div>`;
       }).join('');
   };
@@ -6995,9 +7044,10 @@ async function renderSocialChallengesTab(content){
   const rendered=await Promise.all(challenges.map(async ch=>{
     const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===ch.metric)||LEADERBOARD_CATEGORIES[0];
     const myProgress=await ChallengeService.syncMyProgress(ch);
-    const theirProgress=(ch.progress&&ch.progress[ch.otherUid])||0;
+    const theirProgress=safeNum(ch.progress&&ch.progress[ch.otherUid]);
+    ch={...ch, target:safeNum(ch.target)||1}; // written by either participant — never trust it as markup
     const otherName=escapeHtml((ch.otherProfile&&ch.otherProfile.displayName)||'?');
-    const otherAvatar=(ch.otherProfile&&ch.otherProfile.avatar)||'🙂';
+    const otherAvatar=safeAvatar(ch.otherProfile&&ch.otherProfile.avatar);
     const max=Math.max(myProgress,theirProgress,ch.target,1);
     let status;
     if(myProgress>=ch.target && theirProgress>=ch.target) status=t('challenge_both_done');
@@ -7036,11 +7086,11 @@ async function openFriendProfile(uid){
   const titleLine=(profile.titles&&profile.titles.length) ? TITLES_CONFIG.filter(tc=>profile.titles.includes(tc.id)).map(tc=>`${tc.icon} ${LANG==='ar'?tc.nameAr:tc.nameEn}`).join(' · ') : '';
   document.getElementById('cardBody').innerHTML=`
     <div class="friend-profile-header">
-      <div class="friend-profile-avatar">${profile.avatar||'🙂'}</div>
+      <div class="friend-profile-avatar">${safeAvatar(profile.avatar)}</div>
       <h2 style="margin:0;">${escapeHtml(profile.displayName)}</h2>
-      <div style="font-size:0.8rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Level'} ${s.level||1}${titleLine?' · '+titleLine:''}</div>
+      <div style="font-size:0.8rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Level'} ${safeNum(s.level)||1}${titleLine?' · '+titleLine:''}</div>
     </div>
-    <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${b.val}</b><span>${b.label}</span></div>`).join('')}</div>
+    <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${safeNum(b.val)}</b><span>${b.label}</span></div>`).join('')}</div>
     ${priv.collection!==false ? `<button class="setup-btn" id="viewFriendCollectionBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:10px;">🐾 ${t('view_collection_btn')}</button>` : ''}
     <button class="setup-btn" id="friendRemoveBtn" style="background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>
   `;
@@ -7097,7 +7147,7 @@ async function openFriendCollectionView(uid,displayName){
           <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
           <div class="thumb">${thumbInner}</div>
           <div class="name">${escapeHtml(collName(sp))}</div>
-          <div class="meta">${info?(info.catchCount+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
+          <div class="meta">${info?(safeNum(info.catchCount)+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
         </div>`;
       }).join('')}</div>`;
     });
@@ -7176,13 +7226,13 @@ async function openCalendarDay(y,m,d){
     const conflicted=new Set(); dayConflicts.forEach(cf=>{ conflicted.add(cf.a); conflicted.add(cf.b); });
     commitments.forEach(c=>{
       const badge=conflicted.has(c)?`<span style="color:var(--err);font-weight:700;">${t('conflict_badge')} </span>`:'';
-      html+=`<div class="meal"><div class="content">${badge}📌 ${c.label} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
+      html+=`<div class="meal"><div class="content">${badge}📌 ${escapeHtml(c.label)} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
     });
   } else {
     html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'✅ يوم فاضي، ما عندك التزامات':'✅ Free day, no commitments'}</div>`;
   }
   const noteEntries=Object.entries(dayTrack.agenda||{});
-  noteEntries.forEach(([slot,note])=>{ html+=`<div class="meal"><div class="content">📌 ${note}</div></div>`; });
+  noteEntries.forEach(([slot,note])=>{ html+=`<div class="meal"><div class="content">📌 ${escapeHtml(note)}</div></div>`; });
   html+=`<button class="setup-btn" id="calDetailBtn" style="margin-top:14px;">${LANG==='ar'?'🕐 عرض بالتفصيل (بالساعة)':'🕐 Show hour-by-hour detail'}</button>`;
   html+=`<div id="calDetailArea" class="agenda-list" style="margin-top:14px;"></div>`;
   document.getElementById('cardBody').innerHTML=html;
@@ -7210,7 +7260,7 @@ function renderCalDetail(dateKey,commitments,dayTrack){
     const auto=calAutoLabelForSlot(slot,commitments);
     const custom=dayTrack.agenda[slot];
     const note=(custom!==undefined&&custom!==null&&custom!=='') ? custom : auto;
-    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note||t('no_note')}</div>`;
+    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note?escapeHtml(note):t('no_note')}</div>`;
     el.addEventListener('click',()=>openCalSlotEdit(el,slot,auto,dateKey,dayTrack));
     area.appendChild(el);
   });
@@ -7218,7 +7268,7 @@ function renderCalDetail(dateKey,commitments,dayTrack){
 function openCalSlotEdit(el,slot,auto,dateKey,dayTrack){
   if(el.querySelector('.agenda-edit')) return;
   const current=(dayTrack.agenda[slot]!==undefined) ? dayTrack.agenda[slot] : auto;
-  el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><input class="agenda-edit" value="${current.replace(/"/g,'&quot;')}" placeholder="${LANG==='ar'?'شنو عندك بهالوقت؟':"What's on?"}">`;
+  el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><input class="agenda-edit" value="${escapeHtml(current)}" placeholder="${LANG==='ar'?'شنو عندك بهالوقت؟':"What's on?"}">`;
   const input=el.querySelector('.agenda-edit');
   input.focus();
   async function commit(){
@@ -7227,7 +7277,7 @@ function openCalSlotEdit(el,slot,auto,dateKey,dayTrack){
     else delete dayTrack.agenda[slot];
     await storageSet(dateKey,JSON.stringify(dayTrack));
     const note=(dayTrack.agenda[slot]!==undefined) ? dayTrack.agenda[slot] : auto;
-    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note||t('no_note')}</div>`;
+    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note?escapeHtml(note):t('no_note')}</div>`;
   }
   input.addEventListener('blur',commit);
   input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); input.blur(); } });
@@ -8170,15 +8220,21 @@ function collCatName(cat){ return LANG==='ar'?cat.nameAr:cat.nameEn; }
 async function collLoadCategory(catId){
   const raw=await storageGet('collections:animals:'+catId);
   collCatData=raw?JSON.parse(raw):{};
+  // backfill: anything already caught has necessarily paid its first-catch
+  // reward already, so mark it before a − to zero could make it look new
+  Object.values(collCatData).forEach(rec=>{ if(rec&&rec.catches&&rec.catches.length) rec.rewarded=true; });
   return collCatData;
 }
 async function collSaveCategory(catId){
-  await storageSet('collections:animals:'+catId, JSON.stringify(collCatData));
+  // snapshot NOW: if the user switches category during the await below,
+  // collCatData is replaced, and the mirror must still get THIS category's data
+  const snapshot=collCatData;
+  await storageSet('collections:animals:'+catId, JSON.stringify(snapshot));
   // the private save above has already succeeded and must never be rolled
   // back or blocked by the mirror write failing (e.g. offline) — caught
   // here, at the call site, so callers that DO need to know about a real
   // failure (the backfill migration below) can still let it propagate.
-  try{ await syncPublicCollectionMirror(catId, collCatData); }
+  try{ await syncPublicCollectionMirror(catId, snapshot); }
   catch(e){ /* offline/transient — the next successful save or backfill recomputes and converges */ }
 }
 /* Derives the friend-visible mirror doc from the private collection data
@@ -8724,15 +8780,25 @@ function collGrantFirstCatchReward(sp){
     if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
   })();
 }
+/* A species pays its first-catch reward ONCE, ever. The old check was only
+   "had zero catches before this tap", so − back to 0 then + re-paid the
+   full reward every cycle. `rewarded` persists on the record and is never
+   cleared by removing catches; records that already have catches are
+   treated as rewarded (they necessarily paid out when first caught). */
+function collShouldReward(rec){
+  if(rec.rewarded) return false;
+  return !collIsCollected(rec);
+}
 function collAddCatch(measurements){
   const rec=collRecord(collCurrentSpecies);
   if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
-  const wasCollected=collIsCollected(rec);
+  const shouldReward=collShouldReward(rec);
   rec.catches=rec.catches||[];
   rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:measurements||{}});
+  rec.rewarded=true;
   renderCollSpeciesDetail();     // instant feedback — never block the tap on a network round-trip
   collSaveCategory(collCurrentCat);
-  if(!wasCollected) collGrantFirstCatchReward(collSpeciesInfo(collCurrentCat,collCurrentSpecies));
+  if(shouldReward) collGrantFirstCatchReward(collSpeciesInfo(collCurrentCat,collCurrentSpecies));
 }
 /* the "type a number" box next to the +/- counter — for someone backfilling
    a real count (e.g. "I've actually caught this fish 50 times") who isn't
@@ -8746,12 +8812,13 @@ function collAddCatchBulk(n){
   n=Math.min(n,MAX_BULK);
   const rec=collRecord(collCurrentSpecies);
   if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
-  const wasCollected=collIsCollected(rec);
+  const shouldReward=collShouldReward(rec);
   rec.catches=rec.catches||[];
   for(let i=0;i<n;i++) rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:{}});
+  rec.rewarded=true;
   renderCollSpeciesDetail();
   collSaveCategory(collCurrentCat);
-  if(!wasCollected) collGrantFirstCatchReward(collSpeciesInfo(collCurrentCat,collCurrentSpecies));
+  if(shouldReward) collGrantFirstCatchReward(collSpeciesInfo(collCurrentCat,collCurrentSpecies));
 }
 
 function renderBossModalBody(sp, justCaught){
