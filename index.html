@@ -280,6 +280,20 @@
   .ch-summary{ font-size:0.8rem; color:var(--ink-soft); margin:0 0 12px; }
   .ch-section-title{ font-family:var(--font-head); font-weight:800; font-size:0.9rem; color:var(--heading); margin:16px 0 8px; }
   .challenge-card.needs-setup{ opacity:0.72; }
+  .friend-hero{ margin:0 0 12px; }
+  .friend-showcase{ margin:0 0 14px; }
+  .friend-showcase-title{ font-family:var(--font-head); font-weight:800; font-size:0.85rem; color:var(--heading); margin-bottom:8px; }
+  .friend-showcase-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .showcase-chip{ font-size:0.72rem; font-weight:700; padding:5px 10px; border-radius:999px; border:1.5px solid var(--line); background:var(--bg); }
+  .showcase-chip.rar-uncommon{ border-color:#3b82f6; } .showcase-chip.rar-epic{ border-color:#a855f7; } .showcase-chip.rar-mythic{ border-color:#ef4444; }
+  .showcase-chip.rar-legendary{ border-color:#f59e0b; background:linear-gradient(90deg,rgba(245,158,11,0.18),rgba(255,236,170,0.28)); }
+  .fc-summary{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 12px; }
+  .fc-summary div{ background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:8px; text-align:center; font-size:0.72rem; color:var(--ink-soft); }
+  .fc-summary b{ display:block; font-family:var(--font-head); font-size:1.1rem; color:var(--heading); }
+  .fc-chips{ display:flex; gap:6px; overflow-x:auto; margin-bottom:10px; padding-bottom:2px; }
+  .fc-chips button{ flex-shrink:0; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:999px; padding:7px 12px; font:inherit; font-size:0.76rem; font-weight:700; cursor:pointer; }
+  .fc-chips button.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .coll-species-card .you-have{ position:absolute; top:6px; inset-inline-end:6px; z-index:2; font-size:0.6rem; font-weight:800; background:#2e8b57; color:#fff; border-radius:999px; padding:2px 6px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1834,7 +1848,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.34.0';
+const APP_VERSION='v1.35.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -6366,10 +6380,12 @@ async function reconcileXpCoinsFromFirestore(){
    grows (nothing is sold or revoked), so a union of both sides can never
    lose or wrongly add an item. */
 function persistInventoryItem(id){
+  setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
   if(!fbDb||!currentUser||!P.inventory||!P.inventory[id]) return;
   try{ fsDataRef('profile').set({inventory:{[id]:P.inventory[id]}},{merge:true}).catch(()=>{}); }catch(e){}
 }
 function persistEquippedSlot(slot){
+  setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
   if(!fbDb||!currentUser) return;
   const v=(P.equipped&&P.equipped[slot]!=null)?P.equipped[slot]:null;
   try{ fsDataRef('profile').set({equipped:{[slot]:v}},{merge:true}).catch(()=>{}); }catch(e){}
@@ -7452,6 +7468,7 @@ const PublicProfileService={
     P.publicProfile.privacy={...P.publicProfile.privacy, ...partial};
     await storageSet('profile',JSON.stringify(P));
     await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, privacy:P.publicProfile.privacy, updatedAt:serverNow()},{merge:true});
+    if('collection' in partial) await this.syncWholeCollection(); // hides (deletes) or re-publishes it
     if(partial.leaderboardGlobal===false) await leaderboardEntriesCol().doc(currentUser.uid).delete().catch(()=>{});
     else if(partial.leaderboardGlobal===true) await this.syncStats();
   },
@@ -7464,6 +7481,8 @@ const PublicProfileService={
       const stats=await computeUserStats();
       const titles=unlockedTitles(stats).map(x=>x.id);
       await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow()},{merge:true});
+      // one-time: publish the look + collection for people who had them before this existed
+      if(!P._showcaseV1Done){ await this.syncShowcase(); if(await this.syncWholeCollection()){ P._showcaseV1Done=true; storageSet('profile',JSON.stringify(P)); } }
       if(P.publicProfile.privacy.leaderboardGlobal){
         await leaderboardEntriesCol().doc(currentUser.uid).set({
           uid:currentUser.uid, displayName:P.publicProfile.displayName, avatar:P.publicProfile.avatar,
@@ -7473,6 +7492,36 @@ const PublicProfileService={
         });
       }
     }catch(e){ /* offline/transient — the next real completion event retries via this same hook */ }
+  },
+  /* what friends see of you beyond stats: your equipped look + what you own,
+     and (unless collection privacy is off) your collection as
+     {catId:{speciesId:count}} — kept on this same public doc friends can
+     already read, instead of a separate subcollection that needs extra rules */
+  async syncShowcase(){
+    if(!this.hasProfile()||!fbDb||!currentUser) return;
+    try{
+      const eq=P.equipped||{};
+      await usersCol().doc(currentUser.uid).set({uid:currentUser.uid,
+        cosmetics:{equipped:{background:eq.background||null,frame:eq.frame||null,effect:eq.effect||null,title:eq.title||null}, owned:Object.keys(P.inventory||{})},
+        updatedAt:serverNow()},{merge:true});
+    }catch(e){}
+  },
+  async syncCollectionCategory(catId,data){
+    if(!this.hasProfile()||!fbDb||!currentUser) return;
+    if((P.publicProfile.privacy||{}).collection===false) return;
+    const map={}; Object.entries(data||{}).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) map[sid]=n; });
+    try{ await usersCol().doc(currentUser.uid).update({['collection.'+catId]:map, updatedAt:serverNow()}); }catch(e){}
+  },
+  async syncWholeCollection(){
+    if(!this.hasProfile()||!fbDb||!currentUser) return false;
+    if((P.publicProfile.privacy||{}).collection===false){ try{ await usersCol().doc(currentUser.uid).update({collection:firebase.firestore.FieldValue.delete()}); }catch(e){} return true; }
+    const all={};
+    for(const cat of ANIMAL_CATEGORIES){
+      let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
+      const map={}; Object.entries(data).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) map[sid]=n; });
+      all[cat.id]=map;
+    }
+    try{ await usersCol().doc(currentUser.uid).update({collection:all, updatedAt:serverNow()}); return true; }catch(e){ return false; }
   },
   async getProfile(uid){
     try{ const doc=await usersCol().doc(uid).get(); return doc.exists?{uid,...doc.data()}:null; }
@@ -8026,16 +8075,33 @@ async function openFriendProfile(uid){
     {icon:'⚡',label:'XP',val:s.xp||0},
   ].filter(Boolean);
   const titleLine=(profile.titles&&profile.titles.length) ? TITLES_CONFIG.filter(tc=>profile.titles.includes(tc.id)).map(tc=>`${tc.icon} ${LANG==='ar'?tc.nameAr:tc.nameEn}`).join(' · ') : '';
+  const cz=profile.cosmetics||{}, feq=cz.equipped||{};
+  const eqTitle=feq.title&&TITLES_CONFIG.find(x=>x.id===feq.title);
+  const owned=(cz.owned||[]).map(id=>COSMETICS_CATALOG.find(c=>c.id===id)).filter(Boolean)
+    .sort((a,b)=>(RARITY_TIERS[b.rarity]?.order||0)-(RARITY_TIERS[a.rarity]?.order||0));
+  const RARITY_LABEL=r=>{ const tr=RARITY_TIERS[r]; return tr?`${tr.icon} ${LANG==='ar'?tr.nameAr:tr.nameEn}`:r; };
   document.getElementById('cardBody').innerHTML=`
-    <div class="friend-profile-header">
-      <div class="friend-profile-avatar">${safeAvatar(profile.avatar)}</div>
-      <h2 style="margin:0;">${escapeHtml(profile.displayName)}</h2>
-      <div style="font-size:0.8rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Level'} ${safeNum(s.level)||1}${titleLine?' · '+titleLine:''}</div>
+    <div class="cos-hero friend-hero" id="friendHero">
+      <div class="cos-hero-bg" id="friendHeroBg"></div><div class="cos-hero-effect" id="friendHeroFx"></div><div class="cos-hero-scrim"></div>
+      <div class="cos-hero-card">
+        <div class="cos-avatar-wrap"><div class="cos-frame-ring" id="friendFrameRing"></div><div class="cos-avatar">${safeAvatar(profile.avatar)}</div></div>
+        <h2 style="margin:0;color:#fff;">${escapeHtml(profile.displayName)}</h2>
+        ${eqTitle?`<div class="cos-chip">${eqTitle.icon} ${LANG==='ar'?eqTitle.nameAr:eqTitle.nameEn}</div>`:''}
+        <div style="font-size:0.8rem;opacity:0.9;">${LANG==='ar'?'مستوى':'Level'} ${safeNum(s.level)||1}${titleLine&&!eqTitle?' · '+titleLine:''}</div>
+      </div>
     </div>
+    ${owned.length?`<div class="friend-showcase"><div class="friend-showcase-title">✨ ${LANG==='ar'?`يملك ${owned.length} من المتجر`:`Owns ${owned.length} from the store`}</div>
+      <div class="friend-showcase-list">${owned.slice(0,12).map(c=>`<span class="showcase-chip rar-${c.rarity}" title="${escapeHtml(RARITY_LABEL(c.rarity))}">${escapeHtml(LANG==='ar'?c.nameAr:c.nameEn)}</span>`).join('')}</div></div>`:''}
     <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${safeNum(b.val)}</b><span>${b.label}</span></div>`).join('')}</div>
     ${priv.collection!==false ? `<button class="setup-btn" id="viewFriendCollectionBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:10px;">🐾 ${t('view_collection_btn')}</button>` : ''}
     <button class="setup-btn" id="friendRemoveBtn" style="background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>
   `;
+  // mount their equipped background / effect / frame, exactly as their own profile shows it
+  { const bgItem=feq.background&&COSMETICS_CATALOG.find(c=>c.id===feq.background), fxItem=feq.effect&&COSMETICS_CATALOG.find(c=>c.id===feq.effect), frItem=feq.frame&&COSMETICS_CATALOG.find(c=>c.id===feq.frame);
+    const bgEl=document.getElementById('friendHeroBg'), fxEl=document.getElementById('friendHeroFx'), frEl=document.getElementById('friendFrameRing');
+    if(bgItem){ bgEl.className='cos-hero-bg '+bgItem.cls; if(bgItem.mountEffect) bgItem.mountEffect(bgEl); }
+    if(fxItem&&fxItem.mountEffect) fxItem.mountEffect(fxEl);
+    if(frItem){ frEl.className='cos-frame-ring '+frItem.cls; } }
   const viewCollBtn=document.getElementById('viewFriendCollectionBtn');
   if(viewCollBtn) viewCollBtn.addEventListener('click',()=>openFriendCollectionView(uid,profile.displayName));
   document.getElementById('friendRemoveBtn').addEventListener('click',async()=>{
@@ -8059,45 +8125,66 @@ async function openFriendProfile(uid){
 async function openFriendCollectionView(uid,displayName){
   document.getElementById('dayTitle').textContent=`🐾 ${t('friend_collection_title')}`;
   document.getElementById('daySubtitle').textContent=t('read_only_tag');
-  document.getElementById('cardBody').innerHTML=`<div class="dash-empty">…</div>`;
+  const body=document.getElementById('cardBody');
+  body.innerHTML=`<div class="dash-empty">…</div>`;
+  const ar=LANG==='ar';
   const backRow=`<button type="button" class="setup-btn" id="friendCollBackBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:14px;">${t('back_generic')}</button>`;
+  const wireBack=()=>{ const bb=document.getElementById('friendCollBackBtn'); if(bb) bb.addEventListener('click',()=>openFriendProfile(uid)); };
   try{
-    const results=await Promise.all(ANIMAL_CATEGORIES.map(async cat=>{
-      try{
-        const doc=await fbDb.collection('users').doc(uid).collection('publicCollection').doc(cat.id).get();
-        return {cat, species: doc.exists?(doc.data().species||{}):{}, denied:false};
-      }catch(e){ return {cat, species:null, denied:true}; } // Rules rejected the read — privacy off, not friends (anymore), or offline
-    }));
-    if(results.every(r=>r.denied)){
-      document.getElementById('cardBody').innerHTML=backRow+`<div class="dash-empty">${t('friend_collection_hidden')}</div>`;
-      document.getElementById('friendCollBackBtn').addEventListener('click',()=>openFriendProfile(uid));
-      return;
+    const profile=await PublicProfileService.getProfile(uid);
+    const priv=(profile&&profile.privacy)||{};
+    let theirs=profile&&!profile.restricted&&profile.collection?profile.collection:null; // {catId:{sid:count}}
+    if(!theirs){ // older app versions only had the separate mirror
+      const results=await Promise.all(ANIMAL_CATEGORIES.map(async cat=>{
+        try{ const doc=await fbDb.collection('users').doc(uid).collection('publicCollection').doc(cat.id).get();
+          const sp=doc.exists?(doc.data().species||{}):null; if(!sp) return [cat.id,null];
+          const m={}; Object.entries(sp).forEach(([sid,v])=>{ m[sid]=(v&&v.catchCount)||1; }); return [cat.id,m];
+        }catch(e){ return [cat.id,null]; }
+      }));
+      if(results.some(([,m])=>m)) theirs=Object.fromEntries(results.map(([k,m])=>[k,m||{}]));
     }
-    let html=`<div style="text-align:center;font-weight:700;margin-bottom:4px;">${escapeHtml(displayName)}</div><div style="text-align:center;font-size:0.75rem;color:var(--ink-soft);margin-bottom:14px;">${t('read_only_tag')}</div>`;
-    results.forEach(({cat,species,denied})=>{
-      if(denied) return;
-      const list=collSpeciesList(cat.id);
-      if(!list.length) return;
-      const collectedCount=Object.keys(species).length;
-      const sorted=list.slice().sort((a,b)=>RARITY_TIERS[b.rarity].order-RARITY_TIERS[a.rarity].order);
-      html+=`<h3 style="font-size:0.9rem;margin:16px 0 8px;">${cat.icon} ${collCatName(cat)} <span style="font-weight:400;color:var(--ink-soft);font-size:0.75rem;">(${collectedCount}/${list.length})</span></h3>`;
-      html+=`<div class="coll-species-grid">${sorted.map(sp=>{
-        const info=species[sp.id];
-        const tier=RARITY_TIERS[sp.rarity];
-        const thumbInner=info?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon);
-        return `<div class="coll-species-card tier-${sp.rarity} ${info?'collected':'locked'}" style="cursor:default;">
-          <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
-          <div class="thumb">${thumbInner}</div>
-          <div class="name">${escapeHtml(collName(sp))}</div>
-          <div class="meta">${info?(safeNum(info.catchCount)+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
-        </div>`;
-      }).join('')}</div>`;
-    });
-    document.getElementById('cardBody').innerHTML=backRow+html;
-    document.getElementById('friendCollBackBtn').addEventListener('click',()=>openFriendProfile(uid));
+    if(!theirs){
+      const why = priv.collection===false ? t('friend_collection_hidden')
+        : (ar?'مقتنياته ما انرفعت ليلحين — بتطلع هني أول ما يفتح التطبيق بآخر نسخة.':'Their collection hasn’t synced yet — it shows up here once they open the latest version of the app.');
+      body.innerHTML=backRow+`<div class="dash-empty">${why}</div>`; wireBack(); return;
+    }
+    const mine={};
+    for(const cat of ANIMAL_CATEGORIES){
+      let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
+      mine[cat.id]={}; Object.entries(data).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) mine[cat.id][sid]=n; });
+    }
+    const cats=ANIMAL_CATEGORIES.filter(c=>collSpeciesList(c.id).length);
+    let tot={them:0,me:0,both:0};
+    cats.forEach(c=>{ const th=theirs[c.id]||{}, me=mine[c.id]||{}; tot.them+=Object.keys(th).length; tot.me+=Object.keys(me).length; tot.both+=Object.keys(th).filter(k=>me[k]).length; });
+    let curCat=cats[0]&&cats[0].id, filter='all';
+    const render=()=>{
+      const list=collSpeciesList(curCat), th=theirs[curCat]||{}, me=mine[curCat]||{};
+      let shown=list.slice().sort((a,b)=>RARITY_TIERS[b.rarity].order-RARITY_TIERS[a.rarity].order);
+      if(filter==='theirs') shown=shown.filter(sp=>th[sp.id]);
+      if(filter==='missing') shown=shown.filter(sp=>th[sp.id]&&!me[sp.id]);
+      if(filter==='both') shown=shown.filter(sp=>th[sp.id]&&me[sp.id]);
+      const cat=collCategoryConfig(curCat);
+      body.innerHTML=backRow+`
+        <div style="text-align:center;font-weight:800;margin-bottom:10px;">${escapeHtml(displayName)}</div>
+        <div class="fc-summary"><div><b class="num">${tot.them}</b>${ar?'عنده':'They have'}</div><div><b class="num">${tot.me}</b>${ar?'عندك':'You have'}</div><div><b class="num">${tot.both}</b>${ar?'مشتركة':'In common'}</div></div>
+        <div class="fc-chips">${cats.map(c=>`<button type="button" data-fcat="${c.id}" class="${c.id===curCat?'active':''}">${c.icon} ${escapeHtml(collCatName(c))} <span class="num">${Object.keys(theirs[c.id]||{}).length}/${collSpeciesList(c.id).length}</span></button>`).join('')}</div>
+        <div class="fc-chips">${[['all',ar?'الكل':'All'],['theirs',ar?'اللي عنده':'What they have'],['missing',ar?'عنده وما عندك':'They have, you don’t'],['both',ar?'عندكم الاثنين':'You both have']].map(([k,l])=>`<button type="button" data-ffil="${k}" class="${k===filter?'active':''}">${l}</button>`).join('')}</div>
+        <div class="coll-species-grid">${shown.map(sp=>{
+          const n=th[sp.id], tier=RARITY_TIERS[sp.rarity];
+          return `<div class="coll-species-card tier-${sp.rarity} ${n?'collected':'locked'}" style="cursor:default;">
+            ${me[sp.id]?`<span class="you-have">${ar?'✓ عندك':'✓ you'}</span>`:''}
+            <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
+            <div class="thumb">${n?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
+            <div class="name">${escapeHtml(collName(sp))}</div>
+            <div class="meta">${n?(safeNum(n)+' '+(ar?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
+          </div>`; }).join('')||`<div class="dash-empty">${ar?'ما في شي هني':'Nothing here'}</div>`}</div>`;
+      wireBack();
+      body.querySelectorAll('[data-fcat]').forEach(bt=>bt.addEventListener('click',()=>{ curCat=bt.dataset.fcat; render(); }));
+      body.querySelectorAll('[data-ffil]').forEach(bt=>bt.addEventListener('click',()=>{ filter=bt.dataset.ffil; render(); }));
+    };
+    render();
   }catch(e){
-    document.getElementById('cardBody').innerHTML=backRow+`<div class="dash-empty">${t('friend_collection_error')}</div>`;
-    document.getElementById('friendCollBackBtn').addEventListener('click',()=>openFriendProfile(uid));
+    body.innerHTML=backRow+`<div class="dash-empty">${t('friend_collection_error')}</div>`; wireBack();
   }
 }
 
@@ -9419,6 +9506,7 @@ async function collSaveCategory(catId){
   // failure (the backfill migration below) can still let it propagate.
   try{ await syncPublicCollectionMirror(catId, snapshot); }
   catch(e){ /* offline/transient — the next successful save or backfill recomputes and converges */ }
+  PublicProfileService.syncCollectionCategory(catId, snapshot);
 }
 /* Derives the friend-visible mirror doc from the private collection data
    and overwrites it wholesale — this is a pure recomputation (not an
