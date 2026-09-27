@@ -1672,7 +1672,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.25.0';
+const APP_VERSION='v1.26.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5672,10 +5672,23 @@ function updateNamedStreakForDate(key,targetDate){
   const lastDateObj=dateFromKey(s.lastDate);
   if(lastDateObj && lastDateObj>targetDate) return s; // never rewind past a more recent completion
   const dayBefore=new Date(targetDate); dayBefore.setDate(dayBefore.getDate()-1);
-  const dayBeforeKey=dateKeyOf(dayBefore);
-  s.current = (s.lastDate===dayBeforeKey) ? s.current+1 : 1;
+  // workout only: scheduled rest days are neutral — step back over them to
+  // the previous training day. A gap day only counts as rest if it's rest in
+  // BOTH the schedule saved at the last completion and the current one, so
+  // re-marking a missed day as rest afterwards can't rescue the streak.
+  const currentRest=(key==='workout'&&P.workoutSetup&&P.workoutSetup.restDays)||[];
+  if(key==='workout'){
+    const savedRest=Array.isArray(s.restDays)?s.restDays:currentRest;
+    for(let i=0;i<7&&dateKeyOf(dayBefore)!==s.lastDate;i++){
+      const wd=(dayBefore.getDay()+1)%7;
+      if(!(savedRest.includes(wd)&&currentRest.includes(wd))) break;
+      dayBefore.setDate(dayBefore.getDate()-1);
+    }
+  }
+  s.current = (s.lastDate===dateKeyOf(dayBefore)) ? s.current+1 : 1;
   s.longest = Math.max(s.longest, s.current);
   s.lastDate = targetKey;
+  if(key==='workout') s.restDays=currentRest.slice();
   return s;
 }
 function updateNamedStreak(key){ return updateNamedStreakForDate(key,new Date()); }
