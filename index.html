@@ -149,12 +149,12 @@
   .home-date-picker button{ background:var(--card); border:1px solid var(--line); border-radius:50%; width:30px; height:30px; font-size:1.1rem; line-height:1; cursor:pointer; color:var(--heading); }
   .home-date-picker span{ font-family:var(--font-head); font-weight:700; font-size:0.88rem; color:var(--heading); min-width:130px; text-align:center; }
   .home-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:20px; }
-  #homeTodoCard{ order:-1; } /* mobile: To-Do is the headline card, shown first regardless of source order */
+  #homeSchedulePreview{ order:-2; } #homeTodoCard{ order:-1; } /* phones: today's plan, then today's health, then highlights */
   @media(min-width:860px){
-    .home-grid{ grid-template-columns:1fr 1.7fr 1fr; align-items:start; gap:14px; }
-    #homeSchedulePreview{ grid-column:1; grid-row:1; }
+    .home-grid{ grid-template-columns:1.1fr 1.7fr 1fr; grid-template-rows:auto auto 1fr; align-items:start; gap:14px; }
+    #homeSchedulePreview{ order:0; grid-column:1; grid-row:1; }
     #homeDietTrainingPreview{ grid-column:1; grid-row:2; }
-    #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 3; }
+    #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 4; }
     #homeChallengesPreview{ grid-column:3; grid-row:1; }
     #homeCollectionPreview{ grid-column:3; grid-row:2; }
   }
@@ -192,6 +192,8 @@
   .first-run-step{ display:flex; align-items:center; gap:10px; width:100%; text-align:start; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:8px; cursor:pointer; font:inherit; color:var(--ink); }
   .first-run-step .fr-check{ width:24px; height:24px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; }
   .first-run-step.done{ opacity:0.6; cursor:default; }
+  .first-run-step .fr-text{ display:flex; flex-direction:column; gap:2px; }
+  .first-run-step .fr-text small{ font-size:0.74rem; color:var(--ink-soft); font-weight:400; }
   .first-run-step.done .fr-check{ background:var(--gold); border-color:var(--gold); color:#fff; }
   .first-run-step .fr-go{ margin-inline-start:auto; color:var(--ink-soft); }
   .wr-sub{ font-size:0.78rem; color:var(--ink-soft); margin:-4px 0 10px; }
@@ -202,6 +204,58 @@
   .wr-row .wr-delta{ font-size:0.72rem; min-width:52px; text-align:end; color:var(--ink-soft); }
   .wr-row .wr-delta.up{ color:#2e8b57; } .wr-row .wr-delta.down{ color:#c0392b; }
   .wr-note{ background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:10px; font-size:0.85rem; }
+  /* ---- IA v2: one primary nav, section heads, destination cards ---- */
+  .legacy-nav-btn{ display:none !important; }
+  .back-btn::before{ content:'‹ '; }
+  [dir="rtl"] .back-btn::before{ content:'› '; }
+  .root-panel > .back-row{ display:none; }
+  #bottomNav.gated{ display:none !important; }
+  .panel-head{ margin:16px 0 14px; }
+  .panel-head h2{ margin:0; font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1.25rem; }
+  .panel-sub{ margin:4px 0 0; font-size:0.82rem; color:var(--ink-soft); line-height:1.6; }
+  .dest-list{ display:flex; flex-direction:column; gap:12px; }
+  .dest-card{ display:flex; align-items:center; gap:14px; width:100%; text-align:start; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); cursor:pointer; font:inherit; color:var(--ink); }
+  .dest-card .dest-ic{ font-size:1.9rem; flex-shrink:0; }
+  .dest-card .dest-body{ display:flex; flex-direction:column; gap:3px; min-width:0; flex:1; }
+  .dest-card .dest-title{ font-family:var(--font-head); font-weight:800; font-size:1rem; color:var(--heading); }
+  .dest-card .dest-desc{ font-size:0.76rem; color:var(--ink-soft); }
+  .dest-card .dest-sum{ font-size:0.84rem; color:var(--ink); margin-top:4px; font-weight:600; }
+  .dest-card .dest-cta{ font-family:var(--font-head); font-weight:800; font-size:0.8rem; color:var(--heading); white-space:nowrap; align-self:center; }
+  .cta-arrow::after, .dash-link::after, .dest-cta::after, .home-cta::after{ content:' ›'; }
+  [dir="rtl"] .cta-arrow::after, [dir="rtl"] .dash-link::after, [dir="rtl"] .dest-cta::after, [dir="rtl"] .home-cta::after{ content:' ‹'; }
+  .dash-title-row{ display:flex; align-items:center; justify-content:space-between; gap:4px 8px; flex-wrap:wrap; }
+  .dash-link{ background:none; border:none; color:var(--heading); font-family:var(--font-head); font-size:0.74rem; font-weight:800; cursor:pointer; padding:6px 2px; white-space:nowrap; text-decoration:underline; text-underline-offset:3px; }
+  .cta-btn{ display:block; width:100%; margin-top:6px; padding:12px; border-radius:12px; border:1.5px dashed var(--heading); background:var(--bg); color:var(--heading); font-family:var(--font-head); font-weight:800; font-size:0.84rem; cursor:pointer; text-align:center; line-height:1.5; }
+  .schedule-hint{ font-size:0.8rem; color:var(--ink-soft); margin:0 0 12px; }
+  .schedule-empty{ margin-bottom:14px; }
+  .home-cta{ display:inline-block; margin-top:8px; font-family:var(--font-head); font-weight:800; font-size:0.78rem; color:var(--heading); background:none; border:none; padding:6px 0; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .home-todo-sub{ font-size:0.74rem; color:var(--ink-soft); margin:-2px 0 8px; }
+  .habits-hint{ display:none; font-size:0.78rem; color:var(--ink-soft); margin:-2px 0 10px; }
+  #habitsPanelSlot .habits-hint{ display:block; }
+  #habitsPanelSlot .habits-manage-link{ display:none; }
+  #homeHabitsSlot .habit-add-row, #homeHabitsSlot .habit-remove{ display:none; }
+  button.home-card{ font:inherit; color:inherit; width:100%; display:flex; flex-direction:column; align-items:center; }
+  .home-card .hub-desc{ font-size:0.72rem; color:var(--ink-soft); margin-top:4px; line-height:1.4; }
+  .setup-chip{ display:block; margin:14px auto 0; background:var(--card); border:1.5px solid var(--gold); color:var(--heading); border-radius:999px; padding:8px 16px; font-family:var(--font-head); font-weight:800; font-size:0.8rem; cursor:pointer; }
+  :focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+  /* desktop: the same five destinations as top tabs (moved here by placeMainNav) */
+  @media(min-width:760px){
+    #mainNav #bottomNav{ display:flex; justify-content:center; flex-wrap:wrap; gap:6px; max-width:760px; margin:10px auto 0; padding:0; position:static; background:none; border:none; backdrop-filter:none; }
+    #mainNav .bottom-nav-item{ flex-direction:row; gap:6px; min-height:40px; padding:8px 16px; border-radius:999px; font-size:0.85rem; border:1px solid transparent; }
+    #mainNav .bottom-nav-item .ic{ font-size:1rem; }
+    #mainNav .bottom-nav-item.active{ background:var(--card); border-color:var(--line); box-shadow:var(--shadow); }
+  }
+  .coll-crumbs{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; font-size:0.78rem; margin:4px 0 12px; }
+  .coll-crumbs .crumb{ background:none; border:none; padding:4px 2px; font:inherit; font-weight:700; color:var(--heading); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .coll-crumbs .crumb.current{ text-decoration:none; color:var(--ink-soft); cursor:default; }
+  .coll-crumbs .crumb-sep{ color:var(--ink-soft); }
+  [dir="rtl"] .coll-crumbs .crumb-sep{ transform:scaleX(-1); display:inline-block; }
+  .gate-welcome{ margin:16px 0 12px; border:1.5px solid var(--gold); }
+  .guest-card{ margin-bottom:14px; border:1.5px solid var(--gold); }
+  .guest-card .setup-input{ margin:8px 0 0; }
+  .auth-tagline{ text-align:center; color:var(--ink-soft); font-size:0.86rem; margin:0 0 18px; line-height:1.6; }
+  .auth-guest-note{ text-align:center; color:var(--ink-soft); font-size:0.74rem; margin:6px 0 14px; }
+  .auth-switch{ display:block; margin:10px auto 0; background:none; border:none; color:var(--heading); font:inherit; font-size:0.8rem; font-weight:700; text-decoration:underline; cursor:pointer; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -258,6 +312,9 @@
   .social-tabs{ display:flex; gap:6px; overflow-x:auto; margin-bottom:14px; padding-bottom:2px; }
   .social-tab{ flex-shrink:0; border:1px solid var(--line); background:var(--bg); color:var(--ink-soft); border-radius:999px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; }
   .social-tab.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .social-subtabs{ display:flex; gap:6px; margin:-6px 0 14px; overflow-x:auto; }
+  .social-subtab{ flex-shrink:0; border:none; background:none; color:var(--ink-soft); padding:6px 10px; font-size:0.76rem; font-weight:700; cursor:pointer; border-bottom:2px solid transparent; }
+  .social-subtab.active{ color:var(--heading); border-bottom-color:var(--heading); }
   .lb-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
   .lb-row:last-child{ border-bottom:none; }
   .lb-row.me{ background:var(--bg); border-radius:10px; padding:9px 8px; border-bottom:none; }
@@ -791,11 +848,14 @@
       <button class="icon-btn hidden" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
     </div>
     <div class="nav-actions">
-      <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
-      <button class="icon-btn" id="profileHubBtn" title="You" aria-label="You">👤</button>
-      <button class="icon-btn" id="modeBtn" title="Mode">🌙</button>
-      <button class="icon-btn lang-toggle" id="mainLangToggle" style="width:auto;padding:0 12px;border-radius:999px;">EN</button>
-      <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
+      <!-- Home / You / Settings now live in the main nav (bottom on phones,
+           top tabs on desktop) and the You hub — these stay in the DOM only
+           because other code still dispatches clicks to them -->
+      <button class="icon-btn legacy-nav-btn" id="homeBtn" title="Home" tabindex="-1" aria-hidden="true">🏠</button>
+      <button class="icon-btn legacy-nav-btn" id="profileHubBtn" title="You" tabindex="-1" aria-hidden="true">👤</button>
+      <button class="icon-btn" id="modeBtn" title="Dark / light" aria-label="Dark / light mode">🌙</button>
+      <button class="icon-btn lang-toggle" id="mainLangToggle" aria-label="Language" style="width:auto;padding:0 12px;border-radius:999px;">EN</button>
+      <button class="icon-btn legacy-nav-btn" id="settingsBtn" title="Settings" tabindex="-1" aria-hidden="true">⚙️</button>
     </div>
   </div>
   <!-- big profile summary bar — sits right under the icon row, always
@@ -828,44 +888,54 @@
       <div class="day-badge hidden" id="streakBadge" style="background:var(--gold);margin-inline-start:8px;"></div>
     </div>
 
-    <div class="home-date-picker" id="homeDatePicker">
+    <!-- Home always shows TODAY. Browsing other dates lives in Schedule —
+         a Home date picker changed only the schedule rows while food/water/
+         habits/workout stayed on today, which read as "tomorrow's calories".
+         Kept (hidden) because homeSelectedDate is still read everywhere. -->
+    <div class="home-date-picker hidden" id="homeDatePicker">
       <button type="button" id="homeDatePrev" aria-label="prev day">‹</button>
       <span id="homeDateLabel"></span>
       <button type="button" id="homeDateNext" aria-label="next day">›</button>
     </div>
 
+    <button type="button" class="setup-chip hidden" id="firstRunChip"></button>
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div class="home-grid" id="homeGrid">
-    <div class="dash-card home-preview-card" id="homeSchedulePreview" data-goto="today"></div>
-    <div class="dash-card home-preview-card" id="homeDietTrainingPreview" data-goto="diettraining"></div>
-    <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges"></div>
-    <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections"></div>
+    <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
+    <div class="dash-card home-section" id="homeSchedulePreview"></div>
+    <div class="hidden" id="homeDietTrainingPreview"></div>
+    <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges" role="button" tabindex="0"></div>
+    <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections" role="button" tabindex="0"></div>
 
+    <!-- TODAY'S HEALTH: only daily health actions (food, training, water,
+         habits, weight) — every block names the section it comes from -->
     <div class="home-todo-wrap" id="homeTodoCard">
       <div class="dash-card-title"><span id="homeTodoTitle"></span><span id="homeTodoProgressLabel" class="num" style="font-weight:700;"></span></div>
+      <div class="home-todo-sub" id="homeTodoSub"></div>
       <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
     <div id="dashboardSummary">
       <div class="dash-card" id="dashCalCard">
-        <div class="dash-card-title" id="dashCalTitle"></div>
+        <div class="dash-card-title dash-title-row"><span id="dashCalTitle"></span><button type="button" class="dash-link" data-nav="food" data-i18n="link_open_diet"></button></div>
         <div class="dash-cal-row" id="dashCalRow">
           <div class="dash-stat"><b id="dashCalPlanned">–</b><span id="dashCalPlannedLbl"></span></div>
           <div class="dash-stat"><b id="dashCalConsumed">–</b><span id="dashCalConsumedLbl"></span></div>
           <div class="dash-stat"><b id="dashCalRemaining">–</b><span id="dashCalRemainingLbl"></span></div>
         </div>
-        <div class="dash-empty hidden" id="dashCalEmpty"></div>
+        <button type="button" class="cta-btn hidden" id="dashCalEmpty" data-nav="food"></button>
       </div>
 
-      <div class="dash-card hidden" id="dashWorkoutCard">
-        <div class="dash-card-title" id="dashWorkoutTitle"></div>
-        <div class="dash-workout-row">
+      <div class="dash-card" id="dashWorkoutCard">
+        <div class="dash-card-title dash-title-row"><span id="dashWorkoutTitle"></span><button type="button" class="dash-link" data-nav="workout" data-i18n="link_open_training"></button></div>
+        <div class="dash-workout-row" id="dashWorkoutRow">
           <div class="dash-workout-name" id="dashWorkoutName"></div>
-          <div class="dash-toggle" id="dashWorkoutToggle"></div>
+          <button type="button" class="dash-toggle" id="dashWorkoutToggle" aria-label="done"></button>
         </div>
+        <button type="button" class="cta-btn hidden" id="dashWorkoutEmpty" data-nav="workout"></button>
         <div class="yesterday-catchup-block hidden" id="workoutYesterdayToggle"></div>
       </div>
 
       <div class="dash-card">
-        <div class="dash-card-title" id="dashWaterTitle"></div>
+        <div class="dash-card-title dash-title-row"><span id="dashWaterTitle"></span><button type="button" class="dash-link" id="dashWaterLink" data-nav="food"></button></div>
         <div class="dash-water-row">
           <div class="water-count" id="dashWaterCount" style="font-size:1rem;"></div>
           <div class="dash-water-btns">
@@ -876,49 +946,67 @@
       </div>
 
       <div class="dash-row-mini">
-        <div class="dash-mini" data-goto="food" id="dashSuppMini"></div>
-        <div class="dash-mini" data-goto="today" id="dashCommitMini"></div>
+        <div class="dash-mini" data-goto="food" id="dashSuppMini" role="button" tabindex="0"></div>
+        <div class="dash-mini hidden" data-goto="today" id="dashCommitMini"></div>
       </div>
 
-      <div class="dash-card">
-        <div class="dash-card-title" id="dashHabitsTitle"></div>
+      <div id="homeHabitsSlot">
+      <div class="dash-card" id="habitsCard">
+        <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
+        <div class="habits-hint" data-i18n="habits_hint"></div>
         <div id="dashHabitsList"></div>
         <div class="habit-yesterday-toggle hidden" id="habitYesterdayToggle"></div>
         <div class="habit-yesterday-list hidden" id="dashHabitsYesterdayList"></div>
         <div class="habit-add-row">
           <input type="text" id="dashHabitAdd" data-i18n-ph="habit_add_ph">
-          <button type="button" id="dashHabitAddBtn">➕</button>
+          <button type="button" id="dashHabitAddBtn" aria-label="add">➕</button>
         </div>
+      </div>
       </div>
     </div>
     <div class="dash-card hidden" id="homeWeightTask"></div>
-    <div id="homeTodoScheduleRows"></div>
+    <div id="homeTodoScheduleRows" class="hidden"></div>
     </div>
     </div>
   </section>
 
-  <!-- PROFILE HUB — reached only via the 👤 icon in the top nav. Groups
-       Profile/Friends/My Progress under one entry point, separate from
-       Training/Challenges/Collection which stay as their own main
-       sections. Each tile below reuses the exact same showPanel+enterSection
-       call the old home-cards used for these three, so panel-profile,
-       panel-social and panel-progress themselves are completely untouched
-       — this is purely a new way IN, not a rebuilt destination. -->
-  <section class="panel" id="panel-profile-hub">
+  <!-- HEALTH — one destination for everything about the body. Nutrition
+       and Training are separate, full sections behind it (panel-food /
+       panel-workout, unchanged); Habits sit here too. -->
+  <section class="panel root-panel" id="panel-health">
+    <div class="panel-head"><h2 data-i18n="health_title"></h2><p class="panel-sub" data-i18n="health_sub"></p></div>
+    <div class="dest-list" id="healthHubList"></div>
+  </section>
+
+  <!-- HABITS — the one place to manage habits. The habits card itself is a
+       single DOM node that lives on Home (quick check-off) and is moved in
+       here when this page opens, so there is only ever one habits UI. -->
+  <section class="panel" id="panel-habits">
+    <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><span></span></div>
+    <div class="panel-head"><h2 data-i18n="habits_title"></h2><p class="panel-sub" data-i18n="habits_sub"></p></div>
+    <div id="habitsPanelSlot"></div>
+  </section>
+
+  <!-- YOU — profile, progress, friends, collection, store, settings -->
+  <section class="panel root-panel" id="panel-profile-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
-    <h2 class="hub-title" data-i18n="hub_title"></h2>
+    <div class="panel-head"><h2 data-i18n="hub_title"></h2><p class="panel-sub" data-i18n="hub_sub"></p></div>
+    <div id="guestNote"></div>
     <div class="home-cards">
-      <div class="home-card" data-goto="profile"><span class="ic">👤</span><div class="ttl" data-i18n="card_profile"></div></div>
-      <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
-      <div class="home-card" data-goto="collections"><span class="ic">🎣</span><div class="ttl" data-i18n="card_collections"></div></div>
-      <div class="home-card" data-goto="social"><span class="ic">👥</span><div class="ttl" data-i18n="card_social"></div></div>
-      <div class="home-card" data-goto="store"><span class="ic">🏪</span><div class="ttl" data-i18n="card_store"></div></div>
+      <button type="button" class="home-card" data-goto="profile"><span class="ic">👤</span><span class="ttl" data-i18n="card_profile"></span><span class="hub-desc" data-i18n="hub_desc_profile"></span></button>
+      <button type="button" class="home-card" data-goto="progress"><span class="ic">📈</span><span class="ttl" data-i18n="card_progress"></span><span class="hub-desc" data-i18n="hub_desc_progress"></span></button>
+      <button type="button" class="home-card" data-goto="social"><span class="ic">👥</span><span class="ttl" data-i18n="card_social"></span><span class="hub-desc" data-i18n="hub_desc_social"></span></button>
+      <button type="button" class="home-card" data-goto="collections"><span class="ic">🐾</span><span class="ttl" data-i18n="card_collections"></span><span class="hub-desc" data-i18n="hub_desc_collections"></span></button>
+      <button type="button" class="home-card" data-goto="store"><span class="ic">🏪</span><span class="ttl" data-i18n="card_store"></span><span class="hub-desc" data-i18n="hub_desc_store"></span></button>
+      <button type="button" class="home-card" data-goto="settings"><span class="ic">⚙️</span><span class="ttl" data-i18n="card_settings"></span><span class="hub-desc" data-i18n="hub_desc_settings"></span></button>
     </div>
   </section>
 
   <!-- TO DO -->
-  <section class="panel" id="panel-today">
+  <section class="panel root-panel" id="panel-today">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="panel-head"><h2 data-i18n="schedule_title"></h2><p class="panel-sub" data-i18n="schedule_sub"></p></div>
+    <div id="scheduleIntro" class="hidden"></div>
 
     <!-- content (always visible, even before any setup) -->
     <div id="todoContent">
@@ -975,7 +1063,8 @@
 
   <!-- FOOD -->
   <section class="panel" id="panel-food">
-    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><button class="edit-btn" id="editFoodBtn" data-i18n="edit_setup"></button></div>
+    <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><button class="edit-btn" id="editFoodBtn" data-i18n="edit_setup"></button></div>
+    <div class="panel-head"><h2 data-i18n="nutrition_title"></h2><p class="panel-sub" data-i18n="nutrition_sub"></p></div>
 
     <!-- setup -->
     <div class="setup-card" id="foodSetupCard">
@@ -1127,7 +1216,8 @@
        — see the dt-combined body class below. Nothing here is duplicated
        or moved; it's the exact same panel, just two ways to reveal it. -->
   <section class="panel" id="panel-workout">
-    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><span></span></div>
+    <div class="panel-head"><h2 data-i18n="training_title"></h2><p class="panel-sub" data-i18n="training_sub"></p></div>
     <!-- setup -->
     <div class="setup-card" id="workoutSetupCard">
       <h3 data-i18n="q_ex_goal"></h3>
@@ -1497,8 +1587,9 @@
   </section>
 
   <!-- CHALLENGES (real — progress computed from actual logged history) -->
-  <section class="panel" id="panel-challenges">
+  <section class="panel root-panel" id="panel-challenges">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="panel-head"><h2 data-i18n="challenges_title"></h2><p class="panel-sub" data-i18n="challenges_sub"></p></div>
     <div id="challengesList"></div>
   </section>
 
@@ -1519,6 +1610,7 @@
        from this static-site + per-user-Firestore architecture alone) -->
   <section class="panel" id="panel-social">
     <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
+    <div class="dash-card gate-welcome hidden" id="gateWelcome"></div>
     <!-- shown only until the user has claimed a public username -->
     <div class="setup-card" id="profileSetupCard">
       <h3 data-i18n="profile_setup_title"></h3>
@@ -1534,11 +1626,15 @@
     <div class="setup-card hidden" id="socialMainCard">
       <div class="social-tabs" id="socialTabs">
         <button type="button" class="social-tab active" data-tab="friends" id="socialTabFriends"></button>
-        <button type="button" class="social-tab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
         <button type="button" class="social-tab" data-tab="feed" id="socialTabFeed"></button>
-        <button type="button" class="social-tab" data-tab="compare" id="socialTabCompare"></button>
-        <button type="button" class="social-tab" data-tab="challenges" id="socialTabChallenges"></button>
+        <button type="button" class="social-tab" data-tab="compete" id="socialTabCompete"></button>
         <button type="button" class="social-tab" data-tab="privacy" id="socialTabPrivacy" data-i18n="privacy_title"></button>
+      </div>
+      <!-- Compete groups the three competitive views under one tab -->
+      <div class="social-subtabs hidden" id="socialSubTabs">
+        <button type="button" class="social-subtab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
+        <button type="button" class="social-subtab" data-tab="compare" id="socialTabCompare"></button>
+        <button type="button" class="social-subtab" data-tab="challenges" id="socialTabChallenges"></button>
       </div>
       <div id="socialTabContent"></div>
     </div>
@@ -1547,6 +1643,7 @@
   <!-- COLLECTIONS -->
   <section class="panel" id="panel-collections">
     <div class="back-row"><button class="back-btn" id="collectionsBackBtn" data-i18n="back_home"></button><span></span></div>
+    <nav class="coll-crumbs hidden" id="collCrumbs" aria-label="breadcrumb"></nav>
 
     <!-- level 0: Animals / Plants -->
     <div class="coll-view active" id="collView-root">
@@ -1617,11 +1714,12 @@
 <footer class="hidden" id="mainFooter">🌱<div style="font-size:0.6rem;opacity:0.4;margin-top:4px;" id="footerVersion"></div></footer>
 
 <!-- ============ BOTTOM NAV (mobile app-shell navigation) ============ -->
-<nav id="bottomNav" class="hidden">
-  <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic">🏠</span><span data-i18n="bottom_nav_home"></span></button>
-  <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
-  <button type="button" class="bottom-nav-item" data-goto="diettraining"><span class="ic">🍽️</span><span data-i18n="bottom_nav_diettraining"></span></button>
-  <button type="button" class="bottom-nav-item" data-goto="profile-hub"><span class="ic">👤</span><span data-i18n="bottom_nav_profile"></span></button>
+<nav id="bottomNav" class="hidden" aria-label="Main">
+  <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic" aria-hidden="true">🏠</span><span data-i18n="bottom_nav_home"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic" aria-hidden="true">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="health"><span class="ic" aria-hidden="true">🩺</span><span data-i18n="bottom_nav_health"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="challenges"><span class="ic" aria-hidden="true">🎯</span><span data-i18n="bottom_nav_challenges"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="profile-hub"><span class="ic" aria-hidden="true">👤</span><span data-i18n="bottom_nav_profile"></span></button>
 </nav>
 
 <!-- ============ SIGN IN (cross-device sync via Firebase) ============ -->
@@ -1635,8 +1733,11 @@
       <div data-i18n="in_app_browser_warning"></div>
       <button type="button" id="copyLinkBtn" data-i18n="copy_link_btn" style="margin-top:8px;background:#6b5510;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.74rem;cursor:pointer;font-weight:700;"></button>
     </div>
-    <h2 data-i18n="auth_title" style="text-align:center;color:var(--heading);font-size:1.15rem;margin:0 0 16px;"></h2>
-    <button class="ob-btn" id="googleSignInBtn" type="button" style="background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-bottom:14px;">🔵 <span data-i18n="auth_google"></span></button>
+    <h2 data-i18n="auth_title" style="text-align:center;color:var(--heading);font-size:1.3rem;margin:0 0 6px;"></h2>
+    <p class="auth-tagline" data-i18n="auth_tagline"></p>
+    <button class="ob-btn" id="googleSignInBtn" type="button" style="background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-bottom:10px;">🔵 <span data-i18n="auth_google"></span></button>
+    <button class="ob-btn" id="guestSignInBtn" type="button" data-i18n="auth_guest" style="background:var(--card);color:var(--heading);border:1.5px solid var(--heading);"></button>
+    <p class="auth-guest-note" data-i18n="auth_guest_note"></p>
     <div style="display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink-soft);font-size:0.78rem;">
       <div style="flex:1;height:1px;background:var(--line);"></div>
       <span data-i18n="auth_or"></span>
@@ -1644,16 +1745,11 @@
     </div>
     <input type="email" class="ob-input" id="authEmail" data-i18n-ph="auth_email_ph" autocomplete="email" style="margin-bottom:10px;">
     <input type="password" class="ob-input" id="authPassword" data-i18n-ph="auth_password_ph" autocomplete="current-password" style="margin-bottom:10px;">
-    <input type="password" class="ob-input" id="authPasswordConfirm" data-i18n-ph="auth_password_confirm_ph" autocomplete="new-password" style="margin-bottom:10px;">
+    <input type="password" class="ob-input hidden" id="authPasswordConfirm" data-i18n-ph="auth_password_confirm_ph" autocomplete="new-password" style="margin-bottom:10px;">
     <div class="val-msg" id="authValMsg"></div>
     <button class="ob-btn" id="authSignInBtn" type="button" data-i18n="auth_sign_in" style="margin-bottom:8px;"></button>
     <button class="ob-btn secondary" id="authSignUpBtn" type="button" data-i18n="auth_sign_up"></button>
-    <div style="display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--ink-soft);font-size:0.78rem;">
-      <div style="flex:1;height:1px;background:var(--line);"></div>
-      <span data-i18n="auth_or"></span>
-      <div style="flex:1;height:1px;background:var(--line);"></div>
-    </div>
-    <button class="ob-btn secondary" id="guestSignInBtn" type="button" data-i18n="auth_guest"></button>
+    <button type="button" class="auth-switch hidden" id="authBackToSignIn" data-i18n="auth_have_account"></button>
   </div>
 </div>
 
@@ -1699,7 +1795,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.30.0';
+const APP_VERSION='v1.31.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -1943,6 +2039,24 @@ if(document.getElementById('googleSignInBtn')){
     catch(e){ console.error('Guest sign-in error:',e.code,e.message); showAuthError(signInErrorMessage(e)); }
   });
   document.getElementById('authLangToggle').addEventListener('click',()=>{ LANG=LANG==='ar'?'en':'ar'; applyI18n(); });
+  /* sign-in and create-account are two modes of one form: the confirm
+     field and "Create account" only appear once you choose to create one */
+  let authMode='signin';
+  const setAuthMode=m=>{
+    authMode=m;
+    const up=document.getElementById('authSignUpBtn');
+    document.getElementById('authPasswordConfirm').classList.toggle('hidden',m!=='signup');
+    document.getElementById('authSignInBtn').classList.toggle('hidden',m==='signup');
+    document.getElementById('authBackToSignIn').classList.toggle('hidden',m!=='signup');
+    up.dataset.i18n=m==='signup'?'auth_create_btn':'auth_sign_up'; up.textContent=t(up.dataset.i18n);
+    up.classList.toggle('secondary',m!=='signup');
+    document.getElementById('authPassword').setAttribute('autocomplete',m==='signup'?'new-password':'current-password');
+    showAuthError('');
+  };
+  document.querySelector('#authOverlay .ob-card').addEventListener('click',e=>{
+    if(e.target.closest('#authSignUpBtn') && authMode!=='signup'){ e.preventDefault(); e.stopPropagation(); setAuthMode('signup'); document.getElementById('authEmail').focus(); }
+  },true);
+  document.getElementById('authBackToSignIn').addEventListener('click',()=>setAuthMode('signin'));
 }
 async function bootApp(){
   await loadDailyTrack();
@@ -1955,7 +2069,7 @@ async function bootApp(){
   await loadFoodDraft();
   const pv=await storageGet('profile');
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
-  else{ await storageSet('profile',JSON.stringify(P)); }
+  else{ P.lang=LANG; await storageSet('profile',JSON.stringify(P)); } // a brand-new profile keeps the language picked on the sign-in screen
   await reconcileXpCoinsFromFirestore();
   migrateProgressionFields();
   await migrateRewardValuesV2();
@@ -2458,6 +2572,71 @@ const I18N={
   no_note:'Nothing noted — tap to add',workout_progress_title:'📊 Last 7 days'
  }
 };
+/* IA v2 strings — merged over the main dictionaries (overrides included) */
+Object.assign(I18N.ar,{
+  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_health:'الصحة',bottom_nav_challenges:'التحديات',bottom_nav_profile:'حسابي',
+  back_home:'الرئيسية',back_schedule:'الجدول',back_health:'الصحة',back_challenges:'التحديات',back_you:'حسابي',back_nutrition:'الأكل',back_training:'التمرين',
+  back_habits:'العادات',back_progress:'التقدم',back_profile:'ملفي',back_friends:'الأصدقاء',back_store:'المتجر',back_collection:'المقتنيات',back_generic:'رجوع',
+  health_title:'🩺 الصحة',health_sub:'أكلك وتمرينك وعاداتك — كل قسم بصفحته الكاملة.',
+  nutrition_title:'🍽️ الأكل',nutrition_title_plain:'الأكل',nutrition_sub:'وجباتك وسعراتك والماء والمكملات والوزن.',
+  training_title:'💪 التمرين',training_title_plain:'التمرين',training_sub:'خطتك الأسبوعية وتمرين اليوم وتمارينه.',
+  habits_title:'✅ العادات',habits_title_plain:'العادات',habits_sub:'أشياء تبي تسويها كل يوم وتتابع التزامك فيها.',
+  habits_hint:'هذي عادات كمثال — احذف اللي ما تبيه بـ ✕ وضيف عاداتك تحت.',
+  health_nutrition_desc:'وجبات، سعرات، ماء، مكملات، وزن',health_training_desc:'خطة الأسبوع وتمرين اليوم',health_habits_desc:'علّم عاداتك اليومية وعدّلها',
+  health_not_setup:'ما جهزته ليلحين',health_rest_day:'😴 يوم راحة اليوم',
+  cta_open:'افتح',cta_setup:'جهّزه',cta_manage:'إدارة',
+  link_open_diet:'صفحة الأكل',link_open_training:'صفحة التمرين',link_manage_habits:'إدارة العادات',link_water_goal:'حدد هدفك',
+  hub_title:'👤 حسابي',hub_sub:'ملفك وتقدمك وأصدقاؤك ومقتنياتك والمتجر والإعدادات.',
+  hub_desc_profile:'مستواك وإنجازاتك',hub_desc_progress:'أسبوعك ووزنك',hub_desc_social:'أضف أصدقاء وتنافس',hub_desc_collections:'الحيوانات اللي جمعتها',hub_desc_store:'خلفيات وإطارات بعملاتك',hub_desc_settings:'الخلفية والنسخ الاحتياطي والخروج',
+  card_settings:'الإعدادات',
+  schedule_title:'📅 الجدول',schedule_sub:'وين وأي وقت تصير أشياء يومك — التزامات متكررة وملاحظات لكل يوم.',
+  challenges_title:'🎯 التحديات',challenges_sub:'أهداف أسبوعية وشهرية تعطيك نقاط وعملات لما تخلصها.',
+  home_todo_title:'🩺 صحتك اليوم',home_todo_sub:'الأكل والتمرين والماء والعادات والوزن — كم خلصت منها اليوم.',
+  home_plan_title:'📅 خطة اليوم',home_plan_empty:'ما عندك شي بالجدول اليوم.',home_plan_add:'➕ أضف شي لجدولك',home_plan_open:'افتح الجدول',
+  home_challenges_cta:'شوف التحديات',home_collection_cta:'افتح المقتنيات',
+  dash_cal_empty:'🍽️ جهّز نظامك الغذائي عشان تشوف سعراتك',dash_workout_empty:'💪 جهّز جدول تمارينك عشان يطلع تمرين اليوم هني',
+});
+Object.assign(I18N.ar,{
+  progress_weight_empty:'سجّل وزنك كل يوم من الرئيسية عشان يبان الاتجاه هني.',
+  daily_routine_title:'🔁 الالتزامات المتكررة (أضف / عدّل)',
+});
+Object.assign(I18N.ar,{
+  auth_title:'🗓️ مخططي',auth_tagline:'جدولك وأكلك وتمرينك وعاداتك — بمكان واحد، وتنحفظ على كل أجهزتك.',
+  auth_guest:'👤 جرّب بدون حساب (ضيف)',auth_guest_note:'بياناتك تنحفظ على هذا الجهاز، وتقدر تسوي حساب بعدين وتحتفظ فيها.',
+  auth_or:'أو بالإيميل',auth_create_btn:'إنشاء الحساب',auth_have_account:'عندك حساب؟ سجّل دخول',
+});
+Object.assign(I18N.en,{
+  auth_title:'🗓️ My Planner',auth_tagline:'Your schedule, meals, training and habits — in one place, synced across your devices.',
+  auth_guest:'👤 Try it without an account (guest)',auth_guest_note:'Saved on this device — you can create an account later and keep everything.',
+  auth_or:'or with email',auth_create_btn:'Create account',auth_have_account:'Already have an account? Sign in',
+});
+Object.assign(I18N.en,{
+  progress_weight_empty:'Log your weight on Home each day to see a trend here.',
+  daily_routine_title:'🔁 Recurring commitments (add / edit)',
+});
+Object.assign(I18N.en,{
+  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_health:'Health',bottom_nav_challenges:'Challenges',bottom_nav_profile:'You',
+  back_home:'Home',back_schedule:'Schedule',back_health:'Health',back_challenges:'Challenges',back_you:'You',back_nutrition:'Nutrition',back_training:'Training',
+  back_habits:'Habits',back_progress:'Progress',back_profile:'Profile',back_friends:'Friends',back_store:'Store',back_collection:'Collection',back_generic:'Back',
+  health_title:'🩺 Health',health_sub:'Your food, training and habits — each has its own full page.',
+  nutrition_title:'🍽️ Nutrition',nutrition_title_plain:'Nutrition',nutrition_sub:'Your meals, calories, water, supplements and weight.',
+  training_title:'💪 Training',training_title_plain:'Training',training_sub:'Your weekly plan, today’s workout and its exercises.',
+  habits_title:'✅ Habits',habits_title_plain:'Habits',habits_sub:'Things you want to do every day, and how consistent you are.',
+  habits_hint:'These are examples — remove any with ✕ and add your own below.',
+  health_nutrition_desc:'Meals, calories, water, supplements, weight',health_training_desc:'Weekly plan and today’s workout',health_habits_desc:'Check off and edit your daily habits',
+  health_not_setup:'Not set up yet',health_rest_day:'😴 Rest day today',
+  cta_open:'Open',cta_setup:'Set up',cta_manage:'Manage',
+  link_open_diet:'Nutrition',link_open_training:'Training',link_manage_habits:'Manage habits',link_water_goal:'Set your goal',
+  hub_title:'👤 You',hub_sub:'Your profile, progress, friends, collection, store and settings.',
+  hub_desc_profile:'Level and achievements',hub_desc_progress:'Your week and weight',hub_desc_social:'Add friends and compete',hub_desc_collections:'Animals you’ve collected',hub_desc_store:'Backgrounds and frames for coins',hub_desc_settings:'Background, backup, sign out',
+  card_settings:'Settings',
+  schedule_title:'📅 Schedule',schedule_sub:'When things happen in your day — recurring commitments and notes for any date.',
+  challenges_title:'🎯 Challenges',challenges_sub:'Weekly and monthly goals that pay XP and coins when you finish them.',
+  home_todo_title:'🩺 Today’s health',home_todo_sub:'Food, training, water, habits and weight — how much you’ve done today.',
+  home_plan_title:'📅 Today’s plan',home_plan_empty:'Nothing on your schedule today.',home_plan_add:'➕ Add something to your schedule',home_plan_open:'Open schedule',
+  home_challenges_cta:'View challenges',home_collection_cta:'Open collection',
+  dash_cal_empty:'🍽️ Set up your diet to see your calories',dash_workout_empty:'💪 Set up your training to see today’s workout here',
+});
 let LANG='ar';
 function t(k){ return (I18N[LANG]&&I18N[LANG][k])||I18N.ar[k]||k; }
 function applyI18n(){
@@ -2762,24 +2941,72 @@ document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ sh
    all the way to Home — everything else (today/food/workout/challenges/
    collections) still backs straight to Home, since those are reached
    directly from Home's own cards. */
-const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub' };
-Object.keys(PANEL_PARENT).forEach(name=>{
-  const b=document.querySelector('#panel-'+name+' .back-btn');
-  if(b) b.dataset.i18n='back_you';
-});
-/* Collections is reachable from both Home and the You hub — its root-level
-   back goes to whichever one it was opened from */
-let collReturnPanel='home';
+/* ================= NAVIGATION MODEL (IA v2) =================
+   Five top-level destinations — the same list is the bottom nav on
+   phones and the top tabs on desktop (see placeMainNav). Every other
+   panel belongs to one of them (PANEL_PARENT), which decides which tab
+   is lit. Back goes to wherever the panel was opened FROM (returnTo) —
+   e.g. Nutrition opened from Home backs to Home — falling back to the
+   parent section when there's no history. */
+const ROOT_PANELS=['home','today','health','challenges','profile-hub'];
+const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
+  food:'health', workout:'health', habits:'health' };
+const BACK_LABEL={ home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
+  food:'back_nutrition', workout:'back_training', habits:'back_habits', progress:'back_progress', profile:'back_profile', social:'back_friends', store:'back_store', collections:'back_collection' };
+const returnTo={};
 let currentPanelName='home';
+function backTargetFor(name){ return returnTo[name]||PANEL_PARENT[name]||'home'; }
+function goBack(name){
+  const target=backTargetFor(name);
+  delete returnTo[name];
+  showPanel(target,{back:true}); enterSection(target);
+}
+function syncBackLabel(name){
+  const b=name==='collections'?document.getElementById('collectionsBackBtn'):document.querySelector('#panel-'+name+' > .back-row .back-btn');
+  if(!b) return;
+  b.dataset.i18n=BACK_LABEL[backTargetFor(name)]||'back_generic';
+  b.textContent=t(b.dataset.i18n);
+}
+/* one entry point for every "go to X" control (data-nav / data-goto) */
+function navTo(target){
+  if(target==='settings'){ document.getElementById('settingsBtn').click(); return; }
+  if(target==='schedule-add'){ showPanel('today'); enterSection('today'); openRoutineSetup(); return; }
+  if(target==='home-weight'){ showPanel('home'); setTimeout(()=>{ const i=document.getElementById('homeWeightInput'); if(i){ i.scrollIntoView({behavior:'smooth',block:'center'}); i.focus(); } },120); return; }
+  showPanel(target); enterSection(target);
+}
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-nav]');
+  if(!el) return;
+  e.preventDefault(); e.stopPropagation();
+  navTo(el.dataset.nav);
+},true);
+// clickable non-button cards answer Enter/Space like real buttons
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ') && e.target.matches && e.target.matches('[role="button"]')){ e.preventDefault(); e.target.click(); }
+});
 document.querySelectorAll('.back-btn').forEach(b=>{
   if(b.id==='collectionsBackBtn') return;
   b.addEventListener('click',()=>{
     const panelEl=b.closest('.panel');
-    const name=panelEl&&panelEl.id.replace('panel-','');
-    const parent=PANEL_PARENT[name]||'home';
-    showPanel(parent); // showPanel('home') refreshes Home itself
+    goBack(panelEl&&panelEl.id.replace('panel-',''));
   });
 });
+/* phones: fixed bottom bar; desktop: the same element as tabs in the top bar */
+function placeMainNav(){
+  const nav=document.getElementById('bottomNav'), top=document.getElementById('mainNav'); if(!nav||!top) return;
+  const desktop=window.matchMedia('(min-width:760px)').matches;
+  if(desktop && nav.parentElement!==top) top.appendChild(nav);
+  else if(!desktop && nav.parentElement!==document.body) document.body.appendChild(nav);
+}
+placeMainNav();
+window.matchMedia('(min-width:760px)').addEventListener('change',placeMainNav);
+/* the habits card is ONE node: on Home for quick check-off, moved into the
+   Habits page when that opens (ids never duplicated, renderHabits untouched) */
+function placeHabitsCard(name){
+  const card=document.getElementById('habitsCard'); if(!card) return;
+  const slot=document.getElementById(name==='habits'?'habitsPanelSlot':'homeHabitsSlot');
+  if(slot && card.parentElement!==slot) slot.appendChild(card);
+}
 /* true only for an account that has never actually used any real feature
    yet — this is what separates a brand-new signup (must be blocked until
    a username is created) from an old account that predates the username
@@ -2817,32 +3044,27 @@ function usernameSoftGateActive(){
 }
 function showPanel(name){
   revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
-  if(usernameHardGateActive()) name='social';
-  if(name==='collections' && currentPanelName!=='collections'){
-    collReturnPanel = currentPanelName==='profile-hub' ? 'profile-hub' : 'home';
-    const cb=document.getElementById('collectionsBackBtn');
-    if(cb){ cb.dataset.i18n = collReturnPanel==='profile-hub'?'back_you':'back_home'; cb.textContent=t(cb.dataset.i18n); }
+  const opts=arguments[1]||{};
+  if(name==='diettraining') name='health'; // old combined Diet+Training entry → the Health hub
+  const gated=usernameHardGateActive();
+  if(gated) name='social';
+  // remember where a sub-page was opened from, so Back returns there
+  if(!ROOT_PANELS.includes(name) && name!==currentPanelName && !opts.back && currentPanelName!==name){
+    if(returnTo[currentPanelName]!==name) returnTo[name]=currentPanelName;
   }
   currentPanelName=name;
   document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
-  if(name==='diettraining'){
-    // Diet+Training is not a separate panel — it's the existing Food and
-    // Workout panels shown stacked together (Food first, Workout below),
-    // exactly the same DOM/render functions either reaches on its own.
-    document.getElementById('panel-food').classList.add('active');
-    document.getElementById('panel-workout').classList.add('active');
-    document.body.classList.add('dt-combined');
-  } else {
-    document.body.classList.remove('dt-combined');
-    document.getElementById('panel-'+name).classList.add('active');
-  }
+  document.body.classList.remove('dt-combined');
+  document.getElementById('panel-'+name).classList.add('active');
+  placeHabitsCard(name);
+  syncBackLabel(name);
   window.scrollTo({top:0});
-  // the 🏠 button is a shortcut back to Home — pointless (and confusing)
-  // to show while already on Home, so it only appears everywhere else.
-  const homeBtnEl=document.getElementById('homeBtn'); if(homeBtnEl) homeBtnEl.classList.toggle('hidden', name==='home');
-  // the You tab stays lit on every screen inside the hub
-  const navOwner = PANEL_PARENT[name] || (name==='collections'&&collReturnPanel==='profile-hub' ? 'profile-hub' : name);
-  document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.toggle('active', b.dataset.goto===navOwner));
+  // the tab of the section this page belongs to stays lit
+  const navOwner=ROOT_PANELS.includes(name)?name:(PANEL_PARENT[name]||name);
+  document.querySelectorAll('.bottom-nav-item').forEach(b=>{ const on=b.dataset.goto===navOwner; b.classList.toggle('active',on); if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  // until a username exists the rest of the app is off-limits (see
+  // usernameHardGateActive), so the nav would only be dead buttons
+  document.getElementById('bottomNav').classList.toggle('gated',gated);
   // Home must always be current the moment it's shown, from EVERY entry
   // point (bottom nav, back buttons, the 🏠 shortcut, programmatic calls)
   // — previously only the standalone #homeBtn handler called refreshHome()
@@ -2851,6 +3073,83 @@ function showPanel(name){
   if(name==='home') refreshHome();
 }
 document.querySelectorAll('#bottomNav .bottom-nav-item').forEach(b=>b.addEventListener('click',()=>{ showPanel(b.dataset.goto); enterSection(b.dataset.goto); }));
+
+/* ================= HEALTH HUB =================
+   Three destinations, each with a live one-line summary of today and an
+   explicit action — reads the same state Home does, stores nothing. */
+function todayNutritionSummary(){
+  if(!P.foodSetup) return null;
+  const v=getTodayMenu(todayWeekdayIndex()); const flags=dailyTrack.meals||[];
+  let consumed=0, done=0; v.meals.forEach((m,i)=>{ if(flags[i]){ consumed+=(m.calories||0); done++; } });
+  return {consumed:Math.round(consumed), planned:Math.round(v.calories), done, total:v.meals.length};
+}
+function todayTrainingSummary(){
+  if(!P.workoutSetup) return null;
+  const typeKey=workoutTypeForDate(new Date(),P.workoutSetup);
+  if(typeKey==='rest') return {rest:true};
+  const day=adaptDay(typeKey);
+  return {rest:false, label:`${day.icon} ${day.name[LANG]}`, done:!!dailyTrack.workoutDone};
+}
+/* Guest accounts are real (anonymous) Firebase users, so "create an
+   account" LINKS an email/Google login to the same uid — nothing is copied
+   or migrated, every existing doc simply keeps belonging to it. */
+function renderGuestNote(){
+  const box=document.getElementById('guestNote'); if(!box) return;
+  if(!currentUser||!currentUser.isAnonymous){ box.innerHTML=''; return; }
+  const ar=LANG==='ar';
+  box.innerHTML=`<div class="dash-card guest-card">
+    <div class="dash-card-title">👤 ${ar?'أنت تستخدم وضع الضيف':'You’re using guest mode'}</div>
+    <p class="panel-sub" style="margin:0 0 6px;">${ar?'بياناتك محفوظة على هذا الجهاز بس. سوّ حساب عشان تحفظها وتفتحها من أي جهاز — كل شي ينتقل معك.':'Your data is saved on this device only. Create an account to keep it safe and open it on any device — everything comes with you.'}</p>
+    <button type="button" class="cta-btn" id="guestUpgradeOpen">${ar?'🔐 سوّ حساب واحفظ بياناتي':'🔐 Create an account & keep my data'}</button>
+    <div class="hidden" id="guestUpgradeForm">
+      <button type="button" class="ob-btn" id="guestUpGoogle" style="background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-top:10px;">🔵 ${ar?'كمّل بـ Google':'Continue with Google'}</button>
+      <input type="email" class="setup-input" id="guestUpEmail" autocomplete="email" placeholder="${ar?'الإيميل':'Email'}">
+      <input type="password" class="setup-input" id="guestUpPw" autocomplete="new-password" placeholder="${ar?'كلمة المرور (٦ أحرف أو أكثر)':'Password (6+ characters)'}">
+      <div class="val-msg" id="guestUpMsg" style="color:var(--err);"></div>
+      <button type="button" class="setup-btn" id="guestUpSave" style="margin-top:8px;">${ar?'إنشاء الحساب':'Create account'}</button>
+    </div></div>`;
+  const msg=m=>{ document.getElementById('guestUpMsg').textContent=m||''; };
+  const done=async()=>{ try{ await currentUser.reload(); }catch(e){} showToast(ar?'✅ صار عندك حساب — بياناتك محفوظة':'✅ Account created — your data is safe'); renderGuestNote(); };
+  const fail=e=>{
+    const c=e&&e.code||'';
+    if(c==='auth/email-already-in-use'||c==='auth/credential-already-in-use') return msg(ar?'هذا الإيميل عنده حساب ثاني — استخدم إيميل ثاني عشان تحفظ بيانات الضيف هذي.':'That email already has its own account — use a different one to keep this guest’s data.');
+    if(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request') return msg('');
+    msg(typeof signUpErrorMessage==='function'?signUpErrorMessage(e):(e.message||String(e)));
+  };
+  document.getElementById('guestUpgradeOpen').onclick=()=>{ document.getElementById('guestUpgradeForm').classList.remove('hidden'); document.getElementById('guestUpgradeOpen').classList.add('hidden'); };
+  document.getElementById('guestUpGoogle').onclick=async()=>{ msg(''); try{ await currentUser.linkWithPopup(new firebase.auth.GoogleAuthProvider()); await done(); }catch(e){ fail(e); } };
+  document.getElementById('guestUpSave').onclick=async()=>{
+    msg('');
+    const email=document.getElementById('guestUpEmail').value.trim(), pw=document.getElementById('guestUpPw').value;
+    if(!EMAIL_RE.test(email)) return msg(ar?'صيغة الإيميل غلط':'That email address looks invalid');
+    if(pw.length<6) return msg(ar?'كلمة المرور لازم ٦ أحرف على الأقل':'Password must be at least 6 characters');
+    try{ await currentUser.linkWithCredential(firebase.auth.EmailAuthProvider.credential(email,pw)); await done(); }catch(e){ fail(e); }
+  };
+}
+/* opens the recurring-commitments editor on the Schedule page */
+function openRoutineSetup(){
+  const card=document.getElementById('todoSetupCard'); if(!card) return;
+  if(card.classList.contains('hidden')) document.getElementById('dailyRoutineToggleCard').click();
+  setTimeout(()=>{ card.scrollIntoView({behavior:'smooth',block:'start'}); const i=document.getElementById('commitLabel'); if(i) i.focus({preventScroll:true}); },80);
+}
+function renderHealthHub(){
+  const box=document.getElementById('healthHubList'); if(!box) return;
+  const ar=LANG==='ar';
+  const n=todayNutritionSummary(), tr=todayTrainingSummary();
+  const habits=P.habits||[], habitsDone=habits.filter(h=>dailyTrack.habits&&dailyTrack.habits[h.id]).length;
+  const card=(nav,ic,title,desc,sum,cta)=>`<button type="button" class="dest-card" data-nav="${nav}"><span class="dest-ic" aria-hidden="true">${ic}</span><span class="dest-body"><span class="dest-title">${title}</span><span class="dest-desc">${desc}</span><span class="dest-sum">${sum}</span></span><span class="dest-cta">${cta}</span></button>`;
+  box.innerHTML=[
+    card('food','🍽️',t('nutrition_title_plain'),t('health_nutrition_desc'),
+      n?`<span class="num">${n.consumed} / ${n.planned}</span> ${ar?'سعرة':'kcal'} · ${ar?`${n.done}/${n.total} وجبات`:`${n.done}/${n.total} meals`}`:t('health_not_setup'),
+      n?t('cta_open'):t('cta_setup')),
+    card('workout','💪',t('training_title_plain'),t('health_training_desc'),
+      tr?(tr.rest?t('health_rest_day'):`${tr.label} · ${tr.done?(ar?'تم ✓':'done ✓'):(ar?'اليوم':'today')}`):t('health_not_setup'),
+      tr?t('cta_open'):t('cta_setup')),
+    card('habits','✅',t('habits_title_plain'),t('health_habits_desc'),
+      habits.length?`<span class="num">${habitsDone} / ${habits.length}</span> ${ar?'منجزة اليوم':'done today'}`:(ar?'ما عندك عادات ليلحين':'No habits yet'),
+      t('cta_manage'))
+  ].join('');
+}
 
 /* ================= WEEKDAY (lifetime scheduling, no start date needed) ================= */
 const DAY_NAMES={ ar:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'], en:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'] };
@@ -4006,15 +4305,17 @@ function enterSection(name){
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
-  if(name==='diettraining'){ renderFoodSection(); renderWorkoutSection(); }
+  if(name==='diettraining'||name==='health') renderHealthHub();
+  if(name==='habits'){ renderHabits(); renderHabitsYesterdayToggle(); }
   if(name==='progress') renderProgressSection();
   if(name==='profile') renderProfileSection();
   if(name==='challenges') renderChallengesSection();
   if(name==='social') renderSocialSection();
   if(name==='collections') enterCollections();
   if(name==='store') renderStoreSection();
+  if(name==='profile-hub') renderGuestNote();
 }
-document.querySelectorAll('#panel-home .home-card, #panel-profile-hub .home-card').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
+document.querySelectorAll('#panel-home .home-card, #panel-profile-hub .home-card').forEach(c=>c.addEventListener('click',()=>navTo(c.dataset.goto)));
 document.getElementById('exercisePromptBanner').addEventListener('click',()=>{ showPanel('workout'); enterSection('workout'); });
 document.getElementById('dailyRoutineToggleCard').addEventListener('click',()=>{
   const card=document.getElementById('todoSetupCard');
@@ -4423,6 +4724,15 @@ function commitmentsForDate(dateObj){
 function commitmentsForToday(){ return commitmentsForDate(new Date()); }
 function renderTodoSection(){
   renderCalendar();
+  const intro=document.getElementById('scheduleIntro'); if(!intro) return;
+  const hasCommits=!!(P.todoSetup&&P.todoSetup.commitments&&P.todoSetup.commitments.length);
+  const ar=LANG==='ar';
+  intro.classList.remove('hidden');
+  intro.innerHTML=hasCommits
+    ? `<p class="schedule-hint">${ar?'👆 اضغط على أي يوم بالتقويم عشان تشوف خطته أو تضيف ملاحظات بالساعة.':'👆 Tap any day on the calendar to see its plan or add hourly notes.'}</p>`
+    : `<div class="dash-card schedule-empty"><div class="dash-card-title">${ar?'جدولك فاضي ليلحين':'Your schedule is empty'}</div>
+        <p class="panel-sub" style="margin:0 0 4px;">${ar?'ضيف الأشياء اللي تتكرر كل أسبوع (دوام، جامعة، نادي) — وتطلع لك كل يوم بالرئيسية. وتقدر تضغط أي يوم بالتقويم وتضيف ملاحظة له.':'Add things that repeat every week (work, college, gym) — they show up on Home each day. You can also tap any day on the calendar to add a note for it.'}</p>
+        <button type="button" class="cta-btn" data-nav="schedule-add">${ar?'➕ أضف أول التزام':'➕ Add your first commitment'}</button></div>`;
 }
 
 function wireSingle(gridSel,onPick){ document.querySelectorAll(gridSel+' .ob-choice').forEach(el=>el.addEventListener('click',()=>{ document.querySelectorAll(gridSel+' .ob-choice').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); onPick(el); })); }
@@ -4929,6 +5239,7 @@ document.getElementById('foodSetupSave').addEventListener('click',async()=>{
   renderFoodSection();
 });
 function renderFoodSection(){
+  { const eb=document.getElementById('editFoodBtn'); if(eb) eb.classList.toggle('hidden',!P.foodSetup); }
   const has=P.foodSetup!==null;
   document.getElementById('foodSetupCard').classList.toggle('hidden',has);
   document.getElementById('foodContent').classList.toggle('hidden',!has);
@@ -5545,7 +5856,8 @@ async function renderProgressSection(){
   const chartBox=document.getElementById('progressWeightChart').closest('.chart-box');
   if(weightLog.length<2){
     chartBox.classList.add('hidden'); weightStats.classList.add('hidden');
-    weightEmpty.classList.remove('hidden'); weightEmpty.textContent=t('progress_weight_empty');
+    weightEmpty.classList.remove('hidden');
+    weightEmpty.innerHTML=`${escapeHtml(t('progress_weight_empty'))}<button type="button" class="cta-btn" data-nav="home-weight">${LANG==='ar'?'⚖️ سجّل وزن اليوم':'⚖️ Log today’s weight'}</button>`;
   } else {
     chartBox.classList.remove('hidden'); weightStats.classList.remove('hidden');
     weightEmpty.classList.add('hidden');
@@ -5588,6 +5900,7 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
 });
 function renderWeightYesterdayRow(){
   const row=document.getElementById('weightYesterdayRow'); if(!row) return;
+  if(!yesterdayCatchUpAllowed()){ row.style.display='none'; return; }
   const label=document.getElementById('weightYesterdayLabel');
   label.textContent=t('weight_yesterday_label').replace('{date}',yesterdayDateLabel());
   const check=document.getElementById('weightYesterdayCheck');
@@ -6778,6 +7091,17 @@ function renderStoreTitlesTab(content){
 document.getElementById('profileCoinsChip').addEventListener('click',()=>{ showPanel('store'); enterSection('store'); });
 
 /* ================= CHALLENGES PANEL (real) ================= */
+/* where you actually make progress on each kind of challenge */
+function challengeActionLink(metric){
+  const ar=LANG==='ar';
+  const m={
+    workoutsThisWeek: P.workoutSetup?['workout',ar?'افتح التمرين':'Open training']:['workout',ar?'جهّز التمرين أول':'Set up training first'],
+    nutritionDaysThisWeek: P.foodSetup?['food',ar?'افتح الأكل':'Open nutrition']:['food',ar?'جهّز الأكل أول':'Set up your diet first'],
+    waterDaysThisWeek: ['food',P.foodSetup?(ar?'سجّل الماء':'Log water'):(ar?'حدد هدف الماء':'Set your water goal')],
+    distinctCatchesThisMonth: ['collections',ar?'افتح المقتنيات':'Open collection']
+  }[metric];
+  return m?`<button type="button" class="dash-link" data-nav="${m[0]}" style="margin-top:6px;">${m[1]}</button>`:'';
+}
 async function renderChallengesSection(){
   const list=document.getElementById('challengesList');
   list.innerHTML=`<div class="dash-empty">…</div>`;
@@ -6793,6 +7117,7 @@ async function renderChallengesSection(){
       <div class="challenge-head"><div class="challenge-name">${c.icon} ${name}</div><div class="challenge-xp-badge">+${c.xp} XP${c.coins?' · +'+c.coins+' 🪙':''}</div></div>
       <div class="challenge-bar-track"><div class="challenge-bar-fill" style="width:${pct}%;"></div></div>
       <div class="challenge-progress-label">${completed?t('challenge_completed'):t('challenge_progress').replace('{cur}',value).replace('{target}',c.target)}</div>
+      ${completed?'':challengeActionLink(c.metric)}
     </div>`;
   }).join('') || `<div class="dash-empty">${t('challenges_empty')}</div>`;
 }
@@ -7161,6 +7486,13 @@ let socialActiveTab='friends';
 let socialActiveCategory='training';
 let socialActiveScope='friends';
 function renderSocialSection(){
+  { const gw=document.getElementById('gateWelcome'), gated=usernameHardGateActive(), ar=LANG==='ar';
+    const br=document.querySelector('#panel-social > .back-row'); if(br) br.classList.toggle('hidden',gated);
+    if(gw){ gw.classList.toggle('hidden',!gated);
+      if(gated) gw.innerHTML=`<div class="dash-card-title" style="font-size:1rem;">${ar?'👋 هلا فيك بـ مخططي':'👋 Welcome to My Planner'}</div>
+        <p class="panel-sub" style="margin:0 0 8px;">${ar?'جدولك وأكلك وتمرينك وعاداتك بمكان واحد.':'Your schedule, meals, training and habits — in one place.'}</p>
+        <p class="panel-sub" style="margin:0;"><b>${ar?'أول خطوة:':'Step 1:'}</b> ${ar?'اختار اسم مستخدم (أصدقاؤك يلقونك فيه). بعدها نجهّز يومك.':'pick a username (it’s how friends find you). Then we’ll set up your day.'}</p>
+        ${currentUser&&currentUser.isAnonymous?`<p class="panel-sub" style="margin:8px 0 0;">👤 ${ar?'أنت داخل كضيف — بياناتك تنحفظ على هذا الجهاز، وتقدر تسوي حساب بعدين من «حسابي».':'You’re in as a guest — your data is saved on this device, and you can create an account later from “You”.'}</p>`:''}`; } }
   document.getElementById('profileSetupBody').textContent=t('profile_setup_body');
   const hasProfile=PublicProfileService.hasProfile();
   document.getElementById('profileSetupCard').classList.toggle('hidden',hasProfile);
@@ -7171,7 +7503,15 @@ function renderSocialSection(){
   document.getElementById('socialTabFeed').textContent=t('social_tab_feed');
   document.getElementById('socialTabCompare').textContent=t('social_tab_compare');
   document.getElementById('socialTabChallenges').textContent=t('social_tab_challenges');
+  const COMPETE=['leaderboard','compare','challenges'];
+  const group=COMPETE.includes(socialActiveTab)?'compete':socialActiveTab;
+  document.getElementById('socialTabCompete').textContent=LANG==='ar'?'🏆 منافسة':'🏆 Compete';
   document.querySelectorAll('#socialTabs .social-tab').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===group);
+    b.onclick=()=>{ socialActiveTab=b.dataset.tab==='compete'?(COMPETE.includes(socialActiveTab)?socialActiveTab:'leaderboard'):b.dataset.tab; renderSocialSection(); };
+  });
+  document.getElementById('socialSubTabs').classList.toggle('hidden',group!=='compete');
+  document.querySelectorAll('#socialSubTabs .social-subtab').forEach(b=>{
     b.classList.toggle('active', b.dataset.tab===socialActiveTab);
     b.onclick=()=>{ socialActiveTab=b.dataset.tab; renderSocialSection(); };
   });
@@ -7667,20 +8007,23 @@ function firstRunSteps(){
   const fr=P.firstRun||{};
   if(!fr.habitDone && Object.values((dailyTrack&&dailyTrack.habits)||{}).some(Boolean)) fr.habitDone=true;
   return [
-    {id:'schedule', icon:'📅', ar:'رتّب جدولك اليومي', en:'Set up your daily schedule', done:!!(P.todoSetup&&P.todoSetup.commitments&&P.todoSetup.commitments.length), go:'today'},
-    {id:'diet', icon:'🍽️', ar:'جهّز نظامك الغذائي', en:'Set up your diet', done:!!P.foodSetup, go:'food'},
-    {id:'training', icon:'💪', ar:'جهّز جدول تمارينك', en:'Set up your training', done:!!P.workoutSetup, go:'workout'},
-    {id:'habit', icon:'✅', ar:'علّم أول عادة اليوم', en:'Check off your first habit today', done:!!fr.habitDone, go:'habits'}
+    {id:'schedule', icon:'📅', ar:'الجدول', en:'Schedule', dAr:'رتّب يومك: أضف الأشياء المتكررة مثل الدوام أو الجامعة', dEn:'Plan your day: add things that repeat, like work or college', done:!!(P.todoSetup&&P.todoSetup.commitments&&P.todoSetup.commitments.length), go:'schedule-add'},
+    {id:'diet', icon:'🍽️', ar:'الأكل', en:'Diet', dAr:'خطة وجباتك وسعراتك اليومية', dEn:'Plan your meals and daily calories', done:!!P.foodSetup, go:'food'},
+    {id:'training', icon:'💪', ar:'التمرين', en:'Training', dAr:'جدول تمارينك الأسبوعي', dEn:'Build your weekly workout plan', done:!!P.workoutSetup, go:'workout'},
+    {id:'habit', icon:'✅', ar:'العادات', en:'Habits', dAr:'علّم شي تبي تلتزم فيه كل يوم', dEn:'Check off something you want to do daily', done:!!fr.habitDone, go:'habits'}
   ];
 }
+/* completing ends the first run for good; the ✕ only folds it into a
+   small "Finish setup" chip on Home so the map of the app never vanishes */
 async function endFirstRun(how){
-  P.firstRun={...(P.firstRun||{}), active:false, [how+'At']:new Date().toISOString()};
-  document.getElementById('firstRunCard').classList.add('hidden');
+  if(how==='dismissed') P.firstRun={...(P.firstRun||{}), dismissed:true, dismissedAt:new Date().toISOString()};
+  else P.firstRun={...(P.firstRun||{}), active:false, [how+'At']:new Date().toISOString()};
+  renderFirstRunCard(); renderNavXpChip();
   await storageSet('profile',JSON.stringify(P));
 }
 function renderFirstRunCard(){
-  const card=document.getElementById('firstRunCard'); if(!card) return;
-  if(!P.firstRun||!P.firstRun.active){ card.classList.add('hidden'); return; }
+  const card=document.getElementById('firstRunCard'), chip=document.getElementById('firstRunChip'); if(!card) return;
+  if(!P.firstRun||!P.firstRun.active){ card.classList.add('hidden'); if(chip) chip.classList.add('hidden'); return; }
   const steps=firstRunSteps();
   const doneCount=steps.filter(s=>s.done).length;
   if(doneCount===steps.length){
@@ -7689,28 +8032,34 @@ function renderFirstRunCard(){
     return;
   }
   const ar=LANG==='ar';
+  if(P.firstRun.dismissed){
+    card.classList.add('hidden');
+    if(chip){ chip.classList.remove('hidden'); chip.innerHTML=`🧭 ${ar?'كمّل التجهيز':'Finish setup'} · <span class="num">${doneCount}/${steps.length}</span>`;
+      chip.onclick=()=>{ P.firstRun.dismissed=false; renderFirstRunCard(); renderNavXpChip(); storageSet('profile',JSON.stringify(P)); }; }
+    return;
+  }
+  if(chip) chip.classList.add('hidden');
   card.innerHTML=`<div class="fr-head"><div>
-      <h3>${ar?'👋 أهلاً! خلنا نجهّز يومك':'👋 Welcome! Let’s set up your day'}</h3>
-      <p class="fr-sub">${ar?'جدولك وأكلك وتمرينك وعاداتك بمكان واحد — وكل شي تنجزه يعطيك XP.':'Your schedule, food, training and habits in one place — everything you complete earns XP.'} <b class="num">${doneCount}/${steps.length}</b></p>
+      <h3>${ar?'👋 ابدأ من هنا':'👋 Start here'}</h3>
+      <p class="fr-sub">${ar?'مخططي يجمع جدولك وأكلك وتمرينك وعاداتك بمكان واحد. جهّز هذي الأربعة — كل وحدة تاخذ دقيقة.':'My Planner keeps your schedule, food, training and habits in one place. Set up these four — each takes a minute.'} <b class="num">${doneCount}/${steps.length}</b></p>
     </div><button type="button" class="fr-close" id="firstRunClose" aria-label="${ar?'إخفاء':'Hide'}">✕</button></div>
     ${steps.map(s=>`<button type="button" class="first-run-step${s.done?' done':''}" data-go="${s.go}" ${s.done?'disabled':''}>
-      <span class="fr-check">${s.done?'✓':''}</span><span>${s.icon} ${ar?s.ar:s.en}</span>${s.done?'':`<span class="fr-go">${ar?'‹':'›'}</span>`}
+      <span class="fr-check">${s.done?'✓':''}</span><span class="fr-text"><b>${s.icon} ${ar?s.ar:s.en}</b><small>${ar?s.dAr:s.dEn}</small></span>${s.done?'':`<span class="fr-go">${ar?'‹':'›'}</span>`}
     </button>`).join('')}`;
   card.classList.remove('hidden');
   document.getElementById('firstRunClose').addEventListener('click',()=>endFirstRun('dismissed'));
-  card.querySelectorAll('.first-run-step:not(.done)').forEach(b=>b.addEventListener('click',()=>{
-    const go=b.dataset.go;
-    if(go==='habits'){ const el=document.getElementById('dashHabitsTitle'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); return; }
-    showPanel(go); enterSection(go);
-  }));
+  card.querySelectorAll('.first-run-step:not(.done)').forEach(b=>b.addEventListener('click',()=>navTo(b.dataset.go)));
 }
 function refreshHome(){
   applyI18n();
   applyTheme(P.palette,P.mode,P.font);
   document.getElementById('brandLabel').textContent='🗓️';
-  document.getElementById('heroTitle').textContent=(LANG==='ar'?'هلا فيك! 👋':'Hi there! 👋');
+  const heroName=String((P.publicProfile&&(P.publicProfile.displayName||P.publicProfile.username))||'').trim();
+  const nameHtml=heroName?`<bdi>${escapeHtml(heroName)}</bdi>`:''; // <bdi> keeps a Latin name from flipping the "!" in Arabic
+  document.getElementById('heroTitle').innerHTML=LANG==='ar'?(heroName?`هلا فيك يا ${nameHtml}! 👋`:'هلا فيك! 👋'):(heroName?`Hi ${nameHtml}! 👋`:'Hi there! 👋');
   const idx=todayWeekdayIndex();
-  document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]}`;
+  const dateLbl=new Date().toLocaleDateString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'long'});
+  document.getElementById('dayBadge').textContent=`📅 ${DAY_NAMES[LANG][idx]} · ${dateLbl}`;
   homeSelectedDate=new Date(); // always re-enter Home on today; browsing other dates only lasts within the visit
   renderStreakBadge();
   renderDailySummary();
@@ -7843,7 +8192,7 @@ async function renderHomeWeightTask(){
   el.classList.remove('hidden');
   el.innerHTML=`<div class="dash-card-title">⚖️ ${t('home_weight_title')}</div>
     <div style="display:flex;gap:8px;">
-      <input type="number" step="0.1" id="homeWeightInput" placeholder="${t('home_weight_ph')}" style="flex:1;min-width:0;">
+      <input type="number" step="0.1" inputmode="decimal" class="setup-input" id="homeWeightInput" placeholder="${t('home_weight_ph')}" style="flex:1;min-width:0;margin:0;">
       <button type="button" class="setup-btn" id="homeWeightSaveBtn" style="width:auto;padding:0 16px;">${t('save')}</button>
     </div>`;
   const inp=document.getElementById('homeWeightInput');
@@ -7871,6 +8220,7 @@ async function computeHomeTodoProgress(){
 async function renderHomeTodoProgress(){
   const titleEl=document.getElementById('homeTodoTitle'); if(!titleEl) return;
   titleEl.textContent=t('home_todo_title');
+  const subEl=document.getElementById('homeTodoSub'); if(subEl) subEl.textContent=t('home_todo_sub');
   const {done,total}=await computeHomeTodoProgress();
   document.getElementById('homeTodoProgressLabel').textContent=total?`${done} / ${total}`:'';
   document.getElementById('homeTodoBarFill').style.width=(total?Math.round(done/total*100):0)+'%';
@@ -7883,14 +8233,13 @@ async function renderHomeTodoScheduleRows(){
 async function renderHomeSchedulePreview(){
   const el=document.getElementById('homeSchedulePreview'); if(!el) return;
   const items=await getScheduleItemsForDate(homeSelectedDate);
-  let html=`<div class="home-preview-title">${t('home_schedule_title')}</div>`;
+  let html=`<div class="dash-title-row"><div class="home-preview-title" style="margin:0;">${t('home_plan_title')}</div><button type="button" class="dash-link" data-nav="today">${t('home_plan_open')}</button></div>`;
   if(!items.length){
-    html+=`<div class="home-preview-sub">${t('home_no_events')}</div>`;
+    html+=`<div class="home-preview-sub" style="margin-top:8px;">${t('home_plan_empty')}</div><button type="button" class="cta-btn" data-nav="schedule-add">${t('home_plan_add')}</button>`;
   } else {
-    html+=`<div class="home-preview-sub">${t('home_events_count').replace('{n}',items.length)}</div>`;
-    items.slice(0,3).forEach(it=>{
-      html+=`<div class="home-preview-row"><span>${escapeHtml(it.label)}</span><span>${it.timeLabel}</span></div>`;
-    });
+    const shown=items.slice(0,6);
+    html+=shown.map(it=>`<div class="home-todo-schedule-row"><span class="t">${it.timeLabel||'—'}</span><span>${escapeHtml(it.label)}</span></div>`).join('');
+    if(items.length>shown.length) html+=`<button type="button" class="home-cta" data-nav="today">${LANG==='ar'?`و${items.length-shown.length} غيرها`:`+${items.length-shown.length} more`}</button>`;
   }
   el.innerHTML=html;
 }
@@ -7946,6 +8295,7 @@ async function renderHomeChallengesPreview(){
   } else {
     html+=`<div class="home-preview-sub">${t('home_challenges_active').replace('{n}',count)}</div><div class="home-preview-row"><span>${escapeHtml(closest.name)}</span><span class="num">${closest.value}/${closest.target}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${closest.pct}%"></div></div>`;
   }
+  html+=`<span class="home-cta">${t('home_challenges_cta')}</span>`;
   el.innerHTML=html;
 }
 async function getHomeCollectionPreview(){
@@ -7977,6 +8327,7 @@ async function renderHomeCollectionPreview(){
     html+=`<div class="home-preview-sub"><span class="num">${totalCollected} / ${totalSpecies}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
     if(latestName) html+=`<div class="home-preview-row"><span>${t('home_latest_discovery')}</span><span>${escapeHtml(latestName)}</span></div>`;
   }
+  html+=`<span class="home-cta">${t('home_collection_cta')}</span>`;
   el.innerHTML=html;
 }
 document.querySelectorAll('.home-preview-card[data-goto]').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
@@ -7992,6 +8343,8 @@ function renderNavXpChip(){
   const bar=document.getElementById('profileBar');
   if(!bar||!currentUser) return;
   bar.classList.remove('hidden');
+  // brand-new users see the planner first; level/XP/coins appear once they finish or skip the first run
+  if(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed){ bar.classList.add('hidden'); return; }
   celebrateProgress(); // catches XP added outside awardXP (achievements, challenges, level rewards)
   const prog=levelProgress(P.xp||0);
   document.getElementById('profileBarLevel').textContent=`⭐ ${LANG==='ar'?'مستوى':'Lv'} ${prog.level}`;
@@ -8043,13 +8396,16 @@ function renderDailySummary(){
 
   // ---- today's workout ----
   const wCard=document.getElementById('dashWorkoutCard');
+  const wRow=document.getElementById('dashWorkoutRow'), wEmpty=document.getElementById('dashWorkoutEmpty');
+  wCard.classList.remove('hidden');
   if(!P.workoutSetup){
-    wCard.classList.add('hidden');
+    wRow.classList.add('hidden'); wEmpty.classList.remove('hidden'); wEmpty.textContent=t('dash_workout_empty');
+    const yt=document.getElementById('workoutYesterdayToggle'); if(yt) yt.classList.add('hidden');
   } else {
-    wCard.classList.remove('hidden');
+    wRow.classList.remove('hidden'); wEmpty.classList.add('hidden');
     const typeKey=workoutTypeForDate(new Date(),P.workoutSetup);
     const day=adaptDay(typeKey);
-    document.getElementById('dashWorkoutName').textContent=`${day.icon} ${day.name[LANG]}`;
+    document.getElementById('dashWorkoutName').textContent=typeKey==='rest'?t('health_rest_day'):`${day.icon} ${day.name[LANG]}`;
     const toggle=document.getElementById('dashWorkoutToggle');
     toggle.textContent=dailyTrack.workoutDone?'✓':'';
     toggle.classList.toggle('done',dailyTrack.workoutDone);
@@ -8066,9 +8422,11 @@ function renderDailySummary(){
   const w=dailyTrack.water||0;
   const dwc=document.getElementById('dashWaterCount'); dwc.dir='ltr';
   dwc.textContent=`${w.toFixed(2)} / ${waterTarget} L`;
+  const wl=document.getElementById('dashWaterLink'); if(wl) wl.textContent=P.foodSetup?t('link_open_diet'):t('link_water_goal');
 
   // ---- supplements mini badge ----
   const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
+  document.getElementById('dashSuppMini').classList.toggle('hidden',!supList.length);
   document.getElementById('dashSuppMini').innerHTML=supList.length
     ? `${t('dash_supp_mini')}<span class="n">${supList.filter((s,i)=>dailyTrack.supplements['other'+i]).length}/${supList.length}</span>`
     : `${t('dash_supp_mini')}<span class="n">–</span>`;
@@ -8181,6 +8539,14 @@ async function loadYesterdayTrack(){
   return {habits:{},supplements:{},xpAwarded:{habits:{}}};
 }
 function yesterdayDateObj(){ const d=new Date(); d.setDate(d.getDate()-1); return d; }
+/* an account created today has no yesterday to catch up on */
+function yesterdayCatchUpAllowed(){
+  try{
+    const c=currentUser&&currentUser.metadata&&currentUser.metadata.creationTime; if(!c) return true;
+    const d=new Date(c), n=new Date();
+    return !(d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate());
+  }catch(e){ return true; }
+}
 
 /* ---- workout catch-up: same "yesterday only" idea as habits, but a
    single checkbox row (no per-exercise checklist) — reconstructs which
@@ -8190,6 +8556,7 @@ function yesterdayDateObj(){ const d=new Date(); d.setDate(d.getDate()-1); retur
    front (fetched from yesterday's doc) instead of a stateless link, so
    it's actually possible to see whether yesterday is already logged. */
 async function renderWorkoutYesterdayToggle(){
+  if(!yesterdayCatchUpAllowed()){ const _el=document.getElementById('workoutYesterdayToggle'); if(_el) _el.classList.add('hidden'); return; }
   const toggle=document.getElementById('workoutYesterdayToggle');
   if(!toggle||!P.workoutSetup) return;
   toggle.classList.remove('hidden');
@@ -8238,6 +8605,7 @@ async function renderWorkoutYesterdayToggle(){
    xpAwarded guard pattern as everything else, and the same one-fetch-then-
    mutate-in-memory fix as the workout row above. */
 async function renderNutritionYesterdayToggle(){
+  if(!yesterdayCatchUpAllowed()){ const _el=document.getElementById('nutritionYesterdayToggle'); if(_el) _el.classList.add('hidden'); return; }
   const toggle=document.getElementById('nutritionYesterdayToggle');
   if(!toggle) return;
   toggle.classList.remove('hidden');
@@ -8273,6 +8641,7 @@ async function renderNutritionYesterdayToggle(){
    re-read storage from scratch and race each other, so most taps were
    silently lost (14 taps landing at 0.5L instead of 3.5L in testing). */
 async function renderWaterYesterdayRow(){
+  if(!yesterdayCatchUpAllowed()){ const _el=document.getElementById('waterYesterdayRow'); if(_el) _el.classList.add('hidden'); return; }
   const box=document.getElementById('waterYesterdayRow');
   if(!box) return;
   box.classList.remove('hidden');
@@ -8318,6 +8687,7 @@ async function renderWaterYesterdayRow(){
 /* ---- supplements catch-up: per-supplement toggle list, exactly like the
    habits pattern (static list, no XP tied to supplements today either). */
 function renderSupplementsYesterdayToggle(){
+  if(!yesterdayCatchUpAllowed()){ const _el=document.getElementById('suppYesterdayToggle'); if(_el) _el.classList.add('hidden'); return; }
   const toggle=document.getElementById('suppYesterdayToggle');
   const fs=P.foodSetup||{};
   const items=(fs.supOtherList||[]).map((s,i)=>({key:'other'+i,label:s.text,icon:s.emoji||'💊'}));
@@ -8368,6 +8738,7 @@ async function saveWeightForYesterday(val){
   await saveDailyTrack();
 }
 function renderHabitsYesterdayToggle(){
+  if(!yesterdayCatchUpAllowed()){ const _el=document.getElementById('habitYesterdayToggle'); if(_el) _el.classList.add('hidden'); return; }
   const toggle=document.getElementById('habitYesterdayToggle');
   if(!toggle) return;
   const habits=P.habits||[];
@@ -8772,13 +9143,38 @@ function collGenId(){ return 'c'+Date.now()+Math.random().toString(36).slice(2,7
 const collPhotoCache={};   // avoids re-fetching an already-loaded photo on every +/- re-render
 
 function collShowView(name){
+  setTimeout(renderCollCrumbs,0);
   document.querySelectorAll('.coll-view').forEach(v=>v.classList.remove('active'));
   document.getElementById('collView-'+name).classList.add('active');
   window.scrollTo({top:0});
 }
 function collGoTo(name){ collStack.push(name); collShowView(name); }
+/* Collection › Animals › Fish › Reef › Clownfish — every level but the
+   current one is a link back to it (runs after the view has rendered its
+   own title, so it can reuse it) */
+function renderCollCrumbs(){
+  const nav=document.getElementById('collCrumbs'); if(!nav) return;
+  if(collStack.length<=1){ nav.classList.add('hidden'); nav.innerHTML=''; return; }
+  const ar=LANG==='ar';
+  const label=v=>{
+    if(v==='root') return t('card_collections');
+    if(v==='animals') return ar?'حيوانات':'Animals';
+    if(v==='groups'){ const c=collCategoryConfig(collCurrentCat); return c?collCatName(c):(document.getElementById('collGroupsTitle').textContent||'…'); }
+    if(v==='category') return document.getElementById('collCatTitle').textContent||'…';
+    if(v==='species'){ const sp=collSpeciesInfo(collCurrentCat,collCurrentSpecies); return sp?collName(sp):'…'; }
+    return v;
+  };
+  nav.innerHTML=collStack.map((v,i)=>i===collStack.length-1
+    ? `<span class="crumb current" aria-current="page">${escapeHtml(label(v))}</span>`
+    : `<button type="button" class="crumb" data-crumb="${i}">${escapeHtml(label(v))}</button>`).join('<span class="crumb-sep" aria-hidden="true">›</span>');
+  nav.classList.remove('hidden');
+  nav.querySelectorAll('[data-crumb]').forEach(b=>b.addEventListener('click',()=>{
+    const to=Number(b.dataset.crumb);
+    while(collStack.length>to+1) collBack();
+  }));
+}
 function collBack(){
-  if(collStack.length<=1){ showPanel(collReturnPanel); return; }
+  if(collStack.length<=1){ goBack('collections'); return; }
   collStack.pop();
   const target=collStack[collStack.length-1];
   collShowView(target);
