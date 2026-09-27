@@ -294,6 +294,161 @@
   .fc-chips button{ flex-shrink:0; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:999px; padding:7px 12px; font:inherit; font-size:0.76rem; font-weight:700; cursor:pointer; }
   .fc-chips button.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
   .coll-species-card .you-have{ position:absolute; top:6px; inset-inline-end:6px; z-index:2; font-size:0.6rem; font-weight:800; background:#2e8b57; color:#fff; border-radius:999px; padding:2px 6px; }
+
+/* ================= BACKGROUNDS v2 =================
+   Rarity has to be visible at a glance: common = calm colour, uncommon =
+   one gentle motion, epic = an animated scene, mythic = dramatic effects,
+   legendary = a full illustrated, layered, living world (+ a gold aura on
+   the whole app). Sizes are % of the layer so the same art works full
+   screen, in the 130px store preview and in the profile header. */
+.bgx{ overflow:hidden; }
+.bgx > *{ position:absolute; pointer-events:none; }
+@keyframes bgxTwinkle{ 0%,100%{ opacity:.15; } 50%{ opacity:1; } }
+@keyframes bgxRise{ 0%{ transform:translateY(0) translateX(0); opacity:0; } 10%{ opacity:.9; } 100%{ transform:translateY(-900px) translateX(30px); opacity:0; } }
+@keyframes bgxFall{ 0%{ transform:translateY(-40px) translateX(0); } 100%{ transform:translateY(1000px) translateX(60px); } }
+@keyframes bgxRain{ 0%{ transform:translateY(-60px) rotate(14deg); } 100%{ transform:translateY(1000px) rotate(14deg); } }
+@keyframes bgxSway{ 0%{ transform:rotate(-6deg); } 100%{ transform:rotate(6deg); } }
+@keyframes bgxSpin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
+@keyframes bgxSpinRev{ to{ transform:translate(-50%,-50%) rotate(-360deg); } }
+@keyframes bgxPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+@keyframes bgxDriftX{ 0%{ transform:translateX(-6%); } 100%{ transform:translateX(6%); } }
+@keyframes bgxWave{ to{ transform:translateX(-50%); } }
+@keyframes bgxCurtain{ 0%{ transform:translateX(-8%) skewX(-10deg) scaleY(.9); filter:blur(5px) hue-rotate(0deg); } 100%{ transform:translateX(8%) skewX(10deg) scaleY(1.12); filter:blur(5px) hue-rotate(45deg); } }
+@keyframes bgxShoot{ 0%,86%{ opacity:0; transform:translate(0,0) rotate(-24deg); } 88%{ opacity:1; } 100%{ opacity:0; transform:translate(-340px,150px) rotate(-24deg); } }
+@keyframes bgxGrid{ to{ background-position:0 40px; } }
+@keyframes bgxFirefly{ 0%{ transform:translate(0,0); } 25%{ transform:translate(22px,-18px); } 50%{ transform:translate(-8px,-34px); } 75%{ transform:translate(-26px,-10px); } 100%{ transform:translate(0,0); } }
+@keyframes bgxBolt{ 0%,58%,64%,100%{ opacity:0; } 59%,62%{ opacity:1; } 60.5%{ opacity:.2; } }
+@keyframes bgxFlash{ 0%,58%,64%,100%{ opacity:0; } 59%{ opacity:.55; } 61%{ opacity:.25; } 62%{ opacity:.5; } }
+@keyframes bgxBeam{ 0%{ transform:rotate(-28deg); } 100%{ transform:rotate(22deg); } }
+@keyframes bgxSwim{ 0%{ transform:translateX(-90%) translateY(0); } 50%{ transform:translateX(40%) translateY(-8px); } 100%{ transform:translateX(170%) translateY(0); } }
+@keyframes bgxSwimRev{ 0%{ transform:translateX(120%) scaleX(-1); } 100%{ transform:translateX(-140%) scaleX(-1); } }
+@keyframes bgxLeaf{ 0%{ transform:translateY(-30px) rotate(0deg) translateX(0); } 100%{ transform:translateY(900px) rotate(540deg) translateX(-80px); } }
+@keyframes bgxSand{ 0%{ transform:translateX(0); opacity:0; } 15%{ opacity:.8; } 100%{ transform:translateX(-420px); opacity:0; } }
+@keyframes bgxAura{ 0%,100%{ box-shadow:inset 0 0 38px rgba(255,196,80,.30), inset 0 0 3px rgba(255,220,140,.9); } 50%{ box-shadow:inset 0 0 70px rgba(255,196,80,.45), inset 0 0 4px rgba(255,236,170,1); } }
+.bgx .st{ width:2px; height:2px; border-radius:50%; background:#fff; box-shadow:0 0 4px #fff; animation:bgxTwinkle 3s ease-in-out infinite; }
+.bgx .st.b{ width:3px; height:3px; }
+.bgx .shoot{ width:90px; height:2px; background:linear-gradient(90deg,#fff,transparent); border-radius:2px; top:12%; right:6%; animation:bgxShoot 8s linear infinite; }
+
+/* COMMON */
+.bgx-chalk{ background:#3b4654; background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px); background-size:26px 26px; }
+.bgx-chalk::after{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 25%,rgba(255,255,255,.12),transparent 60%); }
+.bgx-dusk{ background:linear-gradient(180deg,#ffd9b3 0%,#f6a9a4 40%,#a99bd6 74%,#6f76b9 100%); }
+.bgx-dusk::before{ content:''; position:absolute; left:50%; top:60%; width:34%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,#fff6de 0%,#ffd8a0 55%,rgba(255,216,160,0) 70%); }
+.bgx-dusk::after{ content:''; position:absolute; left:0; right:0; top:62%; height:1px; background:rgba(255,255,255,.55); }
+
+/* EPIC — Abyss: underwater light, bubbles, a passing school */
+.bgx-abyss{ background:linear-gradient(180deg,#0b5f82 0%,#07405f 40%,#042338 100%); }
+.bgx-abyss .ray{ top:-12%; width:16%; height:95%; background:linear-gradient(180deg,rgba(190,245,255,.38),transparent 85%); filter:blur(5px); transform-origin:top center; animation:bgxSway 7s ease-in-out infinite alternate; }
+.bgx-abyss .caus{ inset:-10% -10% 40% -10%; background-image:radial-gradient(circle at 30% 40%,rgba(255,255,255,.10) 0 6%,transparent 7%),radial-gradient(circle at 70% 60%,rgba(255,255,255,.08) 0 5%,transparent 6%); background-size:90px 70px; animation:bgxDriftX 9s ease-in-out infinite alternate; }
+.bgx-abyss .bub{ bottom:-12px; border-radius:50%; border:1px solid rgba(255,255,255,.7); background:rgba(255,255,255,.08); animation:bgxRise 11s linear infinite; }
+.bgx-abyss .school{ top:44%; left:0; width:100%; height:24px; animation:bgxSwimRev 22s linear infinite; }
+
+/* EPIC — Neon Drive (synthwave): striped sun, scrolling neon floor */
+.bgx-synth{ background:linear-gradient(180deg,#0e0526 0%,#2a0b4d 38%,#6b1766 58%,#140424 60%,#0a0219 100%); }
+.bgx-synth .sun{ left:50%; top:39%; width:46%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:linear-gradient(180deg,#ffe66d 0%,#ff9f5a 48%,#ff3f8e 100%); box-shadow:0 0 50px rgba(255,80,160,.65); overflow:hidden; }
+.bgx-synth .sun::after{ content:''; position:absolute; left:0; right:0; top:52%; bottom:0; background:repeating-linear-gradient(180deg,transparent 0 9%,#4a1060 9% 14%); }
+.bgx-synth .floor{ left:-60%; right:-60%; top:60%; bottom:-20%; background-image:linear-gradient(rgba(255,70,210,.85) 2px,transparent 2px),linear-gradient(90deg,rgba(255,70,210,.85) 2px,transparent 2px); background-size:40px 40px; transform:perspective(160px) rotateX(58deg); transform-origin:top center; animation:bgxGrid .9s linear infinite; }
+.bgx-synth .hz{ left:0; right:0; top:59.6%; height:2px; background:#ff6ad5; box-shadow:0 0 14px 3px rgba(255,90,210,.9); }
+.bgx-synth .mtn{ left:0; right:0; top:44%; height:17%; width:100%; }
+
+/* MYTHIC — Aurora Current: living curtains of light over pines */
+.bgx-aurora{ background:radial-gradient(ellipse at 50% 125%,#0f3040 0%,#081626 48%,#03060e 100%); }
+.bgx-aurora .cur, .bgx-arctic .cur{ left:-15%; right:-15%; height:55%; background:repeating-linear-gradient(90deg,rgba(255,255,255,.20) 0 2px,transparent 2px 10px),linear-gradient(90deg,rgba(70,255,170,0),rgba(70,255,170,.6) 22%,rgba(70,220,255,.45) 50%,rgba(180,110,255,.55) 76%,rgba(180,110,255,0)); mix-blend-mode:screen; -webkit-mask-image:radial-gradient(ellipse 55% 48% at 50% 58%,#000 35%,transparent 75%); mask-image:radial-gradient(ellipse 55% 48% at 50% 58%,#000 35%,transparent 75%); animation:bgxCurtain 11s ease-in-out infinite alternate; }
+.bgx-aurora .trees, .bgx-arctic .trees{ left:0; right:0; bottom:0; width:100%; height:22%; }
+
+/* MYTHIC — Molten Core: glowing magma cracks and rising embers */
+.bgx-magma{ background:radial-gradient(ellipse at 50% 112%,#ff7a1f 0%,#b82407 22%,#420c04 52%,#130404 100%); }
+.bgx-magma .glow{ left:-10%; right:-10%; bottom:-20%; height:60%; background:radial-gradient(ellipse at 50% 100%,rgba(255,150,40,.75),transparent 70%); animation:bgxPulse 3.2s ease-in-out infinite; }
+.bgx-magma .cracks{ left:0; right:0; bottom:0; width:100%; height:48%; filter:drop-shadow(0 0 4px #ff9a2e); animation:bgxPulse 2.4s ease-in-out infinite; }
+.bgx-magma .emb{ bottom:0; width:3px; height:3px; border-radius:50%; background:#ffc15c; box-shadow:0 0 6px 2px rgba(255,140,40,.9); animation:bgxRise 7s linear infinite; }
+.bgx-magma .smoke{ top:-10%; width:70%; height:40%; border-radius:50%; background:rgba(0,0,0,.45); filter:blur(28px); animation:bgxDriftX 14s ease-in-out infinite alternate; }
+
+/* MYTHIC — Runic Ascension: a turning magic circle */
+.bgx-runes{ background:radial-gradient(ellipse at 50% 55%,#2c2052 0%,#130e27 60%,#07050f 100%); }
+.bgx-runes .circle{ left:50%; top:52%; width:82%; aspect-ratio:1; transform:translate(-50%,-50%); filter:drop-shadow(0 0 6px rgba(190,150,255,.9)); }
+.bgx-runes .circle.o{ animation:bgxSpin 46s linear infinite; }
+.bgx-runes .circle.i{ width:58%; animation:bgxSpinRev 28s linear infinite; }
+.bgx-runes .core{ left:50%; top:52%; width:24%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,rgba(220,190,255,.8),rgba(120,70,220,.25) 55%,transparent 70%); animation:bgxPulse 2.6s ease-in-out infinite; }
+.bgx-runes .spk{ bottom:0; width:3px; height:3px; border-radius:50%; background:#d9c2ff; box-shadow:0 0 6px #b98cff; animation:bgxRise 9s linear infinite; }
+
+/* LEGENDARY — Aurora Throne: arctic night, huge aurora, mirror lake, snow */
+.bgx-arctic{ background:linear-gradient(180deg,#040b1f 0%,#0a2143 45%,#15365c 72%,#0b1c33 100%); }
+.bgx-arctic .cur{ height:50%; opacity:.75; }
+.bgx-arctic .mtns{ left:0; right:0; bottom:20%; width:100%; height:34%; }
+.bgx-arctic .lake{ left:0; right:0; bottom:0; height:20%; background:linear-gradient(180deg,#123a5c,#061426); overflow:hidden; }
+.bgx-arctic .lake .refl{ position:absolute; left:-20%; right:-20%; top:0; height:100%; background:linear-gradient(90deg,transparent,rgba(70,255,170,.35),rgba(180,110,255,.35),transparent); filter:blur(10px); animation:bgxDriftX 6s ease-in-out infinite alternate; }
+.bgx-arctic .lake .gl{ position:absolute; left:0; right:0; height:1px; background:rgba(255,255,255,.35); animation:bgxDriftX 4s ease-in-out infinite alternate; }
+.bgx-arctic .flake{ top:-10px; border-radius:50%; background:#fff; opacity:.85; animation:bgxFall 12s linear infinite; }
+.bgx-arctic .moon{ top:9%; left:14%; width:9%; aspect-ratio:1; border-radius:50%; background:#f4f1ff; box-shadow:0 0 30px 8px rgba(220,230,255,.5); }
+
+/* LEGENDARY — Eclipse Core: a turning galaxy behind a burning eclipse */
+.bgx-cosmos{ background:#04020b; }
+.bgx-cosmos .gal{ left:50%; top:46%; width:170%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:conic-gradient(from 0deg,rgba(255,110,210,0),rgba(255,110,210,.42),rgba(110,170,255,.42),rgba(255,205,120,.38),rgba(160,90,255,.4),rgba(255,110,210,0)); filter:blur(34px); animation:bgxSpin 70s linear infinite; }
+.bgx-cosmos .gal2{ left:50%; top:46%; width:95%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.10) 0 4deg,transparent 4deg 22deg); filter:blur(6px); -webkit-mask-image:radial-gradient(circle,#000 20%,transparent 70%); mask-image:radial-gradient(circle,#000 20%,transparent 70%); animation:bgxSpinRev 90s linear infinite; }
+.bgx-cosmos .ecl{ left:50%; top:46%; width:24%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:#000; box-shadow:0 0 0 2px rgba(255,242,205,.95),0 0 26px 8px rgba(255,200,120,.8),0 0 80px 30px rgba(255,110,60,.4); animation:bgxPulse 3.4s ease-in-out infinite; }
+.bgx-cosmos .flare{ left:50%; top:46%; width:34%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; border-top:3px solid rgba(255,200,130,.85); border-right:2px solid transparent; filter:blur(1px) drop-shadow(0 0 6px #ffb070); animation:bgxSpin 9s linear infinite; }
+.bgx-cosmos .orb{ left:50%; top:46%; width:70%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; border:1px dashed rgba(255,255,255,.12); animation:bgxSpin 24s linear infinite; }
+.bgx-cosmos .orb::after{ content:''; position:absolute; top:-6px; left:50%; width:12px; height:12px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#9fd6ff,#2b5fae); box-shadow:0 0 10px #6ab8ff; }
+.bgx-cosmos .st.c{ background:#ffd6f2; box-shadow:0 0 6px #ff9ee0; }
+
+/* LEGENDARY — Verdant Sanctum: layered forest, god rays, fireflies, leaves */
+.bgx-forest{ background:linear-gradient(180deg,#123f33 0%,#0b2b23 45%,#041310 100%); }
+.bgx-forest .moonglow{ top:-8%; right:-6%; width:60%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,rgba(230,255,220,.35),transparent 65%); }
+.bgx-forest .god{ top:-10%; width:20%; height:120%; background:linear-gradient(180deg,rgba(235,255,200,.30),transparent 75%); filter:blur(6px); transform:rotate(18deg); transform-origin:top; animation:bgxPulse 5s ease-in-out infinite; }
+.bgx-forest .layer{ left:-4%; right:-4%; bottom:0; width:108%; animation:bgxDriftX 12s ease-in-out infinite alternate; }
+.bgx-forest .fly{ width:4px; height:4px; border-radius:50%; background:#e8ff8a; box-shadow:0 0 8px 3px rgba(220,255,120,.8); animation:bgxFirefly 9s ease-in-out infinite, bgxTwinkle 2.4s ease-in-out infinite; }
+.bgx-forest .leaf{ top:-20px; width:9px; height:5px; border-radius:50% 0; background:#4fa06a; animation:bgxLeaf 14s linear infinite; }
+.bgx-forest .mist{ left:-10%; right:-10%; bottom:0; height:26%; background:linear-gradient(0deg,rgba(200,255,220,.18),transparent); filter:blur(8px); animation:bgxDriftX 10s ease-in-out infinite alternate; }
+
+/* LEGENDARY — Tempest Crown: storm, lightning, rain, a sweeping lighthouse */
+.bgx-storm{ background:linear-gradient(180deg,#232e3d 0%,#111822 52%,#070a10 100%); }
+.bgx-storm .cloud{ width:80%; height:26%; border-radius:50%; background:rgba(150,165,185,.35); filter:blur(22px); animation:bgxDriftX 16s ease-in-out infinite alternate; }
+.bgx-storm .flash{ inset:0; background:#cfe0ff; opacity:0; animation:bgxFlash 7s linear infinite; }
+.bgx-storm .bolt{ top:4%; left:22%; width:22%; height:48%; filter:drop-shadow(0 0 8px #bcd6ff); opacity:0; animation:bgxBolt 7s linear infinite; }
+.bgx-storm .drop{ top:-30px; width:1px; height:18px; background:linear-gradient(180deg,transparent,rgba(210,225,255,.55)); animation:bgxRain .9s linear infinite; }
+.bgx-storm .sea{ left:0; bottom:0; width:200%; height:26%; animation:bgxWave 9s linear infinite; }
+.bgx-storm .sea.b{ height:18%; opacity:.9; animation-duration:6s; }
+.bgx-storm .house{ right:8%; bottom:18%; width:14%; height:34%; }
+.bgx-storm .beam{ right:14.6%; bottom:45.5%; width:120%; height:9%; transform-origin:100% 50%; background:linear-gradient(270deg,rgba(255,238,170,.7),rgba(255,238,170,.18) 55%,rgba(255,238,170,0) 90%); clip-path:polygon(0 0,100% 42%,100% 58%,0 100%); filter:blur(1.5px); animation:bgxBeam 5s ease-in-out infinite alternate; }
+.bgx-storm .lampglow{ right:13.2%; bottom:43.5%; width:6%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,rgba(255,236,160,.95),rgba(255,236,160,0) 70%); animation:bgxPulse 1.6s ease-in-out infinite; }
+
+/* LEGENDARY (boss reward) — The Gentle Giant: a whale shark glides past */
+.bgx-whale{ background:linear-gradient(180deg,#0c7196 0%,#06496f 35%,#032a48 70%,#01152a 100%); }
+.bgx-whale .ray{ top:-10%; width:14%; height:90%; background:linear-gradient(180deg,rgba(200,250,255,.35),transparent 80%); filter:blur(5px); transform-origin:top; animation:bgxSway 8s ease-in-out infinite alternate; }
+.bgx-whale .shark{ top:34%; left:0; width:120%; height:30%; animation:bgxSwim 34s linear infinite; animation-delay:-13s; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+.bgx-whale .snow{ bottom:0; width:2px; height:2px; border-radius:50%; background:rgba(255,255,255,.75); animation:bgxRise 16s linear infinite; }
+.bgx-whale .school{ top:24%; left:0; width:100%; height:20px; animation:bgxSwimRev 18s linear infinite; }
+
+/* LEGENDARY (Champion reward) — Crescent Oasis: desert night under a crescent */
+.bgx-oasis{ background:linear-gradient(180deg,#070b30 0%,#151a57 38%,#3f2769 66%,#b86b48 88%,#2a1633 100%); }
+.bgx-oasis .moon{ top:10%; left:60%; width:24%; aspect-ratio:1; border-radius:50%; background:#fff1c2; box-shadow:0 0 40px 12px rgba(255,225,150,.55); }
+.bgx-oasis .moon::after{ content:''; position:absolute; top:-8%; left:26%; width:92%; height:92%; border-radius:50%; background:#131855; }
+.bgx-oasis .dune{ left:-5%; right:-5%; bottom:0; width:110%; animation:bgxDriftX 18s ease-in-out infinite alternate; }
+.bgx-oasis .lamp{ width:5px; height:5px; border-radius:50%; background:#ffcf6b; box-shadow:0 0 10px 4px rgba(255,190,80,.8); animation:bgxPulse 2s ease-in-out infinite; }
+.bgx-oasis .sand{ width:2px; height:2px; border-radius:50%; background:rgba(255,215,160,.85); animation:bgxSand 7s linear infinite; }
+
+/* the whole app gets a slow gold aura while a legendary background is on */
+body.bg-legendary::after{ content:''; position:fixed; inset:0; pointer-events:none; z-index:60; border-radius:0; animation:bgxAura 4s ease-in-out infinite; }
+/* cards let the background breathe through a little */
+body.app-bg-active .home-todo-wrap, body.app-bg-active .dash-card, body.app-bg-active .home-card, body.app-bg-active .dest-card, body.app-bg-active .setup-card{ background:color-mix(in srgb, var(--card) 90%, transparent); }
+@media (prefers-reduced-motion:reduce){ .bgx *, .bgx::before, .bgx::after, body.bg-legendary::after{ animation:none !important; } }
+
+/* store: rarity you can see before reading */
+.cos-card.rar-epic{ border:1.5px solid var(--cos-epic); }
+.cos-card.rar-mythic{ border:1.5px solid var(--cos-mythic); box-shadow:0 0 14px rgba(224,50,59,.25); }
+.cos-card.rar-legendary{ border:2px solid #f5b83d; box-shadow:0 0 22px rgba(245,184,61,.45); position:relative; }
+.cos-card.rar-legendary::before{ content:'✦ LEGENDARY'; position:absolute; top:8px; inset-inline-start:8px; z-index:3; font-size:0.6rem; font-weight:800; letter-spacing:.08em; color:#1a1300; background:linear-gradient(90deg,#ffd76a,#fff1b8,#ffc23d); border-radius:999px; padding:3px 8px; }
+.cos-card .cos-preview{ height:130px; }
+.cos-unlock{ font-size:0.72rem; color:var(--ink-soft); line-height:1.5; margin:4px 0 6px; }
+.cos-rewards-banner{ background:linear-gradient(90deg,rgba(245,184,61,.16),rgba(255,236,170,.24)); border:1.5px solid #f5b83d; border-radius:14px; padding:12px 14px; margin-bottom:14px; font-size:0.82rem; line-height:1.6; }
+.cos-rewards-banner b{ color:var(--heading); }
+.boss-reward{ margin:12px 0; border-radius:14px; overflow:hidden; border:1.5px solid #f5b83d; }
+.boss-reward .cos-preview{ height:110px; position:relative; }
+.boss-reward-cap{ padding:8px 12px; font-size:0.8rem; font-weight:700; background:rgba(245,184,61,.14); color:#ffe2a0; }
+.boss-card .boss-title{ color:#fff; }
+body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(in srgb, var(--card) 92%, transparent); border-radius:999px; padding:6px 14px; }
+.coll-species-card .boss-gift{ position:absolute; bottom:6px; inset-inline-end:6px; font-size:0.9rem; z-index:2; }
+
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1848,7 +2003,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.35.0';
+const APP_VERSION='v1.36.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2126,6 +2281,7 @@ async function bootApp(){
   await reconcileXpCoinsFromFirestore();
   migrateProgressionFields();
   await migrateRewardValuesV2();
+  migrateRetiredCosmetics();
   renderAppBackground();
   migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
   launchApp();
@@ -2886,7 +3042,7 @@ function renderBackgroundSelector(){
       owned.forEach(it=>{
         const equipped=equippedBgId===it.id;
         const name=LANG==='ar'?it.nameAr:it.nameEn;
-        const card=document.createElement('div'); card.className='cos-card'+(equipped?' is-equipped':'');
+        const card=document.createElement('div'); card.className='cos-card rar-'+it.rarity+(equipped?' is-equipped':'');
         card.innerHTML=`
           <div class="cos-preview${it.cls?' '+it.cls:''}"></div>
           <div class="cos-card-body">
@@ -7154,6 +7310,121 @@ async function equipCosmetic(slot,id){
    Individual panel cards stay on their own solid var(--bg) fill (untouched)
    so nothing readability-sensitive was touched except the loose Home
    greeting text (see the body.app-bg-active CSS rule). */
+
+/* ================= BACKGROUNDS v2 (art) =================
+   Same ids, prices and rarities as before (owners keep everything) — only
+   the look is new. Champion's Ascension is retired; its owners get the new
+   Crescent Oasis instead, which is now the Level-20 Champion reward. */
+function bgStars(el,n,top){ for(let i=0;i<n;i++){ const s=cxAddEl(el,'st'+(Math.random()<.2?' b':'')+(Math.random()<.15?' c':'')); s.style.left=(Math.random()*98)+'%'; s.style.top=(Math.random()*(top||60))+'%'; s.style.animationDelay=(Math.random()*3)+'s'; s.style.animationDuration=(2+Math.random()*3)+'s'; } }
+function bgRand(el,cls,n,opt){ opt=opt||{}; for(let i=0;i<n;i++){ const d=cxAddEl(el,cls); d.style.left=((opt.l0||0)+Math.random()*((opt.l1||100)-(opt.l0||0)))+'%'; if(opt.top!=null) d.style.top=(opt.top+Math.random()*(opt.topSpan||0))+'%'; if(opt.size){ const z=opt.size[0]+Math.random()*(opt.size[1]-opt.size[0]); d.style.width=z+'px'; d.style.height=z+'px'; } d.style.animationDelay=(-Math.random()*(opt.dur||10))+'s'; if(opt.dur) d.style.animationDuration=(opt.dur*(0.7+Math.random()*0.6))+'s'; } }
+function bgSvg(el,cls,viewBox,inner,par){ el.insertAdjacentHTML('beforeend',`<svg class="${cls}" viewBox="${viewBox}" preserveAspectRatio="${par||'none'}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`); }
+const FISH_SCHOOL=`<svg viewBox="0 0 120 20" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">${[0,22,44,66,88].map((x,i)=>`<g transform="translate(${x},${i%2?4:9})" fill="rgba(210,245,255,.55)"><ellipse cx="6" cy="4" rx="6" ry="2.6"/><polygon points="11,4 15,1 15,7"/></g>`).join('')}</svg>`;
+const BG_V2={
+  'chalkline':{cls:'bgx bgx-chalk'},
+  'quiet-horizon':{cls:'bgx bgx-dusk', descEn:'Soft pastel sunset over a still horizon', descAr:'غروب ناعم بألوان هادية فوق أفق ساكن'},
+  'deep-current':{cls:'bgx bgx-abyss', descEn:'Underwater light rays, drifting caustics, rising bubbles and a passing school of fish', descAr:'أشعة ضوء تحت الماء، انعكاسات متموجة، فقاعات صاعدة وسرب سمك يمر', mount:el=>{
+    cxAddEl(el,'caus'); [12,44,72].forEach((l,i)=>{ const r=cxAddEl(el,'ray'); r.style.left=l+'%'; r.style.animationDelay=(-i*2)+'s'; });
+    bgRand(el,'bub',14,{size:[4,10],dur:11}); el.insertAdjacentHTML('beforeend',`<div class="school">${FISH_SCHOOL}</div>`); }},
+  'overdrive-grid':{cls:'bgx bgx-synth', nameEn:'Neon Drive', nameAr:'طريق النيون', descEn:'Synthwave: a striped neon sun over an endless scrolling grid', descAr:'سينث ويف: شمس نيون مخططة فوق شبكة لا نهائية تتحرك', mount:el=>{
+    bgStars(el,22,36); cxAddEl(el,'sun');
+    bgSvg(el,'mtn','0 0 300 60','<polygon points="0,60 30,28 55,44 90,14 120,40 150,22 185,46 215,18 250,40 275,26 300,44 300,60" fill="#1d0736"/><polyline points="0,60 30,28 55,44 90,14 120,40 150,22 185,46 215,18 250,40 275,26 300,44" fill="none" stroke="#ff5fd0" stroke-width="1.2" opacity=".8"/>');
+    cxAddEl(el,'hz'); cxAddEl(el,'floor'); }},
+  'aurora-current':{cls:'bgx bgx-aurora', descEn:'Living curtains of aurora light over a pine forest, with shooting stars', descAr:'ستائر شفق حية فوق غابة صنوبر، مع شهب', mount:el=>{
+    bgStars(el,40,70); [4,14,26].forEach((top,i)=>{ const c=cxAddEl(el,'cur'); c.style.top=top+'%'; c.style.animationDelay=(-i*3.5)+'s'; c.style.opacity=(0.9-i*0.2); });
+    cxAddEl(el,'shoot');
+    bgSvg(el,'trees','0 0 300 40',Array.from({length:30},(_,i)=>{ const x=i*10+Math.random()*4, h=18+Math.random()*20; return `<polygon points="${x},40 ${x+5},${40-h} ${x+10},40" fill="#02070c"/>`; }).join('')+'<rect x="0" y="36" width="300" height="4" fill="#02070c"/>'); }},
+  'molten-core':{cls:'bgx bgx-magma', descEn:'Glowing magma cracks, heat pulses and a storm of rising embers', descAr:'شقوق حمم متوهجة، نبضات حرارة وعاصفة جمر صاعد', mount:el=>{
+    [8,55].forEach(l=>{ const m=cxAddEl(el,'smoke'); m.style.left=l+'%'; }); cxAddEl(el,'glow');
+    bgSvg(el,'cracks','0 0 300 100','<path d="M0,70 L40,62 L70,74 L110,58 L150,70 L190,55 L230,68 L270,60 L300,66" stroke="#ffb347" stroke-width="2.2" fill="none"/><path d="M60,100 L75,80 L70,74 M150,100 L140,82 L150,70 M230,100 L238,84 L230,68 M110,58 L100,40 L118,24 M190,55 L205,36" stroke="#ff8a2a" stroke-width="1.6" fill="none"/><path d="M0,100 L0,80 L40,74 L70,86 L110,72 L150,84 L190,70 L230,82 L270,74 L300,80 L300,100 Z" fill="#1a0604"/>');
+    bgRand(el,'emb',24,{dur:7}); }},
+  'runic-ascension':{cls:'bgx bgx-runes', descEn:'Two counter-rotating circles of glowing runes around a pulsing core', descAr:'دائرتا رموز متوهجة تدوران بعكس بعض حول قلب نابض', mount:el=>{
+    const runes='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ'.repeat(2);
+    bgSvg(el,'circle o','0 0 200 200',`<defs><path id="rrA" d="M100,100 m-82,0 a82,82 0 1,1 164,0 a82,82 0 1,1 -164,0"/></defs><circle cx="100" cy="100" r="92" fill="none" stroke="#c9a8ff" stroke-width="1.4"/><circle cx="100" cy="100" r="72" fill="none" stroke="#c9a8ff" stroke-width=".8"/><text fill="#e3d2ff" font-size="12" letter-spacing="3"><textPath href="#rrA">${runes}</textPath></text>`,'xMidYMid meet');
+    bgSvg(el,'circle i','0 0 200 200','<circle cx="100" cy="100" r="90" fill="none" stroke="#b98cff" stroke-width="1.6" stroke-dasharray="6 5"/><polygon points="100,18 171,141 29,141" fill="none" stroke="#c9a8ff" stroke-width="1.2"/><polygon points="100,182 29,59 171,59" fill="none" stroke="#c9a8ff" stroke-width="1.2"/>','xMidYMid meet');
+    cxAddEl(el,'core'); bgRand(el,'spk',18,{dur:9}); }},
+  'aurora-throne':{cls:'bgx bgx-arctic', descEn:'Arctic night: a vast aurora above snowy peaks, mirrored in a still lake, with falling snow', descAr:'ليل قطبي: شفق عظيم فوق قمم ثلجية، ينعكس على بحيرة ساكنة، مع ثلج يتساقط', mount:el=>{
+    bgStars(el,50,55); cxAddEl(el,'moon');
+    [0,12,22].forEach((top,i)=>{ const c=cxAddEl(el,'cur'); c.style.top=top+'%'; c.style.animationDelay=(-i*2.7)+'s'; if(i%2) c.style.background='linear-gradient(90deg,transparent,rgba(255,110,200,.45) 25%,rgba(120,255,190,.6) 55%,transparent)'; });
+    bgSvg(el,'mtns','0 0 300 100','<polygon points="0,100 0,60 40,30 70,52 110,18 150,50 190,24 230,55 265,34 300,56 300,100" fill="#1b3558"/><polygon points="40,30 50,38 58,34 70,52 55,45" fill="#e8f1ff"/><polygon points="110,18 122,30 132,26 150,50 128,38" fill="#e8f1ff"/><polygon points="190,24 202,36 212,31 230,55 208,42" fill="#e8f1ff"/><polygon points="0,100 0,78 50,58 95,80 140,62 185,82 230,64 270,80 300,70 300,100" fill="#0d213b"/>');
+    el.insertAdjacentHTML('beforeend','<div class="lake"><div class="refl"></div><div class="gl" style="top:30%"></div><div class="gl" style="top:62%;animation-delay:-2s"></div></div>');
+    bgRand(el,'flake',36,{size:[2,4],dur:12}); }},
+  'eclipse-core':{cls:'bgx bgx-cosmos', descEn:'A turning galaxy behind a burning eclipse, solar flares and an orbiting world', descAr:'مجرة تدور خلف كسوف مشتعل، ألسنة شمسية وكوكب يدور حوله', mount:el=>{
+    cxAddEl(el,'gal'); cxAddEl(el,'gal2'); bgStars(el,60,100); cxAddEl(el,'orb'); cxAddEl(el,'ecl');
+    const f1=cxAddEl(el,'flare'); const f2=cxAddEl(el,'flare'); f2.style.animationDuration='13s'; f2.style.animationDirection='reverse'; f2.style.width='40%'; }},
+  'verdant-sanctum':{cls:'bgx bgx-forest', descEn:'An enchanted forest: moonlit god rays, three layers of trees, fireflies and drifting leaves', descAr:'غابة مسحورة: أشعة قمر، ثلاث طبقات أشجار، يراعات وأوراق تتطاير', mount:el=>{
+    cxAddEl(el,'moonglow'); [18,40,62].forEach((l,i)=>{ const g=cxAddEl(el,'god'); g.style.left=l+'%'; g.style.animationDelay=(-i*1.6)+'s'; });
+    const trees=(h,col,n,wMin,wMax)=>Array.from({length:n},(_,i)=>{ const w=wMin+Math.random()*(wMax-wMin), x=i*(300/n)-w*0.2+Math.random()*8, th=h*(0.7+Math.random()*0.3), cx=x+w/2;
+      const tiers=[0,0.28,0.52].map((f,k)=>{ const top=100-th+th*f, base=100-th*0.18-(2-k)*th*0.12, ww=w*(0.55+k*0.22); return `<polygon points="${cx-ww/2},${base} ${cx},${top} ${cx+ww/2},${base}" fill="${col}"/>`; }).join('');
+      return tiers+`<rect x="${cx-1.5}" y="${100-th*0.2}" width="3" height="${th*0.2}" fill="${col}"/>`; }).join('');
+    bgSvg(el,'layer','0 0 300 100',trees(60,'#1a5a47',14,26,40)); el.lastElementChild.style.height='56%'; el.lastElementChild.style.opacity='.7';
+    bgSvg(el,'layer','0 0 300 100',trees(75,'#0d372b',10,34,52)); el.lastElementChild.style.height='44%'; el.lastElementChild.style.animationDuration='9s';
+    cxAddEl(el,'mist');
+    bgSvg(el,'layer','0 0 300 100',trees(90,'#03130e',6,46,70)+'<rect x="0" y="92" width="300" height="8" fill="#03130e"/>'); el.lastElementChild.style.height='32%'; el.lastElementChild.style.animationDuration='7s';
+    for(let i=0;i<26;i++){ const f=cxAddEl(el,'fly'); f.style.left=(Math.random()*95)+'%'; f.style.top=(30+Math.random()*60)+'%'; f.style.animationDelay=(-Math.random()*9)+'s,'+(-Math.random()*3)+'s'; }
+    bgRand(el,'leaf',9,{dur:14}); }},
+  'tempest-crown':{cls:'bgx bgx-storm', descEn:'A storm at sea: rolling clouds, forked lightning, driving rain and a lighthouse sweeping its beam', descAr:'عاصفة بالبحر: غيوم، برق متشعب، مطر غزير ومنارة تمسح بشعاعها', mount:el=>{
+    [[-10,2],[35,8],[5,20]].forEach(([l,t],i)=>{ const c=cxAddEl(el,'cloud'); c.style.left=l+'%'; c.style.top=t+'%'; c.style.animationDelay=(-i*4)+'s'; });
+    cxAddEl(el,'flash');
+    bgSvg(el,'bolt','0 0 60 120','<polyline points="34,0 22,44 34,46 16,92 30,94 20,120" fill="none" stroke="#f2f7ff" stroke-width="3" stroke-linejoin="round"/><polyline points="22,44 8,60" fill="none" stroke="#dde9ff" stroke-width="1.6"/>','xMidYMid meet');
+    bgRand(el,'drop',46,{dur:0.9});
+    bgSvg(el,'house','0 0 40 100','<polygon points="0,100 6,70 34,70 40,100" fill="#05080d"/><polygon points="12,70 15,22 25,22 28,70" fill="#e6e0d2"/><rect x="14" y="36" width="12" height="6" fill="#b3342b"/><rect x="14" y="52" width="12" height="6" fill="#b3342b"/><rect x="13" y="14" width="14" height="9" fill="#ffe7a6"/><polygon points="12,14 20,6 28,14" fill="#2a2f38"/>','xMidYMid meet');
+    cxAddEl(el,'beam'); cxAddEl(el,'lampglow');
+    const wave=(y,col)=>`<path d="M0,${y} Q25,${y-8} 50,${y} T100,${y} T150,${y} T200,${y} T250,${y} T300,${y} T350,${y} T400,${y} T450,${y} T500,${y} T550,${y} T600,${y} L600,60 L0,60 Z" fill="${col}"/>`;
+    bgSvg(el,'sea','0 0 600 60',wave(18,'#0d1a28')); bgSvg(el,'sea b','0 0 600 60',wave(24,'#060c14')); }},
+  'gentle-giant':{cls:'bgx bgx-whale', descEn:'Deep blue light — a spotted whale shark glides past with its school, marine snow drifting up', descAr:'ضوء أزرق عميق — قرش حوت منقّط يعبر مع سربه، وثلج بحري يطفو', mount:el=>{
+    [10,34,58,80].forEach((l,i)=>{ const r=cxAddEl(el,'ray'); r.style.left=l+'%'; r.style.animationDelay=(-i*2)+'s'; });
+    bgRand(el,'snow',30,{dur:16});
+    el.insertAdjacentHTML('beforeend',`<div class="school">${FISH_SCHOOL}</div>`);
+    const spots=Array.from({length:26},()=>`<circle cx="${40+Math.random()*120}" cy="${22+Math.random()*16}" r="${0.9+Math.random()*1.3}" fill="rgba(220,240,255,.75)"/>`).join('');
+    el.insertAdjacentHTML('beforeend',`<svg class="shark" viewBox="0 0 220 60" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="wsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d6f96"/><stop offset=".6" stop-color="#1b4e70"/><stop offset="1" stop-color="#8fb9cf"/></linearGradient></defs><path d="M20,32 C40,14 120,10 170,24 L205,8 L196,30 L208,52 L170,38 C120,50 45,50 20,32 Z" fill="url(#wsg)"/><path d="M95,20 L110,2 L118,20 Z" fill="#1f5577"/><path d="M80,40 L70,56 L96,43 Z" fill="#1f5577"/><path d="M26,33 Q34,36 44,34" stroke="#0d2c40" stroke-width="1.4" fill="none"/>${spots}<circle cx="32" cy="30" r="1.6" fill="#cfe8ff"/></svg>`); }},
+};
+const CRESCENT_OASIS={id:'crescent-oasis', type:'background', rarity:'legendary', nameEn:'Crescent Oasis', nameAr:'واحة الهلال',
+  descEn:'Desert night under a glowing crescent: rolling dunes, palms, warm lanterns and drifting sand', descAr:'ليل الصحراء تحت هلال مضيء: كثبان، نخيل، فوانيس دافية ورمل يتطاير',
+  price:null, exclusiveNote:'achievement:champion', cls:'bgx bgx-oasis', mountEffect:el=>{
+    bgStars(el,60,60); cxAddEl(el,'moon'); cxAddEl(el,'shoot');
+    const dune=(d,col,h)=>{ bgSvg(el,'dune','0 0 300 100',`<path d="${d}" fill="${col}"/>`); el.lastElementChild.style.height=h; };
+    dune('M0,100 L0,55 Q60,30 120,52 T240,46 T300,50 L300,100 Z','#3a2253','46%');
+    dune('M0,100 L0,62 Q80,38 160,60 T300,56 L300,100 Z','#28173b','34%');
+    bgSvg(el,'dune','0 0 300 100','<path d="M0,100 L0,58 Q90,34 180,56 T300,52 L300,100 Z" fill="#150b21"/><g fill="#0c0613"><rect x="214" y="30" width="2.5" height="28"/><path d="M215,30 q-14,-4 -20,6 q12,-6 20,-4 q-8,-12 -18,-12 q14,0 18,8 q2,-12 14,-14 q-10,6 -12,14 q10,-6 20,0 q-12,-2 -20,2 z"/><rect x="238" y="36" width="2" height="22"/><path d="M239,36 q-10,-3 -15,5 q9,-5 15,-3 q-6,-9 -13,-9 q10,0 13,6 q2,-9 10,-10 q-7,4 -9,10 q8,-4 15,0 q-9,-1 -15,1 z"/><path d="M60,64 l10,-10 l10,10 z"/></g>'); el.lastElementChild.style.height='26%';
+    [[16,78],[18,79.5]].forEach(([l,t])=>{ const lp=cxAddEl(el,'lamp'); lp.style.left=l+'%'; lp.style.top=t+'%'; });
+    for(let i=0;i<14;i++){ const g=cxAddEl(el,'sand'); g.style.left=(40+Math.random()*60)+'%'; g.style.top=(70+Math.random()*26)+'%'; g.style.animationDelay=(-Math.random()*7)+'s'; }
+  }};
+(function applyBackgroundsV2(){
+  COSMETICS_CATALOG.forEach(c=>{
+    const v=BG_V2[c.id]; if(!v) return;
+    c.cls=v.cls; if(v.mount!==undefined||v.cls) c.mountEffect=v.mount||null;
+    if(v.descEn){ c.descEn=v.descEn; c.descAr=v.descAr; }
+    if(v.nameEn){ c.nameEn=v.nameEn; c.nameAr=v.nameAr; }
+  });
+  const i=COSMETICS_CATALOG.findIndex(c=>c.id==='champions-ascension'); if(i>=0) COSMETICS_CATALOG.splice(i,1,CRESCENT_OASIS);
+  const ch=ACHIEVEMENTS_CONFIG.find(a=>a.id==='champion'); if(ch) ch.exclusiveCosmetic='crescent-oasis';
+})();
+/* whoever owned Champion's Ascension now owns Crescent Oasis (and keeps it equipped) */
+function migrateRetiredCosmetics(){
+  if(!P.inventory||!P.inventory['champions-ascension']) return;
+  const was=P.inventory['champions-ascension'];
+  delete P.inventory['champions-ascension'];
+  if(!P.inventory['crescent-oasis']){ P.inventory['crescent-oasis']={acquiredAt:was.acquiredAt||new Date().toISOString(),source:'achievement'}; persistInventoryItem('crescent-oasis'); }
+  if(P.equipped&&P.equipped.background==='champions-ascension'){ P.equipped.background='crescent-oasis'; persistEquippedSlot('background'); }
+  try{ fsDataRef('profile').set({inventory:{'champions-ascension':firebase.firestore.FieldValue.delete()}},{merge:true}).catch(()=>{}); }catch(e){}
+  storageSet('profile',JSON.stringify(P));
+}
+/* how to earn each exclusive — shown in the Store and on the boss */
+function exclusiveUnlockInfo(it){
+  const ar=LANG==='ar', note=it.exclusiveNote||'';
+  if(note.startsWith('boss:')){
+    const sid=note.slice(5); let sp=null, catId=null;
+    for(const c of ANIMAL_CATEGORIES){ const f=collSpeciesInfo(c.id,sid); if(f){ sp=f; catId=c.id; break; } }
+    const nm=sp?((sp.bossData&&(ar?sp.bossData.titleAr:sp.bossData.titleEn))||collName(sp)):sid;
+    return {text:ar?`🎣 اصطد <b>${escapeHtml(nm)}</b> (زعيم أسطوري) من المقتنيات`:`🎣 Catch <b>${escapeHtml(nm)}</b> (a legendary boss) in your Collection`, nav:'collections', catId, sid};
+  }
+  if(note.startsWith('achievement:')){
+    const a=ACHIEVEMENTS_CONFIG.find(x=>x.id===note.slice(12));
+    return {text:a?(ar?`🏆 افتح إنجاز <b>${escapeHtml(a.nameAr)}</b>: ${escapeHtml(a.descAr)}`:`🏆 Unlock the <b>${escapeHtml(a.nameEn)}</b> achievement: ${escapeHtml(a.descEn)}`):'', nav:'profile'};
+  }
+  return {text:'',nav:null};
+}
+
 function renderAppBackground(){
   const el=document.getElementById('appBgLayer');
   const scrim=document.getElementById('appBgScrim');
@@ -7164,6 +7435,7 @@ function renderAppBackground(){
   if(bgItem&&bgItem.mountEffect) bgItem.mountEffect(el);
   scrim.classList.toggle('active',!!bgItem);
   document.body.classList.toggle('app-bg-active',!!bgItem);
+  document.body.classList.toggle('bg-legendary',!!(bgItem&&bgItem.rarity==='legendary'));
 }
 /* ---- Store "try before you buy" preview — purely visual, never touches
    P.equipped/P.inventory or Firestore. Backgrounds preview app-wide (the
@@ -7233,6 +7505,11 @@ async function renderStoreSection(){
   if(storeActiveTab==='title'){ renderStoreTitlesTab(content); return; }
   const items=COSMETICS_CATALOG.filter(c=>c.type===storeActiveTab);
   content.innerHTML='';
+  const rewards=items.filter(c=>c.exclusiveNote);
+  if(rewards.length){
+    const ar=LANG==='ar';
+    content.insertAdjacentHTML('beforeend',`<div class="cos-rewards-banner">🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b><br>${rewards.map(r=>`${escapeHtml(ar?r.nameAr:r.nameEn)}: ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?(ar?' ✅':' ✅'):''}`).join('<br>')}</div>`);
+  }
   RARITY_ORDER_LIST.forEach(rar=>{
     const list=items.filter(c=>c.rarity===rar);
     if(!list.length) return;
@@ -7242,7 +7519,7 @@ async function renderStoreSection(){
     list.forEach(it=>{
       const owned=!!P.inventory[it.id];
       const equipped=P.equipped&&P.equipped[it.type]===it.id;
-      const card=document.createElement('div'); card.className='cos-card'+(equipped?' is-equipped':'');
+      const card=document.createElement('div'); card.className='cos-card rar-'+it.rarity+(equipped?' is-equipped':'');
       const name=LANG==='ar'?it.nameAr:it.nameEn, desc=LANG==='ar'?it.descAr:it.descEn;
       const previewCls = it.type==='frame' ? 'cos-frame-preview' : 'cos-preview';
       card.innerHTML=`
@@ -7274,7 +7551,10 @@ async function renderStoreSection(){
       }
       const btn=card.querySelector('.cos-btn-main');
       if(it.exclusiveNote && !owned){
-        btn.textContent=t('store_exclusive'); btn.disabled=true;
+        const info=exclusiveUnlockInfo(it);
+        btn.insertAdjacentHTML('beforebegin',`<div class="cos-unlock">${info.text}</div>`);
+        btn.textContent=LANG==='ar'?'🔓 روح افتحه':'🔓 Go unlock it';
+        btn.addEventListener('click',()=>{ navTo(info.nav||'profile-hub'); });
       } else if(owned){
         btn.textContent=equipped?t('store_equipped'):t('store_equip');
         if(equipped) btn.classList.add('equipped');
@@ -8647,6 +8927,8 @@ async function renderHomeCollectionPreview(){
     html+=`<div class="home-preview-sub"><span class="num">${totalCollected} / ${totalSpecies}</span></div><div class="home-preview-bar"><div class="home-preview-bar-fill" style="width:${pct}%"></div></div>`;
     if(latestName) html+=`<div class="home-preview-row"><span>${t('home_latest_discovery')}</span><span>${escapeHtml(latestName)}</span></div>`;
   }
+  { const rw=COSMETICS_CATALOG.find(c=>c.exclusiveNote&&c.exclusiveNote.startsWith('boss:')&&!(P.inventory&&P.inventory[c.id]));
+    if(rw) html+=`<div class="home-preview-row" style="color:var(--heading);font-weight:700;"><span>🎁 ${LANG==='ar'?`اصطد الزعيم الأسطوري واربح خلفية «${escapeHtml(rw.nameAr)}»`:`Catch the legendary boss to win “${escapeHtml(rw.nameEn)}”`}</span></div>`; }
   html+=`<span class="home-cta">${t('home_collection_cta')}</span>`;
   el.innerHTML=html;
 }
@@ -10165,6 +10447,9 @@ function renderBossModalBody(sp, justCaught){
       <ul class="boss-phase-list">${phases.map(p=>`<li>${p}</li>`).join('')}</ul>
     </div>
     ${collected?`<div class="boss-achievement">🏅 ${achievement}</div>`:''}
+    ${(()=>{ const rw=COSMETICS_CATALOG.find(c=>c.exclusiveNote==='boss:'+sp.id); if(!rw) return '';
+      const own=P.inventory&&P.inventory[rw.id];
+      return `<div class="boss-reward"><div class="cos-preview ${rw.cls}" id="bossRewardPreview"></div><div class="boss-reward-cap">🎁 ${LANG==='ar'?'الجائزة':'Reward'}: ${escapeHtml(LANG==='ar'?rw.nameAr:rw.nameEn)} — ${LANG==='ar'?'خلفية أسطورية حصرية':'exclusive legendary background'}${own?' ✅':''}</div></div>`; })()}
     ${collected?'':`<button class="boss-catch-btn" id="bossCatchBtn">${LANG==='ar'?'✓ سجّل كصيد (هزيمة الرئيس)':'✓ Mark as Defeated / Caught'}</button>`}
     <button class="boss-continue-btn" id="bossContinueBtn">${LANG==='ar'?'← فتح صفحة النوع الكاملة':'Open Full Species Page →'}</button>
   `;
@@ -10175,6 +10460,7 @@ function renderBossModalBody(sp, justCaught){
     collGoTo('species');
     renderCollSpeciesDetail();
   });
+  { const rw=COSMETICS_CATALOG.find(c=>c.exclusiveNote==='boss:'+sp.id), pv=document.getElementById('bossRewardPreview'); if(rw&&pv&&rw.mountEffect) rw.mountEffect(pv); }
   const catchBtn=document.getElementById('bossCatchBtn');
   if(catchBtn){
     catchBtn.addEventListener('click',()=>{
