@@ -845,6 +845,13 @@
     <div class="settings-volume-row">
       <input type="range" id="achSoundVolume" min="0" max="100" step="5">
     </div>
+    <div class="settings-row">
+      <span class="settings-row-label" data-i18n="ui_sound_label"></span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="uiSoundToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
     <button class="ob-btn secondary" id="signOutBtn" type="button" data-i18n="auth_sign_out" style="margin-top:14px;"></button>
   </div>
 </div>
@@ -1827,7 +1834,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.33.0';
+const APP_VERSION='v1.34.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2277,6 +2284,8 @@ function showToast(msg,type){
   showToast._t=setTimeout(()=>{ if(el&&el.parentNode) el.parentNode.removeChild(el); },3500);
 }
 window.addEventListener('error',e=>showErr(e.message));
+// error toasts buzz softly (wrapped here so every existing caller gets it)
+{ const _st=showToast; showToast=function(msg,type){ if(type==='error') playSfx('error'); return _st.apply(this,arguments); }; }
 window.addEventListener('unhandledrejection',e=>showErr(e.reason&&e.reason.message?e.reason.message:String(e.reason)));
 
 /* ================= I18N ================= */
@@ -2646,6 +2655,8 @@ Object.assign(I18N.ar,{ dob_label:'تاريخ الميلاد', goal_maintain:'ث
 Object.assign(I18N.en,{ dob_label:'Date of birth', goal_maintain:'Keep my weight', q_meal_count:'🍽️ How many meals a day?' });
 Object.assign(I18N.ar,{ habit_suggest_title:'➕ أضف بسرعة' });
 Object.assign(I18N.en,{ habit_suggest_title:'➕ Quick add' });
+Object.assign(I18N.ar,{ ui_sound_label:'🔈 أصوات الأزرار والأفعال' });
+Object.assign(I18N.en,{ ui_sound_label:'🔈 Button & action sounds' });
 Object.assign(I18N.en,{
   progress_weight_empty:'Log your weight on Home each day to see a trend here.',
   daily_routine_title:'🔁 Recurring commitments (add / edit)',
@@ -2773,12 +2784,18 @@ document.getElementById('settingsBtn').addEventListener('click',()=>{
   renderBackgroundSelector();
   P.settings=P.settings||{achSoundEnabled:true,achSoundVolume:0.7};
   document.getElementById('achSoundToggle').checked=P.settings.achSoundEnabled!==false;
+  document.getElementById('uiSoundToggle').checked=P.settings.uiSoundEnabled!==false;
   document.getElementById('achSoundVolume').value=Math.round((P.settings.achSoundVolume!=null?P.settings.achSoundVolume:0.7)*100);
 });
 document.getElementById('achSoundToggle').addEventListener('change',async(e)=>{
   P.settings=P.settings||{}; P.settings.achSoundEnabled=e.target.checked; persistPref('settings');
   await storageSet('profile',JSON.stringify(P));
   if(e.target.checked) playAchievementSound(); // quick preview so the toggle itself confirms what it sounds like
+});
+document.getElementById('uiSoundToggle').addEventListener('change',async(e)=>{
+  P.settings=P.settings||{}; P.settings.uiSoundEnabled=e.target.checked; persistPref('settings');
+  await storageSet('profile',JSON.stringify(P));
+  if(e.target.checked) playSfx('check');
 });
 document.getElementById('achSoundVolume').addEventListener('change',async(e)=>{
   P.settings=P.settings||{}; P.settings.achSoundVolume=(+e.target.value)/100; persistPref('settings');
@@ -5333,6 +5350,7 @@ document.getElementById('foodSetupSave').addEventListener('click',async()=>{
     targetDate:P._foodGoal==='maintain'?null:(document.getElementById('targetDateInput').value||null)
   };
   await storageSet('profile',JSON.stringify(P));
+  playSfx('success');
   await storageDelete('food-draft');
   foodDraft=null;
   renderFoodSection();
@@ -5587,6 +5605,7 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
     ALL_TRAINING_DAY_TYPES.forEach(k=>{ P.exerciseLevel[k]=newFitnessLevel; P.workoutCounts[k]=1; });
   }
   await storageSet('profile',JSON.stringify(P));
+  playSfx('success');
   renderWorkoutSection();
 });
 function renderWorkoutSection(){
@@ -7096,6 +7115,7 @@ async function buyCosmetic(id){
     P.coins-=item.price;
     P.inventory[id]={acquiredAt:new Date().toISOString(),source:'store'};
     persistInventoryItem(id);
+    playSfx('coin');
     await storageSet('profile',JSON.stringify(P));
     // the top-level coins field is the authoritative balance (see
     // reconcileXpCoinsFromFirestore) — without this atomic decrement the
@@ -8662,8 +8682,62 @@ document.querySelectorAll('#dashboardSummary .dash-mini[data-goto]').forEach(el=
    lives in P.habits (part of the profile, like foodSetup/workoutSetup).
    Streaks are computed from real historical daily-track docs, never faked. */
 function habitLabelText(h){ return (typeof h.label==='object') ? (h.label[LANG]||h.label.en) : h.label; }
-/* sound effects — replaced by the real synth further down (batch 3) */
-function playSfx(kind){}
+/* ================= UI SOUNDS =================
+   Small, quiet sounds for taps and actions, synthesized with Web Audio
+   (same engine/context as the achievement chime — nothing to download or
+   license). Own on/off switch in Settings; shares the volume slider at a
+   lower level so taps never compete with the achievement sound. */
+function uiSoundEnabled(){ return !P.settings || P.settings.uiSoundEnabled!==false; }
+function sfxTone(ctx,out,{f0,f1,t=0,dur=0.08,type='sine',g=0.25}){
+  const o=ctx.createOscillator(), a=ctx.createGain(), now=ctx.currentTime+t;
+  o.type=type; o.frequency.setValueAtTime(f0,now); if(f1) o.frequency.exponentialRampToValueAtTime(f1,now+dur);
+  a.gain.setValueAtTime(0,now); a.gain.linearRampToValueAtTime(g,now+0.006); a.gain.exponentialRampToValueAtTime(0.0005,now+dur);
+  o.connect(a); a.connect(out); o.start(now); o.stop(now+dur+0.03);
+}
+function sfxNoise(ctx,out,{t=0,dur=0.05,g=0.12,freq=2400}){
+  const len=Math.max(1,Math.floor(ctx.sampleRate*dur)), buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+  const src=ctx.createBufferSource(), f=ctx.createBiquadFilter(), a=ctx.createGain(), now=ctx.currentTime+t;
+  src.buffer=buf; f.type='bandpass'; f.frequency.value=freq; f.Q.value=1.2; a.gain.value=g;
+  src.connect(f); f.connect(a); a.connect(out); src.start(now);
+}
+let _lastSfxAt=0;
+function playSfx(kind){
+  if(!uiSoundEnabled() || document.hidden) return;
+  const nowMs=performance.now(); if(kind==='tap' && nowMs-_lastSfxAt<35) return; _lastSfxAt=nowMs;
+  try{
+    const ctx=getAchAudioCtx(); if(!ctx) return;
+    if(ctx.state==='suspended') ctx.resume().catch(()=>{});
+    const out=ctx.createGain(); out.gain.value=Math.max(0,Math.min(1,achSoundVolume()))*0.55; out.connect(ctx.destination);
+    switch(kind){
+      case 'tap': sfxTone(ctx,out,{f0:1100,f1:700,dur:0.035,type:'sine',g:0.16}); break;
+      case 'nav': sfxTone(ctx,out,{f0:520,f1:780,dur:0.06,g:0.14}); sfxNoise(ctx,out,{dur:0.03,g:0.04,freq:3000}); break;
+      case 'check': sfxTone(ctx,out,{f0:660,dur:0.07,g:0.2,type:'triangle'}); sfxTone(ctx,out,{f0:990,t:0.06,dur:0.12,g:0.2,type:'triangle'}); break;
+      case 'uncheck': sfxTone(ctx,out,{f0:520,f1:330,dur:0.09,g:0.14,type:'triangle'}); break;
+      case 'water': sfxTone(ctx,out,{f0:380,f1:1400,dur:0.09,g:0.22}); sfxTone(ctx,out,{f0:700,f1:1700,t:0.07,dur:0.06,g:0.12}); break;
+      case 'pop': sfxTone(ctx,out,{f0:300,f1:900,dur:0.05,g:0.2}); break;
+      case 'coin': sfxTone(ctx,out,{f0:988,dur:0.08,type:'square',g:0.08}); sfxTone(ctx,out,{f0:1319,t:0.07,dur:0.22,type:'square',g:0.08}); break;
+      case 'success': [523,659,784].forEach((f,i)=>sfxTone(ctx,out,{f0:f,t:i*0.07,dur:0.16,g:0.16,type:'triangle'})); break;
+      case 'fanfare': [523,659,784,1047].forEach((f,i)=>sfxTone(ctx,out,{f0:f,t:i*0.09,dur:0.28,g:0.18,type:'triangle'})); sfxTone(ctx,out,{f0:1568,t:0.4,dur:0.35,g:0.08}); break;
+      case 'error': sfxTone(ctx,out,{f0:220,dur:0.09,type:'sawtooth',g:0.07}); sfxTone(ctx,out,{f0:175,t:0.1,dur:0.14,type:'sawtooth',g:0.07}); break;
+    }
+  }catch(e){}
+}
+/* one listener decides the sound for every control, so no handler has to
+   remember to call it; specific actions (habit ticks, buying, errors) play
+   their own richer sound instead and are skipped here */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('button,[role="button"],.ob-choice,.home-card,.dest-card,.check-item,.day-btn,.coll-species-card,.coll-cat-card,.social-tab,.cos-card .cos-btn');
+  if(!el || el.disabled) return;
+  if(el.closest('.habit-row,.habit-pill,#habitSuggestions') ) return; // they play check/uncheck/success themselves
+  if(el.matches('.cos-btn')&&!el.matches('.cos-preview-btn')) return;   // buy/equip decide after the result
+  let kind='tap';
+  if(el.matches('#dashWaterPlus,#waterPlus')) kind='water';
+  else if(el.matches('.bottom-nav-item')) kind='nav';
+  else if(el.matches('#dashWorkoutToggle,#workoutDoneToggle,.check-item')) kind=(el.classList.contains('done')||(el.textContent||'').includes('✓'))?'uncheck':'check';
+  else if(el.matches('#collIncBtn')) kind='pop';
+  playSfx(kind);
+},true);
 /* ---- habit quick-adds. A group (the five prayers) is several habits that
    share `group`, shown together as one row of five buttons; each prayer is
    still its own habit with its own streak/XP, so nothing else changes. */
