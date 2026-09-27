@@ -184,6 +184,11 @@
   }
   .bottom-nav-item{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.65rem; color:var(--ink-soft); background:none; border:none; cursor:pointer; padding:4px 10px; font-family:var(--font-head); font-weight:700; }
   .bottom-nav-item .ic{ font-size:1.25rem; }
+  .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
+  #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
+  #panel-profile-hub .home-card{ padding:18px 10px; }
+  #panel-profile-hub .home-card:last-child:nth-child(odd){ grid-column:1 / -1; }
+  @media(min-width:520px){ #panel-profile-hub .home-cards{ grid-template-columns:repeat(3,1fr); } #panel-profile-hub .home-card:last-child:nth-child(odd){ grid-column:auto; } }
   .bottom-nav-item.active{ color:var(--heading); }
   .dash-workout-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .dash-workout-name{ font-size:0.85rem; }
@@ -769,7 +774,7 @@
     </div>
     <div class="nav-actions">
       <button class="icon-btn" id="homeBtn" title="Home">🏠</button>
-      <button class="icon-btn" id="profileHubBtn" title="Profile">👤</button>
+      <button class="icon-btn" id="profileHubBtn" title="You" aria-label="You">👤</button>
       <button class="icon-btn" id="modeBtn" title="Mode">🌙</button>
       <button class="icon-btn lang-toggle" id="mainLangToggle" style="width:auto;padding:0 12px;border-radius:999px;">EN</button>
       <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
@@ -882,10 +887,12 @@
        — this is purely a new way IN, not a rebuilt destination. -->
   <section class="panel" id="panel-profile-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <h2 class="hub-title" data-i18n="hub_title"></h2>
     <div class="home-cards">
       <div class="home-card" data-goto="profile"><span class="ic">👤</span><div class="ttl" data-i18n="card_profile"></div></div>
-      <div class="home-card" data-goto="social"><span class="ic">👥</span><div class="ttl" data-i18n="card_social"></div></div>
       <div class="home-card" data-goto="progress"><span class="ic">📈</span><div class="ttl" data-i18n="card_progress"></div></div>
+      <div class="home-card" data-goto="collections"><span class="ic">🎣</span><div class="ttl" data-i18n="card_collections"></div></div>
+      <div class="home-card" data-goto="social"><span class="ic">👥</span><div class="ttl" data-i18n="card_social"></div></div>
       <div class="home-card" data-goto="store"><span class="ic">🏪</span><div class="ttl" data-i18n="card_store"></div></div>
     </div>
   </section>
@@ -1594,7 +1601,7 @@
   <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic">🏠</span><span data-i18n="bottom_nav_home"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="diettraining"><span class="ic">🍽️</span><span data-i18n="bottom_nav_diettraining"></span></button>
-  <button type="button" class="bottom-nav-item" data-goto="profile"><span class="ic">👤</span><span data-i18n="bottom_nav_profile"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="profile-hub"><span class="ic">👤</span><span data-i18n="bottom_nav_profile"></span></button>
 </nav>
 
 <!-- ============ SIGN IN (cross-device sync via Firebase) ============ -->
@@ -1672,7 +1679,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.27.0';
+const APP_VERSION='v1.28.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2119,7 +2126,7 @@ const I18N={
   mode_light:'فاتح',mode_dark:'داكن',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
   bg_tier_basic:'أساسي',bg_locked_empty:'ما عندك خلفيات من هذا المستوى بعد',bg_goto_store:'روح للمتجر',
-  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_diettraining:'الأكل والتمرين',bottom_nav_profile:'حسابي',
+  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_diettraining:'الأكل والتمرين',bottom_nav_profile:'حسابي',hub_title:'👤 حسابي',back_you:'👤 حسابي',
   bulk_import_toggle:'📋 إضافة عدة أشياء دفعة وحدة',
   bulk_import_hint:'كل سطر: العنوان | التاريخ (أو التاريخ من | التاريخ إلى للمدى المتواصل)، مثال: اجتماع النادي | 2026-10-05',
   bulk_import_ph:'اجتماع النادي | 2026-10-05\nرحلة | 2027-01-23 | 2027-01-30',
@@ -2280,7 +2287,7 @@ const I18N={
   mode_light:'Light',mode_dark:'Dark',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
   bg_tier_basic:'Basic',bg_locked_empty:"You don't own any of these yet",bg_goto_store:'Go to store',
-  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_diettraining:'Diet & training',bottom_nav_profile:'Profile',
+  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_diettraining:'Diet & training',bottom_nav_profile:'You',hub_title:'👤 You',back_you:'👤 You',
   bulk_import_toggle:'📋 Add several at once',
   bulk_import_hint:'One per line: Label | Date (or Label | Start date | End date for a continuous range), e.g. Club meeting | 2026-10-05',
   bulk_import_ph:'Club meeting | 2026-10-05\nTrip | 2027-01-23 | 2027-01-30',
@@ -2736,6 +2743,14 @@ document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ sh
    collections) still backs straight to Home, since those are reached
    directly from Home's own cards. */
 const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub' };
+Object.keys(PANEL_PARENT).forEach(name=>{
+  const b=document.querySelector('#panel-'+name+' .back-btn');
+  if(b) b.dataset.i18n='back_you';
+});
+/* Collections is reachable from both Home and the You hub — its root-level
+   back goes to whichever one it was opened from */
+let collReturnPanel='home';
+let currentPanelName='home';
 document.querySelectorAll('.back-btn').forEach(b=>{
   if(b.id==='collectionsBackBtn') return;
   b.addEventListener('click',()=>{
@@ -2783,6 +2798,12 @@ function usernameSoftGateActive(){
 function showPanel(name){
   revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
   if(usernameHardGateActive()) name='social';
+  if(name==='collections' && currentPanelName!=='collections'){
+    collReturnPanel = currentPanelName==='profile-hub' ? 'profile-hub' : 'home';
+    const cb=document.getElementById('collectionsBackBtn');
+    if(cb){ cb.dataset.i18n = collReturnPanel==='profile-hub'?'back_you':'back_home'; cb.textContent=t(cb.dataset.i18n); }
+  }
+  currentPanelName=name;
   document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
   if(name==='diettraining'){
     // Diet+Training is not a separate panel — it's the existing Food and
@@ -2799,7 +2820,9 @@ function showPanel(name){
   // the 🏠 button is a shortcut back to Home — pointless (and confusing)
   // to show while already on Home, so it only appears everywhere else.
   const homeBtnEl=document.getElementById('homeBtn'); if(homeBtnEl) homeBtnEl.classList.toggle('hidden', name==='home');
-  document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.toggle('active', b.dataset.goto===name));
+  // the You tab stays lit on every screen inside the hub
+  const navOwner = PANEL_PARENT[name] || (name==='collections'&&collReturnPanel==='profile-hub' ? 'profile-hub' : name);
+  document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.toggle('active', b.dataset.goto===navOwner));
   // Home must always be current the moment it's shown, from EVERY entry
   // point (bottom nav, back buttons, the 🏠 shortcut, programmatic calls)
   // — previously only the standalone #homeBtn handler called refreshHome()
@@ -8596,7 +8619,7 @@ function collShowView(name){
 }
 function collGoTo(name){ collStack.push(name); collShowView(name); }
 function collBack(){
-  if(collStack.length<=1){ showPanel('home'); return; }
+  if(collStack.length<=1){ showPanel(collReturnPanel); return; }
   collStack.pop();
   const target=collStack[collStack.length-1];
   collShowView(target);
