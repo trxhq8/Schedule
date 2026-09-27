@@ -1672,7 +1672,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.24.0';
+const APP_VERSION='v1.25.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2500,7 +2500,7 @@ let P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',
 };
 
 document.getElementById('mainLangToggle').addEventListener('click',async()=>{
-  LANG=LANG==='ar'?'en':'ar'; P.lang=LANG; applyI18n(); await storageSet('profile',JSON.stringify(P));
+  LANG=LANG==='ar'?'en':'ar'; P.lang=LANG; persistPref('lang'); applyI18n(); await storageSet('profile',JSON.stringify(P));
   refreshHome();
   renderCalendar();
   if(P.workoutSetup) buildWorkoutGrid();
@@ -2534,12 +2534,12 @@ document.getElementById('settingsBtn').addEventListener('click',()=>{
   document.getElementById('achSoundVolume').value=Math.round((P.settings.achSoundVolume!=null?P.settings.achSoundVolume:0.7)*100);
 });
 document.getElementById('achSoundToggle').addEventListener('change',async(e)=>{
-  P.settings=P.settings||{}; P.settings.achSoundEnabled=e.target.checked;
+  P.settings=P.settings||{}; P.settings.achSoundEnabled=e.target.checked; persistPref('settings');
   await storageSet('profile',JSON.stringify(P));
   if(e.target.checked) playAchievementSound(); // quick preview so the toggle itself confirms what it sounds like
 });
 document.getElementById('achSoundVolume').addEventListener('change',async(e)=>{
-  P.settings=P.settings||{}; P.settings.achSoundVolume=(+e.target.value)/100;
+  P.settings=P.settings||{}; P.settings.achSoundVolume=(+e.target.value)/100; persistPref('settings');
   await storageSet('profile',JSON.stringify(P));
   if(P.settings.achSoundEnabled!==false) playAchievementSound();
 });
@@ -2589,7 +2589,7 @@ function renderBackgroundSelector(){
     el.style.background=`linear-gradient(135deg, ${sw.light} 50%, ${sw.dark} 50%)`;
     el.title=sw.name;
     el.addEventListener('click',async()=>{
-      P.customBg={light:sw.light,dark:sw.dark};
+      P.customBg={light:sw.light,dark:sw.dark}; persistPref('customBg');
       if(equippedBgId) await equipCosmetic('background',null); // unequip so the flat color is actually visible
       applyTheme(P.palette,P.mode,P.font);
       await storageSet('profile',JSON.stringify(P));
@@ -2679,7 +2679,7 @@ document.getElementById('demoConfirmYes').addEventListener('click',async()=>{
   launchApp();
 });
 document.getElementById('modeBtn').addEventListener('click',async()=>{
-  P.mode=P.mode==='dark'?'light':'dark'; applyTheme(P.palette,P.mode,P.font);
+  P.mode=P.mode==='dark'?'light':'dark'; persistPref('mode'); applyTheme(P.palette,P.mode,P.font);
   await storageSet('profile',JSON.stringify(P));
 });
 
@@ -2707,7 +2707,14 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
   try{
     const text=await file.text();
     const data=JSON.parse(text);
-    if(data.profile){ P={...P,...data.profile}; await storageSet('profile',JSON.stringify(P)); }
+    if(data.profile){
+      P={...P,...data.profile}; await storageSet('profile',JSON.stringify(P));
+      // boot now trusts the top-level fields over the blob, so a restore has
+      // to write them too or the next load would put the old values back
+      SYNCED_PREFS.forEach(persistPref);
+      Object.keys(P.equipped||{}).forEach(persistEquippedSlot);
+      Object.keys(P.inventory||{}).forEach(persistInventoryItem);
+    }
     if(data.weightLog){ weightLog=data.weightLog; await storageSet('weight-log',JSON.stringify(weightLog)); }
     if(data.dailyTracks){ for(const [k,v] of Object.entries(data.dailyTracks)){ await storageSet(k,JSON.stringify(v)); } }
     if(data.dailyTrack){ dailyTrack=data.dailyTrack; await storageSet(todayKey(),JSON.stringify(dailyTrack)); }
@@ -5754,8 +5761,86 @@ async function reconcileXpCoinsFromFirestore(){
       P.xp=data.xp||0;
       P.coins=data.coins||0;
     }
-  }catch(e){ /* offline/transient — blob-derived P.xp/P.coins remain the local fallback until the next successful boot */ }
+    mergeCosmeticsFromServer(data,true);
+  }catch(e){ console.warn('reconcile skipped:',e); /* offline/transient — blob-derived values remain the local fallback until the next successful boot */ }
 }
+/* ---- Cosmetics: inventory + equipped as their own top-level fields ----
+   Same reason XP/coins were moved out: the profile blob is ONE string that
+   every save replaces wholesale from whatever this device has in memory.
+   A device that loaded P before another device's purchase would, on its
+   next save of anything at all (a habit, a setting), write that purchase
+   out of existence. These fields are written per item / per slot with a
+   deep merge, so no save of anything else can ever touch them.
+   The blob copy is still kept up to date (older app versions, local cache).
+
+   Migration is idempotent and needs no flag: anything owned in the blob
+   but missing from the field is copied up at boot. Inventory only ever
+   grows (nothing is sold or revoked), so a union of both sides can never
+   lose or wrongly add an item. */
+function persistInventoryItem(id){
+  if(!fbDb||!currentUser||!P.inventory||!P.inventory[id]) return;
+  try{ fsDataRef('profile').set({inventory:{[id]:P.inventory[id]}},{merge:true}).catch(()=>{}); }catch(e){}
+}
+function persistEquippedSlot(slot){
+  if(!fbDb||!currentUser) return;
+  const v=(P.equipped&&P.equipped[slot]!=null)?P.equipped[slot]:null;
+  try{ fsDataRef('profile').set({equipped:{[slot]:v}},{merge:true}).catch(()=>{}); }catch(e){}
+}
+/* User-facing settings get the same protection, under one `prefs` map:
+   each key is written only when the user actually changes THAT setting,
+   so an unrelated save from a stale device can't revert it. Applied from
+   the server at boot only — not live on foreground, since flipping the
+   language/theme mid-session because another device changed it would be
+   jarring. A device only uploads a pref the server doesn't have yet
+   (one-time migration), never over a newer server value. */
+const SYNCED_PREFS=['customBg','settings','mode','lang'];
+function persistPref(key){
+  if(!fbDb||!currentUser) return;
+  try{ fsDataRef('profile').set({prefs:{[key]:P[key]===undefined?null:P[key]}},{merge:true}).catch(()=>{}); }catch(e){}
+}
+function mergeCosmeticsFromServer(data,atBoot){
+  const serverInv=data.inventory||{};
+  P.inventory=P.inventory||{};
+  const blobOnly={};
+  Object.keys(P.inventory).forEach(id=>{ if(!serverInv[id]) blobOnly[id]=P.inventory[id]; });
+  P.inventory={...P.inventory,...serverInv};
+  const updates={};
+  if(data.equipped) P.equipped={...(P.equipped||{}),...data.equipped};
+  else if(P.equipped) updates.equipped=P.equipped;
+  if(Object.keys(blobOnly).length) updates.inventory=blobOnly;
+  if(atBoot){
+    const serverPrefs=data.prefs||{}, prefUploads={};
+    SYNCED_PREFS.forEach(k=>{
+      if(serverPrefs[k]!=null) P[k]=serverPrefs[k];
+      else if(P[k]!==undefined) prefUploads[k]=P[k];
+    });
+    if(Object.keys(prefUploads).length) updates.prefs=prefUploads;
+  }
+  if(Object.keys(updates).length){
+    try{ fsDataRef('profile').set(updates,{merge:true}).catch(()=>{}); }catch(e){}
+  }
+}
+/* Pull the authoritative coins/xp/inventory/equipped fresh — before any
+   purchase (a stale device must not buy something already bought on
+   another device, or spend coins it no longer has) and whenever the app
+   comes back to the foreground (so the other device's changes show up). */
+async function refreshAuthoritativeProfileFields(){
+  if(!fbDb||!currentUser) return;
+  try{
+    const doc=await fsDataRef('profile').get();
+    if(!doc.exists) return;
+    const data=doc.data();
+    if(data.xp!==undefined){ P.xp=data.xp||0; lastSeenXp=P.xp; lastSeenLevel=levelFromXP(P.xp); } // not "earned now" — no +XP pill for another device's XP
+    if(data.coins!==undefined) P.coins=data.coins||0;
+    mergeCosmeticsFromServer(data,false);
+  }catch(e){ /* offline — keep local values */ }
+}
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState!=='visible'||!currentUser) return;
+  await refreshAuthoritativeProfileFields();
+  renderAppBackground();
+  renderNavXpChip();
+});
 async function awardXP(amount){
   migrateProgressionFields();
   P.xp=(P.xp||0)+amount;
@@ -5897,7 +5982,7 @@ async function checkAndAwardAchievements(stats){
     P.xp=(P.xp||0)+totalXp;
     P.coins=(P.coins||0)+totalCoins;
     newlyUnlocked.forEach(a=>{
-      if(a.exclusiveCosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[a.exclusiveCosmetic]) P.inventory[a.exclusiveCosmetic]={acquiredAt:new Date().toISOString(),source:'achievement'}; }
+      if(a.exclusiveCosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[a.exclusiveCosmetic]){ P.inventory[a.exclusiveCosmetic]={acquiredAt:new Date().toISOString(),source:'achievement'}; persistInventoryItem(a.exclusiveCosmetic); } }
     });
     await storageSet('profile',JSON.stringify(P));
     await incrementXpCoins(totalXp,totalCoins);
@@ -6019,7 +6104,7 @@ async function checkAndAwardLevelRewards(stats){
       const r=LEVEL_REWARDS[lvl];
       claimed[lvl]=true; changed=true;
       if(r.coins){ P.coins=(P.coins||0)+r.coins; deltaCoins+=r.coins; }
-      if(r.cosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[r.cosmetic]) P.inventory[r.cosmetic]={acquiredAt:new Date().toISOString(),source:'level'}; }
+      if(r.cosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[r.cosmetic]){ P.inventory[r.cosmetic]={acquiredAt:new Date().toISOString(),source:'level'}; persistInventoryItem(r.cosmetic); } }
       justClaimed.push({lvl,...r});
     }
   });
@@ -6350,23 +6435,35 @@ function confirmPurchase(item,name){
    purchase — checks affordability/ownership synchronously right before
    mutating so a double-click can't double-charge (the second call sees
    the already-updated P.inventory/P.coins from the first). */
+const buysInFlight=new Set();
 async function buyCosmetic(id){
   const item=COSMETICS_CATALOG.find(c=>c.id===id);
   if(!item||item.price==null) throw new Error('not purchasable');
-  if(P.inventory[id]) throw new Error('already owned');
-  if((P.coins||0)<item.price) throw new Error(t('store_not_enough'));
-  P.coins-=item.price;
-  P.inventory[id]={acquiredAt:new Date().toISOString(),source:'store'};
-  await storageSet('profile',JSON.stringify(P));
-  // the top-level coins field is the authoritative balance (see
-  // reconcileXpCoinsFromFirestore) — without this atomic decrement the
-  // spend only ever touched the blob, and the next boot restored the full
-  // pre-purchase balance, making every purchase free after a refresh.
-  await incrementXpCoins(0,-item.price);
+  // the fresh server read below makes this async before the checks, so a
+  // double-click is now blocked by this guard instead of by timing
+  if(buysInFlight.has(id)) throw new Error('already owned');
+  buysInFlight.add(id);
+  try{
+    // a device that's been open a while may not know another device
+    // already bought this, or already spent these coins
+    await refreshAuthoritativeProfileFields();
+    if(P.inventory[id]) throw new Error('already owned');
+    if((P.coins||0)<item.price) throw new Error(t('store_not_enough'));
+    P.coins-=item.price;
+    P.inventory[id]={acquiredAt:new Date().toISOString(),source:'store'};
+    persistInventoryItem(id);
+    await storageSet('profile',JSON.stringify(P));
+    // the top-level coins field is the authoritative balance (see
+    // reconcileXpCoinsFromFirestore) — without this atomic decrement the
+    // spend only ever touched the blob, and the next boot restored the full
+    // pre-purchase balance, making every purchase free after a refresh.
+    await incrementXpCoins(0,-item.price);
+  } finally { buysInFlight.delete(id); }
 }
 async function equipCosmetic(slot,id){
   if(id && !P.inventory[id]) throw new Error('not owned');
   P.equipped=P.equipped||{}; P.equipped[slot]=id;
+  persistEquippedSlot(slot);
   await storageSet('profile',JSON.stringify(P));
   if(slot==='background') renderAppBackground();
 }
@@ -6442,6 +6539,7 @@ async function equipTitle(id){
   const stats=await computeUserStats();
   if(id && !unlockedTitles(stats).some(t2=>t2.id===id)) throw new Error('not unlocked');
   P.equipped=P.equipped||{}; P.equipped.title=id;
+  persistEquippedSlot('title');
   await storageSet('profile',JSON.stringify(P));
 }
 let storeActiveTab='background';
@@ -6510,7 +6608,11 @@ async function renderStoreSection(){
           if(!ok) return;
           btn.disabled=true;
           try{ await buyCosmetic(it.id); await equipCosmetic(it.type,it.id); showToast(name+(LANG==='ar'?' — تم الشراء':' purchased'),'success'); renderStoreSection(); }
-          catch(err){ showToast(err.message,'error'); btn.disabled=false; }
+          catch(err){
+            // e.g. bought already on another device — show the fresh state, not a stale Buy button
+            showToast(err.message==='already owned'?t('store_owned'):err.message, err.message==='already owned'?undefined:'error');
+            renderStoreSection();
+          }
         });
       }
     });
@@ -8931,7 +9033,7 @@ function collGrantFirstCatchReward(sp){
     // cosmetic in a follow-up, each shown for approval before going live.
     if(sp && sp.bossData && sp.id==='rhincodon_typus'){
       P.inventory=P.inventory||{};
-      if(!P.inventory['gentle-giant']){ P.inventory['gentle-giant']={acquiredAt:new Date().toISOString(),source:'boss'}; await storageSet('profile',JSON.stringify(P)); }
+      if(!P.inventory['gentle-giant']){ P.inventory['gentle-giant']={acquiredAt:new Date().toISOString(),source:'boss'}; persistInventoryItem('gentle-giant'); await storageSet('profile',JSON.stringify(P)); }
     }
     await notifyNewUnlocks();
     if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
