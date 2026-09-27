@@ -157,6 +157,7 @@
     #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 4; }
     #homeChallengesPreview{ grid-column:3; grid-row:1; }
     #homeCollectionPreview{ grid-column:3; grid-row:2; }
+    #homeAquarium{ grid-column:1; grid-row:2; }
   }
   .home-todo-wrap{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow); }
   .home-todo-wrap #dashboardSummary{ margin-top:14px; }
@@ -485,6 +486,61 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .recap-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .recap-actions .setup-btn{ flex:1; min-width:120px; margin:0; }
   .recap-prompt{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+
+  /* ---- wave 2: aquarium, prayer times, Ramadan ---- */
+  .hijri-line{ font-size:0.78rem; color:var(--ink-soft); margin-top:8px; }
+  body.app-bg-active .hijri-line{ color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.6); }
+  .aq-tank{ position:relative; height:150px; border-radius:16px; overflow:hidden; background:linear-gradient(180deg,#5ec8ec 0%,#1f8fc4 45%,#0d5a8f 100%); border:3px solid rgba(255,255,255,.55); box-shadow:inset 0 0 30px rgba(0,40,80,.35); cursor:pointer; }
+  .aq-tank.big{ height:300px; }
+  .aq-tank > *{ position:absolute; pointer-events:none; }
+  .aq-ray{ top:-10%; width:14%; height:90%; background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 80%); filter:blur(4px); transform-origin:top; animation:bgxSway 6s ease-in-out infinite alternate; }
+  .aq-sand{ left:0; right:0; bottom:0; height:16%; background:linear-gradient(180deg,#e9d39a,#c9a864); border-radius:40% 40% 0 0/12px 12px 0 0; }
+  .aq-plant{ bottom:6%; font-size:1.6rem; transform-origin:bottom center; animation:bgxSway 4s ease-in-out infinite alternate; }
+  .aq-tank.big .aq-plant{ font-size:2.4rem; }
+  .aq-bub{ bottom:10%; width:6px; height:6px; border-radius:50%; border:1px solid rgba(255,255,255,.8); animation:bgxRise 5s linear infinite; }
+  .aq-murk{ inset:0; background:radial-gradient(ellipse at 50% 60%,rgba(92,120,40,.55),rgba(60,80,30,.75)); transition:opacity 1.2s ease; }
+  .aq-fish{ left:0; top:30%; animation:aqSwim linear infinite; }
+  .aq-fish .aq-f{ display:inline-block; animation:aqBob 2.6s ease-in-out infinite; }
+  .aq-fish.legendary .aq-f{ filter:drop-shadow(0 0 6px #ffd76a) drop-shadow(0 0 12px rgba(255,200,80,.7)); }
+  .aq-fish.mythic .aq-f{ filter:drop-shadow(0 0 5px #ff7a7a); }
+  .aq-fish.epic .aq-f{ filter:drop-shadow(0 0 4px #c29bff); }
+  @keyframes aqSwim{ 0%{ transform:translateX(-12%) scaleX(1); } 48%{ transform:translateX(88%) scaleX(1); } 50%{ transform:translateX(88%) scaleX(-1); } 98%{ transform:translateX(-12%) scaleX(-1); } 100%{ transform:translateX(-12%) scaleX(1); } }
+  @keyframes aqBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+  .aq-fishlane{ left:0; right:0; }
+  .aq-cap{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; font-size:0.78rem; color:var(--ink-soft); }
+  .aq-cap b{ color:var(--heading); font-family:var(--font-head); }
+  .aq-empty{ inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 18px; color:#fff; font-weight:700; font-size:0.85rem; text-shadow:0 1px 4px rgba(0,0,0,.5); }
+  .prayer-meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:-2px 0 8px; font-size:0.76rem; color:var(--ink-soft); }
+  .prayer-meta .pt-next{ flex:1; font-weight:700; color:var(--heading); }
+  .prayer-meta button{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:6px 10px; font:inherit; font-size:0.74rem; font-weight:700; cursor:pointer; min-height:34px; }
+  .habit-pill small.pill-time{ font-size:0.62rem; font-weight:600; color:var(--ink-soft); }
+  .habit-pill.done.late{ border-color:#f59e0b; background:color-mix(in srgb, #f59e0b 14%, var(--card)); }
+  .habit-pill.done.late .ck{ background:#f59e0b; border-color:#f59e0b; }
+  .habit-pill.next{ box-shadow:0 0 0 2px var(--gold); }
+  .pt-form{ display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px; }
+  .pt-form input{ flex:1; min-width:110px; margin:0; }
+  .qada-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .qada-row .qn{ flex:1; font-weight:700; }
+  .qada-row .qc{ font-family:var(--font-head); font-weight:800; min-width:34px; text-align:center; }
+  .qada-row button{ min-width:42px; min-height:42px; border-radius:12px; border:1px solid var(--line); background:var(--bg); font:inherit; font-weight:800; cursor:pointer; }
+  .ramadan-card{ margin-top:14px; border:1.5px solid #f5b83d; background:linear-gradient(135deg,#1a1650 0%,#3b2770 60%,#6b3f7a 100%); color:#fff; position:relative; overflow:hidden; }
+  .ramadan-card::after{ content:'🌙'; position:absolute; top:-10px; inset-inline-end:-6px; font-size:5rem; opacity:.25; }
+  .ramadan-card h3{ margin:0 0 4px; color:#ffe7a6; font-family:var(--font-head); }
+  .ramadan-card .rm-sub{ font-size:0.82rem; opacity:.9; margin-bottom:10px; }
+  .rm-times{ display:flex; gap:8px; margin-bottom:10px; }
+  .rm-times div{ flex:1; background:rgba(255,255,255,.12); border-radius:12px; padding:8px; text-align:center; font-size:0.74rem; }
+  .rm-times b{ display:block; font-family:var(--font-head); font-size:1.05rem; color:#ffe7a6; }
+  .rm-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .rm-actions button{ flex:1; min-width:96px; min-height:44px; border-radius:12px; border:1.5px solid rgba(255,255,255,.4); background:rgba(255,255,255,.08); color:#fff; font:inherit; font-weight:800; font-size:0.8rem; cursor:pointer; }
+  .rm-actions button.on{ background:#f5b83d; border-color:#f5b83d; color:#1a1300; }
+  .rm-dots{ display:grid; grid-template-columns:repeat(15,1fr); gap:4px; margin-top:10px; }
+  .rm-dots span{ aspect-ratio:1; border-radius:50%; background:rgba(255,255,255,.18); }
+  .rm-dots span.on{ background:#f5b83d; box-shadow:0 0 6px #f5b83d; }
+  .rm-dots span.today{ outline:2px solid #fff; }
+  .juz-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+  .juz-grid button{ min-height:46px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); font:inherit; font-weight:800; cursor:pointer; color:var(--ink); }
+  .juz-grid button.on{ background:#f5b83d; border-color:#f5b83d; color:#1a1300; }
+  .frame-frame-fanous{ background:conic-gradient(from 0deg,#f5b83d,#fff3c4,#7a4bd8,#f5b83d); animation:cxSpinPlain 7s linear infinite; box-shadow:0 0 18px 4px rgba(245,184,61,0.6),0 0 30px rgba(122,75,216,.5); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1122,6 +1178,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <h1 id="heroTitle"></h1>
       <div class="day-badge" id="dayBadge"></div>
       <div class="day-badge hidden" id="streakBadge" style="background:var(--gold);margin-inline-start:8px;"></div>
+      <div class="hijri-line" id="hijriLine"></div>
     </div>
 
     <!-- Home always shows TODAY. Browsing other dates lives in Schedule —
@@ -1137,12 +1194,14 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <button type="button" class="setup-chip hidden" id="firstRunChip"></button>
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div id="homeRecapPrompt"></div>
+    <div id="homeRamadan"></div>
     <div class="home-grid" id="homeGrid">
     <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
     <div class="dash-card home-section" id="homeSchedulePreview"></div>
     <div class="hidden" id="homeDietTrainingPreview"></div>
     <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges" role="button" tabindex="0"></div>
     <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections" role="button" tabindex="0"></div>
+    <div class="dash-card" id="homeAquarium"></div>
 
     <!-- TODAY'S HEALTH: only daily health actions (food, training, water,
          habits, weight) — every block names the section it comes from -->
@@ -1895,6 +1954,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
     <!-- level 0: Animals / Plants -->
     <div class="coll-view active" id="collView-root">
+      <div id="collAquarium" style="margin-bottom:14px;"></div>
       <div class="coll-grid coll-grid-2" id="collRootGrid"></div>
     </div>
 
@@ -2043,7 +2103,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.38.0';
+const APP_VERSION='v1.39.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2323,6 +2383,7 @@ async function bootApp(){
   await migrateRewardValuesV2();
   migrateRetiredCosmetics();
   autoUseShield();
+  checkQadaForYesterday();
   renderAppBackground();
   migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
   // publish your look + collection for friends once, without waiting for the next completed action
@@ -3557,6 +3618,200 @@ function renderHomeRecapPrompt(){
   const ar=LANG==='ar', nm=last.toLocaleDateString(ar?'ar-EG':'en-GB',{month:'long'});
   box.innerHTML=`<div class="dash-card recap-prompt"><span style="font-size:1.8rem;">📸</span><div style="flex:1;"><b>${ar?`ملخص ${nm} جاهز`:`Your ${nm} recap is ready`}</b><div class="panel-sub" style="margin:0;">${ar?'شوف وش سويت وشاركه':'See what you did and share it'}</div></div><button type="button" class="dash-link" id="recapOpenBtn">${ar?'افتح':'Open'}</button></div>`;
   document.getElementById('recapOpenBtn').onclick=()=>{ P._recapSeen={...(P._recapSeen||{}),[key]:true}; storageSet('profile',JSON.stringify(P)); recapMonthOffset=1; navTo('progress'); };
+}
+
+
+/* ================= HIJRI DATE ================= */
+function hijriParts(d){
+  try{
+    const parts=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'}).formatToParts(d||new Date());
+    const get=t=>+((parts.find(x=>x.type===t)||{}).value||'').replace(/[^0-9]/g,'');
+    const r={d:get('day'),m:get('month'),y:get('year')}; return (r.d&&r.m&&r.y)?r:null;
+  }catch(e){ return null; }
+}
+const HIJRI_MONTHS={ar:['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'],
+  en:['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhirah','Rajab','Shaban','Ramadan','Shawwal','Dhu al-Qadah','Dhu al-Hijjah']};
+function renderHijriLine(){
+  const el=document.getElementById('hijriLine'); if(!el) return;
+  const h=hijriParts(); el.textContent=h?`🌙 ${h.d} ${HIJRI_MONTHS[LANG][h.m-1]} ${h.y}${LANG==='ar'?'هـ':' AH'}`:'';
+}
+
+/* ================= PRAYER TIMES =================
+   From aladhan.com (free, no key). Only the city/country you type is sent —
+   never GPS coordinates. Cached per day on this device. */
+const PRAYER_TIMING_KEY={h_pray_fajr:'Fajr',h_pray_dhuhr:'Dhuhr',h_pray_asr:'Asr',h_pray_maghrib:'Maghrib',h_pray_isha:'Isha'};
+const PRAYER_WINDOW_END={Fajr:'Sunrise',Dhuhr:'Asr',Asr:'Maghrib',Maghrib:'Isha',Isha:'Midnight'};
+const TZ_CITY={'Asia/Kuwait':['Kuwait City','Kuwait',9],'Asia/Riyadh':['Riyadh','Saudi Arabia',4],'Asia/Dubai':['Dubai','United Arab Emirates',16],'Asia/Qatar':['Doha','Qatar',10],'Asia/Bahrain':['Manama','Bahrain',8],'Asia/Muscat':['Muscat','Oman',8],'Africa/Cairo':['Cairo','Egypt',5],'Asia/Amman':['Amman','Jordan',23],'Asia/Baghdad':['Baghdad','Iraq',3]};
+const COUNTRY_METHOD={kuwait:9,'saudi arabia':4,'united arab emirates':16,uae:16,qatar:10,bahrain:8,oman:8,egypt:5,jordan:23,turkey:13,'united kingdom':15,'united states':2,usa:2,canada:2};
+function prayerCfg(){
+  if(P.prayerCfg&&P.prayerCfg.city) return P.prayerCfg;
+  let tz=''; try{ tz=Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){}
+  const d=TZ_CITY[tz]||['Kuwait City','Kuwait',9];
+  return {city:d[0],country:d[1],method:d[2],auto:true};
+}
+let _ptMem={};
+async function fetchPrayerTimes(dateObj){
+  const c=prayerCfg(), dd=`${String(dateObj.getDate()).padStart(2,'0')}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${dateObj.getFullYear()}`;
+  const key=`pt:${c.city}|${c.country}|${c.method}|${dd}`;
+  if(_ptMem[key]) return _ptMem[key];
+  try{ const v=localStorage.getItem(key); if(v){ _ptMem[key]=JSON.parse(v); return _ptMem[key]; } }catch(e){}
+  try{
+    const r=await fetch(`https://api.aladhan.com/v1/timingsByCity/${dd}?city=${encodeURIComponent(c.city)}&country=${encodeURIComponent(c.country)}&method=${c.method}`);
+    const j=await r.json(); if(j.code!==200) return null;
+    const tm={}; ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha','Midnight','Imsak'].forEach(k=>tm[k]=(j.data.timings[k]||'').slice(0,5));
+    _ptMem[key]=tm; try{ localStorage.setItem(key,JSON.stringify(tm)); }catch(e){}
+    return tm;
+  }catch(e){ return null; }
+}
+function ptToDate(hm,base){ const [h,m]=String(hm||'').split(':').map(Number); if(isNaN(h)) return null; const d=new Date(base||new Date()); d.setHours(h,m,0,0); return d; }
+function fmtHM(hm){ return hm?formatTime12h(hm):'—'; }
+function prayerStatusNow(timingName){
+  const tm=window._todayPT; if(!tm) return 'ontime';
+  const end=ptToDate(tm[PRAYER_WINDOW_END[timingName]]); if(!end) return 'ontime';
+  if(timingName==='Isha' && end.getHours()<6) end.setDate(end.getDate()+1); // midnight after isha
+  return new Date()<=end?'ontime':'late';
+}
+async function decoratePrayerTimes(){
+  if(!prayerHabitIds().length) return;
+  const tm=await fetchPrayerTimes(new Date()); window._todayPT=tm;
+  const ar=LANG==='ar';
+  document.querySelectorAll('#dashHabitsList .habit-pill').forEach(btn=>{
+    const tn=PRAYER_TIMING_KEY[btn.dataset.hid]; const sm=btn.querySelector('.pill-time'); if(sm&&tn) sm.textContent=tm?fmtHM(tm[tn]):'';
+    const st=(dailyTrack.prayerStatus||{})[btn.dataset.hid]; btn.classList.toggle('late',st==='late');
+  });
+  const nextEl=document.getElementById('prayerNext'); if(!nextEl) return;
+  if(!tm){ nextEl.textContent=ar?'ما قدرنا نجيب المواقيت':'Couldn’t load prayer times'; return; }
+  const now=new Date(); let next=null;
+  for(const [hid,tn] of Object.entries(PRAYER_TIMING_KEY)){ const d=ptToDate(tm[tn]); if(d&&d>now){ next={hid,tn,d}; break; } }
+  document.querySelectorAll('#dashHabitsList .habit-pill').forEach(b=>b.classList.toggle('next',!!next&&b.dataset.hid===next.hid));
+  if(next){ const mins=Math.round((next.d-now)/60000), hh=Math.floor(mins/60), mm=mins%60;
+    const nm=habitLabelText((P.habits||[]).find(h=>h.id===next.hid)||{label:next.tn});
+    nextEl.textContent=ar?`⏰ ${nm} بعد ${hh?hh+' س ':''}${mm} د`:`⏰ ${nm} in ${hh?hh+'h ':''}${mm}m`; }
+  else nextEl.textContent=ar?'✨ خلصت صلوات اليوم':'✨ Today’s prayers are done';
+}
+function openPrayerSettings(){
+  const c=prayerCfg(), ar=LANG==='ar';
+  document.getElementById('dayTitle').textContent=ar?'🕌 مواقيت الصلاة':'🕌 Prayer times';
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`<p class="panel-sub">${ar?'نجيب المواقيت من aladhan.com حسب مدينتك (نرسل اسم المدينة بس، مو موقعك).':'Times come from aladhan.com for your city (only the city name is sent, never your location).'}</p>
+    <div class="pt-form"><input class="setup-input" id="ptCity" value="${escapeHtml(c.city)}" placeholder="${ar?'المدينة':'City'}"><input class="setup-input" id="ptCountry" value="${escapeHtml(c.country)}" placeholder="${ar?'الدولة':'Country'}"></div>
+    <button type="button" class="setup-btn" id="ptSave">${ar?'حفظ':'Save'}</button>`;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('ptSave').onclick=async()=>{
+    const city=document.getElementById('ptCity').value.trim(), country=document.getElementById('ptCountry').value.trim(); if(!city||!country) return;
+    P.prayerCfg={city,country,method:COUNTRY_METHOD[country.toLowerCase()]||3}; _ptMem={};
+    await storageSet('profile',JSON.stringify(P));
+    document.getElementById('overlay').classList.remove('open'); renderHabits(); playSfx('success');
+  };
+}
+/* ---- qada: prayers left unticked on a past day are added once, the next morning ---- */
+async function checkQadaForYesterday(){
+  const pids=prayerHabitIds(); if(!pids.length) return;
+  const todayK=dateKeyOf(new Date()); if(P._qadaCheck===todayK) return; P._qadaCheck=todayK;
+  const y=yesterdayDateObj(); y.setHours(0,0,0,0);
+  if(!P._prayersAddedAt || new Date(P._prayersAddedAt)>y || !yesterdayCatchUpAllowed()) { await storageSet('profile',JSON.stringify(P)); return; }
+  let doc={}; try{ const v=await storageGet(yesterdayTrackKey()); doc=v?JSON.parse(v):{}; }catch(e){ return; }
+  const missed=pids.filter(id=>!(doc.habits&&doc.habits[id]));
+  if(missed.length){ P.qada=P.qada||{}; missed.forEach(id=>P.qada[id]=(P.qada[id]||0)+1);
+    showToast(LANG==='ar'?`🕋 انضافت ${missed.length} لقائمة القضاء`:`🕋 ${missed.length} added to your qada list`); }
+  await storageSet('profile',JSON.stringify(P));
+}
+function qadaTotal(){ return Object.values(P.qada||{}).reduce((a,b)=>a+(b||0),0); }
+function openQada(){
+  const ar=LANG==='ar';
+  const draw=()=>{
+    document.getElementById('dayTitle').textContent=ar?'🕋 صلوات القضاء':'🕋 Qada prayers';
+    document.getElementById('daySubtitle').textContent=ar?`المجموع ${qadaTotal()}`:`Total ${qadaTotal()}`;
+    document.getElementById('cardBody').innerHTML=`<p class="panel-sub">${ar?'الصلوات اللي ما انعلمت بيومها تنضاف هني. لما تقضي وحدة اضغط −.':'Prayers left unticked on a day are added here. When you make one up, tap −.'}</p>`+
+      (P.habits||[]).filter(h=>h.group==='prayers').map(h=>`<div class="qada-row"><span class="qn">${escapeHtml(habitLabelText(h))}</span><button type="button" data-q="${h.id}" data-d="-1">−</button><span class="qc num">${(P.qada||{})[h.id]||0}</span><button type="button" data-q="${h.id}" data-d="1">+</button></div>`).join('');
+    document.querySelectorAll('#cardBody [data-q]').forEach(b=>b.onclick=async()=>{
+      P.qada=P.qada||{}; const id=b.dataset.q; P.qada[id]=Math.max(0,(P.qada[id]||0)+(+b.dataset.d));
+      if(+b.dataset.d<0){ P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.qadaMadeUp=(P.lifetimeStats.qadaMadeUp||0)+1; playSfx('check'); }
+      await storageSet('profile',JSON.stringify(P)); draw(); renderHabits(); notifyNewUnlocks();
+    });
+  };
+  draw(); document.getElementById('overlay').classList.add('open');
+}
+
+/* ================= AQUARIUM =================
+   Your collected fish swim in your own tank. The water is as clear as
+   today is complete — finish today's health tasks and it sparkles. */
+const RARITY_FISH_SIZE={common:20,uncommon:24,epic:30,mythic:36,legendary:44};
+async function aquariumFish(limit){
+  let data={}; try{ const raw=await storageGet('collections:animals:fish'); if(raw) data=JSON.parse(raw); }catch(e){}
+  const out=[];
+  Object.entries(data).forEach(([sid,rec])=>{ if(!rec||!rec.catches||!rec.catches.length) return; const sp=collSpeciesInfo('fish',sid); if(sp) out.push({sp,last:collLastDate(rec)||''}); });
+  out.sort((a,b)=>(RARITY_TIERS[b.sp.rarity].order-RARITY_TIERS[a.sp.rarity].order)||(a.last<b.last?1:-1));
+  return {list:out.slice(0,limit), total:out.length};
+}
+async function tankClarity(){
+  const pr=await computeHomeTodoProgress(); const wl=await isWeightLoggedForDate(new Date());
+  const total=pr.total-1, done=pr.done-(wl?1:0);
+  return total>0?Math.max(0,Math.min(1,done/total)):0.5;
+}
+async function renderAquarium(el,big){
+  if(!el) return;
+  const {list,total}=await aquariumFish(big?18:10), clear=await tankClarity(), ar=LANG==='ar';
+  const plants=['🌿','🪸','🌱','🪨','🌿'];
+  let html=`<div class="aq-tank${big?' big':''}">`+[12,42,70].map((l,i)=>`<div class="aq-ray" style="left:${l}%;animation-delay:${-i*2}s"></div>`).join('')+
+    `<div class="aq-sand"></div>`+plants.map((pl,i)=>`<div class="aq-plant" style="left:${6+i*21}%;animation-delay:${-i}s">${pl}</div>`).join('')+
+    Array.from({length:6},(_,i)=>`<div class="aq-bub" style="left:${10+i*15}%;animation-delay:${-i*0.8}s;animation-duration:${4+i%3}s"></div>`).join('');
+  if(!list.length) html+=`<div class="aq-empty">${ar?'🎣 سجّل أول صيدة بالمقتنيات وبتسبح هني':'🎣 Log your first catch in the Collection and it will swim here'}</div>`;
+  list.forEach(({sp},i)=>{
+    const size=(RARITY_FISH_SIZE[sp.rarity]||22)*(big?1.4:1), hue=hashSeed(sp.id)%360;
+    const filt=(sp.rarity==='common'||sp.rarity==='uncommon')?`filter:hue-rotate(${hue}deg) saturate(1.3);`:'';
+    const top=12+((hashSeed(sp.id+'t')%60)), dur=12+(hashSeed(sp.id+'d')%14);
+    html+=`<div class="aq-fishlane" style="top:${top}%"><div class="aq-fish ${sp.rarity}" style="width:100%;animation-duration:${dur}s;animation-delay:${-(hashSeed(sp.id)%dur)}s"><span class="aq-f" style="font-size:${size}px;${filt}">${sp.icon||'🐟'}</span></div></div>`;
+  });
+  html+=`<div class="aq-murk" style="opacity:${(0.75*(1-clear)).toFixed(2)}"></div></div>`;
+  const pct=Math.round(clear*100);
+  html+=`<div class="aq-cap"><span>🐠 <b class="num">${total}</b> ${ar?'سمكة':'fish'} · ${ar?'نقاء الماء':'water'} <b class="num">${pct}%</b></span><span>${pct>=100?(ar?'✨ يلمع!':'✨ Sparkling!'):(ar?'خلّص مهام اليوم وينظف':'finish today to clear it')}</span></div>`;
+  el.innerHTML=(big?'':`<div class="dash-title-row"><div class="home-preview-title" style="margin:0 0 8px;">${ar?'🐠 حوضك':'🐠 Your aquarium'}</div><button type="button" class="dash-link" data-nav="collections">${ar?'المقتنيات':'Collection'}</button></div>`)+html;
+  const tank=el.querySelector('.aq-tank');
+  if(tank&&!big) tank.onclick=()=>{ document.getElementById('dayTitle').textContent=ar?'🐠 حوضك':'🐠 Your aquarium'; document.getElementById('daySubtitle').textContent='';
+    const body=document.getElementById('cardBody'); body.innerHTML='<div id="aqBig"></div>'; document.getElementById('overlay').classList.add('open'); renderAquarium(document.getElementById('aqBig'),true); };
+}
+function renderHomeAquarium(){ renderAquarium(document.getElementById('homeAquarium'),false); }
+async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.75*(1-c)).toFixed(2); }
+
+/* ================= RAMADAN =================
+   Appears by itself: a countdown from 20 Sha'ban, the Ramadan card for the
+   whole month (fasting, taraweeh, a 30-juz khatma, iftar/suhoor times from
+   the prayer times), and an Eid card for the first days of Shawwal. */
+function ramadanState(){ const h=hijriParts(); if(!h) return null; P.ramadan=P.ramadan||{}; const r=P.ramadan[h.y]=P.ramadan[h.y]||{fasts:{},taraweeh:{},juz:{}}; return {h,r}; }
+async function renderRamadanCard(){
+  const box=document.getElementById('homeRamadan'); if(!box) return;
+  const h=hijriParts(), ar=LANG==='ar'; if(!h){ box.innerHTML=''; return; }
+  if(h.m===8 && h.d>=20){ const left=30-h.d; box.innerHTML=`<div class="dash-card ramadan-card"><h3>${ar?'🌙 رمضان قرّب':'🌙 Ramadan is coming'}</h3><div class="rm-sub">${ar?`تقريباً ${left} يوم — جهّز نيتك وجدولك`:`About ${left} days — get your intention and schedule ready`}</div></div>`; return; }
+  if(h.m===10 && h.d<=3){ const r=(P.ramadan||{})[h.y]||{fasts:{},juz:{}}; const f=Object.keys(r.fasts||{}).length, j=Object.keys(r.juz||{}).length;
+    box.innerHTML=`<div class="dash-card ramadan-card"><h3>${ar?'🎉 عيد مبارك':'🎉 Eid Mubarak'}</h3><div class="rm-sub">${ar?`صمت ${f} يوم وقرأت ${j} جزء — تقبل الله منا ومنكم`:`You fasted ${f} days and read ${j} juz — may it be accepted`}</div></div>`; return; }
+  if(h.m!==9){ box.innerHTML=''; return; }
+  const {r}=ramadanState(); const tm=await fetchPrayerTimes(new Date()); const now=new Date();
+  const maghrib=tm&&ptToDate(tm.Maghrib), fajr=tm&&ptToDate(tm.Fajr);
+  const cd=d=>{ if(!d||d<now) return ''; const m=Math.round((d-now)/60000); return ar?` (بعد ${Math.floor(m/60)}س ${m%60}د)`:` (in ${Math.floor(m/60)}h ${m%60}m)`; };
+  const fasts=Object.keys(r.fasts).length, juz=Object.keys(r.juz).length;
+  box.innerHTML=`<div class="dash-card ramadan-card"><h3>${ar?`🌙 رمضان كريم — اليوم ${h.d}`:`🌙 Ramadan Kareem — day ${h.d}`}</h3>
+    <div class="rm-sub">${ar?`صمت ${fasts} · ختمة ${juz}/30`:`${fasts} fasts · khatma ${juz}/30`}</div>
+    <div class="rm-times"><div>${ar?'السحور لين':'Suhoor until'}<b>${tm?fmtHM(tm.Fajr):'—'}</b>${cd(fajr)}</div><div>${ar?'الإفطار':'Iftar'}<b>${tm?fmtHM(tm.Maghrib):'—'}</b>${cd(maghrib)}</div></div>
+    <div class="rm-actions"><button type="button" id="rmFast" class="${r.fasts[h.d]?'on':''}">${ar?'🍽️ صايم اليوم':'🍽️ Fasting today'}</button><button type="button" id="rmTar" class="${r.taraweeh[h.d]?'on':''}">${ar?'🕌 التراويح':'🕌 Taraweeh'}</button><button type="button" id="rmJuz">${ar?'📖 الختمة':'📖 Khatma'}</button></div>
+    <div class="rm-dots">${Array.from({length:30},(_,i)=>`<span class="${r.fasts[i+1]?'on':''}${i+1===h.d?' today':''}"></span>`).join('')}</div></div>`;
+  const save=async()=>{ await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderRamadanCard(); };
+  document.getElementById('rmFast').onclick=()=>{ r.fasts[h.d]=!r.fasts[h.d]; if(!r.fasts[h.d]) delete r.fasts[h.d]; playSfx(r.fasts[h.d]?'check':'uncheck'); save(); };
+  document.getElementById('rmTar').onclick=()=>{ r.taraweeh[h.d]=!r.taraweeh[h.d]; if(!r.taraweeh[h.d]) delete r.taraweeh[h.d]; playSfx(r.taraweeh[h.d]?'check':'uncheck'); save(); };
+  document.getElementById('rmJuz').onclick=()=>openKhatma(r,save);
+}
+function openKhatma(r,save){
+  const ar=LANG==='ar';
+  const draw=()=>{ document.getElementById('dayTitle').textContent=ar?'📖 ختمة رمضان':'📖 Ramadan khatma';
+    document.getElementById('daySubtitle').textContent=`${Object.keys(r.juz).length}/30`;
+    document.getElementById('cardBody').innerHTML=`<div class="juz-grid">${Array.from({length:30},(_,i)=>`<button type="button" data-juz="${i+1}" class="${r.juz[i+1]?'on':''}">${i+1}</button>`).join('')}</div>`;
+    document.querySelectorAll('[data-juz]').forEach(b=>b.onclick=()=>{ const n=b.dataset.juz; if(r.juz[n]) delete r.juz[n]; else { r.juz[n]=true; playSfx(Object.keys(r.juz).length===30?'fanfare':'check'); } save(); draw(); }); };
+  draw(); document.getElementById('overlay').classList.add('open');
+}
+function ramadanStats(){
+  let bestFasts=0, bestJuz=0, bestTar=0;
+  Object.values(P.ramadan||{}).forEach(r=>{ bestFasts=Math.max(bestFasts,Object.keys(r.fasts||{}).length); bestJuz=Math.max(bestJuz,Object.keys(r.juz||{}).length); bestTar=Math.max(bestTar,Object.keys(r.taraweeh||{}).length); });
+  return {bestFasts,bestJuz,bestTar};
 }
 
 /* opens the recurring-commitments editor on the Schedule page */
@@ -6898,6 +7153,8 @@ async function computeUserStats(){
     habitChecks:lifetime.habitChecks||0,
     perfectHabitDays:lifetime.perfectHabitDays||0,
     bestPrayerStreak:lifetime.longestPrayerStreak||0,
+    qadaMadeUp:lifetime.qadaMadeUp||0,
+    ...ramadanStats(),
     waterDaysHit:lifetime.waterDaysHit||0,
     nutritionDaysHit:lifetime.nutritionDaysHit||0,
     challengesCompleted:lifetime.challengesCompleted||0,
@@ -6949,6 +7206,12 @@ const ACHIEVEMENTS_CONFIG=[
   {id:'perfect_7', icon:'🌟', nameEn:'Seven Perfect Days', nameAr:'سبع أيام مثالية', descEn:'Finish every habit on 7 days', descAr:'خلّص كل عاداتك في 7 أيام', xp:120, coins:150, check:s=>s.perfectHabitDays>=7},
   {id:'perfect_30', icon:'✨', nameEn:'Thirty Perfect Days', nameAr:'ثلاثين يوم مثالي', descEn:'Finish every habit on 30 days', descAr:'خلّص كل عاداتك في 30 يوم', xp:450, coins:550, check:s=>s.perfectHabitDays>=30},
   {id:'prayers_week', icon:'🕌', nameEn:'Steadfast Week', nameAr:'أسبوع المحافظة', descEn:'All five prayers, 7 days in a row', descAr:'الصلوات الخمس 7 أيام متتالية', xp:200, coins:250, check:s=>s.bestPrayerStreak>=7},
+  {id:'qada_10', icon:'🕋', nameEn:'Making It Up', nameAr:'على طريق القضاء', descEn:'Make up 10 qada prayers', descAr:'اقضِ 10 صلوات', xp:120, coins:140, check:s=>s.qadaMadeUp>=10},
+  {id:'ramadan_first', icon:'🌙', nameEn:'First Fast', nameAr:'أول صيام', descEn:'Log your first Ramadan fast', descAr:'سجّل أول يوم صيام برمضان', xp:40, coins:50, check:s=>s.bestFasts>=1},
+  {id:'ramadan_10', icon:'🏮', nameEn:'Ten Days of Mercy', nameAr:'عشر الرحمة', descEn:'Fast 10 days of Ramadan', descAr:'صم 10 أيام من رمضان', xp:200, coins:250, check:s=>s.bestFasts>=10},
+  {id:'ramadan_full', icon:'🕌', nameEn:'A Complete Ramadan', nameAr:'رمضان كامل', descEn:'Fast 29+ days of Ramadan', descAr:'صم 29 يوم أو أكثر من رمضان', xp:1000, coins:1200, exclusiveCosmetic:'frame-fanous', check:s=>s.bestFasts>=29},
+  {id:'khatma', icon:'📖', nameEn:'Khatma', nameAr:'ختمة', descEn:'Read all 30 juz in Ramadan', descAr:'اقرأ الثلاثين جزء برمضان', xp:800, coins:1000, check:s=>s.bestJuz>=30},
+  {id:'taraweeh_20', icon:'✨', nameEn:'Nights of Taraweeh', nameAr:'ليالي التراويح', descEn:'Pray taraweeh on 20 nights', descAr:'صلِّ التراويح 20 ليلة', xp:300, coins:350, check:s=>s.bestTar>=20},
   {id:'prayers_month', icon:'🌙', nameEn:'Steadfast Month', nameAr:'شهر المحافظة', descEn:'All five prayers, 30 days in a row', descAr:'الصلوات الخمس 30 يوم متتالي', xp:800, coins:1000, check:s=>s.bestPrayerStreak>=30},
 ];
 /* the ONLY place P.achievements is written. Returns the list of newly
@@ -7439,6 +7702,7 @@ const COSMETICS_CATALOG=[
   {id:'frame-twinband', type:'frame', rarity:'uncommon', nameEn:'Twin Band', nameAr:'الشريط المزدوج', descEn:'Layered double ring', descAr:'حلقة مزدوجة الطبقات', price:700, cls:'frame-frame-twinband'},
   {id:'frame-ember', type:'frame', rarity:'epic', nameEn:'Ember Halo', nameAr:'هالة الجمر', descEn:'Glowing pulse ring', descAr:'حلقة نابضة متوهجة', price:2000, cls:'frame-frame-ember'},
   {id:'frame-prism', type:'frame', rarity:'mythic', nameEn:'Prism Loop', nameAr:'حلقة المنشور', descEn:'Rotating multicolor gradient + glow', descAr:'حلقة دوّارة متعددة الألوان + توهج', price:5500, cls:'frame-frame-prism'},
+  {id:'frame-fanous', type:'frame', rarity:'legendary', nameEn:'Ramadan Lantern', nameAr:'فانوس رمضان', descEn:'Gold and violet lantern light that turns around you — earned by fasting a whole Ramadan', descAr:'نور فانوس ذهبي وبنفسجي يدور حولك — تكسبه بصيام رمضان كامل', price:null, exclusiveNote:'achievement:ramadan_full', cls:'frame-frame-fanous', orbiters:true},
   {id:'frame-celestial', type:'frame', rarity:'legendary', nameEn:'Celestial Crown', nameAr:'التاج السماوي', descEn:'Rotating gold ring + orbiting sparkles', descAr:'حلقة ذهبية دوّارة + بريق يدور حولها', price:18000, cls:'frame-frame-celestial', orbiters:true},
   // ---- effects ----
   {id:'fx-soft-glow', type:'effect', rarity:'common', nameEn:'Soft Glow', nameAr:'توهج ناعم', descEn:'Gentle pulsing ambient glow', descAr:'توهج محيط ناعم نابض', price:130, mountEffect:el=>cxAddEl(el,'cx-fx-glowpulse')},
@@ -8895,6 +9159,9 @@ function refreshHome(){
   renderNavXpChip();
   renderFirstRunCard();
   renderHomeRecapPrompt();
+  renderHijriLine();
+  renderRamadanCard();
+  renderHomeAquarium();
 }
 function homeDateLabel(dateObj){
   const today=new Date();
@@ -9048,6 +9315,7 @@ async function renderHomeTodoProgress(){
   titleEl.textContent=t('home_todo_title');
   const subEl=document.getElementById('homeTodoSub'); if(subEl) subEl.innerHTML=escapeHtml(t('home_todo_sub'))+((P.streakShields||0)>0?`<span class="shield-pill" title="${LANG==='ar'?'دروع السلاسل':'Streak shields'}">🛡️ ${P.streakShields}</span>`:'');
   renderHomeChest();
+  updateAquariumClarity();
   const {done,total}=await computeHomeTodoProgress();
   document.getElementById('homeTodoProgressLabel').textContent=total?`${done} / ${total}`:'';
   document.getElementById('homeTodoBarFill').style.width=(total?Math.round(done/total*100):0)+'%';
@@ -9362,6 +9630,7 @@ function renderHabitSuggestions(){
     const sg=HABIT_SUGGESTIONS.find(x=>x.key===b.dataset.sg);
     P.habits=P.habits||[];
     sg.items.forEach(it=>{ if(!P.habits.some(h=>h.id===it.id)) P.habits.push({...it,label:{...it.label},...(sg.group?{group:sg.group}:{})}); });
+    if(sg.group==='prayers' && !P._prayersAddedAt) P._prayersAddedAt=new Date().toISOString();
     playSfx&&playSfx('success');
     await storageSet('profile',JSON.stringify(P));
     renderHabits(); renderHabitSuggestions();
@@ -9416,12 +9685,22 @@ function renderHabits(){
       if(seenGroups.has(h.group)) return; seenGroups.add(h.group);
       const members=habits.filter(x=>x.group===h.group), gname=HABIT_GROUP_NAMES[h.group]||{icon:'✅',ar:h.group,en:h.group};
       const box=document.createElement('div'); box.className='habit-group';
-      box.innerHTML=`<div class="habit-group-head"><span class="habit-group-name">${gname.icon} ${LANG==='ar'?gname.ar:gname.en}</span><span class="habit-streak" id="habitGroupStreak_${h.group}"></span><button type="button" class="habit-remove">✕</button></div>
-        <div class="habit-pills">${members.map(m=>{ const d=!!(dailyTrack.habits&&dailyTrack.habits[m.id]); return `<button type="button" class="habit-pill${d?' done':''}" data-hid="${m.id}"><span class="ck">${d?'✓':''}</span>${escapeHtml(habitLabelText(m))}</button>`; }).join('')}</div>`;
+      const isPr=h.group==='prayers', ar=LANG==='ar', qt=qadaTotal();
+      box.innerHTML=`<div class="habit-group-head"><span class="habit-group-name">${gname.icon} ${ar?gname.ar:gname.en}</span><span class="habit-streak" id="habitGroupStreak_${h.group}"></span><button type="button" class="habit-remove">✕</button></div>
+        ${isPr?`<div class="prayer-meta"><span class="pt-next" id="prayerNext">…</span><button type="button" id="qadaBtn">🕋 ${ar?'القضاء':'Qada'} <span class="num">${qt}</span></button><button type="button" id="ptBtn" aria-label="prayer times settings">⚙️ ${escapeHtml(prayerCfg().city)}</button></div>`:''}
+        <div class="habit-pills">${members.map(m=>{ const d=!!(dailyTrack.habits&&dailyTrack.habits[m.id]); const late=d&&((dailyTrack.prayerStatus||{})[m.id]==='late'); return `<button type="button" class="habit-pill${d?' done':''}${late?' late':''}" data-hid="${m.id}"><span class="ck">${d?(late?'⏱':'✓'):''}</span>${escapeHtml(habitLabelText(m))}${isPr?'<small class="pill-time"></small>':''}</button>`; }).join('')}</div>`;
+      if(isPr){ setTimeout(decoratePrayerTimes,0); }
       box.querySelectorAll('.habit-pill').forEach(btn=>btn.addEventListener('click',()=>{
         const m=members.find(x=>x.id===btn.dataset.hid);
-        toggleHabitToday(m,done=>{ btn.classList.toggle('done',done); btn.querySelector('.ck').textContent=done?'✓':''; });
+        toggleHabitToday(m,done=>{
+          let late=false;
+          if(m.group==='prayers'){ dailyTrack.prayerStatus=dailyTrack.prayerStatus||{};
+            if(done){ dailyTrack.prayerStatus[m.id]=prayerStatusNow(PRAYER_TIMING_KEY[m.id]); late=dailyTrack.prayerStatus[m.id]==='late'; } else delete dailyTrack.prayerStatus[m.id]; }
+          btn.classList.toggle('done',done); btn.classList.toggle('late',late); btn.querySelector('.ck').textContent=done?(late?'⏱':'✓'):'';
+        });
       }));
+      const qb=box.querySelector('#qadaBtn'); if(qb) qb.onclick=e=>{ e.stopPropagation(); openQada(); };
+      const pb=box.querySelector('#ptBtn'); if(pb) pb.onclick=e=>{ e.stopPropagation(); openPrayerSettings(); };
       box.querySelector('.habit-remove').addEventListener('click',async e=>{
         e.stopPropagation();
         if(!confirm(t('confirm_remove_habit'))) return;
@@ -10144,7 +10423,7 @@ function collBack(){
   else if(target==='animals') renderCollAnimals();
 }
 document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
-function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); }
+function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); renderAquarium(document.getElementById('collAquarium'),true); }
 /* Every Collections render function reads LANG live, but nothing re-ran
    them on a language switch — so whatever screen was already drawn just
    stayed in its old language until the user re-entered it. Re-render
