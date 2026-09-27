@@ -206,6 +206,15 @@
   .wr-note{ background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:10px; font-size:0.85rem; }
   /* ---- IA v2: one primary nav, section heads, destination cards ---- */
   .legacy-nav-btn{ display:none !important; }
+  /* phone tap targets: nothing you press is smaller than ~40px */
+  @media(max-width:759px){
+    .cos-btn{ min-height:42px; }
+    .edit-btn{ padding:12px 8px; }
+    .dash-toggle, #dashWorkoutToggle{ width:40px !important; height:40px !important; }
+    .fr-close, .habit-remove{ min-width:42px; min-height:42px; }
+    .meal-swap-btn{ min-width:38px; min-height:38px; font-size:1rem; }
+    #profileAvatarEditBtn, #profileEditUsernameBtn{ width:36px !important; height:36px !important; }
+  }
   /* tapping + fast (water, counters) used to trigger the browser's
      double-tap zoom on phones; manipulation keeps pinch-zoom but drops that */
   html, body, button, [role="button"], .ob-choice, .dash-water-btn, .water-btn, .coll-counter-btn, input, select, label, a{ touch-action:manipulation; }
@@ -271,7 +280,7 @@
   .habit-pill.done{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--card)); }
   .habit-pill.done .ck{ background:var(--accent); border-color:var(--accent); color:#fff; }
   .habit-streak.pending{ opacity:0.55; }
-  .habit-count{ font-family:var(--font-head); font-weight:800; font-size:0.78rem; color:var(--ink-soft); margin-inline-start:6px; }
+  .habit-count{ font-family:var(--font-head); font-weight:800; font-size:0.78rem; color:var(--ink-soft); margin:0 8px; }
   .habit-suggest{ display:flex; flex-wrap:wrap; gap:8px; }
   .habit-suggest button{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:8px 12px; font:inherit; font-size:0.8rem; cursor:pointer; }
   .ch-tabs{ display:flex; gap:8px; margin-bottom:10px; }
@@ -427,6 +436,11 @@
 .bgx-oasis .lamp{ width:5px; height:5px; border-radius:50%; background:#ffcf6b; box-shadow:0 0 10px 4px rgba(255,190,80,.8); animation:bgxPulse 2s ease-in-out infinite; }
 .bgx-oasis .sand{ width:2px; height:2px; border-radius:50%; background:rgba(255,215,160,.85); animation:bgxSand 7s linear infinite; }
 
+/* text that sits straight on the background (not inside a card) stays readable */
+body.app-bg-active .panel-head h2, body.app-bg-active .panel-sub, body.app-bg-active .ch-section-title, body.app-bg-active .ch-summary,
+body.app-bg-active .schedule-hint, body.app-bg-active #panel-food > .back-row .edit-btn, body.app-bg-active .coll-crumbs .crumb, body.app-bg-active .coll-crumbs .crumb-sep,
+body.app-bg-active .coll-cat-title, body.app-bg-active .cos-store-coins{ color:#fff !important; text-shadow:0 1px 6px rgba(0,0,0,.65); }
+body.app-bg-active .cos-rewards-banner{ background:color-mix(in srgb, var(--card) 94%, transparent); }
 /* the whole app gets a slow gold aura while a legendary background is on */
 body.bg-legendary::after{ content:''; position:fixed; inset:0; pointer-events:none; z-index:60; border-radius:0; animation:bgxAura 4s ease-in-out infinite; }
 /* cards let the background breathe through a little */
@@ -2003,7 +2017,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.36.0';
+const APP_VERSION='v1.37.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2504,7 +2518,7 @@ const I18N={
   challenge_progress:'{cur} / {target}',challenge_completed:'✅ مكتمل',
   social_tab_friends:'👥 الأصدقاء',social_tab_leaderboard:'🏆 المتصدرين',social_tab_feed:'📰 النشاط',social_tab_compare:'⚖️ مقارنة',
   store_tab_backgrounds:'🖼️ الخلفيات',store_tab_frames:'⭕ الإطارات',store_tab_effects:'✨ التأثيرات',store_tab_titles:'🏷️ الألقاب',
-  store_owned:'✅ تملكه',store_equip:'تجهيز',store_equipped:'✓ مجهّز',store_unequip:'إلغاء التجهيز',store_buy:'شراء',store_not_enough:'coins غير كافية',store_exclusive:'حصري',
+  store_owned:'✅ تملكه',store_equip:'تجهيز',store_equipped:'✓ مجهّز',store_unequip:'إلغاء التجهيز',store_buy:'شراء',store_not_enough:'العملات ما تكفي',store_exclusive:'حصري',
   store_preview:'معاينة',store_preview_toast:'معاينة: {name} (٦ ثواني)',store_preview_ended:'انتهت المعاينة',
   store_confirm_title:'🪙 تأكيد الشراء',store_confirm_body:'بتشتري "{name}" مقابل {price} coin. ما تقدر ترجعها بعد الشراء.',store_confirm_yes:'أيه، اشتري',store_confirm_no:'إلغاء',
   cos_rarity_common:'شائع',cos_rarity_uncommon:'غير شائع',cos_rarity_epic:'ملحمي',cos_rarity_mythic:'خرافي',cos_rarity_legendary:'أسطوري',
