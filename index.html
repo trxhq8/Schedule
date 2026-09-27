@@ -206,6 +206,11 @@
   .wr-note{ background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:10px; font-size:0.85rem; }
   /* ---- IA v2: one primary nav, section heads, destination cards ---- */
   .legacy-nav-btn{ display:none !important; }
+  /* tapping + fast (water, counters) used to trigger the browser's
+     double-tap zoom on phones; manipulation keeps pinch-zoom but drops that */
+  html, body, button, [role="button"], .ob-choice, .dash-water-btn, .water-btn, .coll-counter-btn, input, select, label, a{ touch-action:manipulation; }
+  /* iPhone zooms into any field smaller than 16px when you tap it */
+  @media(max-width:759px){ input, select, textarea{ font-size:16px !important; } }
   .back-btn::before{ content:'‹ '; }
   [dir="rtl"] .back-btn::before{ content:'› '; }
   .root-panel > .back-row{ display:none; }
@@ -256,6 +261,7 @@
   .auth-tagline{ text-align:center; color:var(--ink-soft); font-size:0.86rem; margin:0 0 18px; line-height:1.6; }
   .auth-guest-note{ text-align:center; color:var(--ink-soft); font-size:0.74rem; margin:6px 0 14px; }
   .auth-switch{ display:block; margin:10px auto 0; background:none; border:none; color:var(--heading); font:inherit; font-size:0.8rem; font-weight:700; text-decoration:underline; cursor:pointer; }
+  .sport-pick{ margin-top:6px; padding:8px; border-radius:12px; background:var(--bg); border:1px dashed var(--line); }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1083,16 +1089,19 @@
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="height_label"></label><input type="number" class="setup-input" id="bodyHeight" data-i18n-ph="height_ph"></div>
         </div>
         <div class="setup-row">
-          <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="age_label"></label><input type="number" class="setup-input" id="bodyAge" data-i18n-ph="age_ph"></div>
+          <div><label style="font-size:0.75rem;color:var(--ink-soft);" for="bodyDob" data-i18n="dob_label"></label><input type="date" class="setup-input" id="bodyDob" max="">
+            <!-- age is now derived from the birth date (kept as a hidden field because the calorie math and validation read it) -->
+            <input type="hidden" id="bodyAge"><div class="val-msg" id="dobHint" style="text-align:start;color:var(--ink-soft);margin-top:-6px;"></div></div>
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="sex_label"></label>
             <select class="setup-input" id="bodySex"><option value="male" data-i18n="sex_male"></option><option value="female" data-i18n="sex_female"></option></select>
           </div>
         </div>
         <div class="val-msg" id="bodyStatsValMsg"></div>
         <h3 data-i18n="q_food_goal"></h3>
-        <div class="ob-grid" id="foodGoalGrid">
-          <div class="ob-choice" data-goal="gain"><span class="ic">💪</span><span data-i18n="goal_gain"></span></div>
+        <div class="ob-grid" id="foodGoalGrid" style="grid-template-columns:repeat(3,1fr);">
           <div class="ob-choice" data-goal="lose"><span class="ic">🔥</span><span data-i18n="goal_lose"></span></div>
+          <div class="ob-choice" data-goal="maintain"><span class="ic">⚖️</span><span data-i18n="goal_maintain"></span></div>
+          <div class="ob-choice" data-goal="gain"><span class="ic">💪</span><span data-i18n="goal_gain"></span></div>
         </div>
         <button class="setup-btn" id="fNext1" data-i18n="next"></button>
       </div>
@@ -1119,20 +1128,24 @@
         <div class="ob-grid" id="dietTypeGrid" style="grid-template-columns:1fr 1fr;">
           <div class="ob-choice" data-diet="balanced"><span class="ic">🍽️</span><span data-i18n="diet_balanced"></span></div>
           <div class="ob-choice" data-diet="highProtein"><span class="ic">🥩</span><span data-i18n="diet_high_protein"></span></div>
-          <div class="ob-choice" data-diet="lowCarb"><span class="ic">🥗</span><span data-i18n="diet_low_carb"></span></div>
-          <div class="ob-choice" data-diet="mediterranean"><span class="ic">🫒</span><span data-i18n="diet_mediterranean"></span></div>
           <div class="ob-choice" data-diet="vegetarian"><span class="ic">🥬</span><span data-i18n="diet_vegetarian"></span></div>
-          <div class="ob-choice" data-diet="vegan"><span class="ic">🌱</span><span data-i18n="diet_vegan"></span></div>
+          <!-- older styles: still fully supported for people who already chose them, shown only then -->
+          <div class="ob-choice legacy-diet hidden" data-diet="lowCarb"><span class="ic">🥗</span><span data-i18n="diet_low_carb"></span></div>
+          <div class="ob-choice legacy-diet hidden" data-diet="mediterranean"><span class="ic">🫒</span><span data-i18n="diet_mediterranean"></span></div>
+          <div class="ob-choice legacy-diet hidden" data-diet="vegan"><span class="ic">🌱</span><span data-i18n="diet_vegan"></span></div>
         </div>
         <div class="info-chip" id="dietTypeNote" style="margin-bottom:16px;"></div>
+        <div class="hidden" id="scheduleQuestion"><!-- eating schedule removed from setup: meal count below covers it -->
         <h3 data-i18n="q_schedule"></h3>
         <div class="ob-grid" id="scheduleGrid" style="grid-template-columns:1fr 1fr;">
           <div class="ob-choice" data-schedule="standard"><span class="ic">🍽️</span><span data-i18n="schedule_standard"></span></div>
           <div class="ob-choice" data-schedule="if168"><span class="ic">⏱️</span><span data-i18n="schedule_if"></span></div>
         </div>
         <div class="info-chip" id="scheduleNote" style="margin-bottom:16px;"></div>
+        </div>
         <h3 data-i18n="q_meal_count"></h3>
-        <div class="total-kcal" id="mealCountAutoNote" style="margin-bottom:10px;"></div>
+        <div class="ob-grid" id="mealCountGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+        <div class="info-chip" id="mealCountAutoNote" style="margin-bottom:16px;"></div>
         <div class="setup-row">
           <button class="setup-btn secondary-btn" id="fBack3" data-i18n="back" style="background:var(--card);color:var(--ink-soft);border:1px solid var(--line);"></button>
           <button class="setup-btn" id="fNext3" data-i18n="next"></button>
@@ -1795,7 +1808,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.31.0';
+const APP_VERSION='v1.32.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2610,6 +2623,8 @@ Object.assign(I18N.en,{
   auth_guest:'👤 Try it without an account (guest)',auth_guest_note:'Saved on this device — you can create an account later and keep everything.',
   auth_or:'or with email',auth_create_btn:'Create account',auth_have_account:'Already have an account? Sign in',
 });
+Object.assign(I18N.ar,{ dob_label:'تاريخ الميلاد', goal_maintain:'ثبات الوزن', q_meal_count:'🍽️ كم وجبة تاكل باليوم؟' });
+Object.assign(I18N.en,{ dob_label:'Date of birth', goal_maintain:'Keep my weight', q_meal_count:'🍽️ How many meals a day?' });
 Object.assign(I18N.en,{
   progress_weight_empty:'Log your weight on Home each day to see a trend here.',
   daily_routine_title:'🔁 Recurring commitments (add / edit)',
@@ -3827,8 +3842,17 @@ const TRAINING_SPLITS={
  custom:{days:null} // per-weekday assignment lives in P.workoutSetup.customSchedule instead
 };
 const ALL_TRAINING_DAY_TYPES=['push','pull','legs','chest','back','shoulders','arms','upper','lower','full'];
-function dayTypeIcon(typeKey){ return (workoutTypes[typeKey]||{}).icon || '💪'; }
-function dayTypeLabel(typeKey){ return typeKey==='rest' ? t('rest_day_name') : t('type_'+typeKey); }
+/* custom weeks can hold a sport day, stored as 'sport:<key>' so each day
+   remembers which sport — it counts as a training day everywhere */
+const SPORTS={
+  football:{icon:'⚽',ar:'كورة',en:'Football'}, padel:{icon:'🎾',ar:'بادل / تنس',en:'Padel / tennis'}, swimming:{icon:'🏊',ar:'سباحة',en:'Swimming'},
+  running:{icon:'🏃',ar:'جري',en:'Running'}, basketball:{icon:'🏀',ar:'سلة',en:'Basketball'}, volleyball:{icon:'🏐',ar:'طائرة',en:'Volleyball'},
+  cycling:{icon:'🚴',ar:'دراجة',en:'Cycling'}, martial:{icon:'🥋',ar:'فنون قتالية',en:'Martial arts'}, other:{icon:'🏅',ar:'رياضة ثانية',en:'Other sport'}
+};
+function isSportType(k){ return typeof k==='string' && k.startsWith('sport'); }
+function sportOf(k){ return SPORTS[(String(k).split(':')[1])||'other']||SPORTS.other; }
+function dayTypeIcon(typeKey){ if(isSportType(typeKey)) return sportOf(typeKey).icon; return (workoutTypes[typeKey]||{}).icon || '💪'; }
+function dayTypeLabel(typeKey){ if(isSportType(typeKey)) return sportOf(typeKey)[LANG]; return typeKey==='rest' ? t('rest_day_name') : t('type_'+typeKey); }
 function currentSplitId(){ return (P.workoutSetup&&P.workoutSetup.splitId) || 'ppl'; }
 function currentSplitDays(){ return TRAINING_SPLITS[currentSplitId()].days || []; }
 
@@ -4241,6 +4265,12 @@ function applyGoalAdditions(day,typeKey){
   }
 }
 function adaptDay(typeKey){
+  if(isSportType(typeKey)){
+    const sp=sportOf(typeKey);
+    return {icon:sp.icon,name:{ar:sp.ar,en:sp.en},color:'#2e8b57',warns:[],small:[],
+      main:[{ar:'⏱️ إحماء ١٠ دقايق قبل تبدأ',en:'⏱️ Warm up for 10 minutes first'},{ar:`${sp.icon} العب ${sp.ar} واستمتع — هذا تمرين اليوم`,en:`${sp.icon} Play ${sp.en} — that’s today’s workout`},{ar:'💧 اشرب ماي قبل وخلال وبعد',en:'💧 Drink water before, during and after'}],
+      stretch:{ar:'🧘 استرتش ٥-١٠ دقايق بعد اللعب',en:'🧘 Stretch for 5-10 minutes after playing'}};
+  }
   const ws=P.workoutSetup||{};
   const isGym=ws.trainLocation==='gym';
   const base=(isGym?GYM_WORKOUT_TYPES:workoutTypes)[typeKey];
@@ -4780,6 +4810,26 @@ function goToFStep(n){
   document.getElementById('foodSetupCard').scrollIntoView({block:'start'});
 }
 function scrollToEl(el){ if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); }
+/* age from a birth date, so it keeps itself up to date every year */
+function ageFromBirthDate(iso){
+  if(!iso) return null;
+  const b=new Date(iso+'T00:00:00'); if(isNaN(b)) return null;
+  const n=new Date(); let a=n.getFullYear()-b.getFullYear();
+  if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate())) a--;
+  return a;
+}
+function setupAge(fs){ return ageFromBirthDate(fs&&fs.birthDate) ?? ((fs&&fs.age)||null); }
+function syncAgeFromDob(){
+  const dob=document.getElementById('bodyDob'), ageEl=document.getElementById('bodyAge'), hint=document.getElementById('dobHint');
+  const a=ageFromBirthDate(dob.value);
+  if(a!=null){ ageEl.value=a; hint.textContent=LANG==='ar'?`عمرك ${a} سنة`:`You’re ${a}`; }
+  else if(ageEl.value){ hint.textContent=LANG==='ar'?`أضف تاريخ ميلادك عشان عمرك (${ageEl.value}) يتحدث لحاله كل سنة`:`Add your birth date so your age (${ageEl.value}) updates itself every year`; }
+  else hint.textContent='';
+  checkBodyStatsValid();
+}
+document.getElementById('bodyDob').max=new Date().toISOString().slice(0,10);
+document.getElementById('bodyDob').addEventListener('change',syncAgeFromDob);
+document.getElementById('bodyDob').addEventListener('input',syncAgeFromDob);
 function checkBodyStatsValid(){
   const w=document.getElementById('bodyWeight').value;
   const h=document.getElementById('bodyHeight').value;
@@ -4810,11 +4860,12 @@ async function saveFoodDraft(){
     weight:document.getElementById('bodyWeight').value,
     height:document.getElementById('bodyHeight').value,
     age:document.getElementById('bodyAge').value,
+    birthDate:document.getElementById('bodyDob').value||'',
     sex:document.getElementById('bodySex').value,
     goal:P._foodGoal||'',
     dietStyle:P._dietStyle||'balanced',
     schedule:P._schedule||'standard',
-    mealCount:P._mealCount||5,
+    mealCount:P._mealCount||3,
     allergyOtherList:P._allergyOtherList||[],
     supOtherList:P._supOtherList||[],
     dislikedList:P._dislikedList||[],
@@ -4847,7 +4898,7 @@ function applyCalorieSafetyLimits(kcal,sex){
 function estimateCalorieTargetFromDraft(){
   const weight=parseFloat(document.getElementById('bodyWeight').value)||null;
   const height=parseFloat(document.getElementById('bodyHeight').value)||null;
-  const age=parseInt(document.getElementById('bodyAge').value,10)||25;
+  const age=ageFromBirthDate(document.getElementById('bodyDob').value)||parseInt(document.getElementById('bodyAge').value,10)||25;
   const sex=document.getElementById('bodySex').value||'male';
   if(!weight||!height) return {kcal:null,dailyAdjust:0};
   const bmr=calculateBMR(weight,height,age,sex);
@@ -4874,19 +4925,39 @@ function estimateCalorieTargetFromDraft(){
    adjustments — the only exception is 16:8 intermittent fasting, which is
    an explicit different eating SCHEDULE the user chose, not an automatic
    meal-count shrink. */
+/* how many times a day you eat is your choice: research finds no real
+   difference for weight between 3 meals and 5-6 once calories are the same
+   (more, smaller meals mostly just made people hungrier), so the default is
+   the ordinary 3 and nobody is pushed to 5. Old 16:8 setups show as 2. */
+const MEAL_COUNT_INFO={
+  2:{ar:'وجبتين: غدا + عشا (مثل الصيام المتقطع)',en:'2 meals: lunch + dinner (like intermittent fasting)'},
+  3:{ar:'٣ وجبات: فطور + غدا + عشا — الأساسي لأغلب الناس',en:'3 meals: breakfast + lunch + dinner — the standard for most people'},
+  4:{ar:'٤: فطور + غدا + سناك + عشا',en:'4: breakfast + lunch + a snack + dinner'},
+  5:{ar:'٥: فطور + سناك + غدا + سناك + عشا',en:'5: breakfast + snack + lunch + snack + dinner'}
+};
 function applyMealCountSuggestion(){
-  const n = P._schedule==='if168' ? 2 : 5;
-  P._mealCount=n;
-  const noteEl=document.getElementById('mealCountAutoNote');
-  noteEl.textContent = LANG==='ar'
-    ? (n===5 ? '🍽️ 5 وجبات يوميًا: فطور + سناك + غدا + سناك + عشا' : '🍽️ وجبتين يوميًا (صيام متقطع ١٦:٨)')
-    : (n===5 ? '🍽️ 5 meals a day: breakfast + snack + lunch + snack + dinner' : '🍽️ 2 meals a day (16:8 intermittent fasting)');
+  if(!P._mealCount) P._mealCount = P._schedule==='if168' ? 2 : 3;
+  const grid=document.getElementById('mealCountGrid'); if(!grid) return;
+  grid.innerHTML='';
+  [2,3,4,5].forEach(n=>{
+    const el=document.createElement('div');
+    el.className='ob-choice'+(P._mealCount===n?' selected':'');
+    el.innerHTML=`<span class="ic">${'🍽️'.repeat(1)}</span><span>${n}</span>`;
+    el.addEventListener('click',()=>{ P._mealCount=n; P._schedule='standard'; applyMealCountSuggestion(); });
+    grid.appendChild(el);
+  });
+  document.getElementById('mealCountAutoNote').textContent=MEAL_COUNT_INFO[P._mealCount][LANG];
 }
-document.getElementById('fNext1').addEventListener('click',()=>{ if(!checkBodyStatsValid()){ scrollToEl(document.getElementById('bodyStatsValMsg')); return; } saveFoodDraft(); goToFStep(2); });
+document.getElementById('fNext1').addEventListener('click',()=>{
+  if(!checkBodyStatsValid()){ scrollToEl(document.getElementById('bodyStatsValMsg')); return; }
+  if(!P._foodGoal){ const m=document.getElementById('bodyStatsValMsg'); m.textContent=LANG==='ar'?'🚫 اختر هدفك: إنقاص أو ثبات أو زيادة':'🚫 Pick your goal: lose, maintain or gain'; scrollToEl(m); return; }
+  saveFoodDraft();
+  if(P._foodGoal==='maintain'){ applyMealCountSuggestion(); goToFStep(3); } else goToFStep(2); // keeping your weight needs no target
+});
 document.getElementById('fNext2').addEventListener('click',()=>{ if(!checkGoalTargetConflict()){ scrollToEl(document.getElementById('targetValMsg')); return; } saveFoodDraft(); applyMealCountSuggestion(); goToFStep(3); });
 document.getElementById('fNext3').addEventListener('click',()=>{ saveFoodDraft(); buildWaterTargetGrid(); goToFStep(4); });
 document.getElementById('fBack2').addEventListener('click',()=>goToFStep(1));
-document.getElementById('fBack3').addEventListener('click',()=>goToFStep(2));
+document.getElementById('fBack3').addEventListener('click',()=>goToFStep(P._foodGoal==='maintain'?1:2));
 document.getElementById('fBack4').addEventListener('click',()=>goToFStep(3));
 
 /* diet STYLE (macro composition/food filtering) is now a separate concept
@@ -4972,6 +5043,7 @@ function weeksToMonthsLabel(weeks,lang){
 }
 function checkGoalTargetConflict(){
   document.getElementById('targetValMsg').classList.remove('warn');
+  if(P._foodGoal==='maintain'){ document.getElementById('targetValMsg').textContent=''; return true; } // no target weight to check
   const weight=parseFloat(document.getElementById('bodyWeight').value);
   const targetWeight=parseFloat(document.getElementById('targetWeightInput').value);
   const targetDate=document.getElementById('targetDateInput').value;
@@ -5184,7 +5256,9 @@ function prefillFoodSetup(){
   const s=P.foodSetup||foodDraft||{};
   document.getElementById('bodyWeight').value=s.weight||'';
   document.getElementById('bodyHeight').value=s.height||'';
-  document.getElementById('bodyAge').value=s.age||'';
+  document.getElementById('bodyDob').value=s.birthDate||'';
+  document.getElementById('bodyAge').value=ageFromBirthDate(s.birthDate)??(s.age||'');
+  syncAgeFromDob();
   document.getElementById('bodySex').value=s.sex||'male';
   document.querySelectorAll('#foodGoalGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.goal===s.goal));
   document.querySelectorAll('#dietTypeGrid .ob-choice').forEach(c=>c.classList.toggle('selected',c.dataset.diet===(s.dietStyle||'balanced')));
@@ -5206,6 +5280,9 @@ function prefillFoodSetup(){
   renderDislikedChips();
   P._dietStyle=s.dietStyle||'balanced';
   P._schedule=s.schedule||'standard';
+  P._mealCount = P._schedule==='if168' ? 2 : (s.mealCount||(P.foodSetup?5:3)); // existing setups keep what they had
+  // an older diet style stays visible (and selected) for whoever already has it
+  document.querySelectorAll('#dietTypeGrid .legacy-diet').forEach(c=>c.classList.toggle('hidden',c.dataset.diet!==P._dietStyle));
   applyMealCountSuggestion();
   renderAllergyOtherChips(); renderSupOtherChips();
   updateDietTypeNote();
@@ -5219,19 +5296,20 @@ document.getElementById('foodSetupSave').addEventListener('click',async()=>{
   P.foodSetup={
     weight:parseFloat(document.getElementById('bodyWeight').value)||null,
     height:parseFloat(document.getElementById('bodyHeight').value)||null,
-    age:parseInt(document.getElementById('bodyAge').value,10)||null,
+    age:ageFromBirthDate(document.getElementById('bodyDob').value)||parseInt(document.getElementById('bodyAge').value,10)||null,
+    birthDate:document.getElementById('bodyDob').value||null,
     sex:document.getElementById('bodySex').value||'male',
-    goal:P._foodGoal||'gain',
+    goal:P._foodGoal||'maintain',
     dietStyle:P._dietStyle||'balanced',
     schedule:P._schedule||'standard',
-    mealCount:P._mealCount||5,
+    mealCount:P._mealCount||3,
     allergyOtherList,
     allergyAnalysis,
     supOtherList:P._supOtherList||[],
     dislikedList:P._dislikedList||[],
     waterTarget:P._waterTarget||3,
-    targetWeight:parseFloat(document.getElementById('targetWeightInput').value)||null,
-    targetDate:document.getElementById('targetDateInput').value||null
+    targetWeight:P._foodGoal==='maintain'?null:(parseFloat(document.getElementById('targetWeightInput').value)||null),
+    targetDate:P._foodGoal==='maintain'?null:(document.getElementById('targetDateInput').value||null)
   };
   await storageSet('profile',JSON.stringify(P));
   await storageDelete('food-draft');
@@ -5294,24 +5372,40 @@ function onSplitChanged(){
 function buildCustomScheduleGrid(){
   const container=document.getElementById('customScheduleGrid'); container.innerHTML='';
   P._customSchedule=P._customSchedule||{};
-  const options=[...ALL_TRAINING_DAY_TYPES,'rest'];
+  const options=[...ALL_TRAINING_DAY_TYPES,'sport','rest'];
   DAY_NAMES[LANG].forEach((name,i)=>{
     const row=document.createElement('div'); row.className='custom-day-row';
     const label=document.createElement('div'); label.className='custom-day-row-label'; label.textContent=name;
     const grid=document.createElement('div'); grid.className='ob-grid compact';
     options.forEach(typeKey=>{
       const chip=document.createElement('div');
-      chip.className='ob-choice compact'+(P._customSchedule[i]===typeKey?' selected':'');
-      chip.innerHTML=`<span class="ic">${typeKey==='rest'?'😴':dayTypeIcon(typeKey)}</span><span>${dayTypeLabel(typeKey)}</span>`;
+      const cur=P._customSchedule[i];
+      const on = typeKey==='sport' ? isSportType(cur) : cur===typeKey;
+      chip.className='ob-choice compact'+(on?' selected':'');
+      chip.innerHTML = typeKey==='sport'
+        ? `<span class="ic">${isSportType(cur)?sportOf(cur).icon:'🏅'}</span><span>${LANG==='ar'?'رياضة':'Sport'}</span>`
+        : `<span class="ic">${typeKey==='rest'?'😴':dayTypeIcon(typeKey)}</span><span>${dayTypeLabel(typeKey)}</span>`;
       chip.addEventListener('click',()=>{
-        P._customSchedule[i]=typeKey;
-        grid.querySelectorAll('.ob-choice').forEach(c=>c.classList.remove('selected'));
-        chip.classList.add('selected');
+        P._customSchedule[i] = typeKey==='sport' ? (isSportType(cur)?cur:'sport:other') : typeKey;
+        buildCustomScheduleGrid();
         updateSplitPreview();
       });
       grid.appendChild(chip);
     });
-    row.appendChild(label); row.appendChild(grid); container.appendChild(row);
+    row.appendChild(label); row.appendChild(grid);
+    // which sport? only asked for a sport day
+    if(isSportType(P._customSchedule[i])){
+      const sg=document.createElement('div'); sg.className='ob-grid compact sport-pick';
+      Object.entries(SPORTS).forEach(([k,sp])=>{
+        const c=document.createElement('div');
+        c.className='ob-choice compact'+(P._customSchedule[i]==='sport:'+k?' selected':'');
+        c.innerHTML=`<span class="ic">${sp.icon}</span><span>${sp[LANG]}</span>`;
+        c.addEventListener('click',()=>{ P._customSchedule[i]='sport:'+k; buildCustomScheduleGrid(); updateSplitPreview(); });
+        sg.appendChild(c);
+      });
+      row.appendChild(sg);
+    }
+    container.appendChild(row);
   });
 }
 wireMulti('#obEquipGrid','data-equip',()=>{ P._equipment=[...document.querySelectorAll('#obEquipGrid .ob-choice.selected')].map(c=>c.dataset.equip); });
@@ -5494,11 +5588,10 @@ function buildWorkoutGrid(){
   const pattern=generateWeekPattern(P.workoutSetup||{});
   DAY_NAMES[LANG].forEach((name,i)=>{
     const typeKey=pattern[i]||'rest';
-    const type=workoutTypes[typeKey];
     const b=document.createElement('div');
     b.className='day-btn'+(typeKey==='rest'?' rest':'')+(i===idx?' today':'');
     b.dataset.todayLabel=t('today_label');
-    b.innerHTML=`<div class="num">${name}</div><div class="preview">${type.icon}</div>`;
+    b.innerHTML=`<div class="num">${name}</div><div class="preview">${dayTypeIcon(typeKey)}</div>`;
     b.addEventListener('click',()=>openWorkoutDay(name,typeKey,i===idx));
     grid.appendChild(b);
   });
@@ -5518,7 +5611,7 @@ function activityFactor(){
 function computeTDEE(){
   const fs=P.foodSetup||{};
   if(!fs.weight||!fs.height) return null;
-  const bmr=calculateBMR(fs.weight,fs.height,fs.age||25,fs.sex);
+  const bmr=calculateBMR(fs.weight,fs.height,setupAge(fs)||25,fs.sex);
   return calculateTDEE(bmr,activityFactor());
 }
 function weeklyRatePlan(){
@@ -5544,6 +5637,7 @@ function calorieTarget(){
   if(plan){
     return applyCalorieSafetyLimits(tdee+dailyKcalAdjustForRate(plan.weeklyRateKg), fs.sex);
   }
+  if(fs.goal==='maintain') return applyCalorieSafetyLimits(tdee, fs.sex); // keep weight: eat at maintenance
   return applyCalorieSafetyLimits(fs.goal==='lose' ? tdee-450 : tdee+450, fs.sex);
 }
 function openWorkoutDay(label,typeKey,isToday){
@@ -5555,8 +5649,8 @@ function openWorkoutDay(label,typeKey,isToday){
     html+=`<div class="check-item${dailyTrack.workoutDone?' done':''}" id="workoutDoneToggle" style="margin-bottom:8px;"><div class="box">${dailyTrack.workoutDone?'✓':''}</div><div class="txt">${t('workout_today')}</div></div>`;
     html+=`<div id="feedbackRow" style="margin-bottom:14px;"></div>`;
   }
-  const base=workoutTypes[typeKey];
-  const showVideoIcons = typeKey!=='rest' && !day.skippedByInjury;
+  const base=workoutTypes[typeKey]||{};
+  const showVideoIcons = typeKey!=='rest' && !isSportType(typeKey) && !day.skippedByInjury;
   html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons,typeKey,isToday)}</div>`;
   if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons,typeKey,isToday)}</div>`; }
   if(base.tierNotes && !day.skippedByInjury && currentTier(typeKey)>=4){
@@ -5580,7 +5674,7 @@ function openWorkoutDay(label,typeKey,isToday){
       // piecemeal, so the two can never fall out of sync with each other.
       openWorkoutDay(label,typeKey,true);
     });
-    if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven) showFeedbackPrompt(typeKey);
+    if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven && !isSportType(typeKey)) showFeedbackPrompt(typeKey); // difficulty feedback is for gym/home sessions, not sports
   }
   overlay.classList.add('open');
 }
