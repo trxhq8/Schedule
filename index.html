@@ -1672,7 +1672,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.26.0';
+const APP_VERSION='v1.27.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8491,6 +8491,9 @@ async function collLoadCategory(catId){
   // backfill: anything already caught has necessarily paid its first-catch
   // reward already, so mark it before a − to zero could make it look new
   Object.values(collCatData).forEach(rec=>{ if(rec&&rec.catches&&rec.catches.length) rec.rewarded=true; });
+  // shrink docs bloated by the old one-entry-per-catch bulk box; persisted
+  // on this category's next normal save
+  Object.values(collCatData).forEach(collCompactCatches);
   return collCatData;
 }
 async function collSaveCategory(catId){
@@ -8521,7 +8524,7 @@ async function syncPublicCollectionMirror(catId, data){
   Object.keys(data||{}).forEach(speciesId=>{
     const rec=data[speciesId];
     if(rec && rec.catches && rec.catches.length>0){
-      species[speciesId]={collected:true, catchCount:rec.catches.length};
+      species[speciesId]={collected:true, catchCount:collCatchCount(rec)};
     }
   });
   await fbDb.collection('users').doc(currentUser.uid).collection('publicCollection').doc(catId)
@@ -8554,6 +8557,26 @@ async function migratePublicCollectionMirrors(){
   }catch(e){ /* offline/transient/permission-denied — retried on next boot since the flag was never persisted */ }
 }
 function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false,variantState:{}}; }
+/* a catch entry may stand for several catches (`n`, default 1) — a bulk add
+   is stored as ONE entry instead of N identical ones, so a category doc
+   can't creep toward Firestore's 1 MiB limit. Always count through here. */
+function collCatchCount(record){ return (record&&record.catches||[]).reduce((sum,c)=>sum+((c&&c.n)||1),0); }
+/* folds runs of identical detail-less entries (same second, no
+   measurements — what the old bulk box produced) into one counted entry.
+   Lossless: the count, the dates and every measured catch are kept. */
+function collCompactCatches(record){
+  if(!record||!Array.isArray(record.catches)||record.catches.length<2) return false;
+  const out=[]; let changed=false;
+  record.catches.forEach(c=>{
+    const plain=c&&(!c.measurements||!Object.keys(c.measurements).length);
+    const prev=out[out.length-1];
+    const prevPlain=prev&&(!prev.measurements||!Object.keys(prev.measurements).length);
+    if(plain&&prevPlain&&String(prev.date).slice(0,19)===String(c.date).slice(0,19)){ prev.n=(prev.n||1)+((c.n)||1); changed=true; }
+    else out.push(c);
+  });
+  if(changed) record.catches=out;
+  return changed;
+}
 function collIsCollected(record){ return !!(record.catches&&record.catches.length>0); }
 function collBest(record,key){
   if(!record.catches||!record.catches.length) return null;
@@ -8625,12 +8648,13 @@ async function computeCollectionStats(){
       const rec=data[sp.id];
       if(rec&&collIsCollected(rec)){
         got++;
-        catchSum+=rec.catches.length;
+        const recCount=collCatchCount(rec);
+        catchSum+=recCount;
         // tracked separately from catchSum (which is per-CATEGORY, not
         // per-species) so "caught 10 of the same species" can be told
         // apart from "caught 10 fish total across a category" — see the
         // persistent_angler vs species_explorer achievements below.
-        if(rec.catches.length>maxSpeciesCatchCount) maxSpeciesCatchCount=rec.catches.length;
+        if(recCount>maxSpeciesCatchCount) maxSpeciesCatchCount=recCount;
         rarityCounts[sp.rarity]=(rarityCounts[sp.rarity]||0)+1;
         if(sp.rarity==='legendary') legendaryCount++;
       }
@@ -8820,7 +8844,7 @@ function renderCollSpeciesGrid(){
   });
   filtered=filtered.slice().sort((a,b)=>{
     if(collSort==='alpha') return collName(a).localeCompare(collName(b),LANG==='ar'?'ar':'en');
-    if(collSort==='count') return collRecord(b.id).catches.length-collRecord(a.id).catches.length;
+    if(collSort==='count') return collCatchCount(collRecord(b.id))-collCatchCount(collRecord(a.id));
     if(collSort==='rarity'){
       const diff=RARITY_TIERS[b.rarity].order-RARITY_TIERS[a.rarity].order;
       return diff!==0 ? diff : collName(a).localeCompare(collName(b),LANG==='ar'?'ar':'en');
@@ -8855,7 +8879,7 @@ function renderCollSpeciesGrid(){
       ${badge}
       <div class="thumb">${thumbInner}</div>
       <div class="name">${collName(sp)}</div>
-      <div class="meta">${collected?(rec.catches.length+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):(LANG==='ar'?'غير مجموع':'Not collected')}</div>
+      <div class="meta">${collected?(collCatchCount(rec)+' '+(LANG==='ar'?cat.countLabelAr:cat.countLabelEn)):(LANG==='ar'?'غير مجموع':'Not collected')}</div>
     </div>`;
   }).join('');
   grid.querySelectorAll('.coll-species-card').forEach(cardEl=>{
@@ -8943,7 +8967,7 @@ async function renderCollSpeciesDetail(){
 
     <div class="coll-counter-row">
       <button class="coll-counter-btn" id="collDecBtn" ${rec.catches.length<=0?'disabled':''}>−</button>
-      <div class="coll-counter-num" id="collCounterNum">${rec.catches.length}</div>
+      <div class="coll-counter-num" id="collCounterNum">${collCatchCount(rec)}</div>
       <button class="coll-counter-btn" id="collIncBtn">+</button>
     </div>
     <div class="coll-counter-label">${LANG==='ar'?cat.countLabelAr:cat.countLabelEn}</div>
@@ -9086,7 +9110,7 @@ function collAddCatchBulk(n){
   if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
   const shouldReward=collShouldReward(rec);
   rec.catches=rec.catches||[];
-  for(let i=0;i<n;i++) rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:{}});
+  rec.catches.push(n===1?{id:collGenId(), date:new Date().toISOString(), measurements:{}}:{id:collGenId(), date:new Date().toISOString(), measurements:{}, n});
   rec.rewarded=true;
   renderCollSpeciesDetail();
   collSaveCategory(collCurrentCat);
@@ -9148,7 +9172,8 @@ function closeBossModal(){ document.getElementById('bossOverlay').classList.remo
 function collRemoveLastCatch(){
   const rec=collRecord(collCurrentSpecies);
   if(!rec.catches||!rec.catches.length) return;
-  rec.catches.pop();
+  const last=rec.catches[rec.catches.length-1];
+  if(last.n>1) last.n--; else rec.catches.pop();
   const nowEmpty=rec.catches.length===0;
   renderCollSpeciesDetail();
   collSaveCategory(collCurrentCat);
