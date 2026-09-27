@@ -262,6 +262,24 @@
   .auth-guest-note{ text-align:center; color:var(--ink-soft); font-size:0.74rem; margin:6px 0 14px; }
   .auth-switch{ display:block; margin:10px auto 0; background:none; border:none; color:var(--heading); font:inherit; font-size:0.8rem; font-weight:700; text-decoration:underline; cursor:pointer; }
   .sport-pick{ margin-top:6px; padding:8px; border-radius:12px; background:var(--bg); border:1px dashed var(--line); }
+  .habit-group{ padding:8px 0 10px; border-bottom:1px solid var(--line); }
+  .habit-group-head{ display:flex; align-items:center; gap:8px; font-size:0.86rem; font-weight:700; margin-bottom:8px; }
+  .habit-group-head .habit-group-name{ flex:1; }
+  .habit-pills{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .habit-pill{ border:1.5px solid var(--line); background:var(--bg); color:var(--ink); border-radius:12px; padding:8px 2px; font:inherit; font-size:0.74rem; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .habit-pill .ck{ width:20px; height:20px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:0.7rem; }
+  .habit-pill.done{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--card)); }
+  .habit-pill.done .ck{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .habit-streak.pending{ opacity:0.55; }
+  .habit-count{ font-family:var(--font-head); font-weight:800; font-size:0.78rem; color:var(--ink-soft); margin-inline-start:6px; }
+  .habit-suggest{ display:flex; flex-wrap:wrap; gap:8px; }
+  .habit-suggest button{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:8px 12px; font:inherit; font-size:0.8rem; cursor:pointer; }
+  .ch-tabs{ display:flex; gap:8px; margin-bottom:10px; }
+  .ch-tab{ flex:1; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:12px; padding:10px; font-family:var(--font-head); font-weight:800; font-size:0.85rem; cursor:pointer; }
+  .ch-tab.active{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .ch-summary{ font-size:0.8rem; color:var(--ink-soft); margin:0 0 12px; }
+  .ch-section-title{ font-family:var(--font-head); font-weight:800; font-size:0.9rem; color:var(--heading); margin:16px 0 8px; }
+  .challenge-card.needs-setup{ opacity:0.72; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -920,6 +938,19 @@
       <div class="home-todo-sub" id="homeTodoSub"></div>
       <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
     <div id="dashboardSummary">
+      <div id="homeHabitsSlot">
+      <div class="dash-card" id="habitsCard">
+        <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
+        <div class="habits-hint" data-i18n="habits_hint"></div>
+        <div id="dashHabitsList"></div>
+        <div class="habit-yesterday-toggle hidden" id="habitYesterdayToggle"></div>
+        <div class="habit-yesterday-list hidden" id="dashHabitsYesterdayList"></div>
+        <div class="habit-add-row">
+          <input type="text" id="dashHabitAdd" data-i18n-ph="habit_add_ph">
+          <button type="button" id="dashHabitAddBtn" aria-label="add">➕</button>
+        </div>
+      </div>
+      </div>
       <div class="dash-card" id="dashCalCard">
         <div class="dash-card-title dash-title-row"><span id="dashCalTitle"></span><button type="button" class="dash-link" data-nav="food" data-i18n="link_open_diet"></button></div>
         <div class="dash-cal-row" id="dashCalRow">
@@ -956,19 +987,6 @@
         <div class="dash-mini hidden" data-goto="today" id="dashCommitMini"></div>
       </div>
 
-      <div id="homeHabitsSlot">
-      <div class="dash-card" id="habitsCard">
-        <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
-        <div class="habits-hint" data-i18n="habits_hint"></div>
-        <div id="dashHabitsList"></div>
-        <div class="habit-yesterday-toggle hidden" id="habitYesterdayToggle"></div>
-        <div class="habit-yesterday-list hidden" id="dashHabitsYesterdayList"></div>
-        <div class="habit-add-row">
-          <input type="text" id="dashHabitAdd" data-i18n-ph="habit_add_ph">
-          <button type="button" id="dashHabitAddBtn" aria-label="add">➕</button>
-        </div>
-      </div>
-      </div>
     </div>
     <div class="dash-card hidden" id="homeWeightTask"></div>
     <div id="homeTodoScheduleRows" class="hidden"></div>
@@ -991,6 +1009,7 @@
     <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><span></span></div>
     <div class="panel-head"><h2 data-i18n="habits_title"></h2><p class="panel-sub" data-i18n="habits_sub"></p></div>
     <div id="habitsPanelSlot"></div>
+    <div class="dash-card" id="habitSuggestCard" style="margin-top:14px;"><div class="dash-card-title" data-i18n="habit_suggest_title"></div><div class="habit-suggest" id="habitSuggestions"></div></div>
   </section>
 
   <!-- YOU — profile, progress, friends, collection, store, settings -->
@@ -1808,7 +1827,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.32.0';
+const APP_VERSION='v1.33.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2625,6 +2644,8 @@ Object.assign(I18N.en,{
 });
 Object.assign(I18N.ar,{ dob_label:'تاريخ الميلاد', goal_maintain:'ثبات الوزن', q_meal_count:'🍽️ كم وجبة تاكل باليوم؟' });
 Object.assign(I18N.en,{ dob_label:'Date of birth', goal_maintain:'Keep my weight', q_meal_count:'🍽️ How many meals a day?' });
+Object.assign(I18N.ar,{ habit_suggest_title:'➕ أضف بسرعة' });
+Object.assign(I18N.en,{ habit_suggest_title:'➕ Quick add' });
 Object.assign(I18N.en,{
   progress_weight_empty:'Log your weight on Home each day to see a trend here.',
   daily_routine_title:'🔁 Recurring commitments (add / edit)',
@@ -4336,7 +4357,7 @@ function enterSection(name){
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
   if(name==='diettraining'||name==='health') renderHealthHub();
-  if(name==='habits'){ renderHabits(); renderHabitsYesterdayToggle(); }
+  if(name==='habits'){ renderHabits(); renderHabitsYesterdayToggle(); renderHabitSuggestions(); }
   if(name==='progress') renderProgressSection();
   if(name==='profile') renderProfileSection();
   if(name==='challenges') renderChallengesSection();
@@ -6469,6 +6490,9 @@ async function computeUserStats(){
     nutritionStreak:(streaks.nutrition&&streaks.nutrition.current)||0,
     bestStreak,
     bestHabitStreak:lifetime.longestHabitStreakEver||0,
+    habitChecks:lifetime.habitChecks||0,
+    perfectHabitDays:lifetime.perfectHabitDays||0,
+    bestPrayerStreak:lifetime.longestPrayerStreak||0,
     waterDaysHit:lifetime.waterDaysHit||0,
     nutritionDaysHit:lifetime.nutritionDaysHit||0,
     challengesCompleted:lifetime.challengesCompleted||0,
@@ -6511,6 +6535,16 @@ const ACHIEVEMENTS_CONFIG=[
   {id:'nutrition_machine', icon:'🍽️', nameEn:'Nutrition Machine', nameAr:'آلة التغذية', descEn:'Complete your nutrition target 20 times', descAr:'حقق هدف التغذية 20 مرة', xp:120, coins:140, check:s=>s.nutritionDaysHit>=20},
   {id:'habit_builder', icon:'✅', nameEn:'Habit Builder', nameAr:'باني العادات', descEn:'Reach a 14-day habit streak', descAr:'وصل لسلسلة عادة 14 يوم', xp:130, coins:150, check:s=>s.bestHabitStreak>=14},
   {id:'challenger', icon:'🎯', nameEn:'Challenger', nameAr:'المتحدي', descEn:'Complete your first challenge', descAr:'أكمل أول تحدي', xp:15, coins:15, check:s=>s.challengesCompleted>=1},
+  // ---- habits: the daily things that matter most get their own trophies ----
+  {id:'habit_first', icon:'✅', nameEn:'First Tick', nameAr:'أول علامة', descEn:'Check off your first habit', descAr:'علّم أول عادة', xp:10, coins:10, check:s=>s.habitChecks>=1},
+  {id:'habit_week', icon:'📅', nameEn:'One Good Week', nameAr:'أسبوع ملتزم', descEn:'Reach a 7-day habit streak', descAr:'وصل لسلسلة عادة 7 أيام', xp:60, coins:70, check:s=>s.bestHabitStreak>=7},
+  {id:'habit_month', icon:'🗓️', nameEn:'Month of Discipline', nameAr:'شهر انضباط', descEn:'Reach a 30-day habit streak', descAr:'وصل لسلسلة عادة 30 يوم', xp:300, coins:350, check:s=>s.bestHabitStreak>=30},
+  {id:'habit_100', icon:'💯', nameEn:'100 Ticks', nameAr:'100 علامة', descEn:'Check off 100 habits', descAr:'علّم 100 عادة', xp:150, coins:180, check:s=>s.habitChecks>=100},
+  {id:'habit_500', icon:'🏅', nameEn:'Habit Machine', nameAr:'آلة العادات', descEn:'Check off 500 habits', descAr:'علّم 500 عادة', xp:700, coins:900, check:s=>s.habitChecks>=500},
+  {id:'perfect_7', icon:'🌟', nameEn:'Seven Perfect Days', nameAr:'سبع أيام مثالية', descEn:'Finish every habit on 7 days', descAr:'خلّص كل عاداتك في 7 أيام', xp:120, coins:150, check:s=>s.perfectHabitDays>=7},
+  {id:'perfect_30', icon:'✨', nameEn:'Thirty Perfect Days', nameAr:'ثلاثين يوم مثالي', descEn:'Finish every habit on 30 days', descAr:'خلّص كل عاداتك في 30 يوم', xp:450, coins:550, check:s=>s.perfectHabitDays>=30},
+  {id:'prayers_week', icon:'🕌', nameEn:'Steadfast Week', nameAr:'أسبوع المحافظة', descEn:'All five prayers, 7 days in a row', descAr:'الصلوات الخمس 7 أيام متتالية', xp:200, coins:250, check:s=>s.bestPrayerStreak>=7},
+  {id:'prayers_month', icon:'🌙', nameEn:'Steadfast Month', nameAr:'شهر المحافظة', descEn:'All five prayers, 30 days in a row', descAr:'الصلوات الخمس 30 يوم متتالي', xp:800, coins:1000, check:s=>s.bestPrayerStreak>=30},
 ];
 /* the ONLY place P.achievements is written. Returns the list of newly
    unlocked achievements (empty if none) so the caller can show a toast. */
@@ -6565,43 +6599,105 @@ function unlockedTitles(stats){ return TITLES_CONFIG.filter(t=>stats[t.metric]>=
    recurring challenge would out-earn a genuine milestone every single
    period, which is exactly the farming problem difficulty tiers exist
    to prevent. */
+/* cat groups the list on screen; needs = the setup a challenge depends on
+   (shown with a "set it up" link instead of an impossible 0/5). The first
+   four are the originals, unchanged. */
 const CHALLENGES_CONFIG=[
-  {id:'weekly_workouts', period:'week', icon:'🏋️', nameEn:'5 Workouts This Week', nameAr:'5 تمارين هذا الأسبوع', target:5, xp:130, coins:150, metric:'workoutsThisWeek'},
-  {id:'weekly_hydration', period:'week', icon:'💧', nameEn:'Hydration Week', nameAr:'أسبوع الترطيب', target:5, xp:40, coins:40, metric:'waterDaysThisWeek'},
-  {id:'weekly_nutrition', period:'week', icon:'🍽️', nameEn:'Nutrition Streak', nameAr:'التزام التغذية', target:5, xp:50, coins:50, metric:'nutritionDaysThisWeek'},
-  {id:'monthly_fishing', period:'month', icon:'🐟', nameEn:'Fishing Collector', nameAr:'جامع الأسماك', target:5, xp:100, coins:120, metric:'distinctCatchesThisMonth'},
+  {id:'weekly_workouts', period:'week', cat:'training', needs:'workout', icon:'🏋️', nameEn:'5 Workouts This Week', nameAr:'5 تمارين هذا الأسبوع', target:5, xp:130, coins:150, metric:'workoutsThisWeek'},
+  {id:'weekly_hydration', period:'week', cat:'nutrition', icon:'💧', nameEn:'Hydration Week', nameAr:'أسبوع الترطيب', target:5, xp:40, coins:40, metric:'waterDaysThisWeek'},
+  {id:'weekly_nutrition', period:'week', cat:'nutrition', needs:'food', icon:'🍽️', nameEn:'Nutrition Streak', nameAr:'التزام التغذية', target:5, xp:50, coins:50, metric:'nutritionDaysThisWeek'},
+  {id:'monthly_fishing', period:'month', cat:'collection', icon:'🐟', nameEn:'Fishing Collector', nameAr:'جامع الأسماك', target:5, xp:100, coins:120, metric:'distinctCatchesThisMonth'},
+  // weekly
+  {id:'weekly_workouts_3', period:'week', cat:'training', needs:'workout', icon:'💪', nameEn:'3 Workouts This Week', nameAr:'3 تمارين هذا الأسبوع', target:3, xp:60, coins:70, metric:'workoutsThisWeek'},
+  {id:'weekly_hydration_7', period:'week', cat:'nutrition', icon:'🌊', nameEn:'Water Every Day', nameAr:'الماء كل يوم', target:7, xp:90, coins:100, metric:'waterDaysThisWeek'},
+  {id:'weekly_nutrition_7', period:'week', cat:'nutrition', needs:'food', icon:'🥗', nameEn:'Perfect Eating Week', nameAr:'أسبوع أكل مثالي', target:7, xp:110, coins:120, metric:'nutritionDaysThisWeek'},
+  {id:'weekly_habits_20', period:'week', cat:'habits', needs:'habits', icon:'✅', nameEn:'20 Habit Ticks', nameAr:'20 علامة عادات', target:20, xp:50, coins:60, metric:'habitChecksThisWeek'},
+  {id:'weekly_perfect_3', period:'week', cat:'habits', needs:'habits', icon:'🌟', nameEn:'3 Perfect Days', nameAr:'3 أيام مثالية', target:3, xp:70, coins:80, metric:'perfectDaysThisWeek'},
+  {id:'weekly_prayers_7', period:'week', cat:'habits', needs:'prayers', icon:'🕌', nameEn:'All Prayers, Every Day', nameAr:'كل الصلوات كل يوم', target:7, xp:150, coins:180, metric:'prayerDaysThisWeek'},
+  {id:'weekly_weight_3', period:'week', cat:'weight', icon:'⚖️', nameEn:'Weigh In 3 Times', nameAr:'سجّل وزنك 3 مرات', target:3, xp:30, coins:30, metric:'weightDaysThisWeek'},
+  // monthly
+  {id:'monthly_workouts_12', period:'month', cat:'training', needs:'workout', icon:'🔥', nameEn:'12 Workouts This Month', nameAr:'12 تمرين هذا الشهر', target:12, xp:250, coins:300, metric:'workoutsThisMonth'},
+  {id:'monthly_water_20', period:'month', cat:'nutrition', icon:'💧', nameEn:'20 Water Days', nameAr:'20 يوم ماء', target:20, xp:180, coins:200, metric:'waterDaysThisMonth'},
+  {id:'monthly_nutrition_15', period:'month', cat:'nutrition', needs:'food', icon:'🍽️', nameEn:'15 Nutrition Days', nameAr:'15 يوم تغذية', target:15, xp:200, coins:220, metric:'nutritionDaysThisMonth'},
+  {id:'monthly_habits_80', period:'month', cat:'habits', needs:'habits', icon:'✅', nameEn:'80 Habit Ticks', nameAr:'80 علامة عادات', target:80, xp:180, coins:200, metric:'habitChecksThisMonth'},
+  {id:'monthly_perfect_10', period:'month', cat:'habits', needs:'habits', icon:'✨', nameEn:'10 Perfect Days', nameAr:'10 أيام مثالية', target:10, xp:220, coins:250, metric:'perfectDaysThisMonth'},
+  {id:'monthly_prayers_20', period:'month', cat:'habits', needs:'prayers', icon:'🌙', nameEn:'20 Days of All Prayers', nameAr:'20 يوم كل الصلوات', target:20, xp:350, coins:400, metric:'prayerDaysThisMonth'},
+  {id:'monthly_rare_1', period:'month', cat:'collection', icon:'💎', nameEn:'A Rare Catch', nameAr:'صيدة نادرة', target:1, xp:150, coins:180, metric:'rareCatchesThisMonth'},
 ];
+const CHALLENGE_CATS={ training:{ar:'🏋️ التمرين',en:'🏋️ Training'}, nutrition:{ar:'🍽️ الأكل والماء',en:'🍽️ Food & water'}, habits:{ar:'✅ العادات',en:'✅ Habits'}, weight:{ar:'⚖️ الوزن',en:'⚖️ Weight'}, collection:{ar:'🐾 المقتنيات',en:'🐾 Collection'} };
+function challengeNeedsMet(c){
+  if(!c.needs) return true;
+  if(c.needs==='workout') return !!P.workoutSetup;
+  if(c.needs==='food') return !!P.foodSetup;
+  if(c.needs==='habits') return !!(P.habits&&P.habits.length);
+  if(c.needs==='prayers') return prayerHabitIds().length>0;
+  return true;
+}
 function currentPeriodKey(period){
   const now=new Date();
   if(period==='month') return `${now.getFullYear()}-${now.getMonth()+1}`;
   return `${now.getFullYear()}-w${getISOWeekNum(now)}`;
 }
-async function computeMonthlyDistinctCatches(){
+async function computeMonthlyDistinctCatches(){ return (await computeMonthlyCatchStats()).distinct; }
+async function computeMonthlyCatchStats(){
   const now=new Date(); const y=now.getFullYear(), m=now.getMonth();
-  let count=0;
+  let distinct=0, rare=0;
   for(const cat of ANIMAL_CATEGORIES){
     let data={};
     try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
-    Object.values(data).forEach(rec=>{
-      if(rec&&rec.catches&&rec.catches.some(c=>{ const d=new Date(c.date); return d.getFullYear()===y&&d.getMonth()===m; })) count++;
+    Object.entries(data).forEach(([sid,rec])=>{
+      if(rec&&rec.catches&&rec.catches.some(c=>{ const d=new Date(c.date); return d.getFullYear()===y&&d.getMonth()===m; })){
+        distinct++;
+        const sp=collSpeciesInfo(cat.id,sid); if(sp&&['epic','mythic','legendary'].includes(sp.rarity)) rare++;
+      }
     });
   }
-  return count;
+  return {distinct,rare};
+}
+/* one day's daily-track doc for challenge maths: today is the live object,
+   days ≥2 back are cached (they no longer change), future days are empty */
+async function trackDocFor(d){
+  const now=new Date();
+  if(isSameCalendarDate(d,now)) return dailyTrack;
+  const day0=new Date(now.getFullYear(),now.getMonth(),now.getDate()), dd=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const back=Math.round((day0-dd)/86400000);
+  if(back<0) return null;
+  const key=`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  if(back>=2 && key in pastDayDocCache) return pastDayDocCache[key];
+  let doc=null; try{ const v=await storageGet(key); if(v) doc=JSON.parse(v); }catch(e){}
+  if(back>=2 && doc) pastDayDocCache[key]=doc;
+  return doc;
+}
+function tallyDocs(docs){
+  const habitIds=(P.habits||[]).map(h=>h.id), pids=prayerHabitIds();
+  const tot={workouts:0,water:0,nutrition:0,habitChecks:0,perfect:0,prayers:0,weight:0};
+  docs.forEach(doc=>{
+    if(!doc) return;
+    if(doc.workoutDone) tot.workouts++;
+    if(doc.xpAwarded&&doc.xpAwarded.water) tot.water++;
+    if(doc.xpAwarded&&doc.xpAwarded.nutrition) tot.nutrition++;
+    const hb=doc.habits||{};
+    tot.habitChecks+=Object.values(hb).filter(Boolean).length;
+    if(habitIds.length && habitIds.every(id=>hb[id])) tot.perfect++;
+    if(pids.length && pids.every(id=>hb[id])) tot.prayers++;
+    if(doc.weightLoggedToday) tot.weight++;
+  });
+  return tot;
 }
 async function computeChallengeProgress(){
-  const weekDates=datesForCurrentWeek();
-  const keys=weekDates.map(d=>`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
-  const docs=await Promise.all(keys.map(k=>storageGet(k).catch(()=>null)));
-  let workoutsThisWeek=0, waterDaysThisWeek=0, nutritionDaysThisWeek=0;
-  docs.forEach(v=>{
-    if(!v) return;
-    let doc; try{ doc=JSON.parse(v); }catch(e){ return; }
-    if(doc.workoutDone) workoutsThisWeek++;
-    if(doc.xpAwarded&&doc.xpAwarded.water) waterDaysThisWeek++;
-    if(doc.xpAwarded&&doc.xpAwarded.nutrition) nutritionDaysThisWeek++;
-  });
-  const distinctCatchesThisMonth=await computeMonthlyDistinctCatches();
-  return {workoutsThisWeek,waterDaysThisWeek,nutritionDaysThisWeek,distinctCatchesThisMonth};
+  const weekDocs=await Promise.all(datesForCurrentWeek().map(trackDocFor));
+  const now=new Date();
+  const monthDays=Array.from({length:now.getDate()},(_,i)=>new Date(now.getFullYear(),now.getMonth(),i+1));
+  const monthDocs=await Promise.all(monthDays.map(trackDocFor));
+  const w=tallyDocs(weekDocs), m=tallyDocs(monthDocs);
+  const catches=await computeMonthlyCatchStats();
+  return {
+    workoutsThisWeek:w.workouts, waterDaysThisWeek:w.water, nutritionDaysThisWeek:w.nutrition,
+    habitChecksThisWeek:w.habitChecks, perfectDaysThisWeek:w.perfect, prayerDaysThisWeek:w.prayers, weightDaysThisWeek:w.weight,
+    workoutsThisMonth:m.workouts, waterDaysThisMonth:m.water, nutritionDaysThisMonth:m.nutrition,
+    habitChecksThisMonth:m.habitChecks, perfectDaysThisMonth:m.perfect, prayerDaysThisMonth:m.prayers,
+    distinctCatchesThisMonth:catches.distinct, rareCatchesThisMonth:catches.rare
+  };
 }
 /* the ONLY place P.challengeState is written / XP for challenges is
    awarded. Returns the list of newly-completed challenges this call. */
@@ -7186,8 +7282,14 @@ document.getElementById('profileCoinsChip').addEventListener('click',()=>{ showP
 
 /* ================= CHALLENGES PANEL (real) ================= */
 /* where you actually make progress on each kind of challenge */
-function challengeActionLink(metric){
+function challengeActionLink(metric, c){
   const ar=LANG==='ar';
+  if(c&&c.needs==='habits'&&!challengeNeedsMet(c)) return `<button type="button" class="dash-link" data-nav="habits" style="margin-top:6px;">${ar?'أضف عادات أول':'Add some habits first'}</button>`;
+  if(c&&c.needs==='prayers'&&!challengeNeedsMet(c)) return `<button type="button" class="dash-link" data-nav="habits" style="margin-top:6px;">${ar?'أضف الصلوات من العادات':'Add the prayers in Habits'}</button>`;
+  if(/^habit|^perfect|^prayer/.test(metric)) return `<button type="button" class="dash-link" data-nav="habits" style="margin-top:6px;">${ar?'افتح العادات':'Open habits'}</button>`;
+  if(/^weight/.test(metric)) return `<button type="button" class="dash-link" data-nav="home-weight" style="margin-top:6px;">${ar?'سجّل وزنك':'Log your weight'}</button>`;
+  if(/^rare|^distinct/.test(metric)) metric='distinctCatchesThisMonth';
+  else if(/ThisMonth$/.test(metric)) metric=metric.replace('ThisMonth','ThisWeek');
   const m={
     workoutsThisWeek: P.workoutSetup?['workout',ar?'افتح التمرين':'Open training']:['workout',ar?'جهّز التمرين أول':'Set up training first'],
     nutritionDaysThisWeek: P.foodSetup?['food',ar?'افتح الأكل':'Open nutrition']:['food',ar?'جهّز الأكل أول':'Set up your diet first'],
@@ -7196,24 +7298,41 @@ function challengeActionLink(metric){
   }[metric];
   return m?`<button type="button" class="dash-link" data-nav="${m[0]}" style="margin-top:6px;">${m[1]}</button>`:'';
 }
+let challengesTab='week';
 async function renderChallengesSection(){
   const list=document.getElementById('challengesList');
   list.innerHTML=`<div class="dash-empty">…</div>`;
   const {progress}=await checkAndAwardChallenges(); // also awards+persists any just-completed challenge
-  list.innerHTML=CHALLENGES_CONFIG.map(c=>{
+  const ar=LANG==='ar';
+  const inTab=CHALLENGES_CONFIG.filter(c=>c.period===challengesTab);
+  const doable=inTab.filter(challengeNeedsMet);
+  const doneN=doable.filter(c=>{ const st=P.challengeState[c.id+'|'+currentPeriodKey(c.period)]; return st&&st.completed; }).length;
+  const now=new Date();
+  const daysLeft = challengesTab==='week' ? 7-todayWeekdayIndex() : (new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1);
+  const cardHtml=c=>{
     const key=c.id+'|'+currentPeriodKey(c.period);
     const state=P.challengeState[key];
     const completed=!!(state&&state.completed);
     const value=Math.min(c.target, completed?(state.value||c.target):(progress[c.metric]||0));
     const pct=Math.round(value/c.target*100);
     const name=LANG==='ar'?c.nameAr:c.nameEn;
-    return `<div class="challenge-card${completed?' completed':''}">
+    return `<div class="challenge-card${completed?' completed':''}${challengeNeedsMet(c)?'':' needs-setup'}">
       <div class="challenge-head"><div class="challenge-name">${c.icon} ${name}</div><div class="challenge-xp-badge">+${c.xp} XP${c.coins?' · +'+c.coins+' 🪙':''}</div></div>
       <div class="challenge-bar-track"><div class="challenge-bar-fill" style="width:${pct}%;"></div></div>
       <div class="challenge-progress-label">${completed?t('challenge_completed'):t('challenge_progress').replace('{cur}',value).replace('{target}',c.target)}</div>
-      ${completed?'':challengeActionLink(c.metric)}
+      ${completed?'':challengeActionLink(c.metric, c)}
     </div>`;
-  }).join('') || `<div class="dash-empty">${t('challenges_empty')}</div>`;
+  };
+  const tabs=`<div class="ch-tabs"><button type="button" class="ch-tab${challengesTab==='week'?' active':''}" data-cht="week">${ar?'هذا الأسبوع':'This week'}</button><button type="button" class="ch-tab${challengesTab==='month'?' active':''}" data-cht="month">${ar?'هذا الشهر':'This month'}</button></div>
+    <p class="ch-summary">${ar?`خلصت ${doneN} من ${doable.length} · باقي ${daysLeft} ${daysLeft===1?'يوم':'أيام'}`:`${doneN} of ${doable.length} done · ${daysLeft} day${daysLeft===1?'':'s'} left`}</p>`;
+  const sections=Object.keys(CHALLENGE_CATS).map(cat=>{
+    const items=inTab.filter(c=>c.cat===cat); if(!items.length) return '';
+    // doable first, then the ones waiting on a setup
+    items.sort((a,b)=>(challengeNeedsMet(b)?1:0)-(challengeNeedsMet(a)?1:0));
+    return `<div class="ch-section-title">${CHALLENGE_CATS[cat][LANG]}</div>`+items.map(cardHtml).join('');
+  }).join('');
+  list.innerHTML=tabs+(sections||`<div class="dash-empty">${t('challenges_empty')}</div>`);
+  list.querySelectorAll('[data-cht]').forEach(b=>b.addEventListener('click',()=>{ challengesTab=b.dataset.cht; playSfx&&playSfx('tap'); renderChallengesSection(); }));
 }
 
 /* ================= FRIENDS ARCHITECTURE (real Firebase Auth + Firestore) =================
@@ -8368,7 +8487,7 @@ function renderHomeDietTrainingPreview(){
   // delegate below) — no more separate half-click zones.
 }
 function getHomeChallengesPreview(progress){
-  const active=CHALLENGES_CONFIG.map(c=>{
+  const active=CHALLENGES_CONFIG.filter(challengeNeedsMet).map(c=>{
     const key=c.id+'|'+currentPeriodKey(c.period);
     const state=(P.challengeState||{})[key];
     if(state&&state.completed) return null;
@@ -8543,49 +8662,112 @@ document.querySelectorAll('#dashboardSummary .dash-mini[data-goto]').forEach(el=
    lives in P.habits (part of the profile, like foodSetup/workoutSetup).
    Streaks are computed from real historical daily-track docs, never faked. */
 function habitLabelText(h){ return (typeof h.label==='object') ? (h.label[LANG]||h.label.en) : h.label; }
+/* sound effects — replaced by the real synth further down (batch 3) */
+function playSfx(kind){}
+/* ---- habit quick-adds. A group (the five prayers) is several habits that
+   share `group`, shown together as one row of five buttons; each prayer is
+   still its own habit with its own streak/XP, so nothing else changes. */
+const HABIT_SUGGESTIONS=[
+  {key:'prayers', icon:'🕌', ar:'الصلوات الخمس', en:'Five daily prayers', group:'prayers', items:[
+    {id:'h_pray_fajr',label:{ar:'الفجر',en:'Fajr'}},{id:'h_pray_dhuhr',label:{ar:'الظهر',en:'Dhuhr'}},{id:'h_pray_asr',label:{ar:'العصر',en:'Asr'}},
+    {id:'h_pray_maghrib',label:{ar:'المغرب',en:'Maghrib'}},{id:'h_pray_isha',label:{ar:'العشاء',en:'Isha'}}]},
+  {key:'quran', icon:'📖', items:[{id:'h_quran',label:{ar:'📖 ورد القرآن',en:'📖 Quran reading'}}]},
+  {key:'adhkar', icon:'📿', items:[{id:'h_adhkar_am',label:{ar:'📿 أذكار الصباح',en:'📿 Morning adhkar'}},{id:'h_adhkar_pm',label:{ar:'📿 أذكار المساء',en:'📿 Evening adhkar'}}]},
+  {key:'read', icon:'📚', items:[{id:'h_read10',label:{ar:'📚 قراءة ١٠ صفحات',en:'📚 Read 10 pages'}}]},
+  {key:'walk', icon:'🚶', items:[{id:'h_walk',label:{ar:'🚶 مشي ٢٠ دقيقة',en:'🚶 Walk 20 minutes'}}]},
+  {key:'sleep', icon:'😴', items:[{id:'h_sleep',label:{ar:'😴 أنام قبل ١٢',en:'😴 Asleep before midnight'}}]},
+  {key:'stretch', icon:'🧘', items:[{id:'h_stretch',label:{ar:'🧘 استرتش ١٠ دقايق',en:'🧘 Stretch 10 minutes'}}]},
+  {key:'nophone', icon:'📵', items:[{id:'h_nophone',label:{ar:'📵 بدون جوال ساعة قبل النوم',en:'📵 No phone an hour before bed'}}]},
+  {key:'veg', icon:'🥗', items:[{id:'h_veg',label:{ar:'🥗 خضار مع وجبة',en:'🥗 Vegetables with a meal'}}]},
+];
+const HABIT_GROUP_NAMES={ prayers:{icon:'🕌', ar:'الصلوات', en:'Prayers'} };
+function prayerHabitIds(){ return (P.habits||[]).filter(h=>h.group==='prayers').map(h=>h.id); }
+function renderHabitSuggestions(){
+  const box=document.getElementById('habitSuggestions'); if(!box) return;
+  const have=new Set((P.habits||[]).map(h=>h.id));
+  const left=HABIT_SUGGESTIONS.filter(sg=>sg.items.some(it=>!have.has(it.id)));
+  document.getElementById('habitSuggestCard').classList.toggle('hidden',!left.length);
+  box.innerHTML=left.map(sg=>`<button type="button" data-sg="${sg.key}">➕ ${sg.group?sg.icon+' '+(LANG==='ar'?sg.ar:sg.en):habitLabelText(sg.items[0])+(sg.items.length>1?' +'+(sg.items.length-1):'')}</button>`).join('');
+  box.querySelectorAll('[data-sg]').forEach(b=>b.addEventListener('click',async()=>{
+    const sg=HABIT_SUGGESTIONS.find(x=>x.key===b.dataset.sg);
+    P.habits=P.habits||[];
+    sg.items.forEach(it=>{ if(!P.habits.some(h=>h.id===it.id)) P.habits.push({...it,label:{...it.label},...(sg.group?{group:sg.group}:{})}); });
+    playSfx&&playSfx('success');
+    await storageSet('profile',JSON.stringify(P));
+    renderHabits(); renderHabitSuggestions();
+  }));
+}
+/* counts that feed the habit achievements/challenges; bumped once per habit
+   per day (same guard as the XP), plus one "perfect day" when all are done */
+function noteHabitCheck(justEarned){
+  migrateProgressionFields();
+  const L=P.lifetimeStats; let changed=false;
+  if(justEarned){ L.habitChecks=(L.habitChecks||0)+1; changed=true; }
+  const habits=P.habits||[];
+  const allDone=habits.length>0 && habits.every(h=>dailyTrack.habits&&dailyTrack.habits[h.id]);
+  dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
+  if(allDone && !dailyTrack.xpAwarded.perfectHabits){ dailyTrack.xpAwarded.perfectHabits=true; L.perfectHabitDays=(L.perfectHabitDays||0)+1; changed=true;
+    showToast(LANG==='ar'?'🌟 يوم مثالي — خلصت كل عاداتك!':'🌟 Perfect day — every habit done!'); playSfx&&playSfx('fanfare'); }
+  return changed;
+}
+function toggleHabitToday(h,paint){
+  dailyTrack.habits=dailyTrack.habits||{};
+  const nowDone=!dailyTrack.habits[h.id];
+  dailyTrack.habits[h.id]=nowDone;
+  paint(nowDone);
+  playSfx&&playSfx(nowDone?'check':'uncheck');
+  dailyTrack.xpAwarded=dailyTrack.xpAwarded||{}; dailyTrack.xpAwarded.habits=dailyTrack.xpAwarded.habits||{};
+  const justEarnedXp = nowDone && !dailyTrack.xpAwarded.habits[h.id];
+  if(justEarnedXp) dailyTrack.xpAwarded.habits[h.id]=true;
+  const countersChanged=noteHabitCheck(justEarnedXp);
+  (async()=>{
+    await saveDailyTrack();
+    if(countersChanged) await storageSet('profile',JSON.stringify(P));
+    if(justEarnedXp){ await awardXP(XP_CONFIG.habit_complete); await saveDailyTrack(); }
+    await notifyNewUnlocks();
+    renderHabits();
+  })();
+}
 function renderHabits(){
   if(P.firstRun&&P.firstRun.active) renderFirstRunCard(); // ticks the "first habit" step the moment it's checked
   const list=document.getElementById('dashHabitsList'); if(!list) return;
   const habits=P.habits||[];
+  const titleEl=document.getElementById('dashHabitsTitle');
+  if(titleEl){ const n=habits.filter(h=>dailyTrack.habits&&dailyTrack.habits[h.id]).length; titleEl.innerHTML=`${escapeHtml(t('dash_habits_title'))}${habits.length?`<span class="habit-count num">${n}/${habits.length}</span>`:''}`; }
+  renderHabitSuggestions();
   if(!habits.length){
     list.innerHTML=`<div class="dash-empty">${LANG==='ar'?'ضيف عادة تبي تتابعها':'Add a habit to start tracking it'}</div>`;
     return;
   }
   list.innerHTML='';
+  const seenGroups=new Set();
   habits.forEach(h=>{
+    if(h.group){
+      if(seenGroups.has(h.group)) return; seenGroups.add(h.group);
+      const members=habits.filter(x=>x.group===h.group), gname=HABIT_GROUP_NAMES[h.group]||{icon:'✅',ar:h.group,en:h.group};
+      const box=document.createElement('div'); box.className='habit-group';
+      box.innerHTML=`<div class="habit-group-head"><span class="habit-group-name">${gname.icon} ${LANG==='ar'?gname.ar:gname.en}</span><span class="habit-streak" id="habitGroupStreak_${h.group}"></span><button type="button" class="habit-remove">✕</button></div>
+        <div class="habit-pills">${members.map(m=>{ const d=!!(dailyTrack.habits&&dailyTrack.habits[m.id]); return `<button type="button" class="habit-pill${d?' done':''}" data-hid="${m.id}"><span class="ck">${d?'✓':''}</span>${escapeHtml(habitLabelText(m))}</button>`; }).join('')}</div>`;
+      box.querySelectorAll('.habit-pill').forEach(btn=>btn.addEventListener('click',()=>{
+        const m=members.find(x=>x.id===btn.dataset.hid);
+        toggleHabitToday(m,done=>{ btn.classList.toggle('done',done); btn.querySelector('.ck').textContent=done?'✓':''; });
+      }));
+      box.querySelector('.habit-remove').addEventListener('click',async e=>{
+        e.stopPropagation();
+        if(!confirm(t('confirm_remove_habit'))) return;
+        P.habits=(P.habits||[]).filter(x=>x.group!==h.group);
+        await storageSet('profile',JSON.stringify(P)); renderHabits();
+      });
+      list.appendChild(box);
+      return;
+    }
     const done=!!(dailyTrack.habits&&dailyTrack.habits[h.id]);
     const row=document.createElement('div');
     row.className='habit-row'+(done?' done':'');
     row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${escapeHtml(habitLabelText(h))}</div><div class="habit-streak" id="habitStreak_${h.id}"></div><button type="button" class="habit-remove">✕</button>`;
     row.addEventListener('click',(e)=>{
       if(e.target.closest('.habit-remove')) return;
-      // optimistic: flip the in-memory state and repaint THIS row immediately,
-      // synchronously, before anything touches the network — the person
-      // sees their tap register instantly. Saving/XP/achievements happen in
-      // the background afterward and never block or delay the checkmark.
-      dailyTrack.habits=dailyTrack.habits||{};
-      const nowDone=!dailyTrack.habits[h.id];
-      dailyTrack.habits[h.id]=nowDone;
-      row.classList.toggle('done',nowDone);
-      row.querySelector('.habit-box').textContent=nowDone?'✓':'';
-      // XP guard flag is also set synchronously, right here — so a second
-      // rapid click (while the first click's save is still in flight below)
-      // sees it already claimed and can never double-award, and two
-      // overlapping saves can never leave habits/xpAwarded inconsistent
-      // with each other since each save snapshots the whole (already
-      // fully-updated) dailyTrack object at call time, not at completion.
-      dailyTrack.xpAwarded=dailyTrack.xpAwarded||{}; dailyTrack.xpAwarded.habits=dailyTrack.xpAwarded.habits||{};
-      const justEarnedXp = nowDone && !dailyTrack.xpAwarded.habits[h.id];
-      if(justEarnedXp) dailyTrack.xpAwarded.habits[h.id]=true;
-      (async()=>{
-        await saveDailyTrack();
-        if(justEarnedXp){
-          await awardXP(XP_CONFIG.habit_complete);
-          await saveDailyTrack();
-          await notifyNewUnlocks();
-        }
-        renderHabits(); // refreshes streak counts once the background work settles — never blocks the initial checkmark above
-      })();
+      toggleHabitToday(h,nowDone=>{ row.classList.toggle('done',nowDone); row.querySelector('.habit-box').textContent=nowDone?'✓':''; });
     });
     row.querySelector('.habit-remove').addEventListener('click',async(e)=>{
       e.stopPropagation();
@@ -8604,13 +8786,18 @@ function renderHabits(){
       if(!el) return;
       const n=streaks[h.id]||0;
       el.textContent = n>0 ? `🔥${n}` : '';
+      el.classList.toggle('pending',!!habitStreakPending[h.id]);
+      el.title = habitStreakPending[h.id] ? (LANG==='ar'?'علّمها اليوم عشان ما تنقطع':'Check it today to keep it going') : '';
     });
+    const pids=prayerHabitIds();
+    const prayerStreak=pids.length?Math.min(...pids.map(id=>streaks[id]||0)):0;
+    const gEl=document.getElementById('habitGroupStreak_prayers'); if(gEl) gEl.textContent=prayerStreak>0?`🔥${prayerStreak}`:'';
     const bestNow=Math.max(0,...Object.values(streaks));
     migrateProgressionFields();
-    if(bestNow>(P.lifetimeStats.longestHabitStreakEver||0)){
-      P.lifetimeStats.longestHabitStreakEver=bestNow;
-      await storageSet('profile',JSON.stringify(P));
-    }
+    let changed=false;
+    if(bestNow>(P.lifetimeStats.longestHabitStreakEver||0)){ P.lifetimeStats.longestHabitStreakEver=bestNow; changed=true; }
+    if(prayerStreak>(P.lifetimeStats.longestPrayerStreak||0)){ P.lifetimeStats.longestPrayerStreak=prayerStreak; changed=true; }
+    if(changed){ await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); }
   });
   renderHabitsYesterdayToggle();
 }
@@ -8883,14 +9070,18 @@ async function renderHabitsYesterdayList(){
    has a catch-up editor), so they're cached after the first read. This ran
    on every water/habit tap and re-downloaded up to 60 docs each time. */
 const pastDayDocCache={};
+/* habits not ticked yet TODAY aren't broken — the streak still counts back
+   from yesterday and is shown as "at risk" until the day ends */
+let habitStreakPending={};
 async function computeHabitStreaks(){
   const habits=P.habits||[];
   const streaks={}; habits.forEach(h=>streaks[h.id]=0);
+  habitStreakPending={};
   if(!habits.length) return streaks;
   let stillCounting=new Set(habits.map(h=>h.id));
   habits.forEach(h=>{
     if(dailyTrack.habits&&dailyTrack.habits[h.id]) streaks[h.id]++;
-    else stillCounting.delete(h.id);
+    else habitStreakPending[h.id]=true;
   });
   for(let back=1;back<=60&&stillCounting.size;back++){
     const d=new Date(); d.setDate(d.getDate()-back);
