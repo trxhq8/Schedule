@@ -463,6 +463,28 @@ body.app-bg-active .home-todo-wrap, body.app-bg-active .dash-card, body.app-bg-a
 body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(in srgb, var(--card) 92%, transparent); border-radius:999px; padding:6px 14px; }
 .coll-species-card .boss-gift{ position:absolute; bottom:6px; inset-inline-end:6px; font-size:0.9rem; z-index:2; }
 
+
+  /* ---- wave 1: shields, chest, recap ---- */
+  .chest-card{ display:flex; align-items:center; gap:12px; margin:10px 0 4px; padding:12px 14px; border-radius:16px; border:1.5px solid #f5b83d; background:linear-gradient(90deg,rgba(245,184,61,.16),rgba(255,236,170,.26)); cursor:pointer; width:100%; font:inherit; color:var(--ink); text-align:start; }
+  .chest-card .chest-ic{ font-size:2rem; }
+  .chest-card.ready .chest-ic{ animation:chestWiggle 1.6s ease-in-out infinite; }
+  .chest-card.locked{ border-style:dashed; background:var(--bg); cursor:default; opacity:.85; }
+  .chest-card b{ font-family:var(--font-head); color:var(--heading); }
+  @keyframes chestWiggle{ 0%,70%,100%{ transform:rotate(0) scale(1); } 76%{ transform:rotate(-12deg) scale(1.1); } 82%{ transform:rotate(12deg) scale(1.1); } 88%{ transform:rotate(-6deg); } }
+  .chest-open{ text-align:center; padding:6px 0 4px; }
+  .chest-open .burst{ font-size:3.2rem; animation:chestPop .6s cubic-bezier(.2,1.6,.4,1) both; }
+  .chest-open .loot{ font-family:var(--font-head); font-weight:800; font-size:1.25rem; color:var(--heading); margin-top:6px; }
+  @keyframes chestPop{ 0%{ transform:scale(.2) rotate(-20deg); opacity:0; } 100%{ transform:scale(1) rotate(0); opacity:1; } }
+  .shield-pill{ display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:999px; background:rgba(59,130,246,.14); color:var(--heading); margin-inline-start:6px; }
+  .pu-card{ display:flex; gap:14px; align-items:center; background:var(--card); border:1.5px solid #3b82f6; border-radius:16px; padding:16px; box-shadow:var(--shadow); }
+  .pu-card .pu-ic{ font-size:2.4rem; }
+  .pu-card .pu-body{ flex:1; }
+  .pu-card h3{ margin:0 0 4px; font-size:1rem; color:var(--heading); }
+  .pu-card p{ margin:0 0 8px; font-size:0.8rem; color:var(--ink-soft); line-height:1.6; }
+  .recap-preview{ width:100%; border-radius:14px; border:1px solid var(--line); margin:10px 0; display:block; }
+  .recap-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .recap-actions .setup-btn{ flex:1; min-width:120px; margin:0; }
+  .recap-prompt{ display:flex; align-items:center; gap:10px; margin-top:12px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1114,6 +1136,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
     <button type="button" class="setup-chip hidden" id="firstRunChip"></button>
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
+    <div id="homeRecapPrompt"></div>
     <div class="home-grid" id="homeGrid">
     <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
     <div class="dash-card home-section" id="homeSchedulePreview"></div>
@@ -1127,6 +1150,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="dash-card-title"><span id="homeTodoTitle"></span><span id="homeTodoProgressLabel" class="num" style="font-weight:700;"></span></div>
       <div class="home-todo-sub" id="homeTodoSub"></div>
       <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
+      <div id="homeChest"></div>
     <div id="dashboardSummary">
       <div id="homeHabitsSlot">
       <div class="dash-card" id="habitsCard">
@@ -1529,6 +1553,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel" id="panel-progress">
     <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
     <div class="setup-card" id="weekReviewCard"></div>
+    <div class="setup-card" id="recapCard"></div>
     <div class="setup-card">
       <h3 id="progressWeightTitle"></h3>
       <div class="chart-box"><svg id="progressWeightChart" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"></svg></div>
@@ -1823,6 +1848,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <button type="button" class="social-tab" data-store-tab="frame" data-i18n="store_tab_frames"></button>
       <button type="button" class="social-tab" data-store-tab="effect" data-i18n="store_tab_effects"></button>
       <button type="button" class="social-tab" data-store-tab="title" data-i18n="store_tab_titles"></button>
+      <button type="button" class="social-tab" data-store-tab="powerups" data-i18n="store_tab_powerups"></button>
     </div>
     <div id="storeContent"></div>
   </section>
@@ -2017,7 +2043,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.37.1';
+const APP_VERSION='v1.38.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2296,6 +2322,7 @@ async function bootApp(){
   migrateProgressionFields();
   await migrateRewardValuesV2();
   migrateRetiredCosmetics();
+  autoUseShield();
   renderAppBackground();
   migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
   // publish your look + collection for friends once, without waiting for the next completed action
@@ -2843,6 +2870,8 @@ Object.assign(I18N.ar,{ habit_suggest_title:'➕ أضف بسرعة' });
 Object.assign(I18N.en,{ habit_suggest_title:'➕ Quick add' });
 Object.assign(I18N.ar,{ ui_sound_label:'🔈 أصوات الأزرار والأفعال' });
 Object.assign(I18N.en,{ ui_sound_label:'🔈 Button & action sounds' });
+Object.assign(I18N.ar,{ store_tab_powerups:'🛡️ تعزيزات' });
+Object.assign(I18N.en,{ store_tab_powerups:'🛡️ Power-ups' });
 Object.assign(I18N.en,{
   progress_weight_empty:'Log your weight on Home each day to see a trend here.',
   daily_routine_title:'🔁 Recurring commitments (add / edit)',
@@ -3365,6 +3394,171 @@ function renderGuestNote(){
     try{ await currentUser.linkWithCredential(firebase.auth.EmailAuthProvider.credential(email,pw)); await done(); }catch(e){ fail(e); }
   };
 }
+
+/* ================= STREAK SHIELDS =================
+   Duolingo-style freeze: a shield protects ONE missed day for every streak
+   (workout, water, nutrition, habits). Bought with coins in Store ›
+   Power-ups (max 2 held) or found in a perfect-day chest. It is used
+   automatically the morning after a missed day, only if a streak of 3+ was
+   actually at stake. Count lives in an atomic top-level field (`shields`)
+   like coins, so two devices can't double-spend. */
+const SHIELD_PRICE=250, SHIELD_MAX=2;
+function frozenDay(key){ return !!(P.frozenDays&&P.frozenDays[key]); }
+function changeShields(delta){
+  P.streakShields=Math.max(0,(P.streakShields||0)+delta);
+  if(fbDb&&currentUser){ try{ fsDataRef('profile').set({shields:firebase.firestore.FieldValue.increment(delta)},{merge:true}).catch(()=>{}); }catch(e){} }
+}
+async function buyShield(){
+  await refreshAuthoritativeProfileFields();
+  if((P.streakShields||0)>=SHIELD_MAX) throw new Error(LANG==='ar'?'عندك الحد الأقصى (٢)':'You already hold the maximum (2)');
+  if((P.coins||0)<SHIELD_PRICE) throw new Error(t('store_not_enough'));
+  P.coins-=SHIELD_PRICE; changeShields(1); playSfx('coin');
+  await storageSet('profile',JSON.stringify(P));
+  await incrementXpCoins(0,-SHIELD_PRICE);
+}
+/* the morning after: was a streak of 3+ about to break yesterday? */
+async function autoUseShield(){
+  const todayK=dateKeyOf(new Date());
+  if(P._shieldCheck===todayK) return; P._shieldCheck=todayK;
+  const y=yesterdayDateObj(), yk=dateKeyOf(y);
+  if(frozenDay(yk)||!(P.streakShields>0)||!yesterdayCatchUpAllowed()) return;
+  let yDoc=null; try{ const v=await storageGet(yesterdayTrackKey()); yDoc=v?JSON.parse(v):{}; }catch(e){ return; }
+  const st=P.streaks||{}; let atStake=false;
+  const ws=P.workoutSetup;
+  if(ws && workoutTypeForDate(y,ws)!=='rest' && !yDoc.workoutDone && (st.workout&&st.workout.current>=3)) atStake=true;
+  if((st.water&&st.water.current>=3) && !(yDoc.xpAwarded&&yDoc.xpAwarded.water)) atStake=true;
+  if((st.nutrition&&st.nutrition.current>=3) && !(yDoc.xpAwarded&&yDoc.xpAwarded.nutrition) && P.foodSetup) atStake=true;
+  const habits=P.habits||[];
+  if(habits.length && (P._bestHabitStreakNow||0)>=3 && !habits.every(h=>yDoc.habits&&yDoc.habits[h.id])) atStake=true;
+  if(!atStake) return;
+  P.frozenDays=P.frozenDays||{}; P.frozenDays[yk]=true; changeShields(-1);
+  await storageSet('profile',JSON.stringify(P));
+  showToast(LANG==='ar'?'🛡️ درعك حمى سلاسلك أمس — ما انقطعت':'🛡️ A shield covered yesterday — your streaks are safe');
+}
+
+/* ================= PERFECT-DAY CHEST =================
+   Finish everything in "Today's health" and a chest appears; open it once a
+   day. The roll is seeded by date+account, so reloading can't re-roll it. */
+function chestRoll(){
+  const seed=hashSeed(dateKeyOf(new Date())+'|'+(currentUser?currentUser.uid:'x')+'|chest');
+  const r=seededRandom(seed)();
+  if(r<0.10) return (P.streakShields||0)<SHIELD_MAX?{kind:'shield'}:{kind:'coins',n:150};
+  if(r<0.30) return {kind:'coins',n:80+Math.floor(r*130)};
+  return {kind:'coins',n:25+Math.floor(r*50)};
+}
+async function renderHomeChest(){
+  const box=document.getElementById('homeChest'); if(!box) return;
+  const pr=await computeHomeTodoProgress();
+  // the daily weigh-in counts toward "Today's health" but not toward the chest
+  const wl=await isWeightLoggedForDate(new Date());
+  const total=pr.total-1, done=pr.done-(wl?1:0);
+  const opened=!!(dailyTrack.xpAwarded&&dailyTrack.xpAwarded.chest);
+  const ar=LANG==='ar';
+  if(!total){ box.innerHTML=''; return; }
+  if(opened){ box.innerHTML=''; return; }
+  if(done<total){
+    box.innerHTML=`<div class="chest-card locked"><span class="chest-ic">🔒</span><span>${ar?`خلّص <b class="num">${total-done}</b> باقية وتفتح صندوق اليوم 🎁`:`Finish <b class="num">${total-done}</b> more to open today’s chest 🎁`}</span></div>`;
+    return;
+  }
+  box.innerHTML=`<button type="button" class="chest-card ready" id="chestOpenBtn"><span class="chest-ic">🎁</span><span><b>${ar?'يوم مثالي!':'Perfect day!'}</b><br>${ar?'اضغط وافتح صندوقك':'Tap to open your chest'}</span></button>`;
+  document.getElementById('chestOpenBtn').onclick=openChest;
+}
+async function openChest(){
+  dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
+  if(dailyTrack.xpAwarded.chest) return;
+  dailyTrack.xpAwarded.chest=true; // claimed before any await: a double tap can't open it twice
+  const loot=chestRoll(), ar=LANG==='ar';
+  await saveDailyTrack();
+  if(loot.kind==='shield'){ changeShields(1); await storageSet('profile',JSON.stringify(P)); }
+  else { await awardCoins(loot.n); }
+  playSfx('fanfare');
+  document.getElementById('dayTitle').textContent=ar?'🎁 صندوق اليوم':'🎁 Today’s chest';
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`<div class="chest-open"><div class="burst">${loot.kind==='shield'?'🛡️':'🪙'}</div>
+    <div class="loot">${loot.kind==='shield'?(ar?'درع سلسلة!':'A streak shield!'):`+${loot.n} ${ar?'عملة':'coins'}`}</div>
+    <p class="panel-sub">${loot.kind==='shield'?(ar?'يحمي سلاسلك يوم واحد لو نسيت.':'It protects your streaks for one missed day.'):(ar?'صرفها بالمتجر على خلفيات وإطارات.':'Spend them in the Store.')}</p></div>`;
+  document.getElementById('overlay').classList.add('open');
+  renderHomeChest(); renderNavXpChip();
+}
+
+/* ================= MONTHLY RECAP (shareable card) ================= */
+async function computeMonthRecap(y,m){
+  const now=new Date(); const last=(y===now.getFullYear()&&m===now.getMonth())?now.getDate():new Date(y,m+1,0).getDate();
+  const days=Array.from({length:last},(_,i)=>new Date(y,m,i+1));
+  const docs=await Promise.all(days.map(trackDocFor));
+  const tt=tallyDocs(docs);
+  let fish=0;
+  for(const cat of ANIMAL_CATEGORIES){ let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
+    Object.values(data).forEach(rec=>{ if(rec&&rec.catches&&rec.catches.some(c=>{ const d=new Date(c.date); return d.getFullYear()===y&&d.getMonth()===m; })) fish++; }); }
+  const wl=(weightLog||[]).filter(e=>e.isoDate&&e.isoDate.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).sort((a,b)=>a.isoDate<b.isoDate?-1:1);
+  const weightDelta=wl.length>=2?(wl[wl.length-1].kg-wl[0].kg):null;
+  const st=P.streaks||{}; const best=Math.max(0,...Object.values(st).map(s=>(s&&s.longest)||0), P.lifetimeStats&&P.lifetimeStats.longestHabitStreakEver||0);
+  return {...tt, fish, weightDelta, best, days:last};
+}
+async function drawRecapCanvas(y,m){
+  const r=await computeMonthRecap(y,m), ar=LANG==='ar';
+  try{ await document.fonts.ready; }catch(e){}
+  const W=1080,H=1350, c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  const grad=g.createLinearGradient(0,0,W,H); grad.addColorStop(0,'#1b1150'); grad.addColorStop(.55,'#3b1a6e'); grad.addColorStop(1,'#0c5d79'); g.fillStyle=grad; g.fillRect(0,0,W,H);
+  for(let i=0;i<90;i++){ g.fillStyle=`rgba(255,255,255,${Math.random()*.7})`; g.beginPath(); g.arc(Math.random()*W,Math.random()*H*.5,Math.random()*2.2,0,7); g.fill(); }
+  const monthName=new Date(y,m,1).toLocaleDateString(ar?'ar-EG':'en-GB',{month:'long',year:'numeric'});
+  const name=String((P.publicProfile&&(P.publicProfile.displayName||P.publicProfile.username))||'');
+  g.direction=ar?'rtl':'ltr'; g.textAlign='center'; g.fillStyle='#fff';
+  g.font='800 64px Cairo, sans-serif'; g.fillText(ar?`شهري · ${monthName}`:`My ${monthName}`,W/2,150);
+  g.font='500 36px Tajawal, Cairo, sans-serif'; g.fillStyle='rgba(255,255,255,.8)'; if(name) g.fillText(name,W/2,210);
+  const items=[
+    ['💪',r.workouts,ar?'تمرين':'workouts'], ['🌟',r.perfect,ar?'يوم مثالي':'perfect days'],
+    ['🕌',r.prayers,ar?'يوم كل الصلوات':'days of all prayers'], ['✅',r.habitChecks,ar?'علامة عادات':'habit ticks'],
+    ['💧',r.water,ar?'يوم هدف الماء':'water-goal days'], ['🍽️',r.nutrition,ar?'يوم تغذية':'nutrition days'],
+    ['🔥',r.best,ar?'أفضل سلسلة':'best streak'], ['🐟',r.fish,ar?'نوع اصطدته':'species caught'],
+  ];
+  const cw=440, ch=210, gx=70, gy=270, gap=60;
+  items.forEach(([ic,val,lbl],i)=>{
+    const col=i%2, row=Math.floor(i/2), x=gx+col*(cw+gap), yy=gy+row*(ch+30);
+    g.fillStyle='rgba(255,255,255,.12)'; roundRect(g,x,yy,cw,ch,32); g.fill();
+    g.textAlign='center'; g.font='64px sans-serif'; g.fillStyle='#fff'; g.fillText(ic,x+cw/2,yy+80);
+    g.font='800 72px Cairo, sans-serif'; g.fillText(String(val),x+cw/2,yy+150);
+    g.font='500 30px Tajawal, Cairo, sans-serif'; g.fillStyle='rgba(255,255,255,.85)'; g.fillText(lbl,x+cw/2,yy+192);
+  });
+  g.textAlign='center'; g.fillStyle='rgba(255,255,255,.9)'; g.font='700 34px Cairo, sans-serif';
+  if(r.weightDelta!=null) g.fillText(`⚖️ ${r.weightDelta>0?'+':''}${r.weightDelta.toFixed(1)} ${ar?'كجم هالشهر':'kg this month'}`,W/2,1245);
+  g.font='600 28px Cairo, sans-serif'; g.fillStyle='rgba(255,255,255,.6)'; g.fillText('🗓️ مخططي · My Planner',W/2,1305);
+  return c;
+}
+function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+let recapMonthOffset=0;
+async function renderRecapCard(){
+  const card=document.getElementById('recapCard'); if(!card) return;
+  const ar=LANG==='ar', now=new Date(), d=new Date(now.getFullYear(),now.getMonth()-recapMonthOffset,1);
+  card.innerHTML=`<h3>${ar?'📸 ملخص شهرك':'📸 Your month recap'}</h3>
+    <div class="fc-chips"><button type="button" data-rm="0" class="${recapMonthOffset===0?'active':''}">${ar?'هذا الشهر':'This month'}</button><button type="button" data-rm="1" class="${recapMonthOffset===1?'active':''}">${ar?'الشهر اللي فات':'Last month'}</button></div>
+    <div class="dash-empty">…</div>`;
+  card.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ recapMonthOffset=+b.dataset.rm; renderRecapCard(); });
+  const canvas=await drawRecapCanvas(d.getFullYear(),d.getMonth());
+  const url=canvas.toDataURL('image/png');
+  card.querySelector('.dash-empty').outerHTML=`<img class="recap-preview" src="${url}" alt="recap"><div class="recap-actions">
+    <button type="button" class="setup-btn" id="recapShareBtn">📤 ${ar?'شارك':'Share'}</button>
+    <button type="button" class="setup-btn" id="recapSaveBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">⬇️ ${ar?'احفظ الصورة':'Save image'}</button></div>`;
+  const fname=`my-planner-${d.getFullYear()}-${d.getMonth()+1}.png`;
+  document.getElementById('recapSaveBtn').onclick=()=>{ const a=document.createElement('a'); a.href=url; a.download=fname; a.click(); };
+  document.getElementById('recapShareBtn').onclick=async()=>{
+    try{ const blob=await new Promise(res=>canvas.toBlob(res,'image/png')); const file=new File([blob],fname,{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})) await navigator.share({files:[file],title:'My Planner'});
+      else document.getElementById('recapSaveBtn').click();
+    }catch(e){ /* cancelled */ }
+  };
+}
+/* first days of a month: nudge on Home that last month's card is ready */
+function renderHomeRecapPrompt(){
+  const box=document.getElementById('homeRecapPrompt'); if(!box) return;
+  const now=new Date(), last=new Date(now.getFullYear(),now.getMonth()-1,1), key=`${last.getFullYear()}-${last.getMonth()+1}`;
+  const accountOld = !P.firstRun || !P.firstRun.startedAt || new Date(P.firstRun.startedAt) < last;
+  if(now.getDate()>5 || (P._recapSeen||{})[key] || !accountOld || (P.firstRun&&P.firstRun.active)){ box.innerHTML=''; return; }
+  const ar=LANG==='ar', nm=last.toLocaleDateString(ar?'ar-EG':'en-GB',{month:'long'});
+  box.innerHTML=`<div class="dash-card recap-prompt"><span style="font-size:1.8rem;">📸</span><div style="flex:1;"><b>${ar?`ملخص ${nm} جاهز`:`Your ${nm} recap is ready`}</b><div class="panel-sub" style="margin:0;">${ar?'شوف وش سويت وشاركه':'See what you did and share it'}</div></div><button type="button" class="dash-link" id="recapOpenBtn">${ar?'افتح':'Open'}</button></div>`;
+  document.getElementById('recapOpenBtn').onclick=()=>{ P._recapSeen={...(P._recapSeen||{}),[key]:true}; storageSet('profile',JSON.stringify(P)); recapMonthOffset=1; navTo('progress'); };
+}
+
 /* opens the recurring-commitments editor on the Schedule page */
 function openRoutineSetup(){
   const card=document.getElementById('todoSetupCard'); if(!card) return;
@@ -6171,6 +6365,7 @@ async function renderProgressSection(){
 
   await loadWeightLog();
   renderWeekReview();
+  renderRecapCard();
   const weightEmpty=document.getElementById('progressWeightEmpty');
   const weightStats=document.getElementById('progressWeightStats');
   const chartBox=document.getElementById('progressWeightChart').closest('.chart-box');
@@ -6438,13 +6633,12 @@ function updateNamedStreakForDate(key,targetDate){
   // BOTH the schedule saved at the last completion and the current one, so
   // re-marking a missed day as rest afterwards can't rescue the streak.
   const currentRest=(key==='workout'&&P.workoutSetup&&P.workoutSetup.restDays)||[];
-  if(key==='workout'){
-    const savedRest=Array.isArray(s.restDays)?s.restDays:currentRest;
-    for(let i=0;i<7&&dateKeyOf(dayBefore)!==s.lastDate;i++){
-      const wd=(dayBefore.getDay()+1)%7;
-      if(!(savedRest.includes(wd)&&currentRest.includes(wd))) break;
-      dayBefore.setDate(dayBefore.getDate()-1);
-    }
+  const savedRest=Array.isArray(s.restDays)?s.restDays:currentRest;
+  for(let i=0;i<7&&dateKeyOf(dayBefore)!==s.lastDate;i++){
+    const wd=(dayBefore.getDay()+1)%7;
+    const restOk = key==='workout' && savedRest.includes(wd) && currentRest.includes(wd);
+    if(!restOk && !frozenDay(dateKeyOf(dayBefore))) break; // a shielded day is neutral for every streak
+    dayBefore.setDate(dayBefore.getDate()-1);
   }
   s.current = (s.lastDate===dateKeyOf(dayBefore)) ? s.current+1 : 1;
   s.longest = Math.max(s.longest, s.current);
@@ -6505,6 +6699,7 @@ async function incrementXpCoins(deltaXp,deltaCoins){
   const updates={};
   if(deltaXp) updates.xp=firebase.firestore.FieldValue.increment(deltaXp);
   if(deltaCoins) updates.coins=firebase.firestore.FieldValue.increment(deltaCoins);
+  if(deltaXp>0){ const wk=currentPeriodKey('week'); P.weekXp={...(P.weekXp||{})}; P.weekXp[wk]=(P.weekXp[wk]||0)+deltaXp; updates.weekXp={[wk]:firebase.firestore.FieldValue.increment(deltaXp)}; }
   if(!Object.keys(updates).length) return;
   // not awaited, same reason as storageSet: the increment is applied to the
   // local cache immediately and queued durably; awaiting only waited for the
@@ -6535,6 +6730,9 @@ async function reconcileXpCoinsFromFirestore(){
       P.xp=data.xp||0;
       P.coins=data.coins||0;
     }
+    if(data.shields!==undefined) P.streakShields=Math.max(0,data.shields||0);
+    else if(P.streakShields) fsDataRef('profile').set({shields:P.streakShields},{merge:true}).catch(()=>{});
+    if(data.weekXp) P.weekXp={...(P.weekXp||{}),...data.weekXp};
     mergeCosmeticsFromServer(data,true);
   }catch(e){ console.warn('reconcile skipped:',e); /* offline/transient — blob-derived values remain the local fallback until the next successful boot */ }
 }
@@ -7519,6 +7717,17 @@ async function renderStoreSection(){
   });
   const content=document.getElementById('storeContent');
   if(storeActiveTab==='title'){ renderStoreTitlesTab(content); return; }
+  if(storeActiveTab==='powerups'){
+    const ar=LANG==='ar', have=P.streakShields||0, can=(P.coins||0)>=SHIELD_PRICE&&have<SHIELD_MAX;
+    content.innerHTML=`<div class="pu-card"><div class="pu-ic">🛡️</div><div class="pu-body"><h3>${ar?'درع السلسلة':'Streak shield'}</h3>
+      <p>${ar?'لو نسيت يوم، الدرع يشتغل لحاله ويحمي كل سلاسلك (تمرين، ماء، أكل، عادات) — بس إذا كانت سلسلة ٣ أيام أو أكثر بخطر.':'Miss a day and a shield switches on by itself, protecting every streak (workout, water, food, habits) — only when a streak of 3+ days is at stake.'}</p>
+      <p><b>${ar?`عندك ${have} من ${SHIELD_MAX}`:`You have ${have} of ${SHIELD_MAX}`}</b> · ${SHIELD_PRICE} 🪙</p>
+      <button type="button" class="cos-btn cos-btn-main primary" id="buyShieldBtn" ${can?'':'disabled'}>${have>=SHIELD_MAX?(ar?'وصلت الحد':'Maximum held'):(can?(ar?'اشتري درع':'Buy a shield'):t('store_not_enough'))}</button></div></div>
+      <p class="panel-sub" style="margin-top:12px;">${ar?'🎁 وأحياناً يطلع لك درع مجاني من صندوق اليوم المثالي.':'🎁 A perfect-day chest sometimes drops a free one.'}</p>`;
+    const bb=document.getElementById('buyShieldBtn');
+    if(bb) bb.onclick=async()=>{ bb.disabled=true; try{ await buyShield(); showToast(ar?'🛡️ اشتريت درع':'🛡️ Shield bought','success'); }catch(e){ showToast(e.message,'error'); } renderStoreSection(); };
+    return;
+  }
   const items=COSMETICS_CATALOG.filter(c=>c.type===storeActiveTab);
   content.innerHTML='';
   const rewards=items.filter(c=>c.exclusiveNote);
@@ -8685,6 +8894,7 @@ function refreshHome(){
   renderHomeCollectionPreview();
   renderNavXpChip();
   renderFirstRunCard();
+  renderHomeRecapPrompt();
 }
 function homeDateLabel(dateObj){
   const today=new Date();
@@ -8836,7 +9046,8 @@ async function computeHomeTodoProgress(){
 async function renderHomeTodoProgress(){
   const titleEl=document.getElementById('homeTodoTitle'); if(!titleEl) return;
   titleEl.textContent=t('home_todo_title');
-  const subEl=document.getElementById('homeTodoSub'); if(subEl) subEl.textContent=t('home_todo_sub');
+  const subEl=document.getElementById('homeTodoSub'); if(subEl) subEl.innerHTML=escapeHtml(t('home_todo_sub'))+((P.streakShields||0)>0?`<span class="shield-pill" title="${LANG==='ar'?'دروع السلاسل':'Streak shields'}">🛡️ ${P.streakShields}</span>`:'');
+  renderHomeChest();
   const {done,total}=await computeHomeTodoProgress();
   document.getElementById('homeTodoProgressLabel').textContent=total?`${done} / ${total}`:'';
   document.getElementById('homeTodoBarFill').style.width=(total?Math.round(done/total*100):0)+'%';
@@ -9252,6 +9463,7 @@ function renderHabits(){
     const prayerStreak=pids.length?Math.min(...pids.map(id=>streaks[id]||0)):0;
     const gEl=document.getElementById('habitGroupStreak_prayers'); if(gEl) gEl.textContent=prayerStreak>0?`🔥${prayerStreak}`:'';
     const bestNow=Math.max(0,...Object.values(streaks));
+    P._bestHabitStreakNow=bestNow;
     migrateProgressionFields();
     let changed=false;
     if(bestNow>(P.lifetimeStats.longestHabitStreakEver||0)){ P.lifetimeStats.longestHabitStreakEver=bestNow; changed=true; }
@@ -9545,6 +9757,7 @@ async function computeHabitStreaks(){
   for(let back=1;back<=60&&stillCounting.size;back++){
     const d=new Date(); d.setDate(d.getDate()-back);
     const key=`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    if(frozenDay(dateKeyOf(d))) continue; // shielded day: the streak carries through it
     let doc=null;
     if(back>=2 && key in pastDayDocCache){ doc=pastDayDocCache[key]; }
     else{
