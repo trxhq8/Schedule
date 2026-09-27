@@ -541,6 +541,32 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .juz-grid button{ min-height:46px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); font:inherit; font-weight:800; cursor:pointer; color:var(--ink); }
   .juz-grid button.on{ background:#f5b83d; border-color:#f5b83d; color:#1a1300; }
   .frame-frame-fanous{ background:conic-gradient(from 0deg,#f5b83d,#fff3c4,#7a4bd8,#f5b83d); animation:cxSpinPlain 7s linear infinite; box-shadow:0 0 18px 4px rgba(245,184,61,0.6),0 0 30px rgba(122,75,216,.5); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); }
+
+  /* ---- wave 3: league, cheers, co-op boss ---- */
+  .lg-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:var(--bg); border:1px solid var(--line); margin-bottom:8px; }
+  .lg-row.me{ border-color:var(--gold); box-shadow:0 0 0 1.5px var(--gold) inset; }
+  .lg-rank{ font-family:var(--font-head); font-weight:800; width:28px; text-align:center; font-size:1.05rem; }
+  .lg-av{ font-size:1.5rem; }
+  .lg-name{ flex:1; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lg-xp{ font-family:var(--font-head); font-weight:800; color:var(--heading); }
+  .cheer-btn{ min-width:42px; min-height:42px; border-radius:12px; border:1px solid var(--line); background:var(--card); font-size:1.1rem; cursor:pointer; }
+  .cheer-btn.sent{ opacity:.45; }
+  .lg-note{ font-size:0.76rem; color:var(--ink-soft); margin:0 0 12px; }
+  .cheers-strip{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+  .boss-coop{ margin-bottom:14px; border:1.5px solid #e0323b; background:linear-gradient(135deg,#1c0f24,#3a1230 60%,#5a1426); color:#fff; overflow:hidden; position:relative; }
+  .boss-coop h3{ margin:0; color:#ffd0d0; font-family:var(--font-head); }
+  .boss-coop .bc-top{ display:flex; align-items:center; gap:12px; }
+  .boss-coop .bc-ic{ font-size:3rem; animation:bcFloat 3s ease-in-out infinite; }
+  .boss-coop.dead .bc-ic{ animation:none; filter:grayscale(1) opacity(.6); transform:rotate(180deg); }
+  @keyframes bcFloat{ 0%,100%{ transform:translateY(0) rotate(-4deg); } 50%{ transform:translateY(-6px) rotate(4deg); } }
+  .bc-hp{ height:14px; border-radius:999px; background:rgba(255,255,255,.15); overflow:hidden; margin:10px 0 4px; border:1px solid rgba(255,255,255,.25); }
+  .bc-hp > div{ height:100%; background:linear-gradient(90deg,#ff4d6d,#ff9a3d); transition:width .8s ease; }
+  .bc-sub{ font-size:0.76rem; opacity:.85; }
+  .bc-party{ margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+  .bc-party div{ display:flex; justify-content:space-between; font-size:0.8rem; background:rgba(255,255,255,.08); border-radius:10px; padding:6px 10px; }
+  .bc-how{ font-size:0.72rem; opacity:.8; margin-top:8px; line-height:1.6; }
+  .bc-claim{ margin-top:10px; width:100%; min-height:46px; border-radius:12px; border:none; background:#f5b83d; color:#1a1300; font:inherit; font-weight:800; cursor:pointer; }
+  .frame-frame-tidebreaker{ background:conic-gradient(from 0deg,#22d3ee,#e0f7ff,#0e7490,#67e8f9,#22d3ee); animation:cxSpinPlain 4.5s linear infinite; box-shadow:0 0 16px 3px rgba(34,211,238,0.6); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1195,6 +1221,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div id="homeRecapPrompt"></div>
     <div id="homeRamadan"></div>
+    <div id="homeCheers"></div>
     <div class="home-grid" id="homeGrid">
     <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
     <div class="dash-card home-section" id="homeSchedulePreview"></div>
@@ -1896,6 +1923,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-challenges">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2 data-i18n="challenges_title"></h2><p class="panel-sub" data-i18n="challenges_sub"></p></div>
+    <div id="coopBossCard"></div>
     <div id="challengesList"></div>
   </section>
 
@@ -1939,6 +1967,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       </div>
       <!-- Compete groups the three competitive views under one tab -->
       <div class="social-subtabs hidden" id="socialSubTabs">
+        <button type="button" class="social-subtab" data-tab="league" id="socialTabLeague"></button>
         <button type="button" class="social-subtab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
         <button type="button" class="social-subtab" data-tab="compare" id="socialTabCompare"></button>
         <button type="button" class="social-subtab" data-tab="challenges" id="socialTabChallenges"></button>
@@ -2103,7 +2132,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.39.0';
+const APP_VERSION='v1.40.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2384,6 +2413,7 @@ async function bootApp(){
   migrateRetiredCosmetics();
   autoUseShield();
   checkQadaForYesterday();
+  setTimeout(()=>{ claimLeagueIfDue().catch(()=>{}); },5000);
   renderAppBackground();
   migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
   // publish your look + collection for friends once, without waiting for the next completed action
@@ -3812,6 +3842,121 @@ function ramadanStats(){
   let bestFasts=0, bestJuz=0, bestTar=0;
   Object.values(P.ramadan||{}).forEach(r=>{ bestFasts=Math.max(bestFasts,Object.keys(r.fasts||{}).length); bestJuz=Math.max(bestJuz,Object.keys(r.juz||{}).length); bestTar=Math.max(bestTar,Object.keys(r.taraweeh||{}).length); });
   return {bestFasts,bestJuz,bestTar};
+}
+
+
+/* ================= SOCIAL WEEK (league · cheers · co-op boss) =================
+   Everything here rides on each person's own PUBLIC profile doc, which only
+   its owner writes and friends can already read — so it works with the
+   database rules that are live today. Weeks run Saturday→Friday like the
+   rest of the app. */
+function weekKeySat(offsetWeeks){
+  const d=datesForCurrentWeek()[0]; d.setDate(d.getDate()-7*(offsetWeeks||0));
+  return 'w'+isoDateStr(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function daysLeftInWeek(){ return 7-todayWeekdayIndex(); }
+let _friendsCache={at:0,list:null};
+async function friendsWithProfiles(force){
+  if(!PublicProfileService.hasProfile()) return [];
+  const ttl=(_friendsCache.list&&_friendsCache.list.length)?120000:15000; // an empty list is re-checked sooner
+  if(!force && _friendsCache.list && Date.now()-_friendsCache.at<ttl) return _friendsCache.list;
+  try{ const list=await FriendService.listFriends(); _friendsCache={at:Date.now(),list:list.filter(p=>!p.restricted)}; }catch(e){ _friendsCache={at:Date.now(),list:[]}; }
+  return _friendsCache.list;
+}
+/* weekly damage = what you actually did this week */
+const BOSS_DMG={workout:60, prayerDay:40, water:25, nutrition:25, habit:8, weight:10};
+async function myWeekDamage(){
+  const docs=await Promise.all(datesForCurrentWeek().map(trackDocFor)); const w=tallyDocs(docs);
+  return w.workouts*BOSS_DMG.workout+w.prayers*BOSS_DMG.prayerDay+w.water*BOSS_DMG.water+w.nutrition*BOSS_DMG.nutrition+w.habitChecks*BOSS_DMG.habit+w.weight*BOSS_DMG.weight;
+}
+async function socialWeekStats(){
+  const k=weekKeySat(0), pk=weekKeySat(1);
+  return { league:{key:k, xp:(P.weekXp||{})[k]||0, prevKey:pk, prevXp:(P.weekXp||{})[pk]||0}, boss:{key:k, dmg:await myWeekDamage()} };
+}
+function friendWeekXp(f,key){ const L=(f.stats||{}).league||{}; if(L.key===key) return L.xp||0; if(L.prevKey===key) return L.prevXp||0; return 0; }
+function friendWeekDmg(f,key){ const B=(f.stats||{}).boss||{}; return B.key===key?(B.dmg||0):0; }
+/* ---- league ---- */
+async function leagueStandings(key,fresh){
+  const fr=await friendsWithProfiles(fresh);
+  const me={uid:currentUser.uid, me:true, name:(P.publicProfile&&P.publicProfile.displayName)||'You', avatar:(P.publicProfile&&P.publicProfile.avatar)||'🙂', xp:(P.weekXp||{})[key]||0};
+  const rows=[me,...fr.map(f=>({uid:f.uid, name:f.displayName||f.username||'—', avatar:f.avatar||'🙂', xp:friendWeekXp(f,key)}))];
+  rows.sort((a,b)=>b.xp-a.xp);
+  return rows;
+}
+const LEAGUE_REWARD=[150,100,60];
+async function claimLeagueIfDue(){
+  const pk=weekKeySat(1); if(P._leagueClaimed===pk) return;
+  const rows=await leagueStandings(pk); P._leagueClaimed=pk;
+  const active=rows.filter(r=>r.xp>0);
+  const myRank=rows.findIndex(r=>r.me);
+  if(active.length>=2 && myRank>=0 && myRank<3 && rows[myRank].xp>0){
+    const n=LEAGUE_REWARD[myRank]; await awardCoins(n);
+    P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.leaguePodiums=(P.lifetimeStats.leaguePodiums||0)+1; if(myRank===0) P.lifetimeStats.leagueWins=(P.lifetimeStats.leagueWins||0)+1;
+    showToast(LANG==='ar'?`${['🥇','🥈','🥉'][myRank]} خلصت الأسبوع الماضي بالمركز ${myRank+1} — +${n} عملة`:`${['🥇','🥈','🥉'][myRank]} You finished last week #${myRank+1} — +${n} coins`); playSfx('fanfare');
+  }
+  await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks();
+}
+async function renderSocialLeagueTab(content){
+  const ar=LANG==='ar', k=weekKeySat(0);
+  content.innerHTML=`<div class="dash-empty">…</div>`;
+  PublicProfileService.syncStats();
+  const rows=await leagueStandings(k,true), today=dateKeyOf(new Date()), sent=P.cheersSent||{};
+  content.innerHTML=`<p class="lg-note">${ar?`🏆 دوري الأسبوع بين أصدقائك حسب الـXP — باقي ${daysLeftInWeek()} أيام. أول ٣ ياخذون ${LEAGUE_REWARD.join(' / ')} عملة.`:`🏆 This week’s friends league by XP — ${daysLeftInWeek()} days left. Top 3 win ${LEAGUE_REWARD.join(' / ')} coins.`}</p>`+
+    rows.map((r,i)=>`<div class="lg-row${r.me?' me':''}"><span class="lg-rank">${['🥇','🥈','🥉'][i]||i+1}</span><span class="lg-av">${safeAvatar(r.avatar)}</span><span class="lg-name">${escapeHtml(r.name)}${r.me?(ar?' (أنت)':' (you)'):''}</span><span class="lg-xp num">${r.xp} XP</span>${r.me?'':`<button type="button" class="cheer-btn${sent[r.uid]===today?' sent':''}" data-cheer="${r.uid}" aria-label="cheer">👏</button>`}</div>`).join('')+
+    (rows.length<2?`<div class="dash-empty">${ar?'ضيف أصدقاء عشان تتنافسون 👥':'Add friends to compete 👥'}</div>`:'');
+  content.querySelectorAll('[data-cheer]').forEach(b=>b.onclick=()=>sendCheer(b.dataset.cheer,b));
+}
+/* ---- cheers: stored on the sender's own doc, read by the friend ---- */
+async function sendCheer(toUid,btn){
+  const today=dateKeyOf(new Date()); P.cheersSent=P.cheersSent||{};
+  if(P.cheersSent[toUid]===today){ showToast(LANG==='ar'?'شجعته اليوم 👏':'Already cheered today 👏'); return; }
+  P.cheersSent[toUid]=today; if(btn) btn.classList.add('sent'); playSfx('success');
+  try{ await usersCol().doc(currentUser.uid).update({['cheers.'+toUid]:{d:today,e:'👏'}}); }catch(e){}
+  storageSet('profile',JSON.stringify(P));
+  showToast(LANG==='ar'?'👏 وصلته تشجيعتك':'👏 Cheer sent');
+}
+async function renderHomeCheers(){
+  const box=document.getElementById('homeCheers'); if(!box) return;
+  if(!PublicProfileService.hasProfile()){ box.innerHTML=''; return; }
+  const fr=await friendsWithProfiles(), today=dateKeyOf(new Date()), me=currentUser.uid;
+  const from=fr.filter(f=>f.cheers&&f.cheers[me]&&f.cheers[me].d===today);
+  if(!from.length){ box.innerHTML=''; return; }
+  const ar=LANG==='ar', names=from.map(f=>f.displayName||f.username).slice(0,2).map(escapeHtml).join(ar?' و':' & ');
+  const more=from.length>2?(ar?` و${from.length-2} غيرهم`:` +${from.length-2}`):'';
+  box.innerHTML=`<div class="dash-card cheers-strip"><span style="font-size:1.8rem;">👏</span><div style="flex:1;"><b>${names}${more}</b> ${ar?'شجعوك اليوم':'cheered you on today'}</div><button type="button" class="dash-link" id="cheerBackBtn">${ar?'رد التشجيع':'Cheer back'}</button></div>`;
+  document.getElementById('cheerBackBtn').onclick=()=>{ from.forEach(f=>sendCheer(f.uid)); };
+}
+/* ---- co-op weekly boss ---- */
+const COOP_BOSSES=[
+  {id:'kraken', icon:'🐙', ar:'الكراكن', en:'The Kraken'}, {id:'leviathan', icon:'🐉', ar:'اللوياثان', en:'The Leviathan'},
+  {id:'stormshark', icon:'🦈', ar:'قرش العاصفة', en:'The Storm Shark'}, {id:'sandtitan', icon:'🦂', ar:'عملاق الرمال', en:'The Sand Titan'},
+  {id:'icewyrm', icon:'🐲', ar:'تنين الجليد', en:'The Ice Wyrm'}, {id:'abyssray', icon:'🦑', ar:'حبّار الأعماق', en:'The Abyss Squid'}
+];
+const COOP_HP_PER_MEMBER=900, COOP_REWARD=200;
+function currentCoopBoss(){ const k=weekKeySat(0); return COOP_BOSSES[hashSeed(k)%COOP_BOSSES.length]; }
+async function coopState(){
+  const k=weekKeySat(0), fr=await friendsWithProfiles(true);
+  const mine=await myWeekDamage();
+  const party=[{name:(P.publicProfile&&P.publicProfile.displayName)||'You', me:true, dmg:mine},...fr.map(f=>({name:f.displayName||f.username||'—', dmg:friendWeekDmg(f,k)}))];
+  const hp=COOP_HP_PER_MEMBER*party.length, dealt=party.reduce((a,b)=>a+b.dmg,0);
+  return {k, boss:currentCoopBoss(), party:party.sort((a,b)=>b.dmg-a.dmg), hp, dealt, left:Math.max(0,hp-dealt), dead:dealt>=hp};
+}
+async function renderCoopBossCard(){
+  const box=document.getElementById('coopBossCard'); if(!box) return;
+  const ar=LANG==='ar'; box.innerHTML='';
+  const st=await coopState(), pct=Math.max(0,Math.round(st.left/st.hp*100)), claimed=(P._coopClaimed===st.k);
+  box.innerHTML=`<div class="dash-card boss-coop${st.dead?' dead':''}"><div class="bc-top"><span class="bc-ic">${st.boss.icon}</span><div style="flex:1;">
+      <h3>${ar?'⚔️ زعيم الأسبوع':'⚔️ Boss of the week'}: ${ar?st.boss.ar:st.boss.en}</h3>
+      <div class="bc-sub">${st.party.length>1?(ar?`أنت و${st.party.length-1} من أصدقائك`:`You and ${st.party.length-1} friend${st.party.length>2?'s':''}`):(ar?'لحالك — ضيف أصدقاء يساعدونك':'Solo — add friends to help')} · ${ar?`باقي ${daysLeftInWeek()} أيام`:`${daysLeftInWeek()} days left`}</div></div></div>
+    <div class="bc-hp"><div style="width:${pct}%"></div></div>
+    <div class="bc-sub num">${st.dead?(ar?'💀 انهزم!':'💀 Defeated!'):`❤️ ${st.left} / ${st.hp}`}</div>
+    <div class="bc-party">${st.party.map(m=>`<div><span>${escapeHtml(m.name)}${m.me?(ar?' (أنت)':' (you)'):''}</span><b class="num">⚔️ ${m.dmg}</b></div>`).join('')}</div>
+    ${st.dead&&!claimed?`<button type="button" class="bc-claim" id="coopClaim">🏆 ${ar?`خذ الجائزة (+${COOP_REWARD} عملة)`:`Claim reward (+${COOP_REWARD} coins)`}</button>`:''}
+    ${st.dead&&claimed?`<div class="bc-sub" style="margin-top:8px;">✅ ${ar?'أخذت جائزة هالأسبوع':'Reward claimed this week'}</div>`:''}
+    <div class="bc-how">${ar?`تضربه بيومك: تمرين +${BOSS_DMG.workout} · يوم كل الصلوات +${BOSS_DMG.prayerDay} · هدف الماء +${BOSS_DMG.water} · يوم أكل +${BOSS_DMG.nutrition} · كل عادة +${BOSS_DMG.habit} · وزن +${BOSS_DMG.weight}`:`You hit it by living your week: workout +${BOSS_DMG.workout} · all prayers +${BOSS_DMG.prayerDay} · water goal +${BOSS_DMG.water} · nutrition day +${BOSS_DMG.nutrition} · each habit +${BOSS_DMG.habit} · weigh-in +${BOSS_DMG.weight}`}</div></div>`;
+  const cb=document.getElementById('coopClaim');
+  if(cb) cb.onclick=async()=>{ if(P._coopClaimed===st.k) return; P._coopClaimed=st.k; P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.coopKills=(P.lifetimeStats.coopKills||0)+1;
+    await awardCoins(COOP_REWARD); playSfx('fanfare'); await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderCoopBossCard(); };
 }
 
 /* opens the recurring-commitments editor on the Schedule page */
@@ -6954,7 +7099,7 @@ async function incrementXpCoins(deltaXp,deltaCoins){
   const updates={};
   if(deltaXp) updates.xp=firebase.firestore.FieldValue.increment(deltaXp);
   if(deltaCoins) updates.coins=firebase.firestore.FieldValue.increment(deltaCoins);
-  if(deltaXp>0){ const wk=currentPeriodKey('week'); P.weekXp={...(P.weekXp||{})}; P.weekXp[wk]=(P.weekXp[wk]||0)+deltaXp; updates.weekXp={[wk]:firebase.firestore.FieldValue.increment(deltaXp)}; }
+  if(deltaXp>0){ const wk=weekKeySat(0); P.weekXp={...(P.weekXp||{})}; P.weekXp[wk]=(P.weekXp[wk]||0)+deltaXp; updates.weekXp={[wk]:firebase.firestore.FieldValue.increment(deltaXp)}; }
   if(!Object.keys(updates).length) return;
   // not awaited, same reason as storageSet: the increment is applied to the
   // local cache immediately and queued durably; awaiting only waited for the
@@ -7154,6 +7299,7 @@ async function computeUserStats(){
     perfectHabitDays:lifetime.perfectHabitDays||0,
     bestPrayerStreak:lifetime.longestPrayerStreak||0,
     qadaMadeUp:lifetime.qadaMadeUp||0,
+    coopKills:lifetime.coopKills||0, leagueWins:lifetime.leagueWins||0, leaguePodiums:lifetime.leaguePodiums||0,
     ...ramadanStats(),
     waterDaysHit:lifetime.waterDaysHit||0,
     nutritionDaysHit:lifetime.nutritionDaysHit||0,
@@ -7206,6 +7352,10 @@ const ACHIEVEMENTS_CONFIG=[
   {id:'perfect_7', icon:'🌟', nameEn:'Seven Perfect Days', nameAr:'سبع أيام مثالية', descEn:'Finish every habit on 7 days', descAr:'خلّص كل عاداتك في 7 أيام', xp:120, coins:150, check:s=>s.perfectHabitDays>=7},
   {id:'perfect_30', icon:'✨', nameEn:'Thirty Perfect Days', nameAr:'ثلاثين يوم مثالي', descEn:'Finish every habit on 30 days', descAr:'خلّص كل عاداتك في 30 يوم', xp:450, coins:550, check:s=>s.perfectHabitDays>=30},
   {id:'prayers_week', icon:'🕌', nameEn:'Steadfast Week', nameAr:'أسبوع المحافظة', descEn:'All five prayers, 7 days in a row', descAr:'الصلوات الخمس 7 أيام متتالية', xp:200, coins:250, check:s=>s.bestPrayerStreak>=7},
+  {id:'coop_first', icon:'⚔️', nameEn:'Party Slayer', nameAr:'قاهر الزعماء', descEn:'Defeat a weekly boss', descAr:'اهزم زعيم الأسبوع', xp:250, coins:300, exclusiveCosmetic:'frame-tidebreaker', check:s=>s.coopKills>=1},
+  {id:'coop_5', icon:'🛡️', nameEn:'Boss Hunter', nameAr:'صياد الزعماء', descEn:'Defeat 5 weekly bosses', descAr:'اهزم 5 زعماء', xp:600, coins:700, check:s=>s.coopKills>=5},
+  {id:'league_podium', icon:'🥉', nameEn:'On the Podium', nameAr:'على المنصة', descEn:'Finish a week in the top 3 of your league', descAr:'خلّص أسبوع بأول ٣ بالدوري', xp:80, coins:90, check:s=>s.leaguePodiums>=1},
+  {id:'league_win', icon:'🥇', nameEn:'League Champion', nameAr:'بطل الدوري', descEn:'Win a week of your friends league', descAr:'اربح أسبوع بدوري الأصدقاء', xp:200, coins:250, check:s=>s.leagueWins>=1},
   {id:'qada_10', icon:'🕋', nameEn:'Making It Up', nameAr:'على طريق القضاء', descEn:'Make up 10 qada prayers', descAr:'اقضِ 10 صلوات', xp:120, coins:140, check:s=>s.qadaMadeUp>=10},
   {id:'ramadan_first', icon:'🌙', nameEn:'First Fast', nameAr:'أول صيام', descEn:'Log your first Ramadan fast', descAr:'سجّل أول يوم صيام برمضان', xp:40, coins:50, check:s=>s.bestFasts>=1},
   {id:'ramadan_10', icon:'🏮', nameEn:'Ten Days of Mercy', nameAr:'عشر الرحمة', descEn:'Fast 10 days of Ramadan', descAr:'صم 10 أيام من رمضان', xp:200, coins:250, check:s=>s.bestFasts>=10},
@@ -7702,6 +7852,7 @@ const COSMETICS_CATALOG=[
   {id:'frame-twinband', type:'frame', rarity:'uncommon', nameEn:'Twin Band', nameAr:'الشريط المزدوج', descEn:'Layered double ring', descAr:'حلقة مزدوجة الطبقات', price:700, cls:'frame-frame-twinband'},
   {id:'frame-ember', type:'frame', rarity:'epic', nameEn:'Ember Halo', nameAr:'هالة الجمر', descEn:'Glowing pulse ring', descAr:'حلقة نابضة متوهجة', price:2000, cls:'frame-frame-ember'},
   {id:'frame-prism', type:'frame', rarity:'mythic', nameEn:'Prism Loop', nameAr:'حلقة المنشور', descEn:'Rotating multicolor gradient + glow', descAr:'حلقة دوّارة متعددة الألوان + توهج', price:5500, cls:'frame-frame-prism'},
+  {id:'frame-tidebreaker', type:'frame', rarity:'legendary', nameEn:'Tidebreaker', nameAr:'كاسر المد', descEn:'A ring of spinning ocean light — earned by defeating a weekly boss with your party', descAr:'حلقة من ضوء البحر الدوّار — تكسبها لما تهزم زعيم الأسبوع مع فريقك', price:null, exclusiveNote:'achievement:coop_first', cls:'frame-frame-tidebreaker'},
   {id:'frame-fanous', type:'frame', rarity:'legendary', nameEn:'Ramadan Lantern', nameAr:'فانوس رمضان', descEn:'Gold and violet lantern light that turns around you — earned by fasting a whole Ramadan', descAr:'نور فانوس ذهبي وبنفسجي يدور حولك — تكسبه بصيام رمضان كامل', price:null, exclusiveNote:'achievement:ramadan_full', cls:'frame-frame-fanous', orbiters:true},
   {id:'frame-celestial', type:'frame', rarity:'legendary', nameEn:'Celestial Crown', nameAr:'التاج السماوي', descEn:'Rotating gold ring + orbiting sparkles', descAr:'حلقة ذهبية دوّارة + بريق يدور حولها', price:18000, cls:'frame-frame-celestial', orbiters:true},
   // ---- effects ----
@@ -8108,6 +8259,7 @@ async function renderChallengesSection(){
   const list=document.getElementById('challengesList');
   list.innerHTML=`<div class="dash-empty">…</div>`;
   const {progress}=await checkAndAwardChallenges(); // also awards+persists any just-completed challenge
+  renderCoopBossCard();
   const ar=LANG==='ar';
   const inTab=CHALLENGES_CONFIG.filter(c=>c.period===challengesTab);
   const doable=inTab.filter(challengeNeedsMet);
@@ -8249,6 +8401,7 @@ const PublicProfileService={
     try{
       const stats=await computeUserStats();
       const titles=unlockedTitles(stats).map(x=>x.id);
+      Object.assign(stats, await socialWeekStats());
       await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow()},{merge:true});
       // one-time: publish the look + collection for people who had them before this existed
       if(!P._showcaseV1Done){ await this.syncShowcase(); if(await this.syncWholeCollection()){ P._showcaseV1Done=true; storageSet('profile',JSON.stringify(P)); } }
@@ -8356,6 +8509,7 @@ const FriendService={
      request's PRE-write status and reject the batch — so on
      permission-denied we fall back to the old two-step flow. */
   async respondToRequest(reqId,status){
+    if(typeof _friendsCache!=="undefined") _friendsCache={at:0,list:null};
     const reqRef=friendRequestsCol().doc(reqId);
     if(status!=='accepted'){ await reqRef.update({status, respondedAt:serverNow()}); return; }
     const [fromUid,toUid]=reqId.split('_');
@@ -8407,6 +8561,7 @@ const FriendService={
     return profiles.filter(Boolean);
   },
   async removeFriend(otherUid){
+    _friendsCache={at:0,list:null};
     await friendshipsCol().doc(pairId(currentUser.uid,otherUid)).delete();
   }
 };
@@ -8554,12 +8709,13 @@ function renderSocialSection(){
   document.getElementById('socialTabFeed').textContent=t('social_tab_feed');
   document.getElementById('socialTabCompare').textContent=t('social_tab_compare');
   document.getElementById('socialTabChallenges').textContent=t('social_tab_challenges');
-  const COMPETE=['leaderboard','compare','challenges'];
+  const COMPETE=['league','leaderboard','compare','challenges'];
+  const lgBtn=document.getElementById('socialTabLeague'); if(lgBtn) lgBtn.textContent=LANG==='ar'?'🏆 الدوري':'🏆 League';
   const group=COMPETE.includes(socialActiveTab)?'compete':socialActiveTab;
   document.getElementById('socialTabCompete').textContent=LANG==='ar'?'🏆 منافسة':'🏆 Compete';
   document.querySelectorAll('#socialTabs .social-tab').forEach(b=>{
     b.classList.toggle('active', b.dataset.tab===group);
-    b.onclick=()=>{ socialActiveTab=b.dataset.tab==='compete'?(COMPETE.includes(socialActiveTab)?socialActiveTab:'leaderboard'):b.dataset.tab; renderSocialSection(); };
+    b.onclick=()=>{ socialActiveTab=b.dataset.tab==='compete'?(COMPETE.includes(socialActiveTab)?socialActiveTab:'league'):b.dataset.tab; renderSocialSection(); };
   });
   document.getElementById('socialSubTabs').classList.toggle('hidden',group!=='compete');
   document.querySelectorAll('#socialSubTabs .social-subtab').forEach(b=>{
@@ -8569,6 +8725,7 @@ function renderSocialSection(){
   const content=document.getElementById('socialTabContent');
   content.innerHTML=`<div class="dash-empty">…</div>`;
   if(socialActiveTab==='friends') return renderSocialFriendsTab(content);
+  if(socialActiveTab==='league') return renderSocialLeagueTab(content);
   if(socialActiveTab==='leaderboard') return renderSocialLeaderboardTab(content);
   if(socialActiveTab==='feed') return renderSocialFeedTab(content);
   if(socialActiveTab==='compare') return renderSocialCompareTab(content);
@@ -8863,6 +9020,7 @@ async function openFriendProfile(uid){
       <div class="friend-showcase-list">${owned.slice(0,12).map(c=>`<span class="showcase-chip rar-${c.rarity}" title="${escapeHtml(RARITY_LABEL(c.rarity))}">${escapeHtml(LANG==='ar'?c.nameAr:c.nameEn)}</span>`).join('')}</div></div>`:''}
     <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${safeNum(b.val)}</b><span>${b.label}</span></div>`).join('')}</div>
     ${priv.collection!==false ? `<button class="setup-btn" id="viewFriendCollectionBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:10px;">🐾 ${t('view_collection_btn')}</button>` : ''}
+    <button class="setup-btn" id="friendCheerBtn" style="margin-bottom:10px;">👏 ${LANG==='ar'?'شجّعه اليوم':'Cheer them on today'}</button>
     <button class="setup-btn" id="friendRemoveBtn" style="background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>
   `;
   // mount their equipped background / effect / frame, exactly as their own profile shows it
@@ -8873,6 +9031,7 @@ async function openFriendProfile(uid){
     if(frItem){ frEl.className='cos-frame-ring '+frItem.cls; } }
   const viewCollBtn=document.getElementById('viewFriendCollectionBtn');
   if(viewCollBtn) viewCollBtn.addEventListener('click',()=>openFriendCollectionView(uid,profile.displayName));
+  const chBtn=document.getElementById('friendCheerBtn'); if(chBtn) chBtn.addEventListener('click',()=>sendCheer(uid,chBtn));
   document.getElementById('friendRemoveBtn').addEventListener('click',async()=>{
     if(!confirm(t('confirm_remove_friend'))) return;
     await FriendService.removeFriend(uid);
@@ -9161,6 +9320,7 @@ function refreshHome(){
   renderHomeRecapPrompt();
   renderHijriLine();
   renderRamadanCard();
+  renderHomeCheers();
   renderHomeAquarium();
 }
 function homeDateLabel(dateObj){
