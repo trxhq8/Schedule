@@ -194,6 +194,14 @@
   .first-run-step.done{ opacity:0.6; cursor:default; }
   .first-run-step.done .fr-check{ background:var(--gold); border-color:var(--gold); color:#fff; }
   .first-run-step .fr-go{ margin-inline-start:auto; color:var(--ink-soft); }
+  .wr-sub{ font-size:0.78rem; color:var(--ink-soft); margin:-4px 0 10px; }
+  .wr-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:0.88rem; }
+  .wr-row:first-of-type{ border-top:none; }
+  .wr-row .wr-label{ flex:1; }
+  .wr-row .wr-val{ font-weight:800; font-family:var(--font-head); color:var(--heading); }
+  .wr-row .wr-delta{ font-size:0.72rem; min-width:52px; text-align:end; color:var(--ink-soft); }
+  .wr-row .wr-delta.up{ color:#2e8b57; } .wr-row .wr-delta.down{ color:#c0392b; }
+  .wr-note{ background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:10px; font-size:0.85rem; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1208,6 +1216,7 @@
   <!-- PROGRESS (read-only view over real logged history, no charts beyond the existing weight trend line) -->
   <section class="panel" id="panel-progress">
     <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
+    <div class="setup-card" id="weekReviewCard"></div>
     <div class="setup-card">
       <h3 id="progressWeightTitle"></h3>
       <div class="chart-box"><svg id="progressWeightChart" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"></svg></div>
@@ -1690,7 +1699,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.29.0';
+const APP_VERSION='v1.30.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5440,12 +5449,97 @@ function openWeightChartModal(){
    real daily-track docs written by workoutDone / the new per-set logging.
    Nothing here is hardcoded or invented — an empty state is shown whenever
    there isn't yet enough real history for a section. */
+/* ================= WEEKLY REVIEW =================
+   "How did I do?" for the last 7 days (today included) against the 7
+   before, built ONLY from data already stored: the per-day daily-track
+   docs (workoutDone, habits, xpAwarded.water/.nutrition — the same flags
+   the challenges count), weight entries that carry an isoDate, and the
+   unlockedAt/completedAt stamps on achievements and challenges. Areas the
+   user hasn't set up are left out rather than shown as zeros. */
+async function computeWeekReview(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const days=Array.from({length:14},(_,i)=>{ const d=new Date(today); d.setDate(d.getDate()-13+i); return d; });
+  const docs=await Promise.all(days.map(d=>storageGet(`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`).then(v=>{ try{ return v?JSON.parse(v):null; }catch(e){ return null; } }).catch(()=>null)));
+  const habitIds=(P.habits||[]).map(h=>h.id);
+  const ws=P.workoutSetup;
+  const blank=()=>({workouts:0,scheduled:0,missed:0,water:0,nutrition:0,habitChecks:0});
+  const weeks=[blank(),blank()]; // [previous, this]
+  days.forEach((d,i)=>{
+    const w=weeks[i<7?0:1], doc=docs[i]||{};
+    const isRest=ws?workoutTypeForDate(d,ws)==='rest':true;
+    if(doc.workoutDone) w.workouts++;
+    if(ws&&!isRest){ w.scheduled++; if(!doc.workoutDone&&i!==13) w.missed++; } // today isn't "missed" yet
+    if(doc.xpAwarded&&doc.xpAwarded.water) w.water++;
+    if(doc.xpAwarded&&doc.xpAwarded.nutrition) w.nutrition++;
+    w.habitChecks+=habitIds.filter(id=>doc.habits&&doc.habits[id]).length;
+  });
+  const fromIso=isoDateStr(days[7].getFullYear(),days[7].getMonth(),days[7].getDate());
+  const weights=(weightLog||[]).filter(e=>e.isoDate&&e.isoDate>=fromIso).sort((a,b)=>a.isoDate<b.isoDate?-1:1);
+  const since=days[7].getTime();
+  const wins=[];
+  Object.entries(P.achievements||{}).forEach(([id,a])=>{ if(a&&a.unlockedAt&&new Date(a.unlockedAt).getTime()>=since){ const c=ACHIEVEMENTS_CONFIG.find(x=>x.id===id); if(c) wins.push(c.icon+' '+(LANG==='ar'?c.nameAr:c.nameEn)); } });
+  Object.entries(P.challengeState||{}).forEach(([key,st])=>{ if(st&&st.completed&&st.completedAt&&new Date(st.completedAt).getTime()>=since){ const c=CHALLENGES_CONFIG.find(x=>x.id===key.split('|')[0]); if(c) wins.push(c.icon+' '+(LANG==='ar'?c.nameAr:c.nameEn)); } });
+  return {prev:weeks[0], cur:weeks[1], habitCount:habitIds.length, weights, wins};
+}
+async function renderWeekReview(){
+  const card=document.getElementById('weekReviewCard'); if(!card) return;
+  const ar=LANG==='ar';
+  const title=`<h3>${ar?'🗓️ أسبوعك':'🗓️ Your week'}</h3>`;
+  card.innerHTML=title+'<div class="wr-sub">…</div>';
+  let r; try{ r=await computeWeekReview(); }catch(e){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const {cur,prev}=r;
+  const rows=[], ratios=[];
+  const delta=(a,b)=>{ const d=a-b; return d>0?`<span class="wr-delta up">▲ ${d}</span>`:d<0?`<span class="wr-delta down">▼ ${-d}</span>`:'<span class="wr-delta">=</span>'; };
+  const row=(icon,label,val,a,b)=>rows.push(`<div class="wr-row"><span>${icon}</span><span class="wr-label">${label}</span><span class="wr-val num" dir="ltr">${val}</span>${delta(a,b)}</div>`);
+  if(P.workoutSetup){
+    row('💪',ar?'تمارين':'Workouts',`${cur.workouts}/${cur.scheduled}`,cur.workouts,prev.workouts);
+    if(cur.scheduled) ratios.push({k:'workout',v:cur.workouts/cur.scheduled});
+  }
+  if(P.foodSetup){
+    row('💧',ar?'أيام وصلت هدف الماء':'Water goal days',`${cur.water}/7`,cur.water,prev.water); ratios.push({k:'water',v:cur.water/7});
+    row('🍽️',ar?'أيام التزمت بالأكل':'Nutrition days',`${cur.nutrition}/7`,cur.nutrition,prev.nutrition); ratios.push({k:'nutrition',v:cur.nutrition/7});
+  }
+  if(r.habitCount){
+    const possible=r.habitCount*7;
+    row('✅',ar?'عادات منجزة':'Habits checked',`${cur.habitChecks}/${possible}`,cur.habitChecks,prev.habitChecks); ratios.push({k:'habits',v:cur.habitChecks/possible});
+  }
+  const st=(P.streaks&&P.streaks.workout)||{};
+  if(st.current) rows.push(`<div class="wr-row"><span>🔥</span><span class="wr-label">${ar?'سلسلة التمرين':'Workout streak'}</span><span class="wr-val num">${st.current}</span><span class="wr-delta"></span></div>`);
+  if(r.weights.length>=2){
+    const d=(r.weights[r.weights.length-1].kg-r.weights[0].kg).toFixed(1);
+    rows.push(`<div class="wr-row"><span>⚖️</span><span class="wr-label">${ar?'الوزن هالأسبوع':'Weight this week'}</span><span class="wr-val num" dir="ltr">${d>0?'+':''}${d} ${t('kg')}</span><span class="wr-delta"></span></div>`);
+  }
+  if(!rows.length){
+    card.innerHTML=title+`<div class="dash-empty">${ar?'جهّز أكلك أو تمرينك أو عاداتك وبنلخص لك أسبوعك هني.':'Set up your food, training or habits and your weekly summary will show up here.'}</div>`;
+    return;
+  }
+  const notes=[];
+  if(r.wins.length) notes.push(`🏆 <b>${ar?'إنجازاتك':'Wins'}:</b> ${r.wins.slice(0,4).map(escapeHtml).join(' · ')}`);
+  if(cur.missed) notes.push('⏭️ '+(ar?`فوّت ${cur.missed} ${cur.missed===1?'تمرين مجدول':'تمارين مجدولة'}`:`Missed ${cur.missed} scheduled workout${cur.missed===1?'':'s'}`));
+  const FOCUS={
+    workout:{ar:'التزم بأيام تمرينك المجدولة',en:'hit your scheduled training days'},
+    water:{ar:'وصّل هدف الماء كل يوم',en:'reach your water goal each day'},
+    nutrition:{ar:'التزم بوجباتك',en:'stick to your meal plan'},
+    habits:{ar:'علّم عاداتك يومياً',en:'check off your habits daily'}
+  };
+  if(ratios.length){
+    const low=ratios.reduce((a,b)=>b.v<a.v?b:a);
+    notes.push(low.v>=1 ? (ar?'🌟 أسبوع كامل! كمّل على نفس المستوى.':'🌟 A perfect week — keep it going.')
+                        : `🎯 <b>${ar?'ركّز الأسبوع الجاي':'Focus next week'}:</b> ${ar?FOCUS[low.k].ar:FOCUS[low.k].en}`);
+  }
+  card.innerHTML=title
+    +`<div class="wr-sub">${ar?'آخر ٧ أيام (مع اليوم) — مقارنة بالأسبوع اللي قبله':'Last 7 days (incl. today) vs the 7 before'}</div>`
+    +rows.join('')
+    +notes.map(n=>`<div class="wr-note">${n}</div>`).join('');
+}
 async function renderProgressSection(){
   document.getElementById('progressWeightTitle').textContent=t('progress_weight_title');
   document.getElementById('progressMonthTitle').textContent=t('progress_month_title');
   document.getElementById('progressMonthSub').textContent=t('progress_month_sub');
 
   await loadWeightLog();
+  renderWeekReview();
   const weightEmpty=document.getElementById('progressWeightEmpty');
   const weightStats=document.getElementById('progressWeightStats');
   const chartBox=document.getElementById('progressWeightChart').closest('.chart-box');
