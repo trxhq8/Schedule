@@ -2017,7 +2017,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.37.0';
+const APP_VERSION='v1.37.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2298,6 +2298,8 @@ async function bootApp(){
   migrateRetiredCosmetics();
   renderAppBackground();
   migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
+  // publish your look + collection for friends once, without waiting for the next completed action
+  if(!P._showcaseV1Done) setTimeout(()=>{ try{ PublicProfileService.syncStats(); }catch(e){} },3000);
   launchApp();
 }
 /* Removed at the earliest point the app actually knows what to show
