@@ -1672,7 +1672,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.23.0';
+const APP_VERSION='v1.24.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -6705,38 +6705,80 @@ const FriendService={
     if(inc&&inc.exists&&inc.data().status==='pending') return 'incoming';
     return 'none';
   },
-  async sendRequest(targetUid){
+  /* A pending request no longer grants either side read access to the
+     other's profile (that exception let a stranger — or a friend you'd
+     removed — read a private profile). So the request carries the
+     sender's OWN public identity for the recipient's request list; the
+     rules verify fromUsername really is the sender's claimed handle, so
+     it can't be spoofed. toLabel is only ever shown back to the sender. */
+  async sendRequest(targetUid, targetLabel){
     const me=currentUser.uid;
     if(targetUid===me) throw new Error('self');
     // if they already sent YOU one, accept theirs instead of creating a
     // second, opposite-direction pending request for the same pair
     const incoming=await friendRequestsCol().doc(targetUid+'_'+me).get();
     if(incoming.exists && incoming.data().status==='pending') return this.respondToRequest(targetUid+'_'+me,'accepted');
-    await friendRequestsCol().doc(me+'_'+targetUid).set({fromUid:me, toUid:targetUid, status:'pending', createdAt:serverNow()});
+    const pp=P.publicProfile||{};
+    await friendRequestsCol().doc(me+'_'+targetUid).set({
+      fromUid:me, toUid:targetUid, status:'pending', createdAt:serverNow(),
+      fromUsername:pp.username||'', fromName:String(pp.displayName||pp.username||'').slice(0,40),
+      fromAvatar:String(pp.avatar||'🙂').slice(0,16), toLabel:String(targetLabel||'').slice(0,40)
+    });
   },
   async cancelRequest(targetUid){
     await friendRequestsCol().doc(currentUser.uid+'_'+targetUid).update({status:'cancelled'});
   },
+  /* Accepting is ONE atomic batch: request pending→accepted + friendship
+     created together. The rules now only allow a friendship to be created
+     in the same write that turns a pending request into accepted — a
+     leftover 'accepted' request from before an unfriend can no longer be
+     reused to silently recreate the friendship.
+     Fallback: until the new rules are published, the old rules check the
+     request's PRE-write status and reject the batch — so on
+     permission-denied we fall back to the old two-step flow. */
   async respondToRequest(reqId,status){
-    await friendRequestsCol().doc(reqId).update({status, respondedAt:serverNow()});
-    if(status==='accepted'){
-      const [fromUid,toUid]=reqId.split('_');
-      const uidA=fromUid<toUid?fromUid:toUid, uidB=fromUid<toUid?toUid:fromUid;
-      await friendshipsCol().doc(uidA+'_'+uidB).set({uidA,uidB,members:[uidA,uidB],createdAt:serverNow()});
-      const otherUid=fromUid===currentUser.uid?toUid:fromUid;
-      const otherProfile=await PublicProfileService.getProfile(otherUid).catch(()=>null);
-      await ActivityService.post('friend_added',{withName:(otherProfile&&otherProfile.displayName)||'?'});
+    const reqRef=friendRequestsCol().doc(reqId);
+    if(status!=='accepted'){ await reqRef.update({status, respondedAt:serverNow()}); return; }
+    const [fromUid,toUid]=reqId.split('_');
+    const uidA=fromUid<toUid?fromUid:toUid, uidB=fromUid<toUid?toUid:fromUid;
+    const frRef=friendshipsCol().doc(uidA+'_'+uidB);
+    const frData={uidA,uidB,members:[uidA,uidB],createdAt:serverNow()};
+    try{
+      const batch=fbDb.batch();
+      batch.update(reqRef,{status:'accepted', respondedAt:serverNow()});
+      batch.set(frRef,frData);
+      await batch.commit();
+    }catch(e){
+      if(e&&e.code!=='permission-denied') throw e;
+      await reqRef.update({status:'accepted', respondedAt:serverNow()});
+      await frRef.set(frData);
     }
+    const otherUid=fromUid===currentUser.uid?toUid:fromUid;
+    const otherProfile=await PublicProfileService.getProfile(otherUid).catch(()=>null);
+    await ActivityService.post('friend_added',{withName:(otherProfile&&otherProfile.displayName)||'?'});
   },
   async listIncomingRequests(){
     const snap=await friendRequestsCol().where('toUid','==',currentUser.uid).where('status','==','pending').get();
     const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    return Promise.all(reqs.map(async r=>({...r, profile:await PublicProfileService.getProfile(r.fromUid)})));
+    // identity comes from the request itself (sender-provided, username
+    // verified by the rules) — a pending request no longer lets you read
+    // the sender's profile. Only requests sent before this change, which
+    // carry no identity, try the profile (works only if it's public).
+    return Promise.all(reqs.map(async r=>{
+      if(r.fromUsername) return {...r, profile:{displayName:r.fromName||r.fromUsername, avatar:r.fromAvatar, username:r.fromUsername}};
+      const p=await PublicProfileService.getProfile(r.fromUid);
+      return {...r, profile:(p&&!p.restricted)?p:null};
+    }));
   },
   async listOutgoingRequests(){
     const snap=await friendRequestsCol().where('fromUid','==',currentUser.uid).where('status','==','pending').get();
     const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    return Promise.all(reqs.map(async r=>({...r, profile:await PublicProfileService.getProfile(r.toUid)})));
+    return Promise.all(reqs.map(async r=>{
+      const p=await PublicProfileService.getProfile(r.toUid);
+      if(p&&!p.restricted) return {...r, profile:p};
+      // their profile isn't readable until they accept — show the handle you searched for
+      return {...r, profile:r.toLabel?{displayName:'@'+r.toLabel}:null};
+    }));
   },
   async listFriends(){
     const me=currentUser.uid;
@@ -6984,7 +7026,7 @@ async function renderSocialFriendsTab(content){
   <div id="friendSearchResult"></div>`;
   if(incoming.length){
     html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('incoming_requests_title')}</h3>`;
-    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.fromUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
+    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.fromUid)}</div>${r.profile&&r.profile.username?`<div style="font-size:0.7rem;color:var(--ink-soft);" dir="ltr">@${escapeHtml(r.profile.username)}</div>`:''}</div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
   }
   if(outgoing.length){
     html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('outgoing_requests_title')}</h3>`;
@@ -7022,7 +7064,7 @@ async function renderSocialFriendsTab(content){
       : `<button class="friend-action-btn accept" id="searchAddBtn">${t('send_request_btn')}</button>`;
     resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${safeAvatar(result.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(result.displayName||result.username)}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
     const addBtn=document.getElementById('searchAddBtn');
-    if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; await FriendService.sendRequest(result.uid); doSearch(); });
+    if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; try{ await FriendService.sendRequest(result.uid, result.username||q); }catch(e){ showToast(e.message,'error'); } doSearch(); });
     const accBtn=document.getElementById('searchAcceptBtn');
     if(accBtn) accBtn.addEventListener('click',async()=>{ accBtn.disabled=true; await FriendService.respondToRequest(result.uid+'_'+currentUser.uid,'accepted'); doSearch(); renderSocialFriendsTab(content); });
   }
