@@ -184,6 +184,16 @@
   }
   .bottom-nav-item{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.65rem; color:var(--ink-soft); background:none; border:none; cursor:pointer; padding:4px 10px; font-family:var(--font-head); font-weight:700; }
   .bottom-nav-item .ic{ font-size:1.25rem; }
+  .first-run-card{ margin-top:16px; border:1.5px solid var(--gold); }
+  .first-run-card .fr-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .first-run-card h3{ margin:0 0 4px; color:var(--heading); font-family:var(--font-head); font-size:1.05rem; }
+  .first-run-card .fr-sub{ font-size:0.82rem; color:var(--ink-soft); margin:0 0 10px; }
+  .first-run-card .fr-close{ background:none; border:none; color:var(--ink-soft); font-size:1rem; cursor:pointer; padding:4px 8px; }
+  .first-run-step{ display:flex; align-items:center; gap:10px; width:100%; text-align:start; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:8px; cursor:pointer; font:inherit; color:var(--ink); }
+  .first-run-step .fr-check{ width:24px; height:24px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; }
+  .first-run-step.done{ opacity:0.6; cursor:default; }
+  .first-run-step.done .fr-check{ background:var(--gold); border-color:var(--gold); color:#fff; }
+  .first-run-step .fr-go{ margin-inline-start:auto; color:var(--ink-soft); }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -816,6 +826,7 @@
       <button type="button" id="homeDateNext" aria-label="next day">›</button>
     </div>
 
+    <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div class="home-grid" id="homeGrid">
     <div class="dash-card home-preview-card" id="homeSchedulePreview" data-goto="today"></div>
     <div class="dash-card home-preview-card" id="homeDietTrainingPreview" data-goto="diettraining"></div>
@@ -1679,7 +1690,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.28.0';
+const APP_VERSION='v1.29.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -7548,6 +7559,57 @@ function openCalSlotEdit(el,slot,auto,dateKey,dayTrack){
 }
 function slotRange(slot){ const [a,b]=slot.split('-'); return [parseHM(a),parseHM(b)]; }
 
+/* ================= FIRST RUN =================
+   A small "get started" checklist on Home for genuinely new accounts only.
+   Decided ONCE per account: isBrandNewAccount() is false for anyone who has
+   ever set anything up, so existing users are marked done and never see it.
+   Kept in memory until the next normal profile save persists it — no extra
+   boot-time write that could race a not-yet-loaded profile. */
+function initFirstRun(){
+  if(P.firstRun) return;
+  P.firstRun={active:isBrandNewAccount(), startedAt:new Date().toISOString()};
+}
+function firstRunSteps(){
+  const fr=P.firstRun||{};
+  if(!fr.habitDone && Object.values((dailyTrack&&dailyTrack.habits)||{}).some(Boolean)) fr.habitDone=true;
+  return [
+    {id:'schedule', icon:'📅', ar:'رتّب جدولك اليومي', en:'Set up your daily schedule', done:!!(P.todoSetup&&P.todoSetup.commitments&&P.todoSetup.commitments.length), go:'today'},
+    {id:'diet', icon:'🍽️', ar:'جهّز نظامك الغذائي', en:'Set up your diet', done:!!P.foodSetup, go:'food'},
+    {id:'training', icon:'💪', ar:'جهّز جدول تمارينك', en:'Set up your training', done:!!P.workoutSetup, go:'workout'},
+    {id:'habit', icon:'✅', ar:'علّم أول عادة اليوم', en:'Check off your first habit today', done:!!fr.habitDone, go:'habits'}
+  ];
+}
+async function endFirstRun(how){
+  P.firstRun={...(P.firstRun||{}), active:false, [how+'At']:new Date().toISOString()};
+  document.getElementById('firstRunCard').classList.add('hidden');
+  await storageSet('profile',JSON.stringify(P));
+}
+function renderFirstRunCard(){
+  const card=document.getElementById('firstRunCard'); if(!card) return;
+  if(!P.firstRun||!P.firstRun.active){ card.classList.add('hidden'); return; }
+  const steps=firstRunSteps();
+  const doneCount=steps.filter(s=>s.done).length;
+  if(doneCount===steps.length){
+    endFirstRun('completed');
+    showToast(LANG==='ar'?'كل شي جاهز! 🎉':'You’re all set! 🎉');
+    return;
+  }
+  const ar=LANG==='ar';
+  card.innerHTML=`<div class="fr-head"><div>
+      <h3>${ar?'👋 أهلاً! خلنا نجهّز يومك':'👋 Welcome! Let’s set up your day'}</h3>
+      <p class="fr-sub">${ar?'جدولك وأكلك وتمرينك وعاداتك بمكان واحد — وكل شي تنجزه يعطيك XP.':'Your schedule, food, training and habits in one place — everything you complete earns XP.'} <b class="num">${doneCount}/${steps.length}</b></p>
+    </div><button type="button" class="fr-close" id="firstRunClose" aria-label="${ar?'إخفاء':'Hide'}">✕</button></div>
+    ${steps.map(s=>`<button type="button" class="first-run-step${s.done?' done':''}" data-go="${s.go}" ${s.done?'disabled':''}>
+      <span class="fr-check">${s.done?'✓':''}</span><span>${s.icon} ${ar?s.ar:s.en}</span>${s.done?'':`<span class="fr-go">${ar?'‹':'›'}</span>`}
+    </button>`).join('')}`;
+  card.classList.remove('hidden');
+  document.getElementById('firstRunClose').addEventListener('click',()=>endFirstRun('dismissed'));
+  card.querySelectorAll('.first-run-step:not(.done)').forEach(b=>b.addEventListener('click',()=>{
+    const go=b.dataset.go;
+    if(go==='habits'){ const el=document.getElementById('dashHabitsTitle'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+    showPanel(go); enterSection(go);
+  }));
+}
 function refreshHome(){
   applyI18n();
   applyTheme(P.palette,P.mode,P.font);
@@ -7563,6 +7625,7 @@ function refreshHome(){
   renderHomeChallengesPreview();
   renderHomeCollectionPreview();
   renderNavXpChip();
+  renderFirstRunCard();
 }
 function homeDateLabel(dateObj){
   const today=new Date();
@@ -7935,6 +7998,7 @@ document.querySelectorAll('#dashboardSummary .dash-mini[data-goto]').forEach(el=
    Streaks are computed from real historical daily-track docs, never faked. */
 function habitLabelText(h){ return (typeof h.label==='object') ? (h.label[LANG]||h.label.en) : h.label; }
 function renderHabits(){
+  if(P.firstRun&&P.firstRun.active) renderFirstRunCard(); // ticks the "first habit" step the moment it's checked
   const list=document.getElementById('dashHabitsList'); if(!list) return;
   const habits=P.habits||[];
   if(!habits.length){
@@ -8299,6 +8363,7 @@ document.getElementById('dashHabitAddBtn').addEventListener('click',addHabit);
 document.getElementById('dashHabitAdd').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addHabit(); } });
 function launchApp(){
   LANG=P.lang||'ar';
+  initFirstRun();
   document.getElementById('mainNav').classList.remove('hidden');
   document.getElementById('mainWrap').classList.remove('hidden');
   document.getElementById('mainFooter').classList.remove('hidden');
