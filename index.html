@@ -576,6 +576,28 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .rem-row select{ font:inherit; padding:6px 8px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); min-height:38px; }
   .rem-note{ font-size:0.74rem; color:var(--ink-soft); line-height:1.6; margin:6px 0 0; }
   .push-tip{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+
+  /* ---- install + reminders guide (bottom sheet) ---- */
+  .sheet-backdrop{ position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.45); display:flex; align-items:flex-end; justify-content:center; animation:sheetFade .2s ease; }
+  .sheet{ width:100%; max-width:520px; background:var(--card); color:var(--ink); border-radius:22px 22px 0 0; padding:20px 18px calc(18px + env(safe-area-inset-bottom)); box-shadow:0 -10px 40px rgba(0,0,0,.3); animation:sheetUp .28s cubic-bezier(.2,.9,.3,1); max-height:88dvh; overflow:auto; }
+  @media(min-width:760px){ .sheet-backdrop{ align-items:center; } .sheet{ border-radius:22px; } }
+  @keyframes sheetUp{ from{ transform:translateY(40px); opacity:0; } to{ transform:none; opacity:1; } }
+  @keyframes sheetFade{ from{ opacity:0; } to{ opacity:1; } }
+  .sheet .grab{ width:44px; height:5px; border-radius:999px; background:var(--line); margin:-6px auto 14px; }
+  .sheet h3{ margin:0 0 6px; font-family:var(--font-head); color:var(--heading); font-size:1.15rem; text-align:center; }
+  .sheet .sub{ text-align:center; font-size:0.86rem; color:var(--ink-soft); line-height:1.7; margin:0 0 14px; }
+  .sheet .steps{ display:flex; flex-direction:column; gap:10px; margin:0 0 14px; }
+  .sheet .step{ display:flex; align-items:center; gap:12px; background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px 12px; font-size:0.88rem; }
+  .sheet .step .n{ width:28px; height:28px; border-radius:50%; background:var(--accent-deep); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; }
+  .sheet .step .ic{ font-size:1.3rem; margin-inline-start:auto; }
+  .sheet .kbd{ display:inline-block; border:1px solid var(--line); border-radius:6px; padding:0 6px; background:var(--card); font-weight:700; }
+  .sheet .actions{ display:flex; flex-direction:column; gap:8px; }
+  .sheet .actions .setup-btn{ margin:0; }
+  .sheet .actions .ghost{ background:none; border:none; color:var(--ink-soft); font:inherit; font-weight:700; font-size:0.84rem; padding:10px; cursor:pointer; }
+  .sheet .choice{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 2px; border-top:1px solid var(--line); font-size:0.88rem; }
+  .sheet .choice:first-of-type{ border-top:none; }
+  .sheet .choice input{ width:22px; height:22px; }
+  .sheet .hint-arrow{ text-align:center; font-size:1.6rem; animation:bcFloat 1.4s ease-in-out infinite; margin-top:6px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -2061,6 +2083,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
 <footer class="hidden" id="mainFooter">🌱<div style="font-size:0.6rem;opacity:0.4;margin-top:4px;" id="footerVersion"></div></footer>
 
+<!-- install / reminders guide: a bottom sheet shown once per visit at most -->
+<div class="sheet-backdrop hidden" id="guideSheet" role="dialog" aria-modal="true"><div class="sheet" id="guideSheetBody"></div></div>
+
 <!-- ============ BOTTOM NAV (mobile app-shell navigation) ============ -->
 <nav id="bottomNav" class="hidden" aria-label="Main">
   <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic" aria-hidden="true">🏠</span><span data-i18n="bottom_nav_home"></span></button>
@@ -2144,7 +2169,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.41.1';
+const APP_VERSION='v1.42.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4060,7 +4085,7 @@ function renderReminderSettings(){
 function renderHomePushTip(){
   const box=document.getElementById('homePushTip'); if(!box) return;
   const ar=LANG==='ar';
-  if(PushService.prefs().enabled||P._pushTipDismissed||(P.firstRun&&P.firstRun.active)){ box.innerHTML=''; return; }
+  if(PushService.prefs().enabled||P._pushTipDismissed||(P.firstRun&&P.firstRun.active)||!(snoozed('mp_notify_snooze')||snoozed('mp_install_snooze')||lsGet('mp_install_never')==='1')){ box.innerHTML=''; return; }
   const iosInstall=PushService.isIOS()&&!PushService.standalone();
   if(!PushService.supported()&&!iosInstall){ box.innerHTML=''; return; }
   box.innerHTML=`<div class="dash-card push-tip"><span style="font-size:1.8rem;">🔔</span><div style="flex:1;"><b>${ar?'تبي تذكير بالصلاة وسلسلتك؟':'Want reminders for prayers and your streak?'}</b>
@@ -4069,6 +4094,94 @@ function renderHomePushTip(){
   const on=document.getElementById('pushTipOn');
   if(on) on.onclick=async()=>{ try{ await PushService.enable(); showToast(ar?'✅ التذكيرات شغالة':'✅ Reminders are on','success'); PushService.reportDay(); renderHomePushTip(); }catch(e){ showToast(e.message,'error'); } };
   document.getElementById('pushTipNo').onclick=()=>{ P._pushTipDismissed=true; storageSet('profile',JSON.stringify(P)); renderHomePushTip(); };
+}
+
+
+/* ================= INSTALL + REMINDERS GUIDE =================
+   In a phone browser: explain (one line) why to add it to the Home Screen
+   and show the exact steps for that phone — or a one-tap Install on
+   Android/Chrome. Opened from the Home Screen (or on a computer): ask, in
+   our words first, whether they want reminders; only "Yes" triggers the
+   browser's permission prompt. Snoozes are per device (localStorage). */
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredInstallPrompt=e; });
+window.addEventListener('appinstalled',()=>{ deferredInstallPrompt=null; lsSet('mp_install_done','1'); closeGuideSheet(); });
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function snoozed(k){ const v=+lsGet(k)||0; return v>Date.now(); }
+function snooze(k,days){ lsSet(k,String(Date.now()+days*864e5)); }
+function isMobileDevice(){ return PushService.isIOS() || /android/i.test(navigator.userAgent); }
+function closeGuideSheet(){ const el=document.getElementById('guideSheet'); if(el) el.classList.add('hidden'); }
+function openGuideSheet(html,wire){
+  const el=document.getElementById('guideSheet'), body=document.getElementById('guideSheetBody'); if(!el||!body) return;
+  body.innerHTML='<div class="grab"></div>'+html; el.classList.remove('hidden');
+  el.onclick=e=>{ if(e.target===el) closeGuideSheet(); };
+  if(wire) wire(body);
+}
+let _guideShownThisVisit=false;
+function maybeShowGuide(){
+  if(_guideShownThisVisit || usernameHardGateActive() || document.querySelector('.overlay.open')) return;
+  const ar=LANG==='ar', standalone=PushService.standalone(), mobile=isMobileDevice();
+  // 1) phone browser, not installed yet → add to Home Screen
+  if(mobile && !standalone && lsGet('mp_install_never')!=='1' && !snoozed('mp_install_snooze')){
+    _guideShownThisVisit=true; showInstallGuide(); return;
+  }
+  // 2) installed (or a computer) → reminders, if not already on
+  const pf=PushService.prefs();
+  if(PushService.supported() && !pf.enabled && Notification.permission!=='denied' && lsGet('mp_notify_never')!=='1' && !snoozed('mp_notify_snooze') && (standalone||!mobile)){
+    _guideShownThisVisit=true; showNotifyGuide(); return;
+  }
+}
+function showInstallGuide(){
+  const ar=LANG==='ar', ua=navigator.userAgent, ios=PushService.isIOS();
+  const inApp=typeof isLikelyInAppBrowser==='function'&&isLikelyInAppBrowser();
+  const iosOther=ios&&/CriOS|FxiOS|EdgiOS/i.test(ua);
+  const step=(n,t,ic)=>`<div class="step"><span class="n">${n}</span><span>${t}</span><span class="ic">${ic||''}</span></div>`;
+  let steps='', primary='';
+  if(inApp){
+    steps=step(1,ar?'اضغط زر القائمة (⋯) بأعلى الصفحة':'Tap the menu (⋯) at the top','⋯')+step(2,ar?'اختر «افتح في المتصفح» (Safari أو Chrome)':'Choose “Open in browser” (Safari or Chrome)','🧭')+step(3,ar?'وبعدها بنعلمك كيف تضيفه للشاشة الرئيسية':'Then we’ll show you how to add it to your Home Screen','📲');
+  } else if(ios){
+    steps=step(1,iosOther?(ar?'اضغط زر المشاركة <span class="kbd">⬆️</span> بشريط العنوان فوق':'Tap Share <span class="kbd">⬆️</span> in the address bar'):(ar?'اضغط زر المشاركة <span class="kbd">⬆️</span> تحت بالسفاري':'Tap Share <span class="kbd">⬆️</span> at the bottom of Safari'),'⬆️')
+      +step(2,ar?'انزل واختر <b>«إضافة إلى الشاشة الرئيسية»</b>':'Scroll and tap <b>“Add to Home Screen”</b>','➕')
+      +step(3,ar?'اضغط <b>«إضافة»</b> وافتح مخططي من أيقونته':'Tap <b>“Add”</b>, then open My Planner from its icon','🗓️');
+  } else if(deferredInstallPrompt){
+    primary=`<button type="button" class="setup-btn" id="gsInstall">📲 ${ar?'ثبّت التطبيق':'Install the app'}</button>`;
+  } else {
+    steps=step(1,ar?'اضغط القائمة <span class="kbd">⋮</span> فوق يمين':'Tap the menu <span class="kbd">⋮</span> at the top right','⋮')
+      +step(2,ar?'اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>':'Choose <b>“Install app”</b> or <b>“Add to Home screen”</b>','➕')
+      +step(3,ar?'افتح مخططي من أيقونته':'Open My Planner from its icon','🗓️');
+  }
+  openGuideSheet(`<h3>📲 ${ar?'خلّ مخططي على شاشتك الرئيسية':'Put My Planner on your Home Screen'}</h3>
+    <p class="sub">${inApp?(ar?'أنت فاتحه من داخل تطبيق ثاني — افتحه بالمتصفح عشان تقدر تثبته.':'You opened it inside another app — open it in your browser so you can install it.')
+      :(ar?'ينفتح مثل تطبيق حقيقي بملء الشاشة، ولازم عشان توصلك تذكيرات الصلاة وسلسلتك.':'It opens like a real app, full screen — and it’s needed to get reminders for prayers and your streak.')}</p>
+    ${steps?`<div class="steps">${steps}</div>`:''}
+    <div class="actions">${primary}<button type="button" class="setup-btn" id="gsLater" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">${ar?'تمام، بعدين':'OK, later'}</button><button type="button" class="ghost" id="gsNever">${ar?'لا تذكرني مرة ثانية':'Don’t show this again'}</button></div>
+    ${ios&&!iosOther&&!inApp?`<div class="hint-arrow">⬇️</div>`:''}`,
+  body=>{
+    const inst=body.querySelector('#gsInstall');
+    if(inst) inst.onclick=async()=>{ try{ deferredInstallPrompt.prompt(); const r=await deferredInstallPrompt.userChoice; deferredInstallPrompt=null; if(r&&r.outcome==='accepted'){ lsSet('mp_install_done','1'); closeGuideSheet(); showToast(ar?'✅ انضاف — افتحه من أيقونته':'✅ Installed — open it from its icon','success'); } }catch(e){ closeGuideSheet(); } };
+    body.querySelector('#gsLater').onclick=()=>{ snooze('mp_install_snooze',3); closeGuideSheet(); };
+    body.querySelector('#gsNever').onclick=()=>{ lsSet('mp_install_never','1'); closeGuideSheet(); };
+  });
+}
+function showNotifyGuide(){
+  const ar=LANG==='ar', firstOpen=PushService.standalone()&&lsGet('mp_standalone_seen')!=='1';
+  lsSet('mp_standalone_seen','1');
+  const ch=(id,label,on)=>`<label class="choice"><span>${label}</span><input type="checkbox" id="${id}"${on?' checked':''}></label>`;
+  openGuideSheet(`<h3>${firstOpen?(ar?'✅ صار عندك التطبيق!':'✅ You’ve got the app!'):''}${firstOpen?'<br>':''}🔔 ${ar?'تبي تذكيرات؟':'Want reminders?'}</h3>
+    <p class="sub">${ar?'نذكّرك باللي تختاره بس — وتقدر تغيّره أو توقفه من الإعدادات بأي وقت.':'We only remind you about what you pick — change or stop it any time in Settings.'}</p>
+    <div>${ch('gnPray',ar?'🕌 أوقات الصلاة':'🕌 Prayer times',true)}${ch('gnMorning',ar?'☀️ خطة الصباح (٨:٠٠)':'☀️ Morning plan (8:00)',true)}${ch('gnEvening',ar?'🔥 لو سلسلتك بخطر (٩ م)':'🔥 If a streak is at risk (9 PM)',true)}${ch('gnRamadan',ar?'🌙 السحور والإفطار برمضان':'🌙 Suhoor & iftar in Ramadan',true)}</div>
+    <div class="actions" style="margin-top:14px;"><button type="button" class="setup-btn" id="gnYes">🔔 ${ar?'إيه، شغّلها':'Yes, turn them on'}</button><button type="button" class="ghost" id="gnNo">${ar?'مو الحين':'Not now'}</button></div>
+    <p class="sub" style="font-size:0.74rem;margin:8px 0 0;">${ar?'بعد ما تضغط «إيه» بيطلب منك جهازك السماح بالإشعارات.':'After “Yes”, your phone will ask you to allow notifications.'}</p>`,
+  body=>{
+    body.querySelector('#gnYes').onclick=async()=>{
+      const g=id=>body.querySelector('#'+id).checked;
+      P.pushPrefs={...PushService.prefs(), prayers:g('gnPray'), prayerLead:0, morning:g('gnMorning')?'08:00':null, evening:g('gnEvening'), ramadan:g('gnRamadan')};
+      try{ await PushService.enable(); closeGuideSheet(); playSfx('success'); showToast(ar?'✅ التذكيرات شغالة — تقدر تعدلها من الإعدادات':'✅ Reminders are on — adjust them in Settings','success'); PushService.reportDay(); renderHomePushTip(); }
+      catch(e){ closeGuideSheet(); showToast(e.message,'error'); }
+    };
+    body.querySelector('#gnNo').onclick=()=>{ snooze('mp_notify_snooze',7); closeGuideSheet(); };
+  });
 }
 
 /* opens the recurring-commitments editor on the Schedule page */
@@ -9434,6 +9547,7 @@ function refreshHome(){
   renderRamadanCard();
   renderHomeCheers();
   renderHomePushTip();
+  setTimeout(maybeShowGuide,2500);
   renderHomeAquarium();
 }
 function homeDateLabel(dateObj){
