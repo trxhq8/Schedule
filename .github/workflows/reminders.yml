@@ -14,4 +14,18 @@ jobs:
   send:
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    steps
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: reminders
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        working-directory: reminders
+        run: npm install --no-audit --no-fund --omit=dev
+      - name: Send due reminders
+        working-directory: reminders
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node send.js
