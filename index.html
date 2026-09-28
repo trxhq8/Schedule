@@ -598,6 +598,38 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .sheet .choice:first-of-type{ border-top:none; }
   .sheet .choice input{ width:22px; height:22px; }
   .sheet .hint-arrow{ text-align:center; font-size:1.6rem; animation:bcFloat 1.4s ease-in-out infinite; margin-top:6px; }
+
+  /* ---- aquarium v2 ---- */
+  .aq-tank{ background:linear-gradient(180deg,#63d2f2 0%,#249ad0 42%,#0e5f96 100%); }
+  .aq-tank.night{ background:linear-gradient(180deg,#0f3b63 0%,#0a2848 50%,#051528 100%); }
+  .aq-murk{ background:radial-gradient(ellipse at 50% 55%,rgba(120,150,110,.35),rgba(70,90,70,.55)); }
+  .aq-swim{ position:absolute; left:var(--x0); animation:aqMove var(--dur) ease-in-out infinite alternate; animation-delay:var(--dl); }
+  @keyframes aqMove{ from{ left:var(--x0); } to{ left:var(--x1); } }
+  .aq-dir{ display:inline-block; animation:aqFlip calc(var(--dur) * 2) steps(1,end) infinite; animation-delay:var(--dl); }
+  @keyframes aqFlip{ 0%{ transform:scaleX(-1); } 50%{ transform:scaleX(1); } }
+  .aq-bob{ display:inline-block; animation:aqBob var(--bob,2.6s) ease-in-out infinite; line-height:1; }
+  .aq-bob svg{ display:block; }
+  .aq-bob.r-uncommon{ filter:drop-shadow(0 0 4px rgba(90,170,255,.95)); }
+  .aq-bob.r-epic{ filter:drop-shadow(0 0 6px rgba(195,125,255,1)); }
+  .aq-bob.r-mythic{ filter:drop-shadow(0 0 7px rgba(255,80,90,1)); animation:aqBob var(--bob,2.6s) ease-in-out infinite, aqPulseRed 2s ease-in-out infinite; }
+  .aq-bob.r-legendary{ filter:drop-shadow(0 0 7px #ffd76a) drop-shadow(0 0 16px rgba(255,190,60,.85)); animation:aqBob var(--bob,2.6s) ease-in-out infinite, aqPulseGold 2.4s ease-in-out infinite; }
+  @keyframes aqPulseRed{ 0%,100%{ filter:drop-shadow(0 0 5px rgba(255,80,90,.8)); } 50%{ filter:drop-shadow(0 0 12px rgba(255,80,90,1)); } }
+  @keyframes aqPulseGold{ 0%,100%{ filter:drop-shadow(0 0 6px #ffd76a) drop-shadow(0 0 12px rgba(255,190,60,.6)); } 50%{ filter:drop-shadow(0 0 10px #fff0b0) drop-shadow(0 0 24px rgba(255,190,60,1)); } }
+  .aq-spark{ position:absolute; width:4px; height:4px; border-radius:50%; background:#fff3b0; box-shadow:0 0 6px #ffd76a; animation:aqSpark 1.8s ease-out infinite; pointer-events:none; }
+  @keyframes aqSpark{ 0%{ transform:translate(0,0) scale(1); opacity:1; } 100%{ transform:translate(12px,-14px) scale(0); opacity:0; } }
+  .aq-ray-flap{ animation:aqFlap 1.6s ease-in-out infinite; transform-origin:center; }
+  @keyframes aqFlap{ 0%,100%{ transform:scaleY(1); } 50%{ transform:scaleY(.7); } }
+  .aq-deco{ position:absolute; pointer-events:none; }
+  .aq-chest{ animation:aqPulseGold 3s ease-in-out infinite; }
+  .aq-level{ position:absolute; top:8px; inset-inline-start:10px; font-size:0.66rem; font-weight:800; color:#fff; background:rgba(0,0,0,.28); border-radius:999px; padding:3px 8px; pointer-events:none; }
+  .aq-tip{ position:absolute; transform:translate(-50%,-120%); background:rgba(255,255,255,.95); color:#0b2a40; font-size:0.7rem; font-weight:800; border-radius:10px; padding:4px 8px; white-space:nowrap; pointer-events:none; animation:sheetFade .2s ease; z-index:5; }
+  .aq-flake{ position:absolute; top:-6px; width:4px; height:4px; border-radius:1px; background:#f6c56b; animation:aqFlake 3s linear forwards; }
+  @keyframes aqFlake{ to{ transform:translateY(260px) rotate(200deg); opacity:.2; } }
+  .aq-tank.feeding .aq-swim{ top:18% !important; transition:top 1.2s ease; }
+  .aq-tools{ display:flex; gap:8px; margin-top:10px; }
+  .aq-tools button{ flex:1; min-height:42px; border-radius:12px; border:1px solid var(--line); background:var(--card); font:inherit; font-weight:800; cursor:pointer; color:var(--ink); }
+  .aq-legend{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:0.7rem; color:var(--ink-soft); }
+  .aq-legend span{ border:1px solid var(--line); border-radius:999px; padding:2px 8px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -2169,7 +2201,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.42.0';
+const APP_VERSION='v1.43.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3802,10 +3834,51 @@ function openQada(){
   draw(); document.getElementById('overlay').classList.add('open');
 }
 
-/* ================= AQUARIUM =================
-   Your collected fish swim in your own tank. The water is as clear as
-   today is complete — finish today's health tasks and it sparkles. */
-const RARITY_FISH_SIZE={common:20,uncommon:24,epic:30,mythic:36,legendary:44};
+/* ================= AQUARIUM (v2) =================
+   Your collected fish swim in your own tank. Each species gets a creature
+   that fits its family (sharks are sharks, puffers puff, rays glide on the
+   bottom, eels slither, seahorses bob), a size and glow by rarity, and a
+   depth/speed that suits it. The water is as clear as today is complete;
+   the tank itself grows with your collection. */
+const AQ_FAM={
+  shark:'Carcharhinidae Carchariidae Galeocerdonidae Ginglymostomatidae Hemigaleidae Hemiscylliidae Rhincodontidae Sphyrnidae Stegostomatidae Triakidae',
+  ray:'Dasyatidae Glaucostegidae Gymnuridae Mobulidae Myliobatidae Narcinidae Pristidae Rajidae Rhinidae Torpedinidae',
+  eel:'Congridae Muraenesocidae Muraenidae Ophichthidae Ophidiidae',
+  puffer:'Tetraodontidae Ostraciidae Balistidae Monacanthidae Triacanthidae Diodontidae Molidae',
+  seahorse:'Syngnathidae Centriscidae Pegasidae',
+  flat:'Bothidae Citharidae Cynoglossidae Paralichthyidae Psettodidae Soleidae',
+  reef:'Acanthuridae Apogonidae Chaetodontidae Pomacanthidae Pomacentridae Labridae Siganidae Pseudochromidae Anthiadidae Blenniidae Gobiidae Tripterygiidae Opistognathidae Microdesmidae Callionymidae Ephippidae Drepaneidae Scatophagidae Priacanthidae Kyphosidae Cichlidae Mullidae Antennariidae Pentacerotidae Oxudercidae Xenisthmidae Trichonotidae',
+  venom:'Scorpaenidae Synanceiidae Tetrarogidae Apistidae Platycephalidae Uranoscopidae Triglidae Dactylopteridae Batrachoididae Plotosidae',
+  big:'Istiophoridae Scombridae Coryphaenidae Carangidae Rachycentridae Sphyraenidae Megalopidae Echeneidae Lobotidae'
+};
+const AQ_KIND={}; Object.entries(AQ_FAM).forEach(([k,v])=>v.split(' ').forEach(f=>AQ_KIND[f]=k));
+function aqKind(sp){ return AQ_KIND[sp.family]||'fish'; }
+const AQ_BASE={common:20,uncommon:23,epic:27,mythic:31,legendary:36};
+const AQ_SVG={
+  ray:(c1,c2,uid)=>`<svg viewBox="0 0 64 40" width="100%" height="100%"><defs><linearGradient id="rg${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><g class="aq-ray-flap"><path d="M4 20 Q20 2 36 16 Q44 4 60 20 Q44 36 36 24 Q20 38 4 20Z" fill="url(#rg${uid})"/></g><path d="M36 20 L62 22" stroke="${c2}" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="17" r="1.6" fill="#10202e"/><circle cx="14" cy="23" r="1.6" fill="#10202e"/></svg>`,
+  eel:(c1,c2)=>`<svg viewBox="0 0 80 24" width="100%" height="100%"><path d="M4 12 C14 2 22 22 32 12 S50 2 60 12 S72 20 78 12" fill="none" stroke="${c1}" stroke-width="7" stroke-linecap="round"/><path d="M4 12 C14 2 22 22 32 12 S50 2 60 12 S72 20 78 12" fill="none" stroke="${c2}" stroke-width="2" stroke-linecap="round" opacity=".6"/><circle cx="6" cy="10" r="1.6" fill="#fff"/><circle cx="6" cy="10" r=".8" fill="#111"/></svg>`,
+  seahorse:(c1,c2)=>`<svg viewBox="0 0 30 50" width="100%" height="100%"><path d="M16 4 Q24 4 24 11 Q24 15 19 16 Q24 22 22 30 Q20 38 14 40 Q10 42 12 46 Q15 49 18 46" fill="none" stroke="${c1}" stroke-width="6" stroke-linecap="round"/><path d="M16 4 Q10 5 6 9 L13 11" fill="${c1}"/><path d="M22 20 Q27 22 25 27" fill="none" stroke="${c2}" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="9" r="1.6" fill="#111"/></svg>`,
+  flat:(c1,c2)=>`<svg viewBox="0 0 60 30" width="100%" height="100%"><ellipse cx="28" cy="16" rx="24" ry="11" fill="${c1}"/><ellipse cx="28" cy="16" rx="24" ry="11" fill="none" stroke="${c2}" stroke-width="2" stroke-dasharray="3 2"/><path d="M52 16 L60 9 L60 23Z" fill="${c2}"/><circle cx="12" cy="11" r="2.2" fill="#fff"/><circle cx="12" cy="11" r="1.1" fill="#111"/><circle cx="17" cy="9" r="2.2" fill="#fff"/><circle cx="17" cy="9" r="1.1" fill="#111"/></svg>`
+};
+function aqColors(sp){ const h=hashSeed(sp.id)%360; return [`hsl(${h},60%,66%)`,`hsl(${(h+30)%360},55%,46%)`]; }
+function aqCreature(sp,scale){
+  const kind=aqKind(sp), rar=sp.rarity||'common';
+  let size=(AQ_BASE[rar]||24)*scale;
+  if(sp.family==='Rhincodontidae') size*=1.5;           // the whale shark really is huge
+  if(kind==='shark'||kind==='big') size*=1.15;
+  const hue=hashSeed(sp.id)%360;
+  const tint=(rar==='common'||rar==='uncommon')?`filter:hue-rotate(${hue}deg) saturate(1.25);`:'';
+  let inner, w=size;
+  if(AQ_SVG[kind]){ const [c1,c2]=aqColors(sp); const dims={ray:[1.5,.95],eel:[2,.6],seahorse:[.6,1],flat:[1.5,.75]}[kind]; w=size*dims[0];
+    inner=`<span style="display:inline-block;width:${Math.round(size*dims[0])}px;height:${Math.round(size*dims[1])}px;">${AQ_SVG[kind](c1,c2,hashSeed(sp.id))}</span>`; }
+  else { const emo={shark:'🦈',puffer:'🐡',reef:'🐠',venom:'🐠',big:'🐟',fish:'🐟'}[kind];
+    inner=`<span style="font-size:${Math.round(size)}px;${kind==='shark'?'':tint}${kind==='venom'?'filter:hue-rotate(-40deg) saturate(1.6);':''}">${emo}</span>`; }
+  // depth + speed that suit the creature
+  const lane={ shark:[10,40], big:[10,45], reef:[28,58], fish:[22,60], puffer:[30,58], venom:[58,70], ray:[64,74], flat:[70,76], eel:[66,74], seahorse:[34,56] }[kind]||[20,60];
+  const dur={ shark:26, big:18, reef:10, fish:13, puffer:16, venom:22, ray:24, flat:30, eel:28, seahorse:40 }[kind]||14;
+  const range= kind==='seahorse'?[20,40]:[2,84];
+  return {kind, rar, inner, w, lane, dur, range};
+}
 async function aquariumFish(limit){
   let data={}; try{ const raw=await storageGet('collections:animals:fish'); if(raw) data=JSON.parse(raw); }catch(e){}
   const out=[];
@@ -3818,30 +3891,62 @@ async function tankClarity(){
   const total=pr.total-1, done=pr.done-(wl?1:0);
   return total>0?Math.max(0,Math.min(1,done/total)):0.5;
 }
+/* the tank grows with the collection */
+const AQ_LEVELS=[{n:0},{n:3,deco:'coral'},{n:8,deco:'chest'},{n:15,deco:'anchor'},{n:30,deco:'castle'},{n:60,deco:'crystal'}];
+function aqLevel(total){ let l=0; AQ_LEVELS.forEach((x,i)=>{ if(total>=x.n) l=i; }); return l; }
+function aqDecoHtml(level,big){
+  const z=big?1.4:1, out=[];
+  if(level>=1) out.push(`<div class="aq-deco" style="bottom:9%;left:62%;font-size:${Math.round(26*z)}px">🪸</div>`);
+  if(level>=2) out.push(`<div class="aq-deco aq-chest" style="bottom:7%;left:40%;width:${Math.round(30*z)}px;"><svg viewBox="0 0 30 22" width="100%"><rect x="2" y="9" width="26" height="12" rx="2" fill="#8b5a2b"/><path d="M2 10 Q15 0 28 10Z" fill="#a8703a"/><rect x="13" y="10" width="4" height="5" fill="#f5c542"/><path d="M5 9 Q15 4 25 9" stroke="#f5c542" stroke-width="1.5" fill="none"/></svg></div>`);
+  if(level>=3) out.push(`<div class="aq-deco" style="bottom:10%;left:8%;font-size:${Math.round(24*z)}px;transform:rotate(-18deg)">⚓</div>`);
+  if(level>=4) out.push(`<div class="aq-deco" style="bottom:9%;left:80%;font-size:${Math.round(28*z)}px">🏰</div>`);
+  if(level>=5) out.push(`<div class="aq-deco aq-chest" style="bottom:12%;left:25%;font-size:${Math.round(22*z)}px">💎</div>`);
+  return out.join('');
+}
 async function renderAquarium(el,big){
   if(!el) return;
-  const {list,total}=await aquariumFish(big?18:10), clear=await tankClarity(), ar=LANG==='ar';
-  const plants=['🌿','🪸','🌱','🪨','🌿'];
-  let html=`<div class="aq-tank${big?' big':''}">`+[12,42,70].map((l,i)=>`<div class="aq-ray" style="left:${l}%;animation-delay:${-i*2}s"></div>`).join('')+
-    `<div class="aq-sand"></div>`+plants.map((pl,i)=>`<div class="aq-plant" style="left:${6+i*21}%;animation-delay:${-i}s">${pl}</div>`).join('')+
-    Array.from({length:6},(_,i)=>`<div class="aq-bub" style="left:${10+i*15}%;animation-delay:${-i*0.8}s;animation-duration:${4+i%3}s"></div>`).join('');
+  const {list,total}=await aquariumFish(big?24:12), clear=await tankClarity(), ar=LANG==='ar';
+  const hr=new Date().getHours(), night=(hr>=19||hr<5);
+  const level=aqLevel(total), next=AQ_LEVELS[level+1];
+  const plants=['🌿','🌱','🌿','🪨'];
+  let html=`<div class="aq-tank${big?' big':''}${night?' night':''}">`+[12,42,70].map((l,i)=>`<div class="aq-ray" style="left:${l}%;animation-delay:${-i*2}s${night?';opacity:.35':''}"></div>`).join('')+
+    `<div class="aq-sand"></div>`+plants.map((pl,i)=>`<div class="aq-plant" style="left:${4+i*27}%;animation-delay:${-i}s">${pl}</div>`).join('')+aqDecoHtml(level,big)+
+    Array.from({length:7},(_,i)=>`<div class="aq-bub" style="left:${8+i*13}%;animation-delay:${-i*0.8}s;animation-duration:${4+i%3}s"></div>`).join('');
   if(!list.length) html+=`<div class="aq-empty">${ar?'🎣 سجّل أول صيدة بالمقتنيات وبتسبح هني':'🎣 Log your first catch in the Collection and it will swim here'}</div>`;
   list.forEach(({sp},i)=>{
-    const size=(RARITY_FISH_SIZE[sp.rarity]||22)*(big?1.4:1), hue=hashSeed(sp.id)%360;
-    const filt=(sp.rarity==='common'||sp.rarity==='uncommon')?`filter:hue-rotate(${hue}deg) saturate(1.3);`:'';
-    const top=12+((hashSeed(sp.id+'t')%60)), dur=12+(hashSeed(sp.id+'d')%14);
-    html+=`<div class="aq-fishlane" style="top:${top}%"><div class="aq-fish ${sp.rarity}" style="width:100%;animation-duration:${dur}s;animation-delay:${-(hashSeed(sp.id)%dur)}s"><span class="aq-f" style="font-size:${size}px;${filt}">${sp.icon||'🐟'}</span></div></div>`;
+    const c=aqCreature(sp,big?1.25:0.9);
+    const top=c.lane[0]+(hashSeed(sp.id+'t')%Math.max(1,(c.lane[1]-c.lane[0])));
+    const dur=c.dur*(0.85+(hashSeed(sp.id+'d')%30)/100), dl=-((hashSeed(sp.id)%100)/100)*dur*2;
+    const spark=c.rar==='legendary'?`<span class="aq-spark" style="left:-4px;top:40%"></span><span class="aq-spark" style="left:-10px;top:60%;animation-delay:.6s"></span><span class="aq-spark" style="left:-6px;top:20%;animation-delay:1.2s"></span>`:'';
+    html+=`<div class="aq-swim" data-sp="${sp.id}" style="top:${top}%;--x0:${c.range[0]}%;--x1:calc(${c.range[1]}% - ${Math.round(c.w)}px + 20px);--dur:${dur.toFixed(1)}s;--dl:${dl.toFixed(1)}s;"><span class="aq-dir"><span class="aq-bob r-${c.rar}" style="--bob:${(2.2+(hashSeed(sp.id+'b')%10)/10).toFixed(1)}s;position:relative;">${c.inner}${spark}</span></span></div>`;
   });
-  html+=`<div class="aq-murk" style="opacity:${(0.75*(1-clear)).toFixed(2)}"></div></div>`;
+  html+=`<div class="aq-murk" style="opacity:${(0.6*(1-clear)).toFixed(2)}"></div>`;
+  html+=`<div class="aq-level">🐠 ${ar?'مستوى الحوض':'Tank level'} ${level+1}</div></div>`;
   const pct=Math.round(clear*100);
-  html+=`<div class="aq-cap"><span>🐠 <b class="num">${total}</b> ${ar?'سمكة':'fish'} · ${ar?'نقاء الماء':'water'} <b class="num">${pct}%</b></span><span>${pct>=100?(ar?'✨ يلمع!':'✨ Sparkling!'):(ar?'خلّص مهام اليوم وينظف':'finish today to clear it')}</span></div>`;
+  html+=`<div class="aq-cap"><span>🐠 <b class="num">${total}</b> ${ar?'نوع':'species'} · ${ar?'نقاء الماء':'water'} <b class="num">${pct}%</b></span><span>${pct>=100?(ar?'✨ يلمع!':'✨ Sparkling!'):(ar?'خلّص يومك وينظف':'finish today to clear it')}</span></div>`;
+  if(big){
+    html+=`<div class="aq-legend"><span>🟢 ${ar?'شائع':'common'}</span><span style="border-color:#5aaaff">🔵 ${ar?'غير شائع — توهج أزرق':'uncommon — blue glow'}</span><span style="border-color:#c37dff">🟣 ${ar?'ملحمي — بنفسجي':'epic — purple'}</span><span style="border-color:#ff5060">🔴 ${ar?'خرافي — أحمر نابض':'mythic — red pulse'}</span><span style="border-color:#ffd76a">🟡 ${ar?'أسطوري — ذهبي ولمعان':'legendary — gold sparkle'}</span></div>`;
+    if(next) html+=`<p class="panel-sub" style="margin:8px 0 0;">🎁 ${ar?`الزينة الجاية لما توصل ${next.n} نوع`:`Next decoration at ${next.n} species`}</p>`;
+    html+=`<div class="aq-tools"><button type="button" id="aqFeed">🍤 ${ar?'أكّل السمك':'Feed the fish'}</button><button type="button" data-nav="collections" id="aqToColl">🎣 ${ar?'المقتنيات':'Collection'}</button></div>`;
+  }
   el.innerHTML=(big?'':`<div class="dash-title-row"><div class="home-preview-title" style="margin:0 0 8px;">${ar?'🐠 حوضك':'🐠 Your aquarium'}</div><button type="button" class="dash-link" data-nav="collections">${ar?'المقتنيات':'Collection'}</button></div>`)+html;
   const tank=el.querySelector('.aq-tank');
-  if(tank&&!big) tank.onclick=()=>{ document.getElementById('dayTitle').textContent=ar?'🐠 حوضك':'🐠 Your aquarium'; document.getElementById('daySubtitle').textContent='';
-    const body=document.getElementById('cardBody'); body.innerHTML='<div id="aqBig"></div>'; document.getElementById('overlay').classList.add('open'); renderAquarium(document.getElementById('aqBig'),true); };
+  if(!tank) return;
+  if(!big) tank.onclick=()=>{ document.getElementById('dayTitle').textContent=ar?'🐠 حوضك':'🐠 Your aquarium'; document.getElementById('daySubtitle').textContent='';
+    document.getElementById('cardBody').innerHTML='<div id="aqBig"></div>'; document.getElementById('overlay').classList.add('open'); renderAquarium(document.getElementById('aqBig'),true); };
+  else {
+    tank.onclick=e=>{ const f=e.target.closest('.aq-swim'); if(!f) return; const sp=collSpeciesInfo('fish',f.dataset.sp); if(!sp) return;
+      tank.querySelectorAll('.aq-tip').forEach(x=>x.remove());
+      const r=f.getBoundingClientRect(), tr=tank.getBoundingClientRect(), tip=document.createElement('div'); tip.className='aq-tip';
+      tip.textContent=`${collName(sp)} · ${RARITY_TIERS[sp.rarity].icon} ${ar?RARITY_TIERS[sp.rarity].nameAr:RARITY_TIERS[sp.rarity].nameEn}`;
+      tip.style.left=(r.left-tr.left+r.width/2)+'px'; tip.style.top=(r.top-tr.top)+'px'; tank.appendChild(tip); playSfx('pop'); setTimeout(()=>tip.remove(),2200); };
+    const fb=el.querySelector('#aqFeed');
+    if(fb) fb.onclick=()=>{ playSfx('water'); for(let i=0;i<14;i++){ const fl=document.createElement('div'); fl.className='aq-flake'; fl.style.left=(20+Math.random()*60)+'%'; fl.style.animationDelay=(Math.random()*0.8)+'s'; tank.appendChild(fl); setTimeout(()=>fl.remove(),3800); }
+      tank.classList.add('feeding'); setTimeout(()=>tank.classList.remove('feeding'),3200); };
+  }
 }
 function renderHomeAquarium(){ renderAquarium(document.getElementById('homeAquarium'),false); }
-async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.75*(1-c)).toFixed(2); }
+async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.6*(1-c)).toFixed(2); }
 
 /* ================= RAMADAN =================
    Appears by itself: a countdown from 20 Sha'ban, the Ramadan card for the
@@ -3980,10 +4085,15 @@ async function coopState(){
   const hp=COOP_HP_PER_MEMBER*party.length, dealt=party.reduce((a,b)=>a+b.dmg,0);
   return {k, boss:currentCoopBoss(), party:party.sort((a,b)=>b.dmg-a.dmg), hp, dealt, left:Math.max(0,hp-dealt), dead:dealt>=hp};
 }
-async function renderCoopBossCard(){
+let _coopCache={at:0,st:null}, _coopRenderId=0;
+async function renderCoopBossCard(force){
   const box=document.getElementById('coopBossCard'); if(!box) return;
-  const ar=LANG==='ar'; box.innerHTML='';
-  const st=await coopState(), pct=Math.max(0,Math.round(st.left/st.hp*100)), claimed=(P._coopClaimed===st.k);
+  const ar=LANG==='ar', myId=++_coopRenderId;
+  // keep what's on screen while the fresh numbers load (clearing it first made the page jump)
+  let st=_coopCache.st;
+  if(force || !st || Date.now()-_coopCache.at>45000){ st=await coopState(); _coopCache={at:Date.now(),st}; }
+  if(myId!==_coopRenderId) return; // a newer render already started
+  const pct=Math.max(0,Math.round(st.left/st.hp*100)), claimed=(P._coopClaimed===st.k);
   box.innerHTML=`<div class="dash-card boss-coop${st.dead?' dead':''}"><div class="bc-top"><span class="bc-ic">${st.boss.icon}</span><div style="flex:1;">
       <h3>${ar?'⚔️ زعيم الأسبوع':'⚔️ Boss of the week'}: ${ar?st.boss.ar:st.boss.en}</h3>
       <div class="bc-sub">${st.party.length>1?(ar?`أنت و${st.party.length-1} من أصدقائك`:`You and ${st.party.length-1} friend${st.party.length>2?'s':''}`):(ar?'لحالك — ضيف أصدقاء يساعدونك':'Solo — add friends to help')} · ${ar?`باقي ${daysLeftInWeek()} أيام`:`${daysLeftInWeek()} days left`}</div></div></div>
@@ -3995,7 +4105,7 @@ async function renderCoopBossCard(){
     <div class="bc-how">${ar?`تضربه بيومك: تمرين +${BOSS_DMG.workout} · يوم كل الصلوات +${BOSS_DMG.prayerDay} · هدف الماء +${BOSS_DMG.water} · يوم أكل +${BOSS_DMG.nutrition} · كل عادة +${BOSS_DMG.habit} · وزن +${BOSS_DMG.weight}`:`You hit it by living your week: workout +${BOSS_DMG.workout} · all prayers +${BOSS_DMG.prayerDay} · water goal +${BOSS_DMG.water} · nutrition day +${BOSS_DMG.nutrition} · each habit +${BOSS_DMG.habit} · weigh-in +${BOSS_DMG.weight}`}</div></div>`;
   const cb=document.getElementById('coopClaim');
   if(cb) cb.onclick=async()=>{ if(P._coopClaimed===st.k) return; P._coopClaimed=st.k; P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.coopKills=(P.lifetimeStats.coopKills||0)+1;
-    await awardCoins(COOP_REWARD); playSfx('fanfare'); await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderCoopBossCard(); };
+    await awardCoins(COOP_REWARD); playSfx('fanfare'); await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderCoopBossCard(true); };
 }
 
 
@@ -4184,6 +4294,10 @@ function showNotifyGuide(){
   });
 }
 
+/* a small JPEG thumbnail of a catch photo (for friends) */
+function makeThumb(dataUrl,max){
+  return new Promise(res=>{ const img=new Image(); img.onload=()=>{ const k=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.width*k)); c.height=Math.max(1,Math.round(img.height*k)); c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.62)); }; img.onerror=()=>res(''); img.src=dataUrl; });
+}
 /* opens the recurring-commitments editor on the Schedule page */
 function openRoutineSetup(){
   const card=document.getElementById('todoSetupCard'); if(!card) return;
@@ -8479,12 +8593,17 @@ function challengeActionLink(metric, c){
   }[metric];
   return m?`<button type="button" class="dash-link" data-nav="${m[0]}" style="margin-top:6px;">${m[1]}</button>`:'';
 }
-let challengesTab='week';
-async function renderChallengesSection(){
+let challengesTab='week', _chProgress=null;
+async function renderChallengesSection(tabOnly){
   const list=document.getElementById('challengesList');
-  list.innerHTML=`<div class="dash-empty">…</div>`;
-  const {progress}=await checkAndAwardChallenges(); // also awards+persists any just-completed challenge
-  renderCoopBossCard();
+  let progress;
+  if(tabOnly && _chProgress){ progress=_chProgress; }
+  else {
+    if(!list.children.length) list.innerHTML=`<div class="dash-empty">…</div>`; // only on the very first load
+    ({progress}=await checkAndAwardChallenges()); // also awards+persists any just-completed challenge
+    _chProgress=progress;
+    renderCoopBossCard();
+  }
   const ar=LANG==='ar';
   const inTab=CHALLENGES_CONFIG.filter(c=>c.period===challengesTab);
   const doable=inTab.filter(challengeNeedsMet);
@@ -8514,7 +8633,7 @@ async function renderChallengesSection(){
     return `<div class="ch-section-title">${CHALLENGE_CATS[cat][LANG]}</div>`+items.map(cardHtml).join('');
   }).join('');
   list.innerHTML=tabs+(sections||`<div class="dash-empty">${t('challenges_empty')}</div>`);
-  list.querySelectorAll('[data-cht]').forEach(b=>b.addEventListener('click',()=>{ challengesTab=b.dataset.cht; playSfx&&playSfx('tap'); renderChallengesSection(); }));
+  list.querySelectorAll('[data-cht]').forEach(b=>b.addEventListener('click',()=>{ challengesTab=b.dataset.cht; renderChallengesSection(true); }));
 }
 
 /* ================= FRIENDS ARCHITECTURE (real Firebase Auth + Firestore) =================
@@ -8614,7 +8733,7 @@ const PublicProfileService={
     P.publicProfile.privacy={...P.publicProfile.privacy, ...partial};
     await storageSet('profile',JSON.stringify(P));
     await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, privacy:P.publicProfile.privacy, updatedAt:serverNow()},{merge:true});
-    if('collection' in partial) await this.syncWholeCollection(); // hides (deletes) or re-publishes it
+    if('collection' in partial){ await this.syncWholeCollection(); await this.syncAllPhotoThumbs(); } // hides (deletes) or re-publishes it
     if(partial.leaderboardGlobal===false) await leaderboardEntriesCol().doc(currentUser.uid).delete().catch(()=>{});
     else if(partial.leaderboardGlobal===true) await this.syncStats();
   },
@@ -8630,6 +8749,7 @@ const PublicProfileService={
       await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow()},{merge:true});
       // one-time: publish the look + collection for people who had them before this existed
       if(!P._showcaseV1Done){ await this.syncShowcase(); if(await this.syncWholeCollection()){ P._showcaseV1Done=true; storageSet('profile',JSON.stringify(P)); } }
+      if(!P._photoThumbsV1){ if(await this.syncAllPhotoThumbs()){ P._photoThumbsV1=true; storageSet('profile',JSON.stringify(P)); } }
       if(P.publicProfile.privacy.leaderboardGlobal){
         await leaderboardEntriesCol().doc(currentUser.uid).set({
           uid:currentUser.uid, displayName:P.publicProfile.displayName, avatar:P.publicProfile.avatar,
@@ -8658,6 +8778,38 @@ const PublicProfileService={
     if((P.publicProfile.privacy||{}).collection===false) return;
     const map={}; Object.entries(data||{}).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) map[sid]=n; });
     try{ await usersCol().doc(currentUser.uid).update({['collection.'+catId]:map, updatedAt:serverNow()}); }catch(e){}
+  },
+  /* catch photos stay private at full size; friends get a small thumbnail
+     (~4 KB) on this same public doc, only while collection privacy is on.
+     A budget keeps the doc far below Firestore's 1 MiB limit. */
+  async syncPhotoThumb(catId,sid,dataUrl){
+    if(!this.hasProfile()||!fbDb||!currentUser) return;
+    const key=catId+'__'+sid; P._thumbIndex=P._thumbIndex||{};
+    try{
+      if(!dataUrl || (P.publicProfile.privacy||{}).collection===false){ delete P._thumbIndex[key]; await usersCol().doc(currentUser.uid).update({['photos.'+key]:firebase.firestore.FieldValue.delete()}); return; }
+      const thumb=await makeThumb(dataUrl,112);
+      const used=Object.entries(P._thumbIndex).filter(([k])=>k!==key).reduce((a,[,v])=>a+v,0);
+      if(used+thumb.length>420000) return; // over budget: keep the rest, skip this one
+      P._thumbIndex[key]=thumb.length;
+      await usersCol().doc(currentUser.uid).update({['photos.'+key]:thumb});
+    }catch(e){}
+  },
+  async syncAllPhotoThumbs(){
+    if(!this.hasProfile()||!fbDb||!currentUser) return false;
+    const map={}; let used=0; P._thumbIndex={};
+    if((P.publicProfile.privacy||{}).collection!==false){
+      for(const cat of ANIMAL_CATEGORIES){
+        let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
+        for(const [sid,rec] of Object.entries(data)){
+          if(!rec||!rec.hasPhoto) continue;
+          let ph=null; try{ const raw=await storageGet('collection-photo:'+cat.id+':'+sid); ph=raw?JSON.parse(raw):null; }catch(e){}
+          if(!ph||!ph.dataUrl) continue;
+          const th=await makeThumb(ph.dataUrl,112); if(used+th.length>420000) break;
+          map[cat.id+'__'+sid]=th; used+=th.length; P._thumbIndex[cat.id+'__'+sid]=th.length;
+        }
+      }
+    }
+    try{ await usersCol().doc(currentUser.uid).update({photos:map}); return true; }catch(e){ return false; }
   },
   async syncWholeCollection(){
     if(!this.hasProfile()||!fbDb||!currentUser) return false;
@@ -9323,11 +9475,11 @@ async function openFriendCollectionView(uid,displayName){
         <div class="fc-chips">${cats.map(c=>`<button type="button" data-fcat="${c.id}" class="${c.id===curCat?'active':''}">${c.icon} ${escapeHtml(collCatName(c))} <span class="num">${Object.keys(theirs[c.id]||{}).length}/${collSpeciesList(c.id).length}</span></button>`).join('')}</div>
         <div class="fc-chips">${[['all',ar?'الكل':'All'],['theirs',ar?'اللي عنده':'What they have'],['missing',ar?'عنده وما عندك':'They have, you don’t'],['both',ar?'عندكم الاثنين':'You both have']].map(([k,l])=>`<button type="button" data-ffil="${k}" class="${k===filter?'active':''}">${l}</button>`).join('')}</div>
         <div class="coll-species-grid">${shown.map(sp=>{
-          const n=th[sp.id], tier=RARITY_TIERS[sp.rarity];
+          const n=th[sp.id], tier=RARITY_TIERS[sp.rarity], photo=(profile.photos||{})[curCat+'__'+sp.id];
           return `<div class="coll-species-card tier-${sp.rarity} ${n?'collected':'locked'}" style="cursor:default;">
             ${me[sp.id]?`<span class="you-have">${ar?'✓ عندك':'✓ you'}</span>`:''}
             <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
-            <div class="thumb">${n?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon)}</div>
+            <div class="thumb">${photo&&/^data:image\/jpeg;base64,/.test(photo)?`<img src="${photo}" alt="">`:(n?sp.icon:('<span class="lock-ic">🔒</span>'+sp.icon))}</div>
             <div class="name">${escapeHtml(collName(sp))}</div>
             <div class="meta">${n?(safeNum(n)+' '+(ar?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
           </div>`; }).join('')||`<div class="dash-empty">${ar?'ما في شي هني':'Nothing here'}</div>`}</div>`;
@@ -11231,6 +11383,7 @@ async function collRemovePhoto(){
   collPhotoCache[collCurrentCat+':'+collCurrentSpecies]=null;
   renderCollSpeciesDetail();
   await storageSet('collection-photo:'+collCurrentCat+':'+collCurrentSpecies, JSON.stringify(null));
+  PublicProfileService.syncPhotoThumb(collCurrentCat,collCurrentSpecies,null);
   await collSaveCategory(collCurrentCat);
   showToast(LANG==='ar'?'تم إزالة الصورة':'Photo removed');
 }
@@ -11401,6 +11554,7 @@ async function collHandlePhotoUpload(e){
     if(!rec.catches||!rec.catches.length){ rec.catches=[{id:collGenId(), date:new Date().toISOString(), measurements:{}}]; }
     renderCollSpeciesDetail();   // instant — show the photo before the network write finishes
     storageSet('collection-photo:'+collCurrentCat+':'+collCurrentSpecies, JSON.stringify(photoRecord));
+    PublicProfileService.syncPhotoThumb(collCurrentCat,collCurrentSpecies,dataUrl);
     collSaveCategory(collCurrentCat);
     showToast(LANG==='ar'?'انحفظت صورتك 📷':'Your photo was saved 📷');
   }catch(err){ showToast((LANG==='ar'?'فشل رفع الصورة: ':'Photo upload failed: ')+err.message,'error'); }
