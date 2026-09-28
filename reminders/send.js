@@ -122,6 +122,13 @@ async function sendTo(tokens, n) {
     if (!push.prefs || !push.prefs.enabled || !(push.tokens || []).length) continue;
     users++;
     const { out, today } = await dueFor(push);
+    // "Send me a test" from the app's Reminders settings
+    const testAt = push.testAt && push.testAt.toDate ? push.testAt.toDate() : null;
+    const testSent = push.testSentAt && push.testSentAt.toDate ? push.testSentAt.toDate() : null;
+    if (testAt && (!testSent || testSent < testAt)) {
+      const ar = (push.lang || 'ar') !== 'en';
+      out.push({ key: 'test:' + today + ':' + testAt.getTime(), title: ar ? '🔔 التذكيرات شغالة!' : '🔔 Reminders work!', body: ar ? 'هذا تذكير تجربة من مخططي' : 'This is a test reminder from My Planner', tag: 'test', test: true });
+    }
     if (!out.length) continue;
     let tokens = push.tokens.slice();
     const sentMap = { ...(push.sent || {}) };
@@ -133,7 +140,10 @@ async function sendTo(tokens, n) {
     // keep a few days of "already sent" keys
     const cutoff = new Date(NOW.getTime() - 3 * 864e5).toISOString().slice(0, 10);
     Object.keys(sentMap).forEach(k => { const d = k.split(':')[1]; if (d && d < cutoff) delete sentMap[k]; });
-    await ref.collection('data').doc('push').set({ sent: sentMap, tokens }, { merge: true });
+    const upd = { sent: sentMap, tokens };
+    if (out.some(n => n.test)) upd.testSentAt = admin.firestore.FieldValue.serverTimestamp();
+    Object.keys(upd.sent).forEach(k => { if (k.startsWith('test:')) delete upd.sent[k]; });
+    await ref.collection('data').doc('push').set(upd, { merge: true });
     console.log(`user ${ref.id.slice(0, 6)}…: ${out.map(n => n.tag).join(', ')} (${today})`);
   }
   console.log(`done: ${users} user(s) with reminders on, ${sent} reminder(s) sent`);

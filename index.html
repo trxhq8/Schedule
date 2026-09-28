@@ -2144,7 +2144,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.41.0';
+const APP_VERSION='v1.41.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4040,6 +4040,7 @@ function renderReminderSettings(){
       <div class="rem-row"><span>☀️ ${ar?'خطة الصباح':'Morning plan'}</span>${sel('remMorning',[['off',ar?'إيقاف':'Off'],['06:00','6:00'],['07:00','7:00'],['08:00','8:00'],['09:00','9:00']],pf.morning||'off')}</div>
       <div class="rem-row"><span>🔥 ${ar?'سلسلتك بخطر (٩ م)':'Streak at risk (9 PM)'}</span>${tog('remEvening',pf.evening)}</div>
       <div class="rem-row"><span>🌙 ${ar?'السحور والإفطار برمضان':'Suhoor & iftar in Ramadan'}</span>${tog('remRamadan',pf.ramadan)}</div>
+      <button type="button" class="setup-btn" id="remTest" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">🔔 ${ar?'أرسل لي تذكير تجربة':'Send me a test reminder'}</button>
     </div>
     <p class="rem-note" id="remMsg">${ar?'التذكيرات توصل حتى لو التطبيق مسكّر. ممكن تتأخر كم دقيقة.':'Reminders arrive even when the app is closed. They can be a few minutes late.'}</p></div>`;
   const msg=m=>{ document.getElementById('remMsg').textContent=m; };
@@ -4053,6 +4054,7 @@ function renderReminderSettings(){
   document.getElementById('remMorning').onchange=e=>savePrefs({morning:e.target.value==='off'?null:e.target.value});
   document.getElementById('remEvening').onchange=e=>savePrefs({evening:e.target.checked});
   document.getElementById('remRamadan').onchange=e=>savePrefs({ramadan:e.target.checked});
+  document.getElementById('remTest').onclick=async()=>{ try{ await PushService.ref().set({testAt:serverNow()},{merge:true}); msg(ar?'✅ طلبناه — بيوصلك خلال ١٠ دقايق تقريباً (حتى لو سكّرت التطبيق)':'✅ Requested — it arrives within about 10 minutes (even if you close the app)'); playSfx('success'); }catch(e){ msg('⚠️ '+e.message); } };
 }
 /* one gentle nudge on Home, after the first run, until turned on or dismissed */
 function renderHomePushTip(){
