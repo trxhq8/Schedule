@@ -8,7 +8,7 @@
 
    BUMP APP_VERSION every time you deploy a real update — it changes the cache
    name, which makes the old cache get deleted automatically on activate. */
-const APP_VERSION = 'v1.40.0';
+const APP_VERSION = 'v1.41.0';
 const CACHE_NAME = `my-planner-${APP_VERSION}`;
 const PRECACHE_URLS = [
   './',
@@ -52,5 +52,37 @@ self.addEventListener('fetch', (event) => {
         // no internet: fall back to whatever we have cached
         caches.match(event.request).then((cached) => cached || caches.match('./index.html'))
       )
+  );
+});
+
+/* ---- Reminders (Firebase Cloud Messaging, data-only web push) ----
+   The sender (GitHub Action in .github/workflows/reminders.yml) sends
+   {title, body, url, tag}; we always show a notification for every push
+   (iOS revokes the subscription if a push shows nothing). */
+self.addEventListener('push', (event) => {
+  let msg = {};
+  try { msg = event.data ? event.data.json() : {}; } catch (e) { msg = { data: { body: event.data && event.data.text() } }; }
+  const d = msg.data || {};
+  const n = msg.notification || {};
+  const title = d.title || n.title || 'My Planner';
+  const options = {
+    body: d.body || n.body || '',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: d.tag || undefined,
+    renotify: !!d.tag,
+    data: { url: d.url || './' }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || './';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ('focus' in c) { c.navigate && c.navigate(url).catch(()=>{}); return c.focus(); } }
+      return self.clients.openWindow(url);
+    })
   );
 });

@@ -567,6 +567,15 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .bc-how{ font-size:0.72rem; opacity:.8; margin-top:8px; line-height:1.6; }
   .bc-claim{ margin-top:10px; width:100%; min-height:46px; border-radius:12px; border:none; background:#f5b83d; color:#1a1300; font:inherit; font-weight:800; cursor:pointer; }
   .frame-frame-tidebreaker{ background:conic-gradient(from 0deg,#22d3ee,#e0f7ff,#0e7490,#67e8f9,#22d3ee); animation:cxSpinPlain 4.5s linear infinite; box-shadow:0 0 16px 3px rgba(34,211,238,0.6); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px)); }
+
+  /* ---- reminders ---- */
+  .rem-card{ border:1px solid var(--line); border-radius:14px; padding:12px 14px; background:var(--bg); }
+  .rem-card h4{ margin:0 0 6px; font-family:var(--font-head); color:var(--heading); font-size:0.92rem; }
+  .rem-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:0.84rem; }
+  .rem-row:first-of-type{ border-top:none; }
+  .rem-row select{ font:inherit; padding:6px 8px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); min-height:38px; }
+  .rem-note{ font-size:0.74rem; color:var(--ink-soft); line-height:1.6; margin:6px 0 0; }
+  .push-tip{ display:flex; align-items:center; gap:10px; margin-top:12px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -1139,6 +1148,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         <span class="slider"></span>
       </label>
     </div>
+    <div id="reminderSettings" style="margin-top:14px;"></div>
     <button class="ob-btn secondary" id="signOutBtn" type="button" data-i18n="auth_sign_out" style="margin-top:14px;"></button>
   </div>
 </div>
@@ -1222,6 +1232,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div id="homeRecapPrompt"></div>
     <div id="homeRamadan"></div>
     <div id="homeCheers"></div>
+    <div id="homePushTip"></div>
     <div class="home-grid" id="homeGrid">
     <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
     <div class="dash-card home-section" id="homeSchedulePreview"></div>
@@ -2093,6 +2104,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script>
 /* ================= FIREBASE (cross-device sync) ================= */
 const firebaseConfig={
@@ -2132,7 +2144,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.40.0';
+const APP_VERSION='v1.41.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2413,6 +2425,7 @@ async function bootApp(){
   migrateRetiredCosmetics();
   autoUseShield();
   checkQadaForYesterday();
+  setTimeout(async()=>{ try{ if(PushService.prefs().enabled&&PushService.supported()&&Notification.permission==='granted'){ const reg=await navigator.serviceWorker.getRegistration('./'); if(reg){ const tk=await firebase.messaging().getToken({serviceWorkerRegistration:reg}); if(tk) await PushService.save(tk); } } }catch(e){} },6000);
   setTimeout(()=>{ claimLeagueIfDue().catch(()=>{}); },5000);
   renderAppBackground();
   migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
@@ -3086,6 +3099,7 @@ document.getElementById('mainLangToggle').addEventListener('click',async()=>{
 });
 
 document.getElementById('settingsBtn').addEventListener('click',()=>{
+  setTimeout(()=>{ try{ renderReminderSettings(); }catch(e){} },0);
   document.getElementById('settingsOverlay').classList.add('open');
   renderBackgroundSelector();
   P.settings=P.settings||{achSoundEnabled:true,achSoundVolume:0.7};
@@ -3957,6 +3971,102 @@ async function renderCoopBossCard(){
   const cb=document.getElementById('coopClaim');
   if(cb) cb.onclick=async()=>{ if(P._coopClaimed===st.k) return; P._coopClaimed=st.k; P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.coopKills=(P.lifetimeStats.coopKills||0)+1;
     await awardCoins(COOP_REWARD); playSfx('fanfare'); await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderCoopBossCard(); };
+}
+
+
+/* ================= REMINDERS (free push) =================
+   Firebase Cloud Messaging delivers them; a free scheduled GitHub Action in
+   this repo is the sender (every ~10 min it works out whose reminder is due
+   in their own time zone). The app only stores, in your PRIVATE
+   users/{uid}/data/push doc: this device's push token, your choices, your
+   time zone and prayer city, and two tiny facts the sender needs — how much
+   of today is done and whether a streak is at risk. */
+const PushService={
+  supported(){ return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && typeof firebase!=='undefined' && !!firebase.messaging; },
+  isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1); },
+  standalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true; },
+  prefs(){ return {enabled:false, prayers:true, prayerLead:0, morning:'08:00', evening:true, ramadan:true, ...(P.pushPrefs||{})}; },
+  ref(){ return fsDataRef('push'); },
+  async enable(){
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted') throw new Error(LANG==='ar'?'ما سمحت بالإشعارات — فعّلها من إعدادات المتصفح':'Notifications were not allowed — turn them on in your browser settings');
+    const reg=(await navigator.serviceWorker.getRegistration('./'))||(await navigator.serviceWorker.register('./sw.js'));
+    await navigator.serviceWorker.ready;
+    const token=await firebase.messaging().getToken({serviceWorkerRegistration:reg});
+    if(!token) throw new Error('no token');
+    P.pushPrefs={...this.prefs(), enabled:true}; P._pushToken=token;
+    await this.save(token);
+    await storageSet('profile',JSON.stringify(P));
+    return token;
+  },
+  async disable(){ P.pushPrefs={...this.prefs(), enabled:false}; await this.save(); await storageSet('profile',JSON.stringify(P)); },
+  async save(token){
+    if(!fbDb||!currentUser) return;
+    let tz=''; try{ tz=Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){}
+    const upd={prefs:this.prefs(), tz, lang:LANG, prayerCfg:prayerCfg(), hasPrayers:prayerHabitIds().length>0, updatedAt:serverNow()};
+    if(token) upd.tokens=firebase.firestore.FieldValue.arrayUnion(token);
+    try{ await this.ref().set(upd,{merge:true}); }catch(e){}
+  },
+  _last:'',
+  /* called when Home's progress changes: tells the sender whether to bother
+     you tonight (only writes when the answer actually changes) */
+  async reportDay(){
+    if(!this.prefs().enabled||!fbDb||!currentUser) return;
+    const pr=await computeHomeTodoProgress(); const wl=await isWeightLoggedForDate(new Date());
+    const total=pr.total-1, done=pr.done-(wl?1:0), pct=total>0?Math.round(done/total*100):0;
+    const st=P.streaks||{}, ws=P.workoutSetup;
+    let risk=0;
+    if(ws&&workoutTypeForDate(new Date(),ws)!=='rest'&&!dailyTrack.workoutDone) risk=Math.max(risk,(st.workout&&st.workout.current)||0);
+    const habits=P.habits||[]; if(habits.length&&!habits.every(h=>dailyTrack.habits&&dailyTrack.habits[h.id])) risk=Math.max(risk,P._bestHabitStreakNow||0);
+    const key=dateKeyOf(new Date())+'|'+pct+'|'+risk;
+    if(key===this._last) return; this._last=key;
+    try{ await this.ref().set({day:{date:isoDateStr(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()), pct, risk}, lang:LANG},{merge:true}); }catch(e){}
+  }
+};
+function renderReminderSettings(){
+  const box=document.getElementById('reminderSettings'); if(!box) return;
+  const ar=LANG==='ar', pf=PushService.prefs();
+  if(!PushService.supported()){
+    box.innerHTML=`<div class="rem-card"><h4>🔔 ${ar?'التذكيرات':'Reminders'}</h4><p class="rem-note">${PushService.isIOS()&&!PushService.standalone()
+      ?(ar?'على الآيفون: اضغط زر المشاركة ⬆️ ثم «إضافة إلى الشاشة الرئيسية»، وافتح مخططي من الأيقونة — بعدها تقدر تفعّل التذكيرات هني.':'On iPhone: tap Share ⬆️ then “Add to Home Screen”, open My Planner from that icon — then you can turn reminders on here.')
+      :(ar?'هالمتصفح ما يدعم الإشعارات.':'This browser doesn’t support notifications.')}</p></div>`; return;
+  }
+  const sel=(id,opts,val)=>`<select id="${id}">${opts.map(([v,l])=>`<option value="${v}"${String(v)===String(val)?' selected':''}>${l}</option>`).join('')}</select>`;
+  const tog=(id,on)=>`<label class="toggle-switch"><input type="checkbox" id="${id}"${on?' checked':''}><span class="slider"></span></label>`;
+  box.innerHTML=`<div class="rem-card"><h4>🔔 ${ar?'التذكيرات':'Reminders'}</h4>
+    <div class="rem-row"><span>${ar?'تفعيل التذكيرات على هالجهاز':'Reminders on this device'}</span>${tog('remOn',pf.enabled)}</div>
+    <div id="remOpts" class="${pf.enabled?'':'hidden'}">
+      <div class="rem-row"><span>🕌 ${ar?'أوقات الصلاة':'Prayer times'}</span>${sel('remPrayLead',[['off',ar?'إيقاف':'Off'],[0,ar?'وقت الأذان':'At the time'],[10,ar?'قبل ١٠ د':'10 min before'],[15,ar?'قبل ١٥ د':'15 min before']],pf.prayers?pf.prayerLead:'off')}</div>
+      <div class="rem-row"><span>☀️ ${ar?'خطة الصباح':'Morning plan'}</span>${sel('remMorning',[['off',ar?'إيقاف':'Off'],['06:00','6:00'],['07:00','7:00'],['08:00','8:00'],['09:00','9:00']],pf.morning||'off')}</div>
+      <div class="rem-row"><span>🔥 ${ar?'سلسلتك بخطر (٩ م)':'Streak at risk (9 PM)'}</span>${tog('remEvening',pf.evening)}</div>
+      <div class="rem-row"><span>🌙 ${ar?'السحور والإفطار برمضان':'Suhoor & iftar in Ramadan'}</span>${tog('remRamadan',pf.ramadan)}</div>
+    </div>
+    <p class="rem-note" id="remMsg">${ar?'التذكيرات توصل حتى لو التطبيق مسكّر. ممكن تتأخر كم دقيقة.':'Reminders arrive even when the app is closed. They can be a few minutes late.'}</p></div>`;
+  const msg=m=>{ document.getElementById('remMsg').textContent=m; };
+  const savePrefs=async patch=>{ P.pushPrefs={...PushService.prefs(),...patch}; await PushService.save(); await storageSet('profile',JSON.stringify(P)); playSfx('tap'); };
+  document.getElementById('remOn').onchange=async e=>{
+    if(e.target.checked){ msg(ar?'…':'…'); try{ await PushService.enable(); document.getElementById('remOpts').classList.remove('hidden'); msg(ar?'✅ تم — بتوصلك التذكيرات':'✅ Done — reminders are on'); playSfx('success'); PushService.reportDay(); }
+      catch(err){ e.target.checked=false; msg('⚠️ '+err.message); } }
+    else { await PushService.disable(); document.getElementById('remOpts').classList.add('hidden'); msg(ar?'انطفت التذكيرات':'Reminders are off'); }
+  };
+  document.getElementById('remPrayLead').onchange=e=>savePrefs(e.target.value==='off'?{prayers:false}:{prayers:true,prayerLead:+e.target.value});
+  document.getElementById('remMorning').onchange=e=>savePrefs({morning:e.target.value==='off'?null:e.target.value});
+  document.getElementById('remEvening').onchange=e=>savePrefs({evening:e.target.checked});
+  document.getElementById('remRamadan').onchange=e=>savePrefs({ramadan:e.target.checked});
+}
+/* one gentle nudge on Home, after the first run, until turned on or dismissed */
+function renderHomePushTip(){
+  const box=document.getElementById('homePushTip'); if(!box) return;
+  const ar=LANG==='ar';
+  if(PushService.prefs().enabled||P._pushTipDismissed||(P.firstRun&&P.firstRun.active)){ box.innerHTML=''; return; }
+  const iosInstall=PushService.isIOS()&&!PushService.standalone();
+  if(!PushService.supported()&&!iosInstall){ box.innerHTML=''; return; }
+  box.innerHTML=`<div class="dash-card push-tip"><span style="font-size:1.8rem;">🔔</span><div style="flex:1;"><b>${ar?'تبي تذكير بالصلاة وسلسلتك؟':'Want reminders for prayers and your streak?'}</b>
+    <div class="panel-sub" style="margin:0;">${iosInstall?(ar?'أول شي: مشاركة ⬆️ ← «إضافة إلى الشاشة الرئيسية»، وافتحه من الأيقونة.':'First: Share ⬆️ → “Add to Home Screen”, then open it from the icon.'):(ar?'توصلك حتى لو التطبيق مسكّر.':'They arrive even when the app is closed.')}</div></div>
+    ${iosInstall?'':`<button type="button" class="dash-link" id="pushTipOn">${ar?'فعّل':'Turn on'}</button>`}<button type="button" class="dash-link" id="pushTipNo" aria-label="dismiss">✕</button></div>`;
+  const on=document.getElementById('pushTipOn');
+  if(on) on.onclick=async()=>{ try{ await PushService.enable(); showToast(ar?'✅ التذكيرات شغالة':'✅ Reminders are on','success'); PushService.reportDay(); renderHomePushTip(); }catch(e){ showToast(e.message,'error'); } };
+  document.getElementById('pushTipNo').onclick=()=>{ P._pushTipDismissed=true; storageSet('profile',JSON.stringify(P)); renderHomePushTip(); };
 }
 
 /* opens the recurring-commitments editor on the Schedule page */
@@ -9321,6 +9431,7 @@ function refreshHome(){
   renderHijriLine();
   renderRamadanCard();
   renderHomeCheers();
+  renderHomePushTip();
   renderHomeAquarium();
 }
 function homeDateLabel(dateObj){
@@ -9476,6 +9587,7 @@ async function renderHomeTodoProgress(){
   const subEl=document.getElementById('homeTodoSub'); if(subEl) subEl.innerHTML=escapeHtml(t('home_todo_sub'))+((P.streakShields||0)>0?`<span class="shield-pill" title="${LANG==='ar'?'دروع السلاسل':'Streak shields'}">🛡️ ${P.streakShields}</span>`:'');
   renderHomeChest();
   updateAquariumClarity();
+  PushService.reportDay();
   const {done,total}=await computeHomeTodoProgress();
   document.getElementById('homeTodoProgressLabel').textContent=total?`${done} / ${total}`:'';
   document.getElementById('homeTodoBarFill').style.width=(total?Math.round(done/total*100):0)+'%';

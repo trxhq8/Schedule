@@ -1,0 +1,6 @@
+{
+  "name": "my-planner-reminders",
+  "private": true,
+  "description": "Scheduled sender for My Planner reminders (runs in GitHub Actions)",
+  "dependencies": { "firebase-admin": "^12.6.0" }
+}
