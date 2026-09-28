@@ -373,7 +373,16 @@
 .bgx-magma .emb{ bottom:0; width:3px; height:3px; border-radius:50%; background:#ffc15c; box-shadow:0 0 6px 2px rgba(255,140,40,.9); animation:bgxRise 7s linear infinite; }
 .bgx-magma .smoke{ top:-10%; width:70%; height:40%; border-radius:50%; background:rgba(0,0,0,.45); filter:blur(28px); animation:bgxDriftX 14s ease-in-out infinite alternate; }
 
-/* MYTHIC — Runic Ascension: a turning magic circle */
+/* MYTHIC — Crystal Cavern: glowing crystals, light pools, dripping water */
+.bgx-crystal{ background:radial-gradient(ellipse at 50% 70%,#1d1840 0%,#0e0b22 55%,#05040c 100%); }
+.bgx-crystal .cave{ left:-10%; right:-10%; top:-8%; height:30%; background:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 70%); }
+.bgx-crystal .cluster{ left:0; right:0; bottom:0; width:100%; }
+.bgx-crystal .cluster.top{ top:0; bottom:auto; height:24%; transform:scaleY(-1); opacity:.55; filter:drop-shadow(0 0 6px rgba(140,110,255,.6)); }
+.bgx-crystal .cluster.back{ height:46%; opacity:.6; filter:drop-shadow(0 0 6px rgba(140,110,255,.6)); }
+.bgx-crystal .cluster.front{ height:40%; filter:drop-shadow(0 0 10px rgba(120,230,255,.75)) drop-shadow(0 0 22px rgba(190,120,255,.5)); animation:bgxPulse 3.6s ease-in-out infinite; }
+.bgx-crystal .glowpool{ bottom:-6%; width:34%; height:26%; border-radius:50%; background:radial-gradient(ellipse,rgba(120,220,255,.55),transparent 70%); filter:blur(6px); animation:bgxPulse 4s ease-in-out infinite; }
+.bgx-crystal .drip{ top:4%; width:2px; height:9px; border-radius:2px; background:linear-gradient(180deg,transparent,rgba(190,240,255,.9)); animation:bgxFall 3.2s linear infinite; }
+.bgx-crystal .mote{ bottom:0; width:3px; height:3px; border-radius:50%; background:#d6f7ff; box-shadow:0 0 6px #9fe8ff; animation:bgxRise 10s linear infinite; }
 .bgx-runes{ background:radial-gradient(ellipse at 50% 55%,#2c2052 0%,#130e27 60%,#07050f 100%); }
 .bgx-runes .circle{ left:50%; top:52%; width:82%; aspect-ratio:1; transform:translate(-50%,-50%); filter:drop-shadow(0 0 6px rgba(190,150,255,.9)); }
 .bgx-runes .circle.o{ animation:bgxSpin 46s linear infinite; }
@@ -630,6 +639,29 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .aq-tools button{ flex:1; min-height:42px; border-radius:12px; border:1px solid var(--line); background:var(--card); font:inherit; font-weight:800; cursor:pointer; color:var(--ink); }
   .aq-legend{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:0.7rem; color:var(--ink-soft); }
   .aq-legend span{ border:1px solid var(--line); border-radius:999px; padding:2px 8px; }
+
+  /* ---- collection finder + guide ---- */
+  .finder-cta{ display:flex; align-items:center; gap:12px; width:100%; text-align:start; border:none; border-radius:18px; padding:16px; margin-bottom:12px; background:linear-gradient(135deg,#0f6e9e,#1aa3c8); color:#fff; font:inherit; cursor:pointer; box-shadow:var(--shadow); }
+  .finder-cta .fi{ font-size:2.2rem; }
+  .finder-cta b{ font-family:var(--font-head); font-size:1.05rem; display:block; }
+  .finder-cta small{ opacity:.9; }
+  .coll-guide{ margin-bottom:14px; }
+  .coll-guide summary{ cursor:pointer; font-family:var(--font-head); font-weight:800; color:var(--heading); list-style:none; }
+  .coll-guide summary::-webkit-details-marker{ display:none; }
+  .coll-guide ol{ margin:10px 0 0; padding-inline-start:20px; font-size:0.84rem; line-height:1.8; }
+  .fd-search{ margin:0 0 10px; }
+  .fd-sec{ font-family:var(--font-head); font-weight:800; font-size:0.9rem; color:var(--heading); margin:14px 0 8px; }
+  .fd-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .fd-grid button{ min-height:64px; border-radius:14px; border:1px solid var(--line); background:var(--bg); font:inherit; font-weight:700; font-size:0.78rem; cursor:pointer; color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:6px; }
+  .fd-grid button .e{ font-size:1.5rem; }
+  .fd-grid button.on{ border-color:var(--accent-deep); box-shadow:0 0 0 2px var(--accent-deep) inset; }
+  .fd-list{ display:flex; flex-direction:column; gap:8px; }
+  .fd-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--line); background:var(--bg); cursor:pointer; text-align:start; font:inherit; color:var(--ink); width:100%; }
+  .fd-item .nm{ flex:1; min-width:0; }
+  .fd-item .nm b{ display:block; }
+  .fd-item .nm small{ color:var(--ink-soft); font-size:0.72rem; }
+  .fd-item .have{ font-size:0.7rem; font-weight:800; color:#2e8b57; }
+  .fd-empty{ font-size:0.82rem; color:var(--ink-soft); text-align:center; padding:10px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
   #panel-profile-hub .home-cards{ grid-template-columns:repeat(2,1fr); margin-top:0; }
   #panel-profile-hub .home-card{ padding:18px 10px; }
@@ -2048,6 +2080,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
     <!-- level 0: Animals / Plants -->
     <div class="coll-view active" id="collView-root">
+      <div id="collFinderCard"></div>
       <div id="collAquarium" style="margin-bottom:14px;"></div>
       <div class="coll-grid coll-grid-2" id="collRootGrid"></div>
     </div>
@@ -2201,7 +2234,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.43.0';
+const APP_VERSION='v1.44.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4298,6 +4331,114 @@ function showNotifyGuide(){
 function makeThumb(dataUrl,max){
   return new Promise(res=>{ const img=new Image(); img.onload=()=>{ const k=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.width*k)); c.height=Math.max(1,Math.round(img.height*k)); c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.62)); }; img.onerror=()=>res(''); img.src=dataUrl; });
 }
+
+/* ================= "I CAUGHT A FISH" FINDER =================
+   Most of the 557 fish only have scientific names, so browsing groups is
+   hopeless for a real catch. The finder puts the Gulf market fish (local
+   names) first, searches every name forgivingly (Arabic spelling
+   variants, English, scientific), identifies by body SHAPE when you don't
+   know the name at all, and lets you park an unknown catch for later. */
+function normAr(t){ return String(t||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim(); }
+const FIND_SHAPES=[
+  {k:'fish', e:'🐟', ar:'سمكة عادية', en:'Regular fish'},
+  {k:'shark', e:'🦈', ar:'قرش', en:'Shark'},
+  {k:'ray', e:'🪽', ar:'لخمة / شفنين (مفلطح بجناحين)', en:'Ray (flat with wings)'},
+  {k:'flat', e:'🥞', ar:'مفلطح على جنب (عيونه فوق)', en:'Flat, lies on its side'},
+  {k:'eel', e:'🐍', ar:'طويل مثل الحية', en:'Long like a snake'},
+  {k:'long', e:'🗡️', ar:'طويل ورفيع / بوز طويل', en:'Long & thin / long beak'},
+  {k:'puffer', e:'🐡', ar:'منفوخ أو صندوقي', en:'Puffy or boxy'},
+  {k:'reef', e:'🐠', ar:'ملوّن صغير (شعاب)', en:'Small & colorful (reef)'},
+  {k:'venom', e:'🦂', ar:'شوكي / يعيش بالقاع', en:'Spiny bottom-dweller'},
+  {k:'seahorse', e:'🐴', ar:'فرس البحر / أنبوبي', en:'Seahorse / pipe-like'}
+];
+const LONG_FAM=new Set('Belonidae Hemiramphidae Fistulariidae Sphyraenidae Istiophoridae Trichiuridae Chirocentridae'.split(' '));
+function findShape(sp){ if(LONG_FAM.has(sp.family)) return 'long'; const k=aqKind(sp); return k==='big'?'fish':k; }
+let _finder={q:'',shape:null,gulf:true};
+async function openCatchFinder(){
+  _finder={q:'',shape:null,gulf:true};
+  await collLoadCategory('fish'); collCurrentCat='fish';
+  document.getElementById('overlay').classList.add('open');
+  drawCatchFinder();
+}
+function finderItem(sp){
+  const have=collIsCollected(collRecord(sp.id)), tier=RARITY_TIERS[sp.rarity];
+  const grp=collGroupConfig('fish',sp.group); const alt=(sp.altNames||[]).filter(x=>!/[\u0600-\u06FF]/.test(x)).slice(0,1).join('');
+  return `<button type="button" class="fd-item" data-pick="${sp.id}"><span style="font-size:1.4rem">${sp.icon||'🐟'}</span><span class="nm"><b>${escapeHtml(collName(sp))}</b><small>${escapeHtml([LANG==='ar'?sp.nameEn:sp.nameAr, alt, grp?collGroupName(grp):''].filter(Boolean).join(' · '))}</small></span><span>${tier.icon}</span>${have?`<span class="have">✓</span>`:''}</button>`;
+}
+function drawCatchFinder(){
+  const ar=LANG==='ar', L=collSpeciesList('fish');
+  document.getElementById('dayTitle').textContent=ar?'🎣 وش صدت؟':'🎣 What did you catch?';
+  document.getElementById('daySubtitle').textContent='';
+  const q=normAr(_finder.q);
+  let results=[];
+  if(q.length>=2){
+    results=L.filter(sp=>[sp.nameAr,sp.nameEn,sp.sci,...(sp.altNames||[])].some(n=>normAr(n).includes(q)));
+    results.sort((a,b)=>(a.group==='gulf_market'?0:1)-(b.group==='gulf_market'?0:1)||RARITY_TIERS[a.rarity].order-RARITY_TIERS[b.rarity].order);
+  } else if(_finder.shape){
+    results=L.filter(sp=>findShape(sp)===_finder.shape && (!_finder.gulf || (sp.region||[]).some(r=>r==='kuwait'||r==='gulf')));
+    results.sort((a,b)=>(a.group==='gulf_market'?0:1)-(b.group==='gulf_market'?0:1)||RARITY_TIERS[a.rarity].order-RARITY_TIERS[b.rarity].order);
+  }
+  const gulf=L.filter(sp=>sp.group==='gulf_market');
+  const unknown=(P.unknownCatches||[]).length;
+  document.getElementById('cardBody').innerHTML=`
+    <input class="setup-input fd-search" id="fdQ" placeholder="${ar?'🔎 اكتب أي اسم تعرفه: هامور، زبيدي، grouper…':'🔎 Type any name you know: hamour, grouper, Epinephelus…'}" value="${escapeHtml(_finder.q)}">
+    ${q.length>=2?`<div class="fd-sec">${ar?`النتائج (${results.length})`:`Results (${results.length})`}</div><div class="fd-list">${results.slice(0,40).map(finderItem).join('')||`<div class="fd-empty">${ar?'ما لقينا — جرّب الشكل تحت 👇':'Nothing found — try the shape below 👇'}</div>`}</div>`:''}
+    ${q.length<2&&!_finder.shape?`<div class="fd-sec">${ar?'🎣 أسماك الخليج المشهورة':'🎣 Popular Gulf fish'}</div><div class="fd-grid">${gulf.map(sp=>`<button type="button" data-pick="${sp.id}"><span class="e">${sp.icon||'🐟'}</span>${escapeHtml(sp.nameAr)}${ar?'':`<small style="font-weight:400">${escapeHtml(sp.nameEn)}</small>`}</button>`).join('')}</div>`:''}
+    <div class="fd-sec">${ar?'🤔 ما تعرف اسمه؟ وش شكله؟':'🤔 Don’t know the name? What does it look like?'}</div>
+    <div class="fd-grid">${FIND_SHAPES.map(sh=>`<button type="button" data-shape="${sh.k}" class="${_finder.shape===sh.k?'on':''}"><span class="e">${sh.e}</span>${ar?sh.ar:sh.en}</button>`).join('')}</div>
+    ${_finder.shape&&q.length<2?`<label class="choice" style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:0.84rem;"><input type="checkbox" id="fdGulf"${_finder.gulf?' checked':''}> ${ar?'صدته بالكويت / الخليج':'Caught in Kuwait / the Gulf'}</label>
+      <div class="fd-sec">${ar?`الأقرب (${results.length}) — الأشهر أول`:`Closest matches (${results.length}) — most common first`}</div><div class="fd-list">${results.slice(0,40).map(finderItem).join('')||`<div class="fd-empty">${ar?'ما في شي بهالشكل':'Nothing with this shape'}</div>`}</div>`:''}
+    <div class="fd-sec">${ar?'🤷 لسه مو متأكد؟':'🤷 Still not sure?'}</div>
+    <button type="button" class="setup-btn" id="fdUnknown" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">📝 ${ar?'احفظها كسمكة مجهولة وحددها بعدين':'Save it as an unknown fish, identify it later'}${unknown?` (${unknown})`:''}</button>`;
+  const qi=document.getElementById('fdQ');
+  qi.oninput=()=>{ _finder.q=qi.value; const pos=qi.selectionStart; drawCatchFinder(); const n=document.getElementById('fdQ'); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} };
+  document.querySelectorAll('#cardBody [data-shape]').forEach(b=>b.onclick=()=>{ _finder.shape=_finder.shape===b.dataset.shape?null:b.dataset.shape; _finder.q=''; drawCatchFinder(); });
+  const g=document.getElementById('fdGulf'); if(g) g.onchange=()=>{ _finder.gulf=g.checked; drawCatchFinder(); };
+  document.querySelectorAll('#cardBody [data-pick]').forEach(b=>b.onclick=()=>confirmFinderPick(b.dataset.pick));
+  document.getElementById('fdUnknown').onclick=saveUnknownCatch;
+}
+function confirmFinderPick(sid){
+  const sp=collSpeciesInfo('fish',sid), ar=LANG==='ar', tier=RARITY_TIERS[sp.rarity], n=collCatchCount(collRecord(sid)), grp=collGroupConfig('fish',sp.group);
+  document.getElementById('dayTitle').textContent=`${sp.icon||'🐟'} ${collName(sp)}`;
+  document.getElementById('daySubtitle').textContent=`${tier.icon} ${ar?tier.nameAr:tier.nameEn}${grp?' · '+collGroupName(grp):''}`;
+  document.getElementById('cardBody').innerHTML=`<p class="panel-sub" style="text-align:center;">${escapeHtml(ar?sp.nameEn:sp.nameAr)}${sp.sci&&sp.sci!==sp.nameEn?' · <i>'+escapeHtml(sp.sci)+'</i>':''}</p>
+    <p class="panel-sub" style="text-align:center;">${n?(ar?`صدته قبل ${n} مرة`:`You’ve caught it ${n} time${n>1?'s':''} before`):(ar?'أول مرة تصيده! 🎉':'First time catching it! 🎉')}</p>
+    <div class="actions" style="display:flex;flex-direction:column;gap:8px;">
+      <button type="button" class="setup-btn" id="fdLog">✓ ${ar?'سجّل الصيدة':'Log this catch'}</button>
+      <button type="button" class="setup-btn" id="fdOpen" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">📖 ${ar?'افتح صفحته (صورة وقياسات)':'Open its page (photo & sizes)'}</button>
+      <button type="button" class="ghost" id="fdBack" style="background:none;border:none;color:var(--ink-soft);font:inherit;font-weight:700;padding:10px;cursor:pointer;">‹ ${ar?'مو هذا، رجوع':'Not this one, go back'}</button></div>`;
+  const openPage=()=>{ document.getElementById('overlay').classList.remove('open'); showPanel('collections'); collCurrentCat='fish'; collCurrentGroup=sp.group; collCurrentSpecies=sid; collStack=['root','animals','groups','category','species']; collShowView('species'); renderCollSpeciesDetail(); };
+  document.getElementById('fdLog').onclick=()=>{ collCurrentCat='fish'; collCurrentSpecies=sid; collAddCatch({}); playSfx('success'); showToast(ar?`🎣 انسجلت: ${collName(sp)}`:`🎣 Logged: ${collName(sp)}`,'success'); openPage(); resolveUnknownIfAny(); };
+  document.getElementById('fdOpen').onclick=openPage;
+  document.getElementById('fdBack').onclick=drawCatchFinder;
+}
+/* unknown catches: a date + note to identify later */
+async function saveUnknownCatch(){
+  const ar=LANG==='ar';
+  const note=prompt(ar?'اكتب وصف بسيط (لونه، حجمه، وين صدته):':'A short description (color, size, where you caught it):','');
+  if(note===null) return;
+  P.unknownCatches=P.unknownCatches||[]; P.unknownCatches.push({id:collGenId(), date:new Date().toISOString(), note:String(note).slice(0,140)});
+  await storageSet('profile',JSON.stringify(P)); playSfx('check');
+  showToast(ar?'📝 انحفظت — بتلقاها بأعلى الباحث لما تعرف اسمها':'📝 Saved — you’ll find it at the top of the finder once you know its name');
+  drawCatchFinder();
+}
+let _resolvingUnknown=null;
+function resolveUnknownIfAny(){ if(!_resolvingUnknown) return; P.unknownCatches=(P.unknownCatches||[]).filter(u=>u.id!==_resolvingUnknown); _resolvingUnknown=null; storageSet('profile',JSON.stringify(P)); }
+function renderCollFinderCard(){
+  const box=document.getElementById('collFinderCard'); if(!box) return;
+  const ar=LANG==='ar', unk=P.unknownCatches||[];
+  box.innerHTML=`<button type="button" class="finder-cta" id="collFinderBtn"><span class="fi">🎣</span><span><b>${ar?'صدت سمكة؟':'Caught a fish?'}</b><small>${ar?'لقها بالاسم أو بالشكل وسجّلها بضغطة':'Find it by name or by shape and log it in one tap'}</small></span></button>
+    ${unk.length?`<div class="dash-card" style="margin-bottom:12px;"><div class="dash-card-title">📝 ${ar?'صيدات ما عرفت اسمها':'Catches you haven’t named yet'} (${unk.length})</div>${unk.map(u=>`<div class="rem-row"><span>${escapeHtml(u.note||'—')}<br><small class="panel-sub">${new Date(u.date).toLocaleDateString(ar?'ar-EG':'en-GB')}</small></span><button type="button" class="dash-link" data-unk="${u.id}">${ar?'حددها':'Identify'}</button></div>`).join('')}</div>`:''}
+    <details class="dash-card coll-guide"><summary>ℹ️ ${ar?'كيف تشتغل المقتنيات؟':'How does the collection work?'}</summary><ol>
+      <li>${ar?'لما تصيد سمكة اضغط <b>«صدت سمكة؟»</b> ولقها بالاسم أو بالشكل.':'When you catch a fish, tap <b>“Caught a fish?”</b> and find it by name or shape.'}</li>
+      <li>${ar?'اضغط <b>سجّل الصيدة</b> — كل مرة تصيده انضغط + بصفحته.':'Tap <b>Log this catch</b> — each extra catch is a + on its page.'}</li>
+      <li>${ar?'أضف صورة وقياسات (طول/وزن) — تطلع لأصدقائك.':'Add a photo and sizes (length/weight) — your friends can see them.'}</li>
+      <li>${ar?'الندرة: 🟢 شائع ← 🔵 ← 🟣 ← 🔴 ← 🟡 أسطوري. أول صيدة لكل نوع تعطيك XP وعملات، والأندر أكثر.':'Rarity: 🟢 common → 🔵 → 🟣 → 🔴 → 🟡 legendary. The first catch of each species pays XP and coins — rarer pays more.'}</li>
+      <li>${ar?'الزعماء 👑 أسماك أسطورية نادرة — بعضها يعطيك خلفية حصرية.':'Bosses 👑 are rare legendary fish — some unlock an exclusive background.'}</li></ol></details>`;
+  document.getElementById('collFinderBtn').onclick=openCatchFinder;
+  box.querySelectorAll('[data-unk]').forEach(b=>b.onclick=async()=>{ _resolvingUnknown=b.dataset.unk; await openCatchFinder(); });
+}
+
 /* opens the recurring-commitments editor on the Schedule page */
 function openRoutineSetup(){
   const card=document.getElementById('todoSetupCard'); if(!card) return;
@@ -8305,11 +8446,15 @@ const BG_V2={
     [8,55].forEach(l=>{ const m=cxAddEl(el,'smoke'); m.style.left=l+'%'; }); cxAddEl(el,'glow');
     bgSvg(el,'cracks','0 0 300 100','<path d="M0,70 L40,62 L70,74 L110,58 L150,70 L190,55 L230,68 L270,60 L300,66" stroke="#ffb347" stroke-width="2.2" fill="none"/><path d="M60,100 L75,80 L70,74 M150,100 L140,82 L150,70 M230,100 L238,84 L230,68 M110,58 L100,40 L118,24 M190,55 L205,36" stroke="#ff8a2a" stroke-width="1.6" fill="none"/><path d="M0,100 L0,80 L40,74 L70,86 L110,72 L150,84 L190,70 L230,82 L270,74 L300,80 L300,100 Z" fill="#1a0604"/>');
     bgRand(el,'emb',24,{dur:7}); }},
-  'runic-ascension':{cls:'bgx bgx-runes', descEn:'Two counter-rotating circles of glowing runes around a pulsing core', descAr:'دائرتا رموز متوهجة تدوران بعكس بعض حول قلب نابض', mount:el=>{
-    const runes='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ'.repeat(2);
-    bgSvg(el,'circle o','0 0 200 200',`<defs><path id="rrA" d="M100,100 m-82,0 a82,82 0 1,1 164,0 a82,82 0 1,1 -164,0"/></defs><circle cx="100" cy="100" r="92" fill="none" stroke="#c9a8ff" stroke-width="1.4"/><circle cx="100" cy="100" r="72" fill="none" stroke="#c9a8ff" stroke-width=".8"/><text fill="#e3d2ff" font-size="12" letter-spacing="3"><textPath href="#rrA">${runes}</textPath></text>`,'xMidYMid meet');
-    bgSvg(el,'circle i','0 0 200 200','<circle cx="100" cy="100" r="90" fill="none" stroke="#b98cff" stroke-width="1.6" stroke-dasharray="6 5"/><polygon points="100,18 171,141 29,141" fill="none" stroke="#c9a8ff" stroke-width="1.2"/><polygon points="100,182 29,59 171,59" fill="none" stroke="#c9a8ff" stroke-width="1.2"/>','xMidYMid meet');
-    cxAddEl(el,'core'); bgRand(el,'spk',18,{dur:9}); }},
+  'runic-ascension':{cls:'bgx bgx-crystal', nameEn:'Crystal Cavern', nameAr:'كهف البلورات', descEn:'A hidden cave of glowing crystals — soft light pulses, dripping water and drifting glow', descAr:'كهف مخفي من بلورات متوهجة — نبضات ضوء ناعمة، قطرات ماء ونور يطفو', mount:el=>{
+    const crystal=(x,h,w,c1,c2,tilt)=>`<g transform="translate(${x},100) rotate(${tilt})"><polygon points="0,0 ${-w/2},${-h*0.35} 0,${-h} ${w/2},${-h*0.35}" fill="${c1}"/><polygon points="0,0 0,${-h} ${w/2},${-h*0.35}" fill="${c2}" opacity=".75"/></g>`;
+    cxAddEl(el,'cave');
+    bgSvg(el,'cluster back','0 0 300 100',[crystal(40,55,18,'#5b3fb8','#8d6cf0',-12),crystal(120,40,14,'#2f7fa8','#63c7f0',8),crystal(210,62,20,'#7a3fa8','#c07bf0',-6),crystal(275,45,16,'#2f8fa0','#6ff0e0',14)].join(''));
+    bgSvg(el,'cluster front','0 0 300 100',[crystal(15,70,24,'#3fd0e0','#bff6ff',10),crystal(70,90,28,'#9a6bff','#e2d0ff',-4),crystal(95,50,16,'#ff7ad0','#ffd0ef',18),crystal(180,80,26,'#57e0c0','#d0fff2',-10),crystal(240,95,30,'#8f7bff','#e6e0ff',6),crystal(290,60,20,'#ff8ad8','#ffe0f4',-14)].join(''));
+    bgSvg(el,'cluster top','0 0 300 100',[crystal(30,60,16,'#4a3aa0','#8d6cf0',6),crystal(90,35,12,'#2f7fa8','#63c7f0',-8),crystal(150,70,18,'#6a3fa8','#c07bf0',4),crystal(230,45,14,'#2f8fa0','#6ff0e0',-10),crystal(280,65,16,'#8a4ab0','#e0a0f0',8)].join(''));
+    [18,46,74].forEach((l,i)=>{ const g=cxAddEl(el,'glowpool'); g.style.left=l+'%'; g.style.animationDelay=(-i*1.3)+'s'; });
+    for(let i=0;i<5;i++){ const d=cxAddEl(el,'drip'); d.style.left=(10+Math.random()*80)+'%'; d.style.animationDelay=(-Math.random()*4)+'s'; d.style.animationDuration=(2.8+Math.random()*2)+'s'; }
+    bgRand(el,'mote',20,{dur:10}); }},
   'aurora-throne':{cls:'bgx bgx-arctic', descEn:'Arctic night: a vast aurora above snowy peaks, mirrored in a still lake, with falling snow', descAr:'ليل قطبي: شفق عظيم فوق قمم ثلجية، ينعكس على بحيرة ساكنة، مع ثلج يتساقط', mount:el=>{
     bgStars(el,50,55); cxAddEl(el,'moon');
     [0,12,22].forEach((top,i)=>{ const c=cxAddEl(el,'cur'); c.style.top=top+'%'; c.style.animationDelay=(-i*2.7)+'s'; if(i%2) c.style.background='linear-gradient(90deg,transparent,rgba(255,110,200,.45) 25%,rgba(120,255,190,.6) 55%,transparent)'; });
@@ -9964,10 +10109,12 @@ async function renderHomeCollectionPreview(){
   }
   { const rw=COSMETICS_CATALOG.find(c=>c.exclusiveNote&&c.exclusiveNote.startsWith('boss:')&&!(P.inventory&&P.inventory[c.id]));
     if(rw) html+=`<div class="home-preview-row" style="color:var(--heading);font-weight:700;"><span>🎁 ${LANG==='ar'?`اصطد الزعيم الأسطوري واربح خلفية «${escapeHtml(rw.nameAr)}»`:`Catch the legendary boss to win “${escapeHtml(rw.nameEn)}”`}</span></div>`; }
-  html+=`<span class="home-cta">${t('home_collection_cta')}</span>`;
+  html+=`<span class="home-cta">${t('home_collection_cta')}</span> <button type="button" class="home-cta" id="homeCaughtBtn" style="margin-inline-start:12px;">🎣 ${LANG==='ar'?'صدت سمكة؟':'Caught a fish?'}</button>`;
   el.innerHTML=html;
 }
-document.querySelectorAll('.home-preview-card[data-goto]').forEach(c=>c.addEventListener('click',()=>{ showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
+document.querySelectorAll('.home-preview-card[data-goto]').forEach(c=>c.addEventListener('click',e=>{
+  if(e.target.closest('#homeCaughtBtn')){ e.stopPropagation(); showPanel('collections'); enterSection('collections'); openCatchFinder(); return; }
+  showPanel(c.dataset.goto); enterSection(c.dataset.goto); }));
 /* the small always-visible level/XP chip in the top nav, next to the
    brand — so progress is visible from Home/any screen, not just the
    Profile panel. Reads P.xp only (no network call), safe to call from
@@ -10963,7 +11110,7 @@ function collBack(){
   else if(target==='animals') renderCollAnimals();
 }
 document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
-function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); renderAquarium(document.getElementById('collAquarium'),true); }
+function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); renderCollFinderCard(); renderAquarium(document.getElementById('collAquarium'),true); }
 /* Every Collections render function reads LANG live, but nothing re-ran
    them on a language switch — so whatever screen was already drawn just
    stayed in its old language until the user re-entered it. Re-render
