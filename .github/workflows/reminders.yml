@@ -1,0 +1,17 @@
+# Sends My Planner reminders. Free: GitHub Actions minutes are free for
+# public repos, and Firebase Cloud Messaging is free on the Spark plan.
+# Needs one repo secret: FIREBASE_SERVICE_ACCOUNT (the JSON key from
+# Firebase console > Project settings > Service accounts).
+name: reminders
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+concurrency:
+  group: reminders
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps
