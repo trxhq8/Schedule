@@ -1202,6 +1202,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
 <div class="app-bg-layer" id="appBgLayer"></div>
 <div class="app-bg-scrim" id="appBgScrim"></div>
+<div class="app-fx-layer" id="appFxLayer"></div>
 
 <!-- ============ SETTINGS ============ -->
 <div class="overlay" id="settingsOverlay">
@@ -1959,6 +1960,112 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     .cx-shootstar{ position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; box-shadow:-14px 3px 6px -2px rgba(255,255,255,0.8), -26px 6px 10px -4px rgba(255,255,255,0.4); animation:cxShoot 6s linear infinite; }
     @keyframes cxShoot{ 0%{ transform:translate(0,0); opacity:0; } 2%{ opacity:1; } 22%{ transform:translate(-140px,70px); opacity:0; } 100%{ opacity:0; } }
     .cx-fx-ambergold{ position:absolute; inset:0; background:radial-gradient(ellipse at 50% 100%, rgba(255,205,110,0.12), transparent 70%); animation:cxHeatPulse 7s ease-in-out infinite; }
+
+    /* ===== Frames v2: the band stays one masked element; glow and decorations
+       are UNMASKED siblings (.frx) so nothing gets clipped to the thin band ===== */
+    .cos-frame-ring{ z-index:1; }
+    .cos-avatar-edit{ z-index:5; }
+    .frx{ position:absolute; pointer-events:none; }
+    .frx.back{ z-index:0; } .frx.front{ z-index:3; }
+    svg.frx-svg{ left:-22%; top:-22%; width:144%; height:144%; overflow:visible; }
+    .frx-spin{ animation:cxSpinPlain var(--sp,8s) linear infinite; } .frx-spin.rev{ animation-direction:reverse; }
+    .frx-glow{ inset:0; border-radius:50%; box-shadow:0 0 12px 3px var(--fg), 0 0 26px 7px var(--fg2); animation:frxGlow 3s ease-in-out infinite; }
+    @keyframes frxGlow{ 0%,100%{ opacity:.6; } 50%{ opacity:1; } }
+    .frx-halo{ inset:-9%; border-radius:50%; filter:blur(6px); opacity:.85; animation:cxSpinPlain 6s linear infinite reverse; -webkit-mask:radial-gradient(closest-side,transparent 60%,#000 76%); mask:radial-gradient(closest-side,transparent 60%,#000 76%); }
+    .frx-glowy{ filter:drop-shadow(0 0 2px var(--gc,rgba(255,220,140,.9))); }
+    .frx-neon2{ filter:drop-shadow(0 0 2px #3ff0ff) drop-shadow(0 0 5px #3ff0ff); animation:frxNeon 5s linear infinite 1.3s; }
+    .frx-zap{ animation:frxZap 2.6s steps(1) infinite; }
+    @keyframes frxZap{ 0%,55%{ opacity:.45; } 60%{ opacity:1; } 64%{ opacity:.55; } 68%{ opacity:1; } 74%,100%{ opacity:.45; } }
+    @keyframes frxNeon{ 0%,17%,21%,58%,61%,100%{ opacity:1; } 19%,60%{ opacity:.3; } }
+    .frb{ -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--bw,4px)),#000 calc(100% - var(--bw,4px) + 1px)); mask:radial-gradient(farthest-side,transparent calc(100% - var(--bw,4px)),#000 calc(100% - var(--bw,4px) + 1px)); }
+    .frs{ animation:cxSpinPlain var(--sp,6s) linear infinite; }
+    .fr2-steel{ --bw:5px; background:conic-gradient(#f4f6f8,#8e97a3,#e9edf1,#5f6874,#f4f6f8,#9aa3ae,#f4f6f8); }
+    .fr2-mint{ --bw:4px; --sp:9s; background:conic-gradient(#b8f7e2,#34c3a3,#eafff7,#1f9d84,#b8f7e2); }
+    .fr2-sand{ --bw:4px; background:conic-gradient(#f3d9a4,#c7964f,#f7e6c1,#a87838,#f3d9a4); }
+    .fr2-twin{ border:2.5px solid #8fbaff; box-shadow:inset 0 0 0 2px rgba(20,40,90,.55), inset 0 0 0 3.5px #cfe0ff; }
+    .fr2-leaf{ --bw:3px; background:conic-gradient(#8fd46a,#2f7d3a,#b8e986,#2f7d3a,#8fd46a); }
+    .fr2-wave{ --bw:5px; --sp:5s; background:conic-gradient(#0b5fa5,#48c6ff,#e6fbff,#1e8fd6,#0b5fa5); }
+    .fr2-ember{ --bw:5px; --sp:2.6s; background:conic-gradient(#ff3d00,#ffb300,#ff6a00,#ffe082,#ff3d00); }
+    .fr2-frost{ --bw:4px; --sp:12s; background:conic-gradient(#ffffff,#9fdcff,#e6f7ff,#5fb2f0,#ffffff); }
+    .fr2-neon{ border:2.5px solid #ff5ad8; box-shadow:0 0 6px #ff5ad8, 0 0 14px rgba(255,90,216,.8), inset 0 0 6px rgba(255,90,216,.8); animation:frxNeon 4s linear infinite; }
+    .fr2-prism{ --bw:5px; --sp:4s; background:conic-gradient(#ff4d6d,#ffb84d,#fff35c,#4dff9a,#4dc3ff,#9b6bff,#ff4dd2,#ff4d6d); }
+    .fr2-falcon{ --bw:4px; --sp:10s; background:conic-gradient(#f2d08a,#8a5a26,#ffe9b8,#6b4219,#f2d08a); }
+    .fr2-thunder{ --bw:4px; --sp:2.2s; background:conic-gradient(#1f4fff,#cfe9ff,#3d7bff,#ffffff,#1f4fff); }
+    .fr2-sun{ --bw:5px; --sp:8s; background:conic-gradient(#ffb300,#fff2b0,#ff8f00,#ffe066,#ffb300); }
+    .fr2-crown{ --bw:5px; --sp:7s; background:conic-gradient(#ffe08a,#fff8e0,#c99532,#ffe08a,#b8801f,#ffe08a); }
+    .fr2-galaxy{ --bw:5px; --sp:5s; background:conic-gradient(#3b1f8f,#b06bff,#ff7ad9,#4dc3ff,#3b1f8f); }
+    .fr2-tide{ --bw:5px; --sp:4.5s; background:conic-gradient(#22d3ee,#e0f7ff,#0e7490,#67e8f9,#22d3ee); }
+    .fr2-fanous{ --bw:5px; --sp:7s; background:conic-gradient(#f5b83d,#fff3c4,#7a4bd8,#f5b83d); }
+
+    /* ===== Effects v2: particles ride a full-height "lane" that moves by its
+       own height, so the same effect fills a small card or the whole screen ===== */
+    .app-fx-layer{ position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+    .fxl{ position:absolute; top:0; height:100%; width:0; pointer-events:none; }
+    .fxl.up{ animation:fxUp var(--d,8s) linear infinite; }
+    .fxl.down{ animation:fxDown var(--d,8s) linear infinite; }
+    @keyframes fxUp{ from{ transform:translateY(8%); } to{ transform:translateY(-108%); } }
+    @keyframes fxDown{ from{ transform:translateY(-8%); } to{ transform:translateY(108%); } }
+    .fxl::before{ content:''; position:absolute; left:0; width:var(--s,3px); height:var(--s,3px); border-radius:50%; }
+    .fxl.up::before{ bottom:0; } .fxl.down::before{ top:0; }
+    @keyframes fxSway{ from{ transform:translateX(-9px); } to{ transform:translateX(9px); } }
+    @keyframes fxTw{ 0%,100%{ opacity:.25; } 50%{ opacity:1; } }
+    @keyframes fxFlick{ 0%,100%{ opacity:1; } 30%{ opacity:.55; } 55%{ opacity:.9; } 75%{ opacity:.4; } }
+    .k-bubble::before{ border:1px solid rgba(210,240,255,.85); background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95) 0 14%,rgba(170,225,255,.18) 38%,rgba(120,200,255,.08) 70%); box-shadow:0 0 4px rgba(150,210,255,.5); animation:fxSway var(--sw,3s) ease-in-out infinite alternate; }
+    .k-rain::before{ width:1.5px; height:calc(var(--s,4px)*4); border-radius:1px; background:linear-gradient(180deg,rgba(170,205,255,0),rgba(170,205,255,.9)); }
+    .k-mote::before{ background:#fff; box-shadow:0 0 6px 1px rgba(190,225,255,.95); animation:fxSway var(--sw,4s) ease-in-out infinite alternate, fxTw 2.6s ease-in-out infinite; }
+    .k-ember::before{ background:radial-gradient(circle,#fff6c8 0 25%,#ffa033 55%,#ff5a00); box-shadow:0 0 8px 2px rgba(255,120,30,.85); animation:fxSway var(--sw,2s) ease-in-out infinite alternate, fxFlick .9s ease-in-out infinite; }
+    .k-petal::before{ width:var(--s,8px); height:calc(var(--s,8px)*.68); border-radius:0 85% 0 85%; background:linear-gradient(135deg,#ffe0ec,#ff8fb8 70%,#ff6fa3); box-shadow:0 1px 2px rgba(160,40,90,.25); animation:fxPetal var(--sw,3s) ease-in-out infinite alternate; }
+    @keyframes fxPetal{ from{ transform:translateX(-16px) rotate(-20deg); } to{ transform:translateX(16px) rotate(240deg); } }
+    .k-snow::before{ background:#fff; box-shadow:0 0 4px rgba(110,150,200,.75); animation:fxSway var(--sw,4s) ease-in-out infinite alternate; }
+    .k-conf::before{ width:var(--s,7px); height:calc(var(--s,7px)*.45); border-radius:1px; background:var(--c,#ff5a7a); animation:fxFlip var(--sw,1.6s) linear infinite; }
+    @keyframes fxFlip{ 0%{ transform:translateX(-7px) rotateX(0deg) rotateZ(0deg); } 50%{ transform:translateX(7px) rotateX(180deg) rotateZ(120deg); } 100%{ transform:translateX(-7px) rotateX(360deg) rotateZ(240deg); } }
+    .k-gold::before{ background:#ffe6a0; box-shadow:0 0 6px 1px rgba(255,196,70,.95); animation:fxSway var(--sw,4s) ease-in-out infinite alternate, fxTw 1.8s ease-in-out infinite; }
+    .k-spark::before{ width:2px; height:calc(var(--s,3px)*2.5); border-radius:1px; background:#bfe8ff; box-shadow:0 0 5px #6fc3ff; animation:fxTw .7s linear infinite; }
+    .k-lantern::before{ width:var(--s,10px); height:calc(var(--s,10px)*1.3); border-radius:38% 38% 30% 30%; background:radial-gradient(ellipse at 50% 60%,#fff6c0 0 18%,#ffb347 50%,#e2571b 95%); box-shadow:0 0 14px 4px rgba(255,160,60,.55); animation:fxSway var(--sw,5s) ease-in-out infinite alternate, fxFlick 2.2s ease-in-out infinite; }
+    .fx-orb{ position:absolute; width:55%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,var(--c) 0%,transparent 68%); filter:blur(6px); opacity:.85; animation:fxOrb var(--d,12s) ease-in-out infinite alternate; }
+    @keyframes fxOrb{ from{ transform:translate(-18%,-12%) scale(.9); } to{ transform:translate(22%,18%) scale(1.25); } }
+    .fx-haze{ position:absolute; left:-10%; right:-10%; height:45%; animation:cxBreathe 5s ease-in-out infinite; }
+    .fx-haze.top{ top:-5%; background:radial-gradient(ellipse at 50% 0%,var(--c) 0%,transparent 70%); }
+    .fx-haze.bot{ bottom:-5%; background:radial-gradient(ellipse at 50% 100%,var(--c) 0%,transparent 70%); }
+    .fx-flick{ animation:frxZap 2.2s steps(1) infinite; }
+    .fx-fly{ position:absolute; width:4px; height:4px; border-radius:50%; background:#f2ff9a; box-shadow:0 0 8px 3px rgba(215,255,90,.85); animation:fxWander var(--d,6s) ease-in-out infinite alternate, fxBlink var(--bl,2.4s) ease-in-out infinite; }
+    @keyframes fxWander{ 0%{ transform:translate(0,0); } 33%{ transform:translate(20px,-16px); } 66%{ transform:translate(-14px,-30px); } 100%{ transform:translate(12px,10px); } }
+    @keyframes fxBlink{ 0%,100%{ opacity:.15; } 40%,60%{ opacity:1; } }
+    .fx-aur{ position:absolute; left:-25%; width:150%; height:24%; border-radius:50%; background:linear-gradient(90deg,transparent,var(--c1) 25%,var(--c2) 55%,var(--c3) 80%,transparent); filter:blur(10px); animation:fxAur var(--d,7s) ease-in-out infinite alternate; }
+    @keyframes fxAur{ from{ transform:translateX(-7%) skewY(-5deg) scaleY(.75); } to{ transform:translateX(7%) skewY(5deg) scaleY(1.25); } }
+    .fx-dot{ position:absolute; width:2px; height:2px; border-radius:50%; background:#fff; animation:fxTw 3s ease-in-out infinite; }
+    .fx-meteor{ position:absolute; width:var(--len,80px); height:2px; border-radius:2px; transform-origin:0 50%; background:linear-gradient(90deg,#fff,rgba(190,215,255,.6) 30%,rgba(255,255,255,0)); opacity:0; animation:fxMeteor var(--d,5s) linear infinite; }
+    .fx-meteor::before{ content:''; position:absolute; left:-2px; top:-2px; width:6px; height:6px; border-radius:50%; background:#fff; box-shadow:0 0 8px 3px rgba(200,220,255,.9); }
+    @keyframes fxMeteor{ 0%{ transform:translate(0,0) rotate(-34deg); opacity:0; } 4%{ opacity:1; } 28%,100%{ transform:translate(calc(var(--m,160px)*-1),calc(var(--m,160px)*.68)) rotate(-34deg); opacity:0; } }
+    .fx-flash{ position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(215,228,255,.75),rgba(215,228,255,.15) 60%,transparent 80%); opacity:0; animation:fxFlash var(--d,7s) linear infinite; }
+    @keyframes fxFlash{ 0%,58%,100%{ opacity:0; } 59%{ opacity:.85; } 60.5%{ opacity:.1; } 62%{ opacity:.65; } 66%{ opacity:0; } }
+    .fx-cloud{ position:absolute; left:-15%; right:-15%; top:-12%; height:34%; background:radial-gradient(ellipse at 20% 60%,rgba(40,48,66,.85),transparent 60%),radial-gradient(ellipse at 55% 45%,rgba(30,36,52,.9),transparent 62%),radial-gradient(ellipse at 85% 60%,rgba(44,52,72,.85),transparent 60%); filter:blur(4px); animation:cxDrift 12s ease-in-out infinite alternate; }
+    .fx-bolt{ position:absolute; overflow:visible; opacity:0; filter:drop-shadow(0 0 4px #9fd0ff) drop-shadow(0 0 10px #5aa8ff); animation:fxFlash var(--d,7s) linear infinite; }
+    .fx-arc{ position:absolute; overflow:visible; opacity:0; filter:drop-shadow(0 0 3px #7fd6ff); animation:fxArc var(--d,3.2s) linear infinite; }
+    @keyframes fxArc{ 0%,70%,100%{ opacity:0; } 72%{ opacity:1; } 74%{ opacity:.2; } 76%{ opacity:1; } 80%{ opacity:0; } }
+    .fx-sweep{ position:absolute; top:-20%; bottom:-20%; width:22%; background:linear-gradient(90deg,transparent,rgba(255,225,150,.3),transparent); transform:skewX(-20deg); animation:fxSweep var(--d,7s) ease-in-out infinite; }
+    @keyframes fxSweep{ 0%{ left:-40%; } 60%,100%{ left:130%; } }
+    @media (prefers-reduced-motion:reduce){ .app-fx-layer{ display:none; } .fxl,.fxl::before,.fx-orb,.fx-fly,.fx-aur,.fx-meteor,.fx-bolt,.fx-flash,.fx-sweep,.frx,.frs{ animation:none !important; } }
+
+    /* ===== store tiles + preview sheet ===== */
+    .cos-frame-preview{ height:112px; }
+    .cos-frame-preview, .cos-preview{ cursor:pointer; }
+    .fx-prev{ background:linear-gradient(160deg,#2b3242,#141821); }
+    .fx-prev-av{ position:absolute; left:50%; top:50%; width:40px; height:40px; margin:-20px 0 0 -20px; border-radius:50%; background:rgba(255,255,255,.1) center/cover no-repeat; border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:1.2rem; z-index:2; }
+    .cos-fp-wrap{ position:relative; width:70px; height:70px; }
+    .cos-fp-av{ position:absolute; inset:8px; border-radius:50%; z-index:2; background:#3a4252 center/cover no-repeat; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+    .cos-refund-btn{ margin-top:6px; background:transparent; border-style:dashed; color:var(--ink-soft); font-weight:600; }
+    .cos-refund-note{ font-size:.76rem; margin:0 0 12px; }
+    .cos-pv-hero{ margin-bottom:10px; }
+    .cos-pv-hero .cos-hero-card{ padding:42px 18px 28px; }
+    .cos-pv-wrap{ width:110px; height:110px; margin-bottom:14px; }
+    .cos-pv-wrap .cos-avatar{ width:84px; height:84px; font-size:2.6rem; }
+    .cos-pv-desc{ font-size:.86rem; line-height:1.6; margin:6px 2px; }
+    .cos-pv-status{ display:flex; align-items:center; gap:8px; font-weight:800; margin:6px 2px 10px; }
+    .cos-pv-status .dot{ width:10px; height:10px; border-radius:50%; flex:none; }
+    .cos-pv-note{ font-size:.72rem; color:var(--ink-soft); margin:0 2px 8px; }
+    #cardBody .cos-pv-btn{ margin-top:8px; padding:11px; font-size:.86rem; color:var(--heading,#111); }
+    #cardBody .cos-pv-btn.primary, #cardBody .cos-pv-btn.equipped{ color:#fff; }
   </style>
 
   <!-- PROFILE (real — level/XP/streaks/achievements/titles, all derived from
@@ -2234,7 +2341,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.44.0';
+const APP_VERSION='v1.45.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -7626,9 +7733,9 @@ async function reconcileXpCoinsFromFirestore(){
    The blob copy is still kept up to date (older app versions, local cache).
 
    Migration is idempotent and needs no flag: anything owned in the blob
-   but missing from the field is copied up at boot. Inventory only ever
-   grows (nothing is sold or revoked), so a union of both sides can never
-   lose or wrongly add an item. */
+   but missing from the field is copied up at boot. The only way an item
+   leaves is a store refund, which leaves a `refunded` record the merge
+   respects — so the union still can't lose or wrongly add an item. */
 function persistInventoryItem(id){
   setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
   if(!fbDb||!currentUser||!P.inventory||!P.inventory[id]) return;
@@ -7656,11 +7763,20 @@ function mergeCosmeticsFromServer(data,atBoot){
   const serverInv=data.inventory||{};
   P.inventory=P.inventory||{};
   const blobOnly={};
-  Object.keys(P.inventory).forEach(id=>{ if(!serverInv[id]) blobOnly[id]=P.inventory[id]; });
+  // refunded on any device: don't let an older local copy bring it back
+  const refunded={...(P.refunded||{}),...(data.refunded||{})};
+  Object.keys(P.inventory).forEach(id=>{
+    if(serverInv[id]) return;
+    const r=refunded[id], at=P.inventory[id]&&P.inventory[id].acquiredAt;
+    if(r && (!at || at<=r)){ delete P.inventory[id]; return; }
+    blobOnly[id]=P.inventory[id];
+  });
+  P.refunded=refunded;
   P.inventory={...P.inventory,...serverInv};
   const updates={};
   if(data.equipped) P.equipped={...(P.equipped||{}),...data.equipped};
   else if(P.equipped) updates.equipped=P.equipped;
+  if(P.equipped) ['background','frame','effect'].forEach(sl=>{ const v=P.equipped[sl]; if(v && !P.inventory[v] && refunded[v]) P.equipped[sl]=null; });
   if(Object.keys(blobOnly).length) updates.inventory=blobOnly;
   if(atBoot){
     const serverPrefs=data.prefs||{}, prefUploads={};
@@ -8131,34 +8247,7 @@ function renderProfileCosmeticHero(){
   const avatarEl=document.getElementById('profileAvatar');
   const titleChip=document.getElementById('profileTitleChip');
 
-  const bgId=P.equipped&&P.equipped.background;
-  const bgItem=bgId&&COSMETICS_CATALOG.find(c=>c.id===bgId);
-  bgEl.innerHTML=''; bgEl.className='cos-hero-bg'+(bgItem?' '+bgItem.cls:'');
-  if(bgItem&&bgItem.mountEffect) bgItem.mountEffect(bgEl);
-
-  const fxId=P.equipped&&P.equipped.effect;
-  const fxItem=fxId&&COSMETICS_CATALOG.find(c=>c.id===fxId);
-  fxEl.innerHTML='';
-  if(fxItem&&fxItem.mountEffect) fxItem.mountEffect(fxEl);
-
-  const frameId=P.equipped&&P.equipped.frame;
-  const frameItem=frameId&&COSMETICS_CATALOG.find(c=>c.id===frameId);
-  frameEl.innerHTML=''; frameEl.className='cos-frame-ring'+(frameItem?' '+frameItem.cls:'');
-  const oldOrbitWrap=frameEl.parentElement.querySelector('.cx-orbit-wrap'); if(oldOrbitWrap) oldOrbitWrap.remove();
-  if(frameItem&&frameItem.orbiters){
-    // mounted as a SIBLING of frameEl, not a child — frameEl carries a CSS
-    // mask (to cut the ring band) which clips any child down to that same
-    // thin band, so orbit dots placed inside it were invisible except when
-    // crossing the ring line. Store preview already does it this way.
-    const wrap=document.createElement('div'); wrap.className='cx-orbit-wrap';
-    [0,90,180,270].forEach(deg=>{
-      const dot=document.createElement('div'); dot.className='cx-orbit-dot';
-      const rad=42; const rx=Math.cos(deg*Math.PI/180)*rad, ry=Math.sin(deg*Math.PI/180)*rad;
-      dot.style.left='calc(50% + '+rx+'px)'; dot.style.top='calc(50% + '+ry+'px)';
-      wrap.appendChild(dot);
-    });
-    frameEl.parentElement.appendChild(wrap);
-  }
+  mountCosmeticSet(bgEl,fxEl,frameEl,P.equipped||{});
 
   if(P.avatarPhoto){ avatarEl.style.backgroundImage=`url(${P.avatarPhoto})`; avatarEl.textContent=''; }
   else { avatarEl.style.backgroundImage=''; avatarEl.textContent='👤'; }
@@ -8396,6 +8485,10 @@ async function buyCosmetic(id){
     P.coins-=item.price;
     P.inventory[id]={acquiredAt:new Date().toISOString(),source:'store'};
     persistInventoryItem(id);
+    if(P.refunded&&P.refunded[id]){
+      delete P.refunded[id];
+      if(fbDb&&currentUser){ try{ fsDataRef('profile').set({refunded:{[id]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(()=>{}); }catch(e){} }
+    }
     playSfx('coin');
     await storageSet('profile',JSON.stringify(P));
     // the top-level coins field is the authoritative balance (see
@@ -8410,7 +8503,7 @@ async function equipCosmetic(slot,id){
   P.equipped=P.equipped||{}; P.equipped[slot]=id;
   persistEquippedSlot(slot);
   await storageSet('profile',JSON.stringify(P));
-  if(slot==='background') renderAppBackground();
+  if(slot==='background'||slot==='effect') renderAppBackground();
 }
 /* app-wide mirror of renderProfileCosmeticHero()'s background layer —
    same catalog item, same mountEffect function, just pointed at a fixed
@@ -8512,6 +8605,376 @@ const CRESCENT_OASIS={id:'crescent-oasis', type:'background', rarity:'legendary'
   const i=COSMETICS_CATALOG.findIndex(c=>c.id==='champions-ascension'); if(i>=0) COSMETICS_CATALOG.splice(i,1,CRESCENT_OASIS);
   const ch=ACHIEVEMENTS_CONFIG.find(a=>a.id==='champion'); if(ch) ch.exclusiveCosmetic='crescent-oasis';
 })();
+
+/* ================= FRAMES v2 + EFFECTS v2 =================
+   Same ids and prices for everything that existed (owners keep it) — only
+   the look is new, plus new items. Frames: the ring band is still the one
+   masked .cos-frame-ring; glow and decorations are separate UNMASKED
+   siblings (.frx) mounted by mountFrameDeco — a CSS mask clips box-shadow
+   and children to the thin band, which is why the old frames looked flat.
+   SVG decorations use a viewBox where the avatar wrap is 0..100. */
+let frxSeq=0;
+const frxXY=(r,a)=>{ const t=a*Math.PI/180; return [+(50+r*Math.sin(t)).toFixed(2), +(50-r*Math.cos(t)).toFixed(2)]; };
+const frxP=(r,a)=>frxXY(r,a).join(',');
+function frxAround(n,fn,off){ let s=''; for(let i=0;i<n;i++) s+=fn((off||0)+i*360/n,i); return s; }
+function frxEl(h,cls,css){ const d=document.createElement('div'); d.className='frx '+cls; if(css) d.style.cssText=css; h.appendChild(d); return d; }
+function frxSvg(h,layer,inner,extra,css){ h.insertAdjacentHTML('beforeend',`<svg class="frx frx-svg ${layer} ${extra||''}" style="${css||''}" viewBox="-22 -22 144 144" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`); return h.lastElementChild; }
+const frxGlow=(h,c,c2)=>frxEl(h,'back frx-glow',`--fg:${c};--fg2:${c2||c}`);
+const frxHalo=(h,grad,dur)=>frxEl(h,'back frx-halo',`background:${grad};animation-duration:${dur||6}s`);
+const smSpin=(dur,rev)=>`<animateTransform attributeName="transform" type="rotate" from="${rev?360:0} 50 50" to="${rev?0:360} 50 50" dur="${dur}s" repeatCount="indefinite"/>`;
+const smTw=(dur,begin,vals)=>`<animate attributeName="opacity" values="${vals||'0.2;1;0.2'}" dur="${dur}s" begin="${begin||0}s" repeatCount="indefinite"/>`;
+function frxArc(r,a0,a1){ const [x0,y0]=frxXY(r,a0),[x1,y1]=frxXY(r,a1); return `M${x0},${y0} A${r},${r} 0 ${(a1-a0)>180?1:0} 1 ${x1},${y1}`; }
+const frxGrad=(id,stops,vert)=>`<linearGradient id="${id}" x1="0" y1="${vert?1:0}" x2="${vert?0:1}" y2="0">${stops.map((c,i)=>`<stop offset="${Math.round(i/(stops.length-1)*100)}%" stop-color="${c}"/>`).join('')}</linearGradient>`;
+const frxBubbles=xs=>xs.map((x,i)=>{ const r=1.3+(i%3)*.6, d=3.4+i*.45, b=-(i*.9); return `<circle cx="${x}" cy="100" r="${r}" fill="rgba(220,245,255,.25)" stroke="rgba(235,250,255,.9)" stroke-width=".6"><animate attributeName="cy" values="104;30" dur="${d}s" begin="${b}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="${d}s" begin="${b}s" repeatCount="indefinite"/></circle>`; }).join('');
+const frxRise=(xs,c,dur)=>xs.map((x,i)=>{ const d=(dur||3)+(i%3)*.5, b=-(i*.7); return `<circle cx="${x}" cy="70" r="${1+(i%2)*.5}" fill="${c}"><animate attributeName="cy" values="78;-20" dur="${d}s" begin="${b}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.8;0" dur="${d}s" begin="${b}s" repeatCount="indefinite"/><animate attributeName="cx" values="${x};${x+3};${x-2};${x}" dur="${d}s" begin="${b}s" repeatCount="indefinite"/></circle>`; }).join('');
+function frxWater(h,strong){
+  frxHalo(h,'conic-gradient(#0b5fa5,#48c6ff,#e6fbff,#1e8fd6,#0b5fa5)',strong?5:8); frxGlow(h,'rgba(70,190,255,.5)','rgba(30,120,220,.25)');
+  frxSvg(h,'front',`<circle cx="50" cy="50" r="50.3" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="1.7" stroke-dasharray="7 9" stroke-linecap="round">${smSpin(strong?4:6,true)}</circle>
+    <circle cx="50" cy="50" r="54" fill="none" stroke="rgba(200,240,255,.6)" stroke-width="1.1" stroke-dasharray="2.5 11" stroke-linecap="round">${smSpin(strong?6:9)}</circle>
+    ${strong?`<circle cx="50" cy="50" r="58" fill="none" stroke="rgba(120,230,255,.45)" stroke-width="2.2" stroke-dasharray="14 18" stroke-linecap="round">${smSpin(7,true)}</circle>`:''}
+    ${frxBubbles(strong?[-8,0,6,94,100,106,-3,103]:[0,6,94,100,-5,105])}`);
+}
+const FRAME_V2={
+  'frame-steel':{cls:'fr2 frb fr2-steel', descEn:'Brushed steel with rivets and a light sheen that sweeps around', descAr:'فولاذ مصقول بمسامير ولمعة تلف حوله', deco:h=>{
+    frxGlow(h,'rgba(215,225,238,.35)','rgba(150,165,185,.18)');
+    frxSvg(h,'front',frxAround(4,a=>{ const [x,y]=frxXY(47.2,a+45); return `<circle cx="${x}" cy="${y}" r="2.3" fill="#dfe4ea" stroke="#6f7884" stroke-width=".6"/><circle cx="${(x-.6).toFixed(2)}" cy="${(y-.6).toFixed(2)}" r=".8" fill="#fff"/>`; })
+      +`<path d="${frxArc(47.2,-25,25)}" stroke="rgba(255,255,255,.9)" stroke-width="2.4" stroke-linecap="round" fill="none">${smSpin(3.5)}</path>`);
+  }},
+  'frame-mint':{isNew:true, rarity:'common', price:220, nameEn:'Mint Breeze', nameAr:'نسمة النعناع', descEn:'Cool mint ring with a soft breathing glow and circling light', descAr:'حلقة نعناع باردة بتوهج ناعم ونور يلف حولها', cls:'fr2 frb frs fr2-mint', deco:h=>{
+    frxHalo(h,'conic-gradient(#7ff0c8,#2fb8a0,#bff8e6,#7ff0c8)',9); frxGlow(h,'rgba(90,230,190,.45)','rgba(60,200,170,.2)');
+    frxSvg(h,'front',`<g>${smSpin(7)}${frxAround(6,(a,i)=>{ const [x,y]=frxXY(55,a); return `<circle cx="${x}" cy="${y}" r="${i%2?1.1:1.6}" fill="#e9fff7">${smTw(2+i*.3,-i*.4)}</circle>`; })}</g>`,'frx-glowy','--gc:rgba(120,255,210,.9)');
+  }},
+  'frame-sand':{isNew:true, rarity:'common', price:240, nameEn:'Desert Beads', nameAr:'خرز الصحراء', descEn:'Warm sand ring strung with shimmering gold and turquoise beads', descAr:'حلقة رمل دافية فيها خرز ذهبي وفيروزي يلمع', cls:'fr2 frb fr2-sand', deco:h=>{
+    frxGlow(h,'rgba(240,200,120,.35)','rgba(200,150,70,.18)');
+    frxSvg(h,'front',frxAround(12,(a,i)=>{ const [x,y]=frxXY(47.5,a); const c=i%2?'#2bb3a6':'#e8b74a', d=i%2?'#156e66':'#9c6d17'; return `<circle cx="${x}" cy="${y}" r="3.1" fill="${c}" stroke="${d}" stroke-width=".6"/><circle cx="${(x-1).toFixed(2)}" cy="${(y-1).toFixed(2)}" r="1" fill="#fff">${smTw(2.4,-i*.2,'0.25;1;0.25')}</circle>`; }));
+  }},
+  'frame-twinband':{cls:'fr2 fr2-twin', descEn:'Two blue rings turning in opposite directions', descAr:'حلقتين زرق يدورون عكس بعض', deco:h=>{
+    frxGlow(h,'rgba(120,170,255,.45)','rgba(80,120,255,.2)');
+    frxSvg(h,'back',`<circle cx="50" cy="50" r="55" fill="none" stroke="#a9c8ff" stroke-width="1.6" stroke-dasharray="6 4" stroke-linecap="round">${smSpin(14)}</circle><circle cx="50" cy="50" r="43.6" fill="none" stroke="#6f9dff" stroke-width="1.3" stroke-dasharray="2 3">${smSpin(9,true)}</circle>`);
+  }},
+  'frame-leaf':{isNew:true, rarity:'uncommon', price:750, nameEn:'Palm Wreath', nameAr:'إكليل النخيل', descEn:'A wreath of palm leaves tied with gold, swaying gently', descAr:'إكليل من سعف النخيل مربوط بالذهب، يتمايل بهدوء', cls:'fr2 frb fr2-leaf', deco:h=>{
+    const u='f'+(++frxSeq);
+    const side=()=>{ let o=''; for(let a=26;a<=166;a+=14){ const [x,y]=frxXY(52,a), [x2,y2]=frxXY(47,a+7); o+=`<ellipse cx="${x}" cy="${y}" rx="7.6" ry="2.7" fill="url(#${u}a)" transform="rotate(${(a+150).toFixed(1)} ${x} ${y})"/><ellipse cx="${x2}" cy="${y2}" rx="6" ry="2.2" fill="url(#${u}b)" transform="rotate(${(a+206).toFixed(1)} ${x2} ${y2})"/>`; } return o; };
+    frxGlow(h,'rgba(120,210,110,.35)','rgba(60,150,70,.18)');
+    frxSvg(h,'front',`<defs>${frxGrad(u+'a',['#2f7d3a','#5fbf5a'])}${frxGrad(u+'b',['#6cc56a','#c8f09a'])}</defs><g>
+      <animateTransform attributeName="transform" type="rotate" values="-3 50 50;3 50 50;-3 50 50" dur="5s" repeatCount="indefinite"/>
+      <g>${side()}</g><g transform="translate(100 0) scale(-1 1)">${side()}</g>
+      <path d="M50,100 L44,108 L47.5,100 Z M50,100 L56,108 L52.5,100 Z" fill="#e0a832"/><circle cx="50" cy="100" r="3" fill="#f2c14e" stroke="#a8791a" stroke-width=".6"/></g>`);
+  }},
+  'frame-wave':{isNew:true, rarity:'uncommon', price:800, nameEn:'Ocean Wave', nameAr:'موج البحر', descEn:'A turning ring of sea water with white foam and rising bubbles', descAr:'حلقة موج تدور برغوة بيضا وفقاعات تطلع', cls:'fr2 frb frs fr2-wave', deco:h=>frxWater(h,false)},
+  'frame-ember':{cls:'fr2 frb frs fr2-ember', descEn:'A ring of living fire — flickering flames and rising embers', descAr:'حلقة نار حيّة — لهب يرتجف وجمر يطلع', deco:h=>{
+    const u='f'+(++frxSeq);
+    const flames=(n,r,L,off,op,g,dur)=>frxAround(n,(a,i)=>{ const l=+(L*(.75+((i*7)%5)/10)).toFixed(1); return `<path d="M-4,0 Q-5,${(-l*.45).toFixed(1)} 0,${-l} Q5,${(-l*.45).toFixed(1)} 4,0 Z" fill="url(#${g})" opacity="${op}" transform="translate(50 50) rotate(${a.toFixed(1)}) translate(0 ${-r})"><animateTransform attributeName="transform" type="scale" additive="sum" values="1 1;.85 1.18;1.05 .9;1 1" dur="${(dur+(i%4)*.13).toFixed(2)}s" begin="${(-i*.17).toFixed(2)}s" repeatCount="indefinite"/></path>`; },off);
+    frxHalo(h,'conic-gradient(#ff3d00,#ffb300,#ff6a00,#ffd54f,#ff3d00)',4); frxGlow(h,'rgba(255,120,30,.6)','rgba(255,60,0,.3)');
+    frxSvg(h,'back',`<defs>${frxGrad(u+'a',['#d11a00','#ff7a00','#ffd166'],true)}${frxGrad(u+'b',['#ff6a00','#ffc53d','#fff3b0'],true)}</defs>${flames(14,44,18,0,.85,u+'a',.9)}${flames(14,45,11,12.8,.95,u+'b',.7)}`);
+    frxSvg(h,'front',frxRise([-4,4,96,104,10,90],'#ffb347',2.6),'frx-glowy','--gc:rgba(255,140,40,1)');
+  }},
+  'frame-frost':{isNew:true, rarity:'epic', price:2200, nameEn:'Frost Crown', nameAr:'تاج الصقيع', descEn:'Ice shards grow around you, tallest on top like a crown, with cold glints', descAr:'شظايا ثلج تحيط فيك، أطولها فوق مثل التاج، مع لمعات باردة', cls:'fr2 frb frs fr2-frost', deco:h=>{
+    const u='f'+(++frxSeq);
+    const shards=frxAround(18,(a,i)=>{ const L=(6+9*Math.max(0,Math.cos(a*Math.PI/180))+(i%2?0:3)).toFixed(1); return `<polygon points="-3.2,0 0,${-L} 3.2,0" fill="url(#${u})" stroke="rgba(255,255,255,.55)" stroke-width=".4" transform="translate(50 50) rotate(${a}) translate(0 -48)"/>`; });
+    const glints=[0,40,-40,120,-120,180].map((a,i)=>{ const [x,y]=frxXY(a===0?66:(Math.abs(a)===40?62:56),a); return `<circle cx="${x}" cy="${y}" r="1.3" fill="#fff">${smTw(1.8+i*.3,-i*.5,'0;1;0')}</circle>`; }).join('');
+    frxHalo(h,'conic-gradient(#e0f7ff,#7fd3ff,#ffffff,#5fb8ff,#e0f7ff)',10); frxGlow(h,'rgba(150,215,255,.55)','rgba(90,170,255,.25)');
+    frxSvg(h,'front',`<defs>${frxGrad(u,['#6fbef5','#d9f2ff','#ffffff'],true)}</defs>${shards}${glints}`,'frx-glowy','--gc:rgba(170,225,255,.95)');
+  }},
+  'frame-neon':{isNew:true, rarity:'epic', price:2300, nameEn:'Neon Pulse', nameAr:'نبض النيون', descEn:'Pink and cyan neon tubes that hum and flicker like a city sign', descAr:'أنابيب نيون وردي وسماوي ترمش مثل لوحات المدينة', cls:'fr2 fr2-neon', deco:h=>{
+    frxSvg(h,'back',`<circle cx="50" cy="50" r="55.5" fill="none" stroke="#3ff0ff" stroke-width="1.9" stroke-dasharray="30 10 5 10" stroke-linecap="round">${smSpin(5)}</circle>`,'frx-neon2');
+    frxSvg(h,'back',`<circle cx="50" cy="50" r="43.6" fill="none" stroke="#ffb3f0" stroke-width=".9" opacity=".75" stroke-dasharray="1 3">${smSpin(8,true)}</circle>`);
+  }},
+  'frame-prism':{cls:'fr2 frb frs fr2-prism', descEn:'A rainbow ring inside a colour halo, with six gems orbiting', descAr:'حلقة قوس قزح داخل هالة ألوان، وست جواهر تدور حولها', deco:h=>{
+    const cols=['#ff4d6d','#ffb84d','#4dff9a','#4dc3ff','#9b6bff','#ff4dd2'];
+    frxHalo(h,'conic-gradient(#ff4d6d,#ffb84d,#fff35c,#4dff9a,#4dc3ff,#9b6bff,#ff4dd2,#ff4d6d)',5); frxGlow(h,'rgba(255,255,255,.35)','rgba(180,120,255,.25)');
+    frxSvg(h,'front',`<g>${smSpin(10)}${frxAround(6,(a,i)=>`<g transform="translate(50 50) rotate(${a}) translate(0 -58)"><path d="M0,-5 L3.3,0 L0,5 L-3.3,0 Z" fill="${cols[i]}" stroke="rgba(255,255,255,.85)" stroke-width=".5"/><path d="M0,-5 L3.3,0 L0,0 Z" fill="rgba(255,255,255,.55)"/></g>`)}</g><path d="${frxArc(50.5,-20,20)}" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".85">${smSpin(2.2)}</path>`,'frx-glowy','--gc:rgba(255,255,255,.8)');
+  }},
+  'frame-falcon':{isNew:true, rarity:'mythic', price:6000, nameEn:'Falcon Wings', nameAr:'جناح الصقر', descEn:'Golden falcon wings open on both sides and beat slowly — pride of the Gulf', descAr:'جناحين صقر ذهبية على الجانبين ترفرف بهدوء — فخر الخليج', cls:'fr2 frb frs fr2-falcon', deco:h=>{
+    const u='f'+(++frxSeq);
+    const feathers=(lens,rot0,step,w,g)=>lens.map((L,i)=>`<path d="M0,0 Q${-L*.5},${-w} ${-L},0 Q${-L*.5},${(w*.55).toFixed(2)} 0,0 Z" fill="url(#${g})" stroke="rgba(90,55,20,.55)" stroke-width=".4" transform="rotate(${rot0+i*step})"/>`).join('');
+    const wing=`<g transform="translate(6 56)"><animateTransform attributeName="transform" type="rotate" values="-4;10;-4" dur="2.8s" repeatCount="indefinite" additive="sum"/>${feathers([22,27,31,33,31,26],-22,13,5.2,u+'a')}${feathers([13,15,17,15],-10,13,4,u+'b')}</g>`;
+    frxGlow(h,'rgba(240,200,120,.5)','rgba(200,140,50,.25)');
+    frxSvg(h,'back',`<defs>${frxGrad(u+'a',['#c0843a','#e9b865','#fff0c8'])}${frxGrad(u+'b',['#e9b865','#fff3d6','#ffffff'])}</defs>${wing}<g transform="translate(100 0) scale(-1 1)">${wing}</g>`,'frx-glowy','--gc:rgba(255,215,130,.7)');
+    frxSvg(h,'front',`<path d="M50,-5 L53.4,.5 L50,6 L46.6,.5 Z" fill="#e63950" stroke="#fff3c4" stroke-width=".7"/><circle cx="49" cy="-1" r=".9" fill="#fff">${smTw(2)}</circle>`);
+  }},
+  'frame-thunder':{isNew:true, rarity:'mythic', price:6200, nameEn:'Thunder Ring', nameAr:'حلقة الرعد', descEn:'An electric ring that throws lightning in every direction', descAr:'حلقة كهربا ترمي برق بكل اتجاه', cls:'fr2 frb frs fr2-thunder', deco:h=>{
+    const pts='0,0 3,-6 -2,-9 3,-14 -1,-19';
+    const bolt=(a,i)=>`<g transform="translate(50 50) rotate(${a}) translate(0 -47)" opacity="0"><polyline points="${pts}" fill="none" stroke="#6fb6ff" stroke-width="3" stroke-linejoin="round" opacity=".55"/><polyline points="${pts}" fill="none" stroke="#f2f9ff" stroke-width="1.2" stroke-linejoin="round"/><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;1;.15;1;0" dur="2.6s" begin="${(-i*.52).toFixed(2)}s" repeatCount="indefinite"/></g>`;
+    frxHalo(h,'conic-gradient(#1f4fff,#cfe9ff,#3d7bff,#ffffff,#1f4fff)',3); frxEl(h,'back frx-glow frx-zap','--fg:rgba(90,160,255,.6);--fg2:rgba(40,90,255,.3)');
+    frxSvg(h,'front',[25,95,160,225,300].map(bolt).join(''),'frx-glowy','--gc:rgba(140,200,255,.95)');
+  }},
+  'frame-sunburst':{isNew:true, rarity:'legendary', price:17000, nameEn:'Sunburst', nameAr:'الشمس الذهبية', descEn:'Golden sun rays turn slowly around you in two layers, with a warm glow', descAr:'أشعة شمس ذهبية تدور حولك بطبقتين، مع توهج دافي', cls:'fr2 frb frs fr2-sun', deco:h=>{
+    const rays=(n,r0,rl,rs,wd,f1,f2)=>frxAround(n,(a,i)=>`<polygon points="${frxP(r0,a-wd)} ${frxP(i%2?rs:rl,a)} ${frxP(r0,a+wd)}" fill="${i%2?f2:f1}"/>`);
+    frxHalo(h,'conic-gradient(#ffb300,#fff2b0,#ff8f00,#ffe066,#ffb300)',7); frxGlow(h,'rgba(255,190,60,.65)','rgba(255,140,0,.3)');
+    frxSvg(h,'back',rays(12,47,70,64,5,'rgba(255,214,90,.4)','rgba(255,170,40,.32)'),'frx-spin rev','--sp:36s');
+    frxSvg(h,'back',rays(24,47,63,57,3.6,'#ffd24d','#ffae1a'),'frx-spin frx-glowy','--sp:22s;--gc:rgba(255,200,80,.8)');
+    frxSvg(h,'front',`<g>${smSpin(5)}${frxAround(3,a=>{ const [x,y]=frxXY(56,a); return `<circle cx="${x}" cy="${y}" r="1.6" fill="#fffbe6"/>`; })}</g>`,'frx-glowy','--gc:rgba(255,235,160,1)');
+  }},
+  'frame-celestial':{cls:'fr2 frb frs fr2-crown', descEn:'A gold ring wearing a jewelled crown that shines, with orbiting light', descAr:'حلقة ذهبية فوقها تاج مرصّع يلمع، ونور يدور حولها', deco:h=>{
+    const u='f'+(++frxSeq), crown='M33,8 L29,-11 L40,-2 L50,-17 L60,-2 L71,-11 L67,8 Q50,3 33,8 Z';
+    frxHalo(h,'conic-gradient(#ffe08a,#fff6d8,#d9a441,#ffe08a)',8); frxGlow(h,'rgba(255,210,110,.65)','rgba(230,160,40,.3)');
+    frxSvg(h,'front',`<g>${smSpin(6)}${frxAround(4,a=>{ const [x,y]=frxXY(56,a+45); return `<circle cx="${x}" cy="${y}" r="1.5" fill="#fff4c8"/>`; })}</g>`,'frx-glowy','--gc:rgba(255,224,138,1)');
+    frxSvg(h,'front',`<defs>${frxGrad(u+'g',['#c98a1c','#ffe08a','#fff7d6'],true)}<clipPath id="${u}c"><path d="${crown}"/></clipPath></defs>
+      <path d="${crown}" fill="url(#${u}g)" stroke="#9a6410" stroke-width=".7" stroke-linejoin="round"/>
+      <g clip-path="url(#${u}c)"><rect x="20" y="-20" width="7" height="32" fill="rgba(255,255,255,.75)" transform="skewX(-18)"><animate attributeName="x" values="18;86;86" keyTimes="0;.45;1" dur="3.4s" repeatCount="indefinite"/></rect></g>
+      <circle cx="29" cy="-11" r="2.2" fill="#fff4d0"/><circle cx="50" cy="-17" r="2.5" fill="#fff4d0"/><circle cx="71" cy="-11" r="2.2" fill="#fff4d0"/>
+      <circle cx="40" cy="3.2" r="2" fill="#ff4d6d" stroke="#fff" stroke-width=".4"/><circle cx="50" cy="1.6" r="2.6" fill="#3d8bff" stroke="#fff" stroke-width=".4"/><circle cx="60" cy="3.2" r="2" fill="#2fd98a" stroke="#fff" stroke-width=".4"/>`,'frx-glowy','--gc:rgba(255,215,120,.9)');
+  }},
+  'frame-galaxy':{isNew:true, rarity:'legendary', price:19000, nameEn:'Galaxy Swirl', nameAr:'دوامة المجرة', descEn:'A swirling purple galaxy with two planets orbiting you', descAr:'مجرة بنفسجية تدور، وكوكبين يدورون حولك', cls:'fr2 frb frs fr2-galaxy', deco:h=>{
+    const u='f'+(++frxSeq);
+    const arm=off=>{ let d=''; for(let k=0;k<=24;k++){ const tt=k/24, [x,y]=frxXY(44+tt*20,off+tt*200); d+=(k?'L':'M')+x+','+y; } return d; };
+    frxHalo(h,'conic-gradient(#3b1f8f,#b06bff,#ff7ad9,#4dc3ff,#3b1f8f)',5); frxGlow(h,'rgba(170,110,255,.6)','rgba(90,60,220,.3)');
+    frxSvg(h,'back',[0,180].map(o=>`<path d="${arm(o)}" fill="none" stroke="rgba(200,160,255,.55)" stroke-width="3.2" stroke-linecap="round"/><path d="${arm(o)}" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1" stroke-linecap="round"/>`).join(''),'frx-spin frx-glowy','--sp:14s;--gc:rgba(200,150,255,.9)');
+    const dust=Array.from({length:10},(_,i)=>{ const [x,y]=frxXY(52+((i*37)%12),i*36+11); return `<circle cx="${x}" cy="${y}" r="${(.5+(i%3)*.3).toFixed(1)}" fill="#fff">${smTw(1.6+(i%4)*.5,-i*.3,'0.1;1;0.1')}</circle>`; }).join('');
+    frxSvg(h,'front',`<defs><radialGradient id="${u}p" cx=".35" cy=".35"><stop offset="0" stop-color="#ffe0b0"/><stop offset="1" stop-color="#e0527a"/></radialGradient><radialGradient id="${u}m" cx=".35" cy=".35"><stop offset="0" stop-color="#e0f6ff"/><stop offset="1" stop-color="#3d7bff"/></radialGradient></defs>${dust}
+      <g>${smSpin(8)}<circle cx="50" cy="-9" r="3.6" fill="url(#${u}p)"/><ellipse cx="50" cy="-9" rx="6.5" ry="1.7" fill="none" stroke="#ffe7c2" stroke-width=".8" transform="rotate(-18 50 -9)"/></g>
+      <g>${smSpin(5,true)}<circle cx="50" cy="104" r="2.2" fill="url(#${u}m)"/></g>`);
+  }},
+  'frame-tidebreaker':{cls:'fr2 frb frs fr2-tide', deco:h=>frxWater(h,true)},
+  'frame-fanous':{cls:'fr2 frb frs fr2-fanous', deco:h=>{
+    const u='f'+(++frxSeq);
+    frxHalo(h,'conic-gradient(#f5b83d,#fff3c4,#7a4bd8,#f5b83d)',7); frxGlow(h,'rgba(245,184,61,.6)','rgba(122,75,216,.4)');
+    frxSvg(h,'front',`<g>${smSpin(7)}${frxAround(4,(a,i)=>{ const [x,y]=frxXY(56,a); return `<circle cx="${x}" cy="${y}" r="1.5" fill="${i%2?'#c9a7ff':'#ffe9ad'}"/>`; })}</g>`,'frx-glowy','--gc:rgba(255,224,138,1)');
+    frxSvg(h,'front',`<defs><mask id="${u}m"><rect x="-22" y="-22" width="144" height="144" fill="#fff"/><circle cx="54.5" cy="-5.5" r="7" fill="#000"/></mask><radialGradient id="${u}l" cx=".5" cy=".55"><stop offset="0" stop-color="#fff6c0"/><stop offset=".55" stop-color="#ffb347"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs>
+      <circle cx="50" cy="-2" r="8" fill="#ffd66b" mask="url(#${u}m)"/>
+      <g><animateTransform attributeName="transform" type="rotate" values="-9 86 84;9 86 84;-9 86 84" dur="3.2s" repeatCount="indefinite"/>
+        <line x1="86" y1="84" x2="86" y2="90" stroke="#d9a441" stroke-width=".8"/><path d="M82,90 L90,90 L88,92 L84,92 Z" fill="#d9a441"/>
+        <rect x="82.5" y="92" width="7" height="9" rx="2" fill="url(#${u}l)" stroke="#d9a441" stroke-width=".7"/><path d="M84,101 L88,101 L86,104 Z" fill="#d9a441"/></g>`,'frx-glowy','--gc:rgba(255,190,90,.9)');
+  }},
+};
+/* decorations go next to the ring (never inside it — the ring is masked) */
+function mountFrameDeco(ringEl,item){
+  const host=ringEl&&ringEl.parentElement; if(!host) return;
+  Array.from(host.children).forEach(n=>{ if(n.classList.contains('frx')||n.classList.contains('cx-orbit-wrap')) n.remove(); });
+  if(item&&item.deco) item.deco(host);
+}
+
+/* ---- effects: mountEffect(el, big) — big = the whole-app layer ---- */
+const fxRR=a=>a[0]+Math.random()*(a[1]-a[0]);
+const fxN=(n,big)=>Math.round(n*(big?1.7:1));
+function fxAdd(el,cls,css){ const d=document.createElement('div'); d.className=cls; if(css) d.style.cssText=css; el.appendChild(d); return d; }
+function fxLanes(el,kind,dir,n,o){ o=o||{}; for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='fxl '+dir+' '+kind; const dur=fxRR(o.d||[6,10]); d.style.left=fxRR(o.l||[0,100]).toFixed(1)+'%'; d.style.setProperty('--d',dur.toFixed(2)+'s'); d.style.animationDelay=(-Math.random()*dur).toFixed(2)+'s'; if(o.s) d.style.setProperty('--s',fxRR(o.s).toFixed(1)+'px'); if(o.sw) d.style.setProperty('--sw',fxRR(o.sw).toFixed(2)+'s'); if(o.c) d.style.setProperty('--c',o.c[i%o.c.length]); if(o.op) d.style.opacity=fxRR(o.op).toFixed(2); el.appendChild(d); } }
+const FX_V2={
+  'fx-soft-glow':{descEn:'Three soft colour lights drift slowly around you', descAr:'ثلاث أضواء ناعمة ملوّنة تتحرك حولك بهدوء', mount:(el,big)=>{
+    [['rgba(255,170,220,.55)','8%','10%',13],['rgba(140,190,255,.55)','45%','40%',16],['rgba(150,255,210,.45)','20%','60%',11]].forEach(([c,l,tp,d])=>fxAdd(el,'fx-orb',`--c:${c};left:${l};top:${tp};--d:${d}s`));
+    fxLanes(el,'k-mote','up',fxN(5,big),{d:[12,18],s:[2,3],sw:[3,6],op:[.4,.8]});
+  }},
+  'fx-bubbles':{isNew:true, rarity:'common', price:180, nameEn:'Bubbles', nameAr:'فقاعات', descEn:'Shiny bubbles float up and wobble past you', descAr:'فقاعات لامعة تطلع لفوق وتتمايل', mount:(el,big)=>fxLanes(el,'k-bubble','up',fxN(11,big),{d:[6,11],s:big?[6,16]:[5,12],sw:[1.8,3.5]})},
+  'fx-rain':{isNew:true, rarity:'common', price:200, nameEn:'Light Rain', nameAr:'مطر خفيف', descEn:'A calm, steady drizzle', descAr:'رشّة مطر هادية ومستمرة', mount:(el,big)=>{ fxAdd(el,'fx-haze top','--c:rgba(120,150,200,.25)'); fxLanes(el,'k-rain','down',fxN(26,big),{d:[.8,1.4],s:[3,6],op:[.35,.85]}); }},
+  'fx-floating-motes':{descEn:'Glowing specks drift up slowly and twinkle at different depths', descAr:'ذرات نور تطفو لفوق بهدوء وتلمع على أعماق مختلفة', mount:(el,big)=>{
+    fxAdd(el,'fx-orb','--c:rgba(170,210,255,.3);left:20%;top:25%;--d:14s');
+    fxLanes(el,'k-mote','up',fxN(8,big),{d:[14,20],s:[1.5,2.2],sw:[4,7],op:[.35,.6]});
+    fxLanes(el,'k-mote','up',fxN(8,big),{d:[8,12],s:[3,4.5],sw:[3,5]});
+  }},
+  'fx-fireflies':{isNew:true, rarity:'uncommon', price:520, nameEn:'Fireflies', nameAr:'يراعات', descEn:'Little fireflies wander around and blink on and off', descAr:'يراعات صغيرة تتجول حولك وتضوي وتطفي', mount:(el,big)=>{
+    fxAdd(el,'fx-haze bot','--c:rgba(150,220,80,.18)');
+    for(let i=0;i<fxN(10,big);i++) fxAdd(el,'fx-fly',`left:${fxRR([4,94]).toFixed(1)}%;top:${fxRR([20,88]).toFixed(1)}%;--d:${fxRR([4,8]).toFixed(1)}s;--bl:${fxRR([1.6,3.4]).toFixed(1)}s;animation-delay:${(-Math.random()*6).toFixed(1)}s,${(-Math.random()*3).toFixed(1)}s`);
+  }},
+  'fx-petals':{isNew:true, rarity:'uncommon', price:560, nameEn:'Falling Petals', nameAr:'بتلات الورد', descEn:'Pink rose petals spin and float down around you', descAr:'بتلات ورد وردية تدور وتنزل حولك', mount:(el,big)=>fxLanes(el,'k-petal','down',fxN(12,big),{d:[7,12],s:big?[8,13]:[7,10],sw:[2,4]})},
+  'fx-ember-drift':{descEn:'Glowing embers rise and flicker over a warm heat glow', descAr:'جمرات متوهجة تطلع وترمش فوق توهج حرارة دافي', mount:(el,big)=>{
+    fxAdd(el,'fx-haze bot','--c:rgba(255,110,30,.35)');
+    fxLanes(el,'k-ember','up',fxN(16,big),{d:[4,8],s:[2,4.5],sw:[1.2,2.6]});
+  }},
+  'fx-snowfall':{isNew:true, rarity:'epic', price:1300, nameEn:'Snowfall', nameAr:'تساقط الثلج', descEn:'Soft snow falls in three layers — near, middle and far', descAr:'ثلج ناعم ينزل بثلاث طبقات — قريب ووسط وبعيد', mount:(el,big)=>{
+    fxAdd(el,'fx-haze top','--c:rgba(200,225,255,.3)');
+    fxLanes(el,'k-snow','down',fxN(12,big),{d:[11,15],s:[1.5,2.5],sw:[4,6],op:[.4,.6]});
+    fxLanes(el,'k-snow','down',fxN(10,big),{d:[7,10],s:[3,4],sw:[3,5],op:[.7,.9]});
+    fxLanes(el,'k-snow','down',fxN(5,big),{d:[4.5,6],s:[5,7],sw:[2.5,4]});
+  }},
+  'fx-confetti':{isNew:true, rarity:'epic', price:1400, nameEn:'Confetti', nameAr:'قصاصات الاحتفال', descEn:'Colourful confetti flips and tumbles down — every day is a party', descAr:'قصاصات ملوّنة تتقلب وتنزل — كل يوم حفلة', mount:(el,big)=>fxLanes(el,'k-conf','down',fxN(20,big),{d:[4,7],s:big?[7,11]:[6,9],sw:[1.1,2.2],c:['#ff5a7a','#ffc93c','#3fd0ff','#7cff6b','#b77bff','#ff9a3c']})},
+  'fx-static-surge':{descEn:'Electric arcs snap around you with a flickering blue charge and sparks', descAr:'أقواس كهربا تطقطق حولك مع شحنة زرقا ترمش وشرار', mount:(el,big)=>{
+    fxAdd(el,'fx-haze top fx-flick','--c:rgba(90,170,255,.3)');
+    for(let i=0;i<fxN(6,big);i++) el.insertAdjacentHTML('beforeend',`<svg class="fx-arc" viewBox="0 0 40 12" style="left:${fxRR([2,78]).toFixed(1)}%;top:${fxRR([5,85]).toFixed(1)}%;width:${big?12:20}%;transform:rotate(${fxRR([-40,40]).toFixed(0)}deg);--d:${fxRR([2.4,4]).toFixed(1)}s;animation-delay:${(-Math.random()*4).toFixed(1)}s"><polyline points="0,6 6,1 12,9 19,2 26,10 33,3 40,7" fill="none" stroke="#dff4ff" stroke-width="1.4" stroke-linejoin="round"/></svg>`);
+    fxLanes(el,'k-spark','up',fxN(10,big),{d:[1.6,3],s:[2,4]});
+  }},
+  'fx-aurora-veil':{isNew:true, rarity:'mythic', price:3100, nameEn:'Aurora Veil', nameAr:'ستار الشفق', descEn:'Northern-lights ribbons wave across the top in green, blue and pink', descAr:'أشرطة الشفق القطبي تتموج فوق بالأخضر والأزرق والوردي', mount:(el,big)=>{
+    [['4%','#3ff5c0','#7a8cff','#ff7ad9',7],['14%','#7be0ff','#3ff5a0','#c58bff',9],['26%','#ff9ad5','#7a8cff','#3ff5e0',11]].forEach(([tp,a,b,c,d],i)=>fxAdd(el,'fx-aur',`top:${tp};--c1:${a};--c2:${b};--c3:${c};--d:${d}s;opacity:${(.62-i*.12).toFixed(2)};animation-delay:${-i*2}s`));
+    fxLanes(el,'k-mote','up',fxN(6,big),{d:[14,20],s:[1.5,2.5],sw:[4,7],op:[.4,.7]});
+  }},
+  'fx-gold-dust':{isNew:true, rarity:'mythic', price:3300, nameEn:'Gold Dust', nameAr:'غبار الذهب', descEn:'Fine gold dust shimmers upward while waves of golden light sweep past', descAr:'غبار ذهب ناعم يلمع ويطلع، وموجات نور ذهبي تمر', mount:(el,big)=>{
+    fxAdd(el,'fx-haze bot','--c:rgba(255,190,70,.28)');
+    fxAdd(el,'fx-sweep','--d:7s'); fxAdd(el,'fx-sweep','--d:7s;animation-delay:-3.5s;width:12%');
+    fxLanes(el,'k-gold','up',fxN(26,big),{d:[10,18],s:[1.4,3.4],sw:[1.4,3]});
+  }},
+  'fx-starfall':{nameEn:'Meteor Shower', nameAr:'زخّة الشهب', descEn:'Bright meteors streak across a softly glowing night sky', descAr:'شهب لامعة تشق سما ليل متوهجة بهدوء', mount:(el,big)=>{
+    fxAdd(el,'fx-haze top','--c:rgba(120,110,255,.28)');
+    for(let i=0;i<fxN(14,big);i++) fxAdd(el,'fx-dot',`left:${fxRR([2,98]).toFixed(1)}%;top:${fxRR([2,70]).toFixed(1)}%;animation-delay:${(-Math.random()*3).toFixed(1)}s`);
+    for(let i=0;i<fxN(4,big);i++) fxAdd(el,'fx-meteor',`left:${fxRR([45,105]).toFixed(1)}%;top:${fxRR([-5,45]).toFixed(1)}%;--d:${fxRR([3.5,6.5]).toFixed(1)}s;animation-delay:${(-Math.random()*6).toFixed(1)}s;--m:${big?340:170}px;--len:${big?120:70}px`);
+  }},
+  'fx-lanterns':{isNew:true, rarity:'legendary', price:5600, nameEn:'Lantern Festival', nameAr:'مهرجان الفوانيس', descEn:'Glowing paper lanterns rise slowly into the sky and flicker warmly', descAr:'فوانيس ورق متوهجة تطير للسما بهدوء وتلمع بدفا', mount:(el,big)=>{
+    fxAdd(el,'fx-haze bot','--c:rgba(255,150,60,.3)');
+    fxLanes(el,'k-lantern','up',fxN(5,big),{d:[16,24],s:big?[9,12]:[8,10],sw:[4,7],op:[.6,.85]});
+    fxLanes(el,'k-lantern','up',fxN(5,big),{d:[10,15],s:big?[14,20]:[12,16],sw:[3,5]});
+    fxLanes(el,'k-gold','up',fxN(8,big),{d:[8,14],s:[1.2,2.4],sw:[2,3]});
+  }},
+  'fx-storm':{isNew:true, rarity:'legendary', price:5800, nameEn:'Thunderstorm', nameAr:'عاصفة رعدية', descEn:'Dark clouds, heavy rain and lightning that lights up the whole sky', descAr:'غيوم سودا، مطر غزير، وبرق يضوّي السما كلها', mount:(el,big)=>{
+    fxAdd(el,'fx-cloud'); fxAdd(el,'fx-flash','--d:6.5s'); fxAdd(el,'fx-flash','--d:9s;animation-delay:-4s');
+    [['18%',6.5,0],['64%',9,-4]].forEach(([l,d,b])=>el.insertAdjacentHTML('beforeend',`<svg class="fx-bolt" viewBox="0 0 30 100" preserveAspectRatio="none" style="left:${l};top:4%;width:${big?14:20}%;height:${big?42:70}%;--d:${d}s;animation-delay:${b}s"><polyline points="16,0 10,30 19,35 8,64 17,69 11,100" fill="none" stroke="#f2f8ff" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><polyline points="10,30 2,44 5,52" fill="none" stroke="#dcecff" stroke-width="1.4" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`));
+    fxLanes(el,'k-rain','down',fxN(30,big),{d:[.55,.9],s:[4,7],op:[.4,.9]});
+  }},
+};
+(function applyFramesEffectsV2(){
+  const apply=(map,type)=>Object.entries(map).forEach(([id,v])=>{
+    let c=COSMETICS_CATALOG.find(x=>x.id===id);
+    if(!c){ if(!v.isNew) return; c={id,type,rarity:v.rarity,price:v.price}; COSMETICS_CATALOG.push(c); }
+    ['cls','deco','nameEn','nameAr','descEn','descAr'].forEach(k=>{ if(v[k]!==undefined) c[k]=v[k]; });
+    if(v.mount) c.mountEffect=v.mount;
+    if(type==='frame') c.orbiters=false;
+  });
+  apply(FRAME_V2,'frame'); apply(FX_V2,'effect');
+})();
+/* one place that paints a hero card (bg + effect + frame) from an equipped map */
+function mountCosmeticSet(bgEl,fxEl,ringEl,eq){
+  const find=id=>id&&COSMETICS_CATALOG.find(c=>c.id===id);
+  const bg=find(eq.background), fx=find(eq.effect), fr=find(eq.frame);
+  if(bgEl){ bgEl.innerHTML=''; bgEl.className='cos-hero-bg'+(bg?' '+bg.cls:''); if(bg&&bg.mountEffect) bg.mountEffect(bgEl); }
+  if(fxEl){ fxEl.innerHTML=''; if(fx&&fx.mountEffect) fx.mountEffect(fxEl,false); }
+  if(ringEl){ ringEl.innerHTML=''; ringEl.className='cos-frame-ring'+(fr?' '+fr.cls:''); mountFrameDeco(ringEl,fr); }
+}
+/* the equipped effect also plays across the whole app, behind the content */
+function renderAppEffect(override){
+  const el=document.getElementById('appFxLayer'); if(!el) return;
+  const id=P.equipped&&P.equipped.effect;
+  const it=override||(id&&COSMETICS_CATALOG.find(c=>c.id===id));
+  el.innerHTML='';
+  if(it&&it.mountEffect) it.mountEffect(el,true);
+}
+
+/* ================= REFUNDS =================
+   Store purchases only (not rewards). Full price back within 48 hours,
+   half after that. The server keeps a `refunded.{id}` record so the
+   union-merge in mergeCosmeticsFromServer can't bring the item back from
+   another device's older copy; buying it again clears the record. */
+const REFUND_FULL_HOURS=48;
+function cosState(it){ return {owned:!!(P.inventory||{})[it.id], equipped:!!(P.equipped&&P.equipped[it.type]===it.id)}; }
+function refundInfo(it){
+  const rec=it&&(P.inventory||{})[it.id];
+  if(!rec||rec.source!=='store'||it.price==null||it.exclusiveNote) return null;
+  const age=(Date.now()-new Date(rec.acquiredAt||0).getTime())/36e5;
+  const full=age<REFUND_FULL_HOURS;
+  return {full, amount:full?it.price:Math.floor(it.price/2), hoursLeft:Math.max(1,Math.ceil(REFUND_FULL_HOURS-age))};
+}
+const refundsInFlight=new Set();
+async function refundCosmetic(id){
+  const it=COSMETICS_CATALOG.find(c=>c.id===id);
+  if(!it||refundsInFlight.has(id)) throw new Error('busy');
+  refundsInFlight.add(id);
+  try{
+    await refreshAuthoritativeProfileFields(); // maybe already refunded on another device
+    const info=refundInfo(it);
+    if(!info) throw new Error(LANG==='ar'?'هذا الغرض ما ينرجع':'This item can’t be refunded');
+    const now=new Date().toISOString();
+    delete P.inventory[id];
+    P.refunded={...(P.refunded||{}),[id]:now};
+    P.coins=(P.coins||0)+info.amount;
+    const upd={refunded:{[id]:now}};
+    if(P.equipped&&P.equipped[it.type]===id){ P.equipped[it.type]=null; upd.equipped={[it.type]:null}; }
+    if(fbDb&&currentUser){
+      upd.inventory={[id]:firebase.firestore.FieldValue.delete()};
+      try{ fsDataRef('profile').set(upd,{merge:true}).catch(()=>{}); }catch(e){}
+    }
+    await storageSet('profile',JSON.stringify(P));
+    await incrementXpCoins(0,info.amount);
+    playSfx('coin');
+    setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
+    renderAppBackground(); renderNavXpChip();
+    if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero();
+    return info;
+  } finally { refundsInFlight.delete(id); }
+}
+function askRefund(it,after){
+  const info=refundInfo(it); if(!info) return;
+  const ar=LANG==='ar', name=escapeHtml(ar?it.nameAr:it.nameEn);
+  document.getElementById('dayTitle').textContent='↩️ '+(ar?'استرجاع':'Refund');
+  document.getElementById('daySubtitle').textContent=ar?it.nameAr:it.nameEn;
+  document.getElementById('cardBody').innerHTML=`
+    <p class="dash-empty" style="text-align:center;line-height:1.7;">${ar?`بترجع <b>${name}</b> وتاخذ <b>${info.amount.toLocaleString()} 🪙</b> (${info.full?'كامل المبلغ':'نص المبلغ'}).`:`Return <b>${name}</b> and get <b>${info.amount.toLocaleString()} 🪙</b> back (${info.full?'full price':'half price'}).`}<br>
+    <small>${info.full?(ar?`باقي ${info.hoursLeft} ساعة على الاسترجاع الكامل.`:`${info.hoursLeft} h left for a full refund.`):(ar?'مرّت ٤٨ ساعة على الشراء، فيرجع لك النص.':'It’s been over 48 hours since you bought it, so you get half back.')}</small></p>
+    <button type="button" class="setup-btn" id="refundYesBtn">${ar?'إيه، رجّعه':'Yes, refund it'}</button>
+    <button type="button" class="setup-btn" id="refundNoBtn" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">${ar?'لا، خلّه':'No, keep it'}</button>`;
+  overlay.classList.add('open');
+  document.getElementById('refundNoBtn').onclick=()=>{ overlay.classList.remove('open'); };
+  document.getElementById('refundYesBtn').onclick=async e=>{
+    e.target.disabled=true;
+    try{ const r=await refundCosmetic(it.id); showToast(`↩️ +${r.amount.toLocaleString()} 🪙`,'success'); }
+    catch(err){ if(err.message!=='busy') showToast(err.message,'error'); }
+    overlay.classList.remove('open'); if(after) after();
+  };
+}
+
+/* ================= STORE TILES + PREVIEW SHEET ================= */
+function mountCosPreviewTile(el,it){
+  el.innerHTML='';
+  const photo=P.avatarPhoto?`background-image:url(${P.avatarPhoto})`:'';
+  if(it.type==='frame'){
+    el.className='cos-frame-preview fx-prev';
+    const w=document.createElement('div'); w.className='cos-fp-wrap';
+    w.innerHTML=`<div class="cos-frame-ring ${it.cls||''}"></div><div class="cos-fp-av" style="${photo}">${P.avatarPhoto?'':'👤'}</div>`;
+    el.appendChild(w); mountFrameDeco(w.firstElementChild,it);
+  } else if(it.type==='effect'){
+    el.className='cos-preview fx-prev';
+    if(it.mountEffect) it.mountEffect(el,false);
+    el.insertAdjacentHTML('beforeend',`<div class="fx-prev-av" style="${photo}">${P.avatarPhoto?'':'👤'}</div>`);
+  } else {
+    el.className='cos-preview'+(it.cls?' '+it.cls:'');
+    if(it.mountEffect) it.mountEffect(el);
+  }
+}
+/* Buy / Equip / Go-unlock — same rules in the store card and the preview sheet */
+function wireCosMainBtn(btn,it,after){
+  const ar=LANG==='ar', name=ar?it.nameAr:it.nameEn;
+  const {owned,equipped}=cosState(it);
+  if(it.exclusiveNote && !owned){
+    const info=exclusiveUnlockInfo(it);
+    btn.insertAdjacentHTML('beforebegin',`<div class="cos-unlock">${info.text}</div>`);
+    btn.textContent=ar?'🔓 روح افتحه':'🔓 Go unlock it';
+    btn.onclick=()=>{ overlay.classList.remove('open'); navTo(info.nav||'profile-hub'); };
+  } else if(owned){
+    btn.textContent=equipped?t('store_equipped'):t('store_equip');
+    if(equipped) btn.classList.add('equipped');
+    btn.onclick=async()=>{ await equipCosmetic(it.type, equipped?null:it.id); if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero(); if(after) after(); };
+  } else {
+    const canAfford=(P.coins||0)>=it.price;
+    btn.classList.add('primary'); btn.disabled=!canAfford;
+    btn.textContent=canAfford?t('store_buy')+' · '+it.price.toLocaleString()+' 🪙':t('store_not_enough');
+    btn.onclick=async()=>{
+      const ok=await confirmPurchase(it,name);
+      if(!ok){ if(after) after(); return; }
+      btn.disabled=true;
+      try{ await buyCosmetic(it.id); await equipCosmetic(it.type,it.id); showToast(name+(ar?' — تم الشراء':' purchased'),'success'); }
+      catch(err){ showToast(err.message==='already owned'?t('store_owned'):err.message, err.message==='already owned'?undefined:'error'); }
+      if(after) after();
+    };
+  }
+}
+function openCosmeticPreview(it){
+  const ar=LANG==='ar', name=ar?it.nameAr:it.nameEn, desc=ar?it.descAr:it.descEn;
+  const {owned,equipped}=cosState(it);
+  const eq={...(P.equipped||{})}; eq[it.type]=it.id;
+  const typeLbl={background:ar?'خلفية':'Background',frame:ar?'إطار':'Frame',effect:ar?'تأثير':'Effect'}[it.type]||'';
+  const titleCfg=eq.title&&TITLES_CONFIG.find(x=>x.id===eq.title);
+  const uname=(P.publicProfile&&P.publicProfile.username)||'';
+  const status=equipped?'✅ '+t('store_equipped'):owned?'✔️ '+t('store_owned'):it.price!=null?it.price.toLocaleString()+' 🪙':'🏆 '+t('store_exclusive');
+  const rf=refundInfo(it);
+  document.getElementById('dayTitle').textContent='👁️ '+name;
+  document.getElementById('daySubtitle').textContent=typeLbl+' · '+t('cos_rarity_'+it.rarity);
+  document.getElementById('cardBody').innerHTML=`
+    <div class="cos-hero cos-pv-hero"><div class="cos-hero-bg" id="pvBg"></div><div class="cos-hero-effect" id="pvFx"></div><div class="cos-hero-scrim"></div>
+      <div class="cos-hero-card"><div class="cos-avatar-wrap cos-pv-wrap"><div class="cos-frame-ring" id="pvRing"></div><div class="cos-avatar" id="pvAv">👤</div></div>
+      ${uname?`<b style="font-size:.95rem;">@${escapeHtml(uname)}</b>`:''}<span class="cos-chip">${titleCfg?escapeHtml(titleCfg.icon+' '+(ar?titleCfg.nameAr:titleCfg.nameEn)):t('profile_no_title')}</span></div></div>
+    <p class="cos-pv-note">${ar?'هذا شكل ملفك مع هذا التصميم وباقي اللي لابسه الحين':'Your profile with this design plus what you’re wearing now'}</p>
+    <p class="cos-pv-desc">${escapeHtml(desc||'')}</p>
+    <div class="cos-pv-status"><span class="dot" style="background:var(--cos-${it.rarity});"></span>${status}</div>
+    <button type="button" class="cos-btn cos-btn-main cos-pv-btn" id="pvMainBtn"></button>
+    ${it.type!=='frame'?`<button type="button" class="cos-btn cos-pv-btn" id="pvTryBtn">✨ ${ar?'جرّبه على التطبيق كله (٦ ثواني)':'Try it on the whole app (6s)'}</button>`:''}
+    ${rf?`<button type="button" class="cos-btn cos-refund-btn cos-pv-btn" id="pvRefundBtn">↩️ ${ar?`استرجاع (+${rf.amount.toLocaleString()} 🪙)`:`Refund (+${rf.amount.toLocaleString()} 🪙)`}</button>`:''}
+    <button type="button" class="cos-btn cos-pv-btn" id="pvCloseBtn">${ar?'إغلاق':'Close'}</button>`;
+  mountCosmeticSet(document.getElementById('pvBg'),document.getElementById('pvFx'),document.getElementById('pvRing'),eq);
+  const av=document.getElementById('pvAv'); if(P.avatarPhoto){ av.style.backgroundImage=`url(${P.avatarPhoto})`; av.textContent=''; }
+  const back=()=>{ renderStoreSection(); openCosmeticPreview(it); };
+  wireCosMainBtn(document.getElementById('pvMainBtn'),it,back);
+  const tb=document.getElementById('pvTryBtn'); if(tb) tb.onclick=()=>{ overlay.classList.remove('open'); previewCosmetic(it); };
+  const rb=document.getElementById('pvRefundBtn'); if(rb) rb.onclick=()=>askRefund(it,()=>renderStoreSection());
+  document.getElementById('pvCloseBtn').onclick=()=>overlay.classList.remove('open');
+  overlay.classList.add('open');
+}
+
 /* whoever owned Champion's Ascension now owns Crescent Oasis (and keeps it equipped) */
 function migrateRetiredCosmetics(){
   if(!P.inventory||!P.inventory['champions-ascension']) return;
@@ -8549,6 +9012,7 @@ function renderAppBackground(){
   scrim.classList.toggle('active',!!bgItem);
   document.body.classList.toggle('app-bg-active',!!bgItem);
   document.body.classList.toggle('bg-legendary',!!(bgItem&&bgItem.rarity==='legendary'));
+  renderAppEffect();
 }
 /* ---- Store "try before you buy" preview — purely visual, never touches
    P.equipped/P.inventory or Firestore. Backgrounds preview app-wide (the
@@ -8579,6 +9043,8 @@ function previewCosmetic(item){
     if(item.mountEffect) item.mountEffect(el);
     scrim.classList.add('active');
     document.body.classList.add('app-bg-active');
+  } else if(item.type==='effect'){
+    renderAppEffect(item);
   } else if(item.type==='frame'){
     const avatarEl=document.getElementById('profileBarAvatar');
     const ring=document.createElement('div'); ring.className='cos-frame-ring '+item.cls;
@@ -8629,76 +9095,41 @@ async function renderStoreSection(){
   }
   const items=COSMETICS_CATALOG.filter(c=>c.type===storeActiveTab);
   content.innerHTML='';
+  const ar=LANG==='ar';
+  content.insertAdjacentHTML('beforeend',`<p class="panel-sub cos-refund-note">👁️ ${ar?'اضغط على أي تصميم تشوفه على ملفك قبل لا تشتري.':'Tap any design to see it on your profile before you buy.'} ↩️ ${ar?'غيّرت رايك؟ ترجع لك كل عملاتك خلال ٤٨ ساعة، وبعدها النص.':'Changed your mind? Full refund within 48 hours, half after that.'}</p>`);
   const rewards=items.filter(c=>c.exclusiveNote);
   if(rewards.length){
-    const ar=LANG==='ar';
-    content.insertAdjacentHTML('beforeend',`<div class="cos-rewards-banner">🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b><br>${rewards.map(r=>`${escapeHtml(ar?r.nameAr:r.nameEn)}: ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?(ar?' ✅':' ✅'):''}`).join('<br>')}</div>`);
+    content.insertAdjacentHTML('beforeend',`<div class="cos-rewards-banner">🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b><br>${rewards.map(r=>`${escapeHtml(ar?r.nameAr:r.nameEn)}: ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?' ✅':''}`).join('<br>')}</div>`);
   }
+  const byPrice=(x,y)=>(x.price==null?1e9:x.price)-(y.price==null?1e9:y.price);
   RARITY_ORDER_LIST.forEach(rar=>{
-    const list=items.filter(c=>c.rarity===rar);
+    const list=items.filter(c=>c.rarity===rar).sort(byPrice);
     if(!list.length) return;
     const group=document.createElement('div'); group.className='cos-rarity-group'; group.dataset.rarity=rar;
     group.innerHTML=`<div class="cos-rarity-head"><span class="dot" style="background:var(--cos-${rar});"></span><h3 style="margin:0;font-size:0.95rem;">${t('cos_rarity_'+rar)}</h3></div>`;
     const grid=document.createElement('div'); grid.className='cos-grid';
     list.forEach(it=>{
-      const owned=!!P.inventory[it.id];
-      const equipped=P.equipped&&P.equipped[it.type]===it.id;
+      const {owned,equipped}=cosState(it);
       const card=document.createElement('div'); card.className='cos-card rar-'+it.rarity+(equipped?' is-equipped':'');
-      const name=LANG==='ar'?it.nameAr:it.nameEn, desc=LANG==='ar'?it.descAr:it.descEn;
-      const previewCls = it.type==='frame' ? 'cos-frame-preview' : 'cos-preview';
+      const name=ar?it.nameAr:it.nameEn, desc=ar?it.descAr:it.descEn, rf=refundInfo(it);
       card.innerHTML=`
-        <div class="${previewCls}"></div>
+        <div class="cos-preview" role="button" tabindex="0" aria-label="${escapeHtml(t('store_preview')+' '+name)}"></div>
         <div class="cos-card-body">
-          <div class="cos-card-name">${name}</div>
+          <div class="cos-card-name">${escapeHtml(name)}</div>
           <div>${it.exclusiveNote?`<span class="cos-tag">${t('store_exclusive')}</span>`:''}${owned?`<span class="cos-tag">${t('store_owned')}</span>`:''}</div>
-          <div class="cos-price">${desc}<br>${it.price!=null?it.price.toLocaleString()+' 🪙':'—'}</div>
-          ${(it.type==='background'||it.type==='frame')?`<button type="button" class="cos-btn cos-preview-btn">👁️ ${t('store_preview')}</button>`:''}
+          <div class="cos-price">${escapeHtml(desc||'')}<br>${it.price!=null?it.price.toLocaleString()+' 🪙':'—'}</div>
+          <button type="button" class="cos-btn cos-preview-btn">👁️ ${t('store_preview')}</button>
           <button type="button" class="cos-btn cos-btn-main"></button>
+          ${rf?`<button type="button" class="cos-btn cos-refund-btn">↩️ ${ar?`استرجاع +${rf.amount.toLocaleString()}`:`Refund +${rf.amount.toLocaleString()}`} 🪙</button>`:''}
         </div>`;
       grid.appendChild(card);
-      const previewBtn=card.querySelector('.cos-preview-btn');
-      if(previewBtn) previewBtn.addEventListener('click',()=>previewCosmetic(it));
-      const previewEl=card.querySelector('.'+previewCls);
-      if(it.type==='frame'){
-        const ring=document.createElement('div'); ring.style.cssText='position:relative;width:64px;height:64px;';
-        const inner=document.createElement('div'); inner.className='cos-frame-ring '+it.cls; inner.style.cssText='position:absolute;inset:0;'; ring.appendChild(inner);
-        if(it.orbiters){
-          const wrap=document.createElement('div'); wrap.className='cx-orbit-wrap'; wrap.style.position='absolute';
-          [0,90,180,270].forEach(deg=>{ const dot=document.createElement('div'); dot.className='cx-orbit-dot'; const rad=36; dot.style.left='calc(50% + '+(Math.cos(deg*Math.PI/180)*rad)+'px)'; dot.style.top='calc(50% + '+(Math.sin(deg*Math.PI/180)*rad)+'px)'; wrap.appendChild(dot); });
-          ring.appendChild(wrap);
-        }
-        const av=document.createElement('div'); av.style.cssText='position:absolute;inset:8px;border-radius:50%;background:rgba(0,0,0,0.06);'; ring.appendChild(av);
-        previewEl.appendChild(ring);
-      } else {
-        previewEl.className=previewCls+(it.cls?' '+it.cls:'');
-        if(it.mountEffect) it.mountEffect(previewEl);
-      }
-      const btn=card.querySelector('.cos-btn-main');
-      if(it.exclusiveNote && !owned){
-        const info=exclusiveUnlockInfo(it);
-        btn.insertAdjacentHTML('beforebegin',`<div class="cos-unlock">${info.text}</div>`);
-        btn.textContent=LANG==='ar'?'🔓 روح افتحه':'🔓 Go unlock it';
-        btn.addEventListener('click',()=>{ navTo(info.nav||'profile-hub'); });
-      } else if(owned){
-        btn.textContent=equipped?t('store_equipped'):t('store_equip');
-        if(equipped) btn.classList.add('equipped');
-        btn.addEventListener('click',async()=>{ await equipCosmetic(it.type, equipped?null:it.id); if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero(); renderStoreSection(); });
-      } else {
-        const canAfford=(P.coins||0)>=it.price;
-        btn.classList.add('primary'); btn.disabled=!canAfford;
-        btn.textContent=canAfford?t('store_buy'):t('store_not_enough');
-        btn.addEventListener('click',async()=>{
-          const ok=await confirmPurchase(it,name);
-          if(!ok) return;
-          btn.disabled=true;
-          try{ await buyCosmetic(it.id); await equipCosmetic(it.type,it.id); showToast(name+(LANG==='ar'?' — تم الشراء':' purchased'),'success'); renderStoreSection(); }
-          catch(err){
-            // e.g. bought already on another device — show the fresh state, not a stale Buy button
-            showToast(err.message==='already owned'?t('store_owned'):err.message, err.message==='already owned'?undefined:'error');
-            renderStoreSection();
-          }
-        });
-      }
+      const previewEl=card.firstElementChild;
+      mountCosPreviewTile(previewEl,it);
+      previewEl.addEventListener('click',()=>openCosmeticPreview(it));
+      previewEl.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openCosmeticPreview(it); } });
+      card.querySelector('.cos-preview-btn').addEventListener('click',()=>openCosmeticPreview(it));
+      wireCosMainBtn(card.querySelector('.cos-btn-main'),it,()=>renderStoreSection());
+      const rb=card.querySelector('.cos-refund-btn'); if(rb) rb.addEventListener('click',()=>askRefund(it,()=>renderStoreSection()));
     });
     group.appendChild(grid);
     content.appendChild(group);
@@ -9548,9 +9979,7 @@ async function openFriendProfile(uid){
   // mount their equipped background / effect / frame, exactly as their own profile shows it
   { const bgItem=feq.background&&COSMETICS_CATALOG.find(c=>c.id===feq.background), fxItem=feq.effect&&COSMETICS_CATALOG.find(c=>c.id===feq.effect), frItem=feq.frame&&COSMETICS_CATALOG.find(c=>c.id===feq.frame);
     const bgEl=document.getElementById('friendHeroBg'), fxEl=document.getElementById('friendHeroFx'), frEl=document.getElementById('friendFrameRing');
-    if(bgItem){ bgEl.className='cos-hero-bg '+bgItem.cls; if(bgItem.mountEffect) bgItem.mountEffect(bgEl); }
-    if(fxItem&&fxItem.mountEffect) fxItem.mountEffect(fxEl);
-    if(frItem){ frEl.className='cos-frame-ring '+frItem.cls; } }
+    mountCosmeticSet(bgEl,fxEl,frEl,feq); }
   const viewCollBtn=document.getElementById('viewFriendCollectionBtn');
   if(viewCollBtn) viewCollBtn.addEventListener('click',()=>openFriendCollectionView(uid,profile.displayName));
   const chBtn=document.getElementById('friendCheerBtn'); if(chBtn) chBtn.addEventListener('click',()=>sendCheer(uid,chBtn));
