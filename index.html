@@ -18,7 +18,10 @@
 <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Tajawal:wght@400;500;700&family=Rubik:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- fonts load without blocking: a slow or unreachable Google Fonts must never keep the app blank -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Tajawal:wght@400;500;700&family=Rubik:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Tajawal:wght@400;500;700&family=Rubik:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap"></noscript>
 <style>
   :root{
     color-scheme:light dark;
@@ -2499,7 +2502,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.49.0';
+const APP_VERSION='v1.49.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2779,6 +2782,7 @@ async function bootApp(){
   await migrateRewardValuesV2();
   migrateRetiredCosmetics();
   try{ await migrateMergedSpecies(); }catch(e){}
+  try{ await revokeUnearnedSailSet(); }catch(e){}
   if(!(P.achievements||{}).legend_catch) setTimeout(()=>{ notifyNewUnlocks().catch(()=>{}); },5000);
   setTimeout(async()=>{ try{ const raw=await storageGet('collections:animals:fish'); const d=raw?JSON.parse(raw):{}; let shown=false;
     for(const T of LEGEND_THEMES){ const rec=d[T.sid]; if(rec&&collIsCollected(rec)&&!(P.legendSets||{})[T.sid]){ const paid=await grantLegendSet(T.sid); if(paid&&!shown){ enqueueAchievements([{kind:'legendset',sid:T.sid}]); shown=true; } } }
@@ -2940,17 +2944,32 @@ function escapeHtml(str){
    coerced to a real number, never interpolated raw. */
 function safeAvatar(a){ return escapeHtml(a||'🙂'); }
 function safeNum(n){ const v=Number(n); return isFinite(v)?v:0; }
+/* Anything that slips past a try/catch lands here. It used to show the raw
+   English Firebase text ("Missing or insufficient permissions.") in a red bar
+   that never went away — which is what friends were seeing. Now: a short,
+   plain message in the app's language that closes by itself, the same one
+   at most once a minute, and the technical detail only in the console. */
+const _errSeen={};
+function friendlyErr(msg){
+  const m=String(msg||''), ar=LANG==='ar';
+  if(/permission|insufficient|PERMISSION_DENIED|unauthenticated/i.test(m)) return ar?'ما قدرنا نوصل لبعض البيانات — تأكد إنكم أصدقاء أو جرّب بعدين':'Couldn’t reach some data — check you’re friends, or try again later';
+  if(/network|offline|failed to fetch|unavailable|timeout|deadline|Load failed/i.test(m)) return ar?'الاتصال ضعيف — بنكمل أول ما يرجع النت':'Weak connection — we’ll carry on when you’re back online';
+  if(/quota|resource-exhausted/i.test(m)) return ar?'السيرفر مشغول شوي — جرّب بعد دقيقة':'The server is busy — try again in a minute';
+  return ar?'صار خطأ بسيط — إذا تكرر حدّث الصفحة':'Something went wrong — refresh if it keeps happening';
+}
 function showErr(msg){
-  /* Known-benign noise: browsers with storage disabled/partitioned (data:
-     URLs, some private-browsing modes) throw the moment ANY code touches
-     localStorage/sessionStorage — including inside the Firebase SDK's own
-     internals, well outside our try/catches. Sign-in and the app itself
-     still work fine in that case, so surfacing this as a scary red banner
-     would be misleading rather than helpful. */
-  if(/storage is disabled/i.test(msg||'')) return;
+  /* known-benign noise (storage-disabled browsers, ResizeObserver, opaque
+     cross-origin "Script error.") never reaches the user */
+  if(/storage is disabled|ResizeObserver loop|^Script error\.?$/i.test(String(msg||''))) return;
+  try{ console.warn('[app]',msg); }catch(e){}
+  const text=friendlyErr(msg), now=Date.now();
+  if(_errSeen[text]&&now-_errSeen[text]<60000) return; _errSeen[text]=now;
   let el=document.getElementById('errBanner');
-  if(!el){ el=document.createElement('div'); el.id='errBanner'; el.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:#fff;padding:10px;font-size:12px;z-index:9999;text-align:center;'; document.body.appendChild(el); }
-  el.textContent='⚠️ '+msg;
+  if(!el){ el=document.createElement('div'); el.id='errBanner'; el.style.cssText='position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);left:12px;right:12px;background:#2b2b2b;color:#fff;padding:10px 38px 10px 12px;font-size:12.5px;line-height:1.5;z-index:9999;text-align:center;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);'; document.body.appendChild(el); }
+  el.innerHTML=`⚠️ ${escapeHtml(text)}<button type="button" aria-label="close" style="position:absolute;top:6px;inset-inline-end:8px;background:none;border:none;color:#fff;font-size:15px;cursor:pointer;">✕</button>`;
+  el.title=String(msg||'').slice(0,200);
+  el.querySelector('button').onclick=()=>el.remove();
+  clearTimeout(showErr._t); showErr._t=setTimeout(()=>{ if(el.parentNode) el.remove(); },6000);
 }
 function showToast(msg,type){
   let el=document.getElementById('toastBanner');
@@ -3487,7 +3506,8 @@ document.getElementById('settingsCloseBtn').addEventListener('click',()=>{
 });
 document.getElementById('signOutBtn').addEventListener('click',async()=>{
   document.getElementById('settingsOverlay').classList.remove('open');
-  if(fbAuth) await fbAuth.signOut();
+  try{ if(fbAuth) await fbAuth.signOut(); }catch(e){}
+  location.reload(); // in-memory P, friends/boss caches and flags belong to the old account
 });
 /* each swatch carries a matched light+dark pair so switching modes later
    still looks intentional instead of reverting to plain gray */
@@ -4517,7 +4537,7 @@ async function friendsWithProfiles(force){
   if(!PublicProfileService.hasProfile()) return [];
   const ttl=(_friendsCache.list&&_friendsCache.list.length)?120000:15000; // an empty list is re-checked sooner
   if(!force && _friendsCache.list && Date.now()-_friendsCache.at<ttl) return _friendsCache.list;
-  try{ const list=await FriendService.listFriends(); _friendsCache={at:Date.now(),list:list.filter(p=>!p.restricted)}; }catch(e){ _friendsCache={at:Date.now(),list:[]}; }
+  try{ const list=await FriendService.listFriends(); _friendsCache={at:Date.now(),list:list.filter(p=>!p.restricted),ok:true,hadRestricted:list.some(p=>p.restricted)}; }catch(e){ _friendsCache={at:Date.now(),list:[],ok:false}; }
   return _friendsCache.list;
 }
 /* weekly damage = what you actually did this week */
@@ -4530,8 +4550,8 @@ async function socialWeekStats(){
   const k=weekKeySat(0), pk=weekKeySat(1);
   return { league:{key:k, xp:(P.weekXp||{})[k]||0, prevKey:pk, prevXp:(P.weekXp||{})[pk]||0}, boss:{key:k, dmg:await myWeekDamage()} };
 }
-function friendWeekXp(f,key){ const L=(f.stats||{}).league||{}; if(L.key===key) return L.xp||0; if(L.prevKey===key) return L.prevXp||0; return 0; }
-function friendWeekDmg(f,key){ const B=(f.stats||{}).boss||{}; return B.key===key?(B.dmg||0):0; }
+function friendWeekXp(f,key){ const L=(f.stats||{}).league||{}; if(L.key===key) return safeNum(L.xp); if(L.prevKey===key) return safeNum(L.prevXp); return 0; }
+function friendWeekDmg(f,key){ const B=(f.stats||{}).boss||{}; return B.key===key?safeNum(B.dmg):0; }
 /* ---- league ---- */
 async function leagueStandings(key,fresh){
   const fr=await friendsWithProfiles(fresh);
@@ -4543,7 +4563,9 @@ async function leagueStandings(key,fresh){
 const LEAGUE_REWARD=[150,100,60];
 async function claimLeagueIfDue(){
   const pk=weekKeySat(1); if(P._leagueClaimed===pk) return;
-  const rows=await leagueStandings(pk); P._leagueClaimed=pk;
+  const rows=await leagueStandings(pk,true);
+  if(!_friendsCache.ok||_friendsCache.hadRestricted) return; // couldn't see every friend — try again later instead of losing the reward
+  P._leagueClaimed=pk;
   const active=rows.filter(r=>r.xp>0);
   const myRank=rows.findIndex(r=>r.me);
   if(active.length>=2 && myRank>=0 && myRank<3 && rows[myRank].xp>0){
@@ -4568,7 +4590,7 @@ async function sendCheer(toUid,btn){
   const today=dateKeyOf(new Date()); P.cheersSent=P.cheersSent||{};
   if(P.cheersSent[toUid]===today){ showToast(LANG==='ar'?'شجعته اليوم 👏':'Already cheered today 👏'); return; }
   P.cheersSent[toUid]=today; if(btn) btn.classList.add('sent'); playSfx('success');
-  try{ await usersCol().doc(currentUser.uid).update({['cheers.'+toUid]:{d:today,e:'👏'}}); }catch(e){}
+  try{ await usersCol().doc(currentUser.uid).set({cheers:{[toUid]:{d:today,e:'👏'}}},{merge:true}); }catch(e){ delete P.cheersSent[toUid]; if(btn) btn.classList.remove('sent'); showToast(friendlyErr(e&&(e.code||e.message)),'error'); return; }
   storageSet('profile',JSON.stringify(P));
   showToast(LANG==='ar'?'👏 وصلته تشجيعتك':'👏 Cheer sent');
 }
@@ -9388,11 +9410,34 @@ async function grantLegendSet(sid){
   const ids=lgSetIds(T), pieces=[ids.bg,ids.frame,ids.fx];
   const already=pieces.every(id=>P.inventory&&P.inventory[id]);
   P.legendSets[sid]=new Date().toISOString(); P.inventory=P.inventory||{};
+  if(P.refunded) pieces.forEach(id=>{ if(P.refunded[id]){ delete P.refunded[id]; if(fbDb&&currentUser){ try{ fsDataRef('profile').set({refunded:{[id]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(()=>{}); }catch(e){} } } });
   pieces.forEach(id=>{ if(!P.inventory[id]){ P.inventory[id]={acquiredAt:new Date().toISOString(),source:'legend'}; persistInventoryItem(id); } });
   if(!already){ P.xp=(P.xp||0)+LEGEND_SET_XP; P.coins=(P.coins||0)+LEGEND_SET_COINS; }
   await storageSet('profile',JSON.stringify(P));
   if(!already) await incrementXpCoins(LEGEND_SET_XP,LEGEND_SET_COINS);
   return !already;
+}
+/* v1.48 handed the golden (sailfish) set to anyone with ANY legendary fish.
+   Now that every legendary has its own set, take those three pieces back
+   from accounts that never caught a sailfish — with a `refunded` record so
+   an older copy on another device can't bring them back. Once per account. */
+async function revokeUnearnedSailSet(){
+  if(P._sailFixV1) return;
+  const T=LEGEND_THEMES.find(t=>t.key==='sail'); if(!T) return; const ids=lgSetIds(T);
+  let data; try{ const raw=await storageGet('collections:animals:fish'); data=raw?JSON.parse(raw):{}; }catch(e){ return; } // offline: next launch
+  if(!(data[T.sid]&&collIsCollected(data[T.sid]))){
+    const now=new Date().toISOString(), upd={refunded:{},inventory:{},equipped:{}}; let any=false;
+    [['background',ids.bg],['frame',ids.frame],['effect',ids.fx]].forEach(([slot,id])=>{
+      if(!(P.inventory&&P.inventory[id])) return;
+      any=true; delete P.inventory[id]; P.refunded={...(P.refunded||{}),[id]:now}; upd.refunded[id]=now;
+      if(fbDb&&currentUser) upd.inventory[id]=firebase.firestore.FieldValue.delete();
+      if(P.equipped&&P.equipped[slot]===id){ P.equipped[slot]=null; upd.equipped[slot]=null; }
+    });
+    if(any){ if(!Object.keys(upd.equipped).length) delete upd.equipped;
+      if(fbDb&&currentUser){ try{ fsDataRef('profile').set(upd,{merge:true}).catch(()=>{}); }catch(e){} }
+      setTimeout(()=>{ try{ PublicProfileService.syncShowcase(); }catch(e){} },0); renderAppBackground(); }
+  }
+  P._sailFixV1=true; await storageSet('profile',JSON.stringify(P));
 }
 /* the moment you win it: the set on your own profile, one tap to wear it */
 function openLegendSetReveal(sid,done){
@@ -9874,7 +9919,10 @@ const PublicProfileService={
     const uname=String(rawUsername||'').trim().toLowerCase();
     if(!this.usernameRegex.test(uname)) throw new Error(t('username_invalid'));
     try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
-    catch(e){ throw new Error(t('username_taken')); }
+    catch(e){
+      const mine=await usernamesCol().doc(uname).get().then(d=>d.exists&&d.data().uid===currentUser.uid).catch(()=>false);
+      if(!mine){ if(e&&/unavailable|network|offline/i.test(e.code||e.message||'')) throw new Error(friendlyErr(e.code)); throw new Error(t('username_taken')); }
+    }
     const privacy=defaultPrivacy();
     const stats=await computeUserStats();
     const titles=unlockedTitles(stats).map(x=>x.id);
@@ -9904,7 +9952,10 @@ const PublicProfileService={
     const oldUname=P.publicProfile.username;
     if(uname===oldUname) return uname; // unchanged — nothing to do
     try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
-    catch(e){ throw new Error(t('username_taken')); }
+    catch(e){
+      const mine=await usernamesCol().doc(uname).get().then(d=>d.exists&&d.data().uid===currentUser.uid).catch(()=>false);
+      if(!mine){ if(e&&/unavailable|network|offline/i.test(e.code||e.message||'')) throw new Error(friendlyErr(e.code)); throw new Error(t('username_taken')); }
+    }
     // `uid` is included even though it never actually changes — a merge
     // write against a doc that doesn't exist (e.g. local state says a
     // profile exists but the Firestore doc was never actually created)
@@ -9939,7 +9990,8 @@ const PublicProfileService={
       const stats=await computeUserStats();
       const titles=unlockedTitles(stats).map(x=>x.id);
       Object.assign(stats, await socialWeekStats());
-      await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow()},{merge:true});
+      const pp=P.publicProfile||{};
+      await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow(), ...(pp.username?{username:pp.username}:{}), ...(pp.displayName?{displayName:pp.displayName}:{}), ...(pp.avatar?{avatar:pp.avatar}:{}), ...(pp.privacy?{privacy:pp.privacy}:{})},{merge:true});
       // one-time: publish the look + collection for people who had them before this existed
       if(!P._showcaseV1Done){ await this.syncShowcase(); if(await this.syncWholeCollection()){ P._showcaseV1Done=true; storageSet('profile',JSON.stringify(P)); } }
       if(!P._photoThumbsV1){ if(await this.syncAllPhotoThumbs()){ P._photoThumbsV1=true; storageSet('profile',JSON.stringify(P)); } }
@@ -10016,7 +10068,7 @@ const PublicProfileService={
     try{ await usersCol().doc(currentUser.uid).update({collection:all, updatedAt:serverNow()}); return true; }catch(e){ return false; }
   },
   async getProfile(uid){
-    try{ const doc=await usersCol().doc(uid).get(); return doc.exists?{uid,...doc.data()}:null; }
+    try{ const doc=await usersCol().doc(uid).get(); return doc.exists?{...doc.data(),uid}:null; }
     catch(e){ return {uid, restricted:true}; } // exists but rules denied us (not friends, not public) — treated as "can't view", not "doesn't exist"
   },
   async searchByUsername(rawUsername){
@@ -10058,8 +10110,8 @@ const FriendService={
     if(targetUid===me) throw new Error('self');
     // if they already sent YOU one, accept theirs instead of creating a
     // second, opposite-direction pending request for the same pair
-    const incoming=await friendRequestsCol().doc(targetUid+'_'+me).get();
-    if(incoming.exists && incoming.data().status==='pending') return this.respondToRequest(targetUid+'_'+me,'accepted');
+    const incoming=await friendRequestsCol().doc(targetUid+'_'+me).get().catch(()=>null);
+    if(incoming && incoming.exists && incoming.data().status==='pending') return this.respondToRequest(targetUid+'_'+me,'accepted');
     const pp=P.publicProfile||{};
     await friendRequestsCol().doc(me+'_'+targetUid).set({
       fromUid:me, toUid:targetUid, status:'pending', createdAt:serverNow(),
@@ -10139,6 +10191,7 @@ const FriendService={
 const ActivityService={
   async post(type,data){
     if(!PublicProfileService.hasProfile()) return; // no public profile yet — nothing for a friend to read anyway
+    if(((P.publicProfile||{}).privacy||{}).activity===false) return; // the user turned activity sharing off
     try{ await activityCol().add({uid:currentUser.uid, type, data:data||{}, createdAt:serverNow()}); }
     catch(e){ /* best-effort — never block the real action (workout/achievement/etc.) that triggered this */ }
   },
@@ -10294,13 +10347,14 @@ function renderSocialSection(){
   });
   const content=document.getElementById('socialTabContent');
   content.innerHTML=`<div class="dash-empty">…</div>`;
-  if(socialActiveTab==='friends') return renderSocialFriendsTab(content);
-  if(socialActiveTab==='league') return renderSocialLeagueTab(content);
-  if(socialActiveTab==='leaderboard') return renderSocialLeaderboardTab(content);
-  if(socialActiveTab==='feed') return renderSocialFeedTab(content);
-  if(socialActiveTab==='compare') return renderSocialCompareTab(content);
-  if(socialActiveTab==='challenges') return renderSocialChallengesTab(content);
-  if(socialActiveTab==='privacy') return renderSocialPrivacyTab(content);
+  const tabFn={friends:renderSocialFriendsTab,league:renderSocialLeagueTab,leaderboard:renderSocialLeaderboardTab,feed:renderSocialFeedTab,compare:renderSocialCompareTab,challenges:renderSocialChallengesTab,privacy:renderSocialPrivacyTab}[socialActiveTab];
+  if(!tabFn) return;
+  return Promise.resolve().then(()=>tabFn(content)).catch(e=>{
+    try{ console.warn('[social]',e); }catch(_){}
+    const ar=LANG==='ar';
+    content.innerHTML=`<div class="dash-empty">${ar?'ما قدرنا نحمّل هذا القسم الحين.':'Couldn’t load this right now.'}<br><button type="button" class="dash-link" id="socialRetryBtn" style="margin-top:8px;">↻ ${ar?'حاول مرة ثانية':'Try again'}</button></div>`;
+    const r=document.getElementById('socialRetryBtn'); if(r) r.onclick=()=>renderSocialSection();
+  });
 }
 const AVATAR_CHOICES=['🙂','😎','🦁','🐯','🐺','🦊','🐼','🐸','🐵','🦉','🦅','🐢','🐙','🌵','⚡','🔥','🌟','🥷','🧗','🏃'];
 function initProfileSetupCard(){
@@ -10394,7 +10448,7 @@ async function renderSocialFriendsTab(content){
     html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.toUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
   }
   html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('social_tab_friends')}</h3>`;
-  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${safeAvatar(f.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(f.displayName)}</div><div style="font-size:0.7rem;color:var(--ink-soft);">${LANG==='ar'?'مستوى':'Lvl'} ${safeNum(f.stats&&f.stats.level)||1} · ${safeNum(f.stats&&f.stats.xp)} XP</div></div></div>`).join('')
+  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${f.uid}"><div class="friend-avatar">${safeAvatar(f.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(f.displayName||f.username||(LANG==='ar'?'حساب غير متاح حالياً':'Account unavailable'))}</div><div style="font-size:0.7rem;color:var(--ink-soft);">${f.restricted?(LANG==='ar'?'ما قدرنا نفتح ملفه الحين':'Couldn’t open their profile right now'):`${LANG==='ar'?'مستوى':'Lvl'} ${safeNum(f.stats&&f.stats.level)||1} · ${safeNum(f.stats&&f.stats.xp)} XP`}</div></div></div>`).join('')
     : `<div class="dash-empty">${t('friends_empty')}</div>`;
   content.innerHTML=html;
 
@@ -10402,32 +10456,34 @@ async function renderSocialFriendsTab(content){
   content.querySelectorAll('[data-req]').forEach(btn=>btn.addEventListener('click',async()=>{
     const accept=btn.classList.contains('accept');
     btn.closest('.friend-row').style.opacity='0.5';
-    try{ await FriendService.respondToRequest(btn.dataset.req, accept?'accepted':'rejected'); }catch(e){ showToast(e.message,'error'); }
-    renderSocialFriendsTab(content);
+    try{ await FriendService.respondToRequest(btn.dataset.req, accept?'accepted':'rejected'); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); }
+    renderSocialFriendsTab(content).catch(()=>{});
   }));
   content.querySelectorAll('[data-cancel]').forEach(btn=>btn.addEventListener('click',async()=>{
     btn.closest('.friend-row').style.opacity='0.5';
-    try{ await FriendService.cancelRequest(btn.dataset.cancel); }catch(e){ showToast(e.message,'error'); }
-    renderSocialFriendsTab(content);
+    try{ await FriendService.cancelRequest(btn.dataset.cancel); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); }
+    renderSocialFriendsTab(content).catch(()=>{});
   }));
   async function doSearch(){
     const q=document.getElementById('friendSearchInput').value.trim();
     const resEl=document.getElementById('friendSearchResult');
     if(!q){ resEl.innerHTML=''; return; }
     resEl.innerHTML=`<div class="dash-empty">…</div>`;
-    const result=await PublicProfileService.searchByUsername(q);
+    let result, status;
+    try{ result=await PublicProfileService.searchByUsername(q); }
+    catch(e){ resEl.innerHTML=`<div class="dash-empty">${friendlyErr(e&&(e.code||e.message))}</div>`; return; }
     if(!result){ resEl.innerHTML=`<div class="dash-empty">${t('user_not_found')}</div>`; return; }
     if(result.self){ resEl.innerHTML=`<div class="dash-empty">${t('already_friends_btn')} (${LANG==='ar'?'انت نفسك':'that\'s you'})</div>`; return; }
-    const status=await FriendService.requestStatusWith(result.uid);
+    try{ status=await FriendService.requestStatusWith(result.uid); }catch(e){ status='none'; }
     const btnHtml = status==='friends' ? `<span class="friend-action-btn remove" style="cursor:default;">${t('already_friends_btn')}</span>`
       : status==='outgoing' ? `<span class="friend-action-btn reject" style="cursor:default;">${t('request_sent_btn')}</span>`
       : status==='incoming' ? `<button class="friend-action-btn accept" id="searchAcceptBtn">${t('accept_btn')}</button>`
       : `<button class="friend-action-btn accept" id="searchAddBtn">${t('send_request_btn')}</button>`;
     resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${safeAvatar(result.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(result.displayName||result.username)}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
     const addBtn=document.getElementById('searchAddBtn');
-    if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; try{ await FriendService.sendRequest(result.uid, result.username||q); }catch(e){ showToast(e.message,'error'); } doSearch(); });
+    if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; try{ await FriendService.sendRequest(result.uid, result.username||q); showToast(LANG==='ar'?'📨 انرسل الطلب':'📨 Request sent'); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); } doSearch(); });
     const accBtn=document.getElementById('searchAcceptBtn');
-    if(accBtn) accBtn.addEventListener('click',async()=>{ accBtn.disabled=true; await FriendService.respondToRequest(result.uid+'_'+currentUser.uid,'accepted'); doSearch(); renderSocialFriendsTab(content); });
+    if(accBtn) accBtn.addEventListener('click',async()=>{ accBtn.disabled=true; try{ await FriendService.respondToRequest(result.uid+'_'+currentUser.uid,'accepted'); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); } doSearch(); renderSocialFriendsTab(content).catch(()=>{}); });
   }
   document.getElementById('friendSearchBtn').addEventListener('click',doSearch);
   document.getElementById('friendSearchInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSearch(); });
@@ -10559,7 +10615,11 @@ async function openFriendProfile(uid){
   document.getElementById('cardBody').innerHTML=`<div class="dash-empty">…</div>`;
   overlay.classList.add('open');
   const profile=await PublicProfileService.getProfile(uid);
-  if(!profile||profile.restricted){ document.getElementById('cardBody').innerHTML=`<div class="dash-empty">${t('friend_profile_hidden')}</div>`; return; }
+  if(!profile||profile.restricted){
+    const isFriend=((_friendsCache&&_friendsCache.list)||[]).some(f=>f.uid===uid)||!!(await FriendService.requestStatusWith(uid).then(st=>st==='friends').catch(()=>false));
+    document.getElementById('cardBody').innerHTML=`<div class="dash-empty">${t('friend_profile_hidden')}</div>${isFriend?`<button class="setup-btn" id="friendRemoveBtn2" style="margin-top:12px;background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>`:''}`;
+    const rb=document.getElementById('friendRemoveBtn2'); if(rb) rb.onclick=async()=>{ if(!confirm(t('confirm_remove_friend'))) return; try{ await FriendService.removeFriend(uid); overlay.classList.remove('open'); renderSocialSection(); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); } };
+    return; }
   const s=profile.stats||{};
   const priv=profile.privacy||{};
   const statBlocks=[
@@ -10602,9 +10662,9 @@ async function openFriendProfile(uid){
   const chBtn=document.getElementById('friendCheerBtn'); if(chBtn) chBtn.addEventListener('click',()=>sendCheer(uid,chBtn));
   document.getElementById('friendRemoveBtn').addEventListener('click',async()=>{
     if(!confirm(t('confirm_remove_friend'))) return;
-    await FriendService.removeFriend(uid);
-    overlay.classList.remove('open');
-    renderSocialFriendsTab(document.getElementById('socialTabContent'));
+    try{ await FriendService.removeFriend(uid); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); return; }
+    overlay.classList.remove('open'); _coopCache={at:0,st:null};
+    renderSocialSection();
   });
 }
 /* ================= FRIEND COLLECTION — READ-ONLY VIEW =================
@@ -10672,7 +10732,7 @@ async function openFriendCollectionView(uid,displayName){
           return `<div class="coll-species-card tier-${sp.rarity} ${n?'collected':'locked'}" style="cursor:default;">
             ${me[sp.id]?`<span class="you-have">${ar?'✓ عندك':'✓ you'}</span>`:''}
             <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
-            <div class="thumb">${collThumbHtml(sp,!!n,photo&&/^data:image\/jpeg;base64,/.test(photo)?photo:null)}</div>
+            <div class="thumb">${collThumbHtml(sp,!!n,photo&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(photo)?photo:null)}</div>
             <div class="name">${escapeHtml(collName(sp))}</div>
             <div class="meta">${n?(safeNum(n)+' '+(ar?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
           </div>`; }).join('')||`<div class="dash-empty">${ar?'ما في شي هني':'Nothing here'}</div>`}</div>`;
@@ -11988,7 +12048,7 @@ const COLL_ID_MERGE={fish:{"balol":"hamour","sbeiti":"sparidentex_hasta","mzizi"
 function collImgUrl(sp,w){ return sp&&sp.img?'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(sp.img)+'?width='+(w||240):null; }
 /* one thumbnail rule everywhere: your own photo, else the reference photo, else the emoji */
 function collThumbHtml(sp,collected,ownPhoto){
-  if(ownPhoto) return `<img src="${ownPhoto}" alt="">`;
+  if(ownPhoto) return /^data:image\/[a-z]+;base64,[A-Za-z0-9+\/=]+$/.test(ownPhoto)?`<img src="${ownPhoto}" alt="">`:(sp.icon||'🐟');
   const u=collImgUrl(sp,160);
   if(u) return `<img class="ref" loading="lazy" src="${u}" alt="" onerror="this.replaceWith(document.createTextNode('${sp.icon||'🐟'}'))">${collected?'':'<span class="lock-ic">🔒</span>'}`;
   if(collIsFish(sp)) return fishArtHtml(sp,34,'in-thumb')+(collected?'':'<span class="lock-ic">🔒</span>');
@@ -12071,8 +12131,7 @@ async function collSaveCategory(catId){
   // back or blocked by the mirror write failing (e.g. offline) — caught
   // here, at the call site, so callers that DO need to know about a real
   // failure (the backfill migration below) can still let it propagate.
-  try{ await syncPublicCollectionMirror(catId, snapshot); }
-  catch(e){ /* offline/transient — the next successful save or backfill recomputes and converges */ }
+  syncPublicCollectionMirror(catId, snapshot).catch(()=>{}); // optional mirror — never blocks the save (offline it would wait for the server)
   PublicProfileService.syncCollectionCategory(catId, snapshot);
 }
 /* Derives the friend-visible mirror doc from the private collection data
@@ -12121,7 +12180,7 @@ async function migratePublicCollectionMirrors(){
     }
     P._publicCollectionMirrorDone=true;
     await storageSet('profile',JSON.stringify(P));
-  }catch(e){ /* offline/transient/permission-denied — retried on next boot since the flag was never persisted */ }
+  }catch(e){ if(e&&e.code==='permission-denied'){ P._publicCollectionMirrorDone=true; storageSet('profile',JSON.stringify(P)); } /* denied by the rules: stop retrying every launch; offline: retried next boot */ }
 }
 function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false,variantState:{}}; }
 /* a catch entry may stand for several catches (`n`, default 1) — a bulk add
