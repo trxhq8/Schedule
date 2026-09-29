@@ -666,6 +666,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .fd-bigph{ margin:0 auto 10px; max-width:320px; border-radius:18px; overflow:hidden; position:relative; background:var(--line); }
   .fd-bigph img{ width:100%; display:block; max-height:230px; object-fit:cover; }
   .fd-bigph span{ position:absolute; bottom:6px; inset-inline-start:6px; background:rgba(0,0,0,.55); color:#fff; font-size:0.66rem; font-weight:700; padding:3px 8px; border-radius:999px; }
+  .fd-art-big{ display:flex; align-items:center; justify-content:center; padding:18px; background:linear-gradient(180deg,#e6f4fb,#cfe8f5); }
   .fd-tip{ font-size:0.82rem; line-height:1.6; background:rgba(245,184,61,.12); border:1px solid rgba(245,184,61,.45); border-radius:14px; padding:9px 12px; margin:0 0 12px; }
   .fd-empty{ font-size:0.82rem; color:var(--ink-soft); text-align:center; padding:10px; }
   .hub-title{ text-align:center; margin:0 0 14px; color:var(--heading); font-family:var(--font-head); }
@@ -943,7 +944,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   /* ---- collections: clean light theme, scoped to this section only ---- */
   #panel-collections{
     --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --ink-soft:#64748b;
-    --line:#e2e8f0; --accent-deep:#0891b2; --accent:#0891b2;
+    --line:#e2e8f0; --accent-deep:#0891b2; --accent:#0891b2; --heading:#0f172a; /* this section stays light, so titles must stay dark in dark mode too */
     --shadow:0 4px 18px rgba(15,23,42,0.08);
     background:var(--bg); color:var(--ink); border-radius:18px; padding:14px;
   }
@@ -970,10 +971,25 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-allsearch{ grid-column:1/-1; display:flex; flex-direction:column; gap:8px; }
   .coll-allsearch input{ margin:0; }
   .coll-shape-btn{ border:1px dashed var(--line); background:var(--card); color:var(--heading); font:inherit; font-weight:700; font-size:0.82rem; border-radius:14px; padding:10px; cursor:pointer; }
-  .coll-grp-card{ padding:14px 12px 12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .coll-grp-card{ padding:16px 12px 12px; display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--card); }
+  .coll-grp-card .art{ height:52px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .coll-grp-card.fav .art{ height:70px; }
+  .coll-grp-card .art .ic{ font-size:2.2rem; margin:0; }
+  .coll-grp-card .fav-star{ position:absolute; top:-6px; inset-inline-end:-14px; font-size:1.2rem; }
+  .coll-grp-card .gbar{ width:78%; height:6px; border-radius:999px; background:var(--line); overflow:hidden; }
+  .coll-grp-card .gbar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#3ba7d9,#2f7fd8); }
+  .coll-grp-card.fav .gbar i{ background:linear-gradient(90deg,#f5b83d,#e8932a); }
+  .coll-grp-card:hover .fa{ transform:translateX(-3px) rotate(-2deg); }
+  .fa{ display:inline-block; transition:transform .25s ease; }
+  .fa svg{ display:block; overflow:visible; }
+  .coll-species-card .thumb .fa.in-thumb{ max-width:88%; }
+  .coll-species-card.locked .thumb .fa.in-thumb{ filter:grayscale(.5); opacity:.8; }
+  .coll-detail-photo .fa{ max-width:86%; }
+  .coll-small-sec summary .chev{ float:inline-end; transition:transform .2s; }
+  .coll-small-sec[open] summary .chev{ transform:rotate(180deg); }
   .coll-grp-card .gh{ display:flex; flex-direction:column; align-items:center; gap:4px; }
   .coll-grp-card .ic{ font-size:1.7rem; margin:0; }
-  .coll-grp-card .ttl{ font-size:0.9rem; line-height:1.3; }
+  .coll-grp-card .ttl{ font-size:0.92rem; line-height:1.3; color:var(--heading); min-height:1.3em; }
   .coll-grp-card .pics{ display:flex; justify-content:center; }
   .coll-grp-card .pics img{ width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid var(--card); margin-inline-start:-8px; background:var(--bg); }
   .coll-grp-card .pics img:first-child{ margin-inline-start:0; }
@@ -2382,7 +2398,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.46.1';
+const APP_VERSION='v1.47.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4022,6 +4038,192 @@ function openQada(){
    bottom, eels slither, seahorses bob), a size and glow by rarity, and a
    depth/speed that suits it. The water is as clear as today is complete;
    the tank itself grows with your collection. */
+/* ================= FISH ART =================
+   One drawing system for every fish: a side-view SVG (head on the left,
+   like the old emoji, so the aquarium's flip logic still works) whose body
+   shape, tail, fins, pattern and colours come from the fish's real type —
+   groupers are chunky and spotted, tunas are torpedoes with finlets,
+   threadfins have their threads, mullets their stripes. Kuwaiti favourites
+   get their own look (faskar's head bars, bazeemi's side streak…), and
+   every other species gets a slight colour variation of its type so a
+   tank of snappers isn't a row of clones. Used by the group cards, the
+   aquarium, and as the picture for any fish without a reference photo. */
+const FA_FAM={Epinephelidae:'grouper',Serranidae:'grouper',Anthiadidae:'grouper',Acropomatidae:'grouper',Sparidae:'bream',Lethrinidae:'bream',Lutjanidae:'snapper',Nemipteridae:'snapper',Haemulidae:'grunt',Sciaenidae:'croaker',Carangidae:'jack',Coryphaenidae:'jack',Rachycentridae:'jack',Echeneidae:'jack',Menidae:'pony',Lactariidae:'jack',Scombridae:'tuna',Ariommatidae:'jack',Trichiuridae:'ribbon',Sphyraenidae:'barracuda',Istiophoridae:'billfish',Mugilidae:'mullet',Dorosomatidae:'sardine',Engraulidae:'sardine',Pristigasteridae:'sardine',Dussumieriidae:'sardine',Spratelloididae:'sardine',Chanidae:'sardine',Megalopidae:'sardine',Chirocentridae:'knife',Polynemidae:'threadfin',Sillaginidae:'whiting',Terapontidae:'terapon',Synodontidae:'lizard',Leiognathidae:'pony',Gerreidae:'pony',Priacanthidae:'snapper',Drepaneidae:'disc',Ephippidae:'disc',Kyphosidae:'bream',Scatophagidae:'disc',Lobotidae:'grouper',Stromateidae:'pomfret',Cichlidae:'bream',Belonidae:'needle',Hemiramphidae:'needle',Exocoetidae:'flying',Mullidae:'goatfish',Bothidae:'flat',Soleidae:'flat',Cynoglossidae:'flat',Paralichthyidae:'flat',Psettodidae:'flat',Citharidae:'flat',Platycephalidae:'flathead',Scorpaenidae:'scorpion',Synanceiidae:'scorpion',Tetrarogidae:'scorpion',Apistidae:'scorpion',Triglidae:'scorpion',Dactylopteridae:'scorpion',Uranoscopidae:'flathead',Tetraodontidae:'puffer',Molidae:'puffer',Ostraciidae:'box',Balistidae:'trigger',Monacanthidae:'trigger',Triacanthidae:'trigger',Siganidae:'rabbit',Acanthuridae:'surgeon',Labridae:'wrasse',Ariidae:'catfish',Plotosidae:'catfish',Batrachoididae:'catfish',Muraenidae:'eel',Ophichthidae:'eel',Congridae:'eel',Muraenesocidae:'eel',Ophidiidae:'eel',Pomacentridae:'damsel',Chaetodontidae:'butterfly',Pomacanthidae:'butterfly',Pseudochromidae:'damsel',Apogonidae:'cardinal',Opistognathidae:'goby',Antennariidae:'puffer',Cepolidae:'ribbon',Pinguipedidae:'goby',Antigoniidae:'disc',Pentacerotidae:'disc',Gobiidae:'goby',Blenniidae:'goby',Callionymidae:'goby',Tripterygiidae:'goby',Microdesmidae:'goby',Oxudercidae:'goby',Trichonotidae:'goby',Xenisthmidae:'goby',Syngnathidae:'seahorse',Centriscidae:'pipe',Fistulariidae:'pipe',Pegasidae:'seahorse',Atherinidae:'tiny',Aphaniidae:'tiny',Dinematichthyidae:'goby',Bregmacerotidae:'tiny',Carcharhinidae:'shark',Carchariidae:'shark',Galeocerdonidae:'shark',Ginglymostomatidae:'shark',Hemigaleidae:'shark',Hemiscylliidae:'shark',Rhincodontidae:'shark',Sphyrnidae:'shark',Stegostomatidae:'shark',Triakidae:'shark',Dasyatidae:'ray',Gymnuridae:'ray',Myliobatidae:'ray',Mobulidae:'ray',Narcinidae:'ray',Torpedinidae:'ray',Rajidae:'ray',Rhinidae:'ray',Glaucostegidae:'ray',Pristidae:'ray'};
+// shape + default colours [back, belly, fins, pattern] for each type
+const FA_KIND={
+  fish:{d:10,p:22,s:3,pt:.5,tail:'fork',dor:'low',c:['#5b8db8','#e9f1f7','#8fb3d0','#2f5677']},
+  grouper:{d:12,p:21,s:4.2,pt:.25,tail:'round',dor:'spiny',c:['#7b5b3d','#d8b58c','#6b4a2e','#ff8a3d'],pat:{spots:18}},
+  bream:{d:13,p:21,s:3,pt:.35,tail:'fork',dor:'spiny',c:['#8f9ba7','#f1f4f6','#aeb8c2','#6d7884']},
+  snapper:{d:12,p:22,s:3.2,pt:.45,tail:'trunc',dor:'spiny',c:['#d4524c','#f8c9c0','#e0645e','#fff3ee']},
+  grunt:{d:11,p:22,s:3.2,pt:.3,tail:'trunc',dor:'spiny',c:['#8d9aa6','#edf0f3','#a9b3bd','#3f4a55'],pat:{spots:10,small:1}},
+  croaker:{d:9.5,p:23,s:3,pt:.45,tail:'round',dor:'two',c:['#a8926e','#f1e9d9','#c4ae8a','#6b5840']},
+  jack:{d:12.5,p:24,s:2.2,pt:.55,tail:'fork',dor:'low',c:['#4f86ac','#eaf2f8','#d0ac4a','#2d4a5e'],x:{scutes:1}},
+  tuna:{d:10.5,p:25,s:1.8,pt:.7,tail:'lunate',dor:'tall',c:['#1f3f73','#e1e9f2','#2e5a96','#93a9c6'],x:{finlets:1}},
+  barracuda:{d:6.5,p:26,s:2.2,pt:.95,tail:'fork',dor:'two',c:['#6e8a99','#eef3f5','#8aa2ae','#2f4550'],pat:{bars:9,faint:1},x:{jaw:1},w:84},
+  billfish:{d:8,p:28,s:2,pt:.9,tail:'lunate',dor:'sail',c:['#1e3d6b','#dfe8f2','#2e5f99','#6aa2e0'],x:{bill:1},w:88},
+  mullet:{d:8.5,p:22,s:3,pt:.2,tail:'fork',dor:'two',c:['#6f7f8c','#eef1f3','#8e9ba5','#4c5963'],pat:{lines:5}},
+  sardine:{d:7.5,p:22,s:2,pt:.55,tail:'fork',dor:'low',c:['#3f78a8','#eef4f8','#a9c3d6','#1f3f5e'],pat:{lines:2,faint:1}},
+  knife:{d:9,p:24,s:1.6,pt:.8,tail:'fork',dor:'low',c:['#5a86a8','#eef4f8','#c9a64a','#284a66'],x:{fangs:1,up:1},w:84},
+  threadfin:{d:9,p:23,s:2.4,pt:.2,tail:'fork',dor:'two',c:['#8aa3ba','#eef2f6','#b7c4d2','#5d6f82'],x:{threads:1}},
+  whiting:{d:7,p:22,s:2.2,pt:.8,tail:'trunc',dor:'two',c:['#c9b893','#f5efe2','#d9cba9','#8e7c58'],w:76},
+  terapon:{d:9.5,p:22,s:3,pt:.4,tail:'fork',dor:'spiny',c:['#9aa3a8','#f0f2f3','#b6bdc1','#2a2f33'],pat:{stripes:3}},
+  lizard:{d:6.5,p:20,s:2.4,pt:.6,tail:'fork',dor:'low',c:['#8b9a6a','#eef0e2','#a9b48a','#4d5a33'],pat:{spots:12},x:{bigmouth:1},w:76},
+  pony:{d:12,p:22,s:1.8,pt:.75,tail:'fork',dor:'low',c:['#b7c3cc','#f6f8f9','#d6dde2','#7d8b95'],w:62},
+  pomfret:{d:15,p:22,s:1.8,pt:.1,tail:'fork',dor:'low',c:['#aab6bf','#f4f6f8','#c7d0d6','#7d8b95'],x:{nopelvic:1},w:62},
+  disc:{d:15,p:21,s:2.4,pt:.25,tail:'trunc',dor:'tall',c:['#c9c2b2','#f4f1ea','#8f8574','#3b3528'],pat:{bars:3}},
+  needle:{d:4,p:30,s:1.8,pt:1,tail:'fork',dor:'low',c:['#3f8f7a','#e6f3ee','#6fb09c','#1f5a4a'],x:{beak:1},w:90},
+  flying:{d:7,p:22,s:2,pt:.5,tail:'fork',dor:'low',c:['#2f6fb0','#eaf2fa','#9cc4ec','#1d4a78'],x:{wings:1}},
+  goatfish:{d:9,p:22,s:2.6,pt:.35,tail:'fork',dor:'two',c:['#e8905a','#fbe8d6','#f0b47c','#f7d24a'],pat:{stripe:1},x:{whisk:2}},
+  flathead:{d:6,p:18,s:2.4,pt:.9,tail:'round',dor:'two',c:['#a88b62','#eadfc8','#8f7450','#3b2f22'],pat:{spots:14,small:1},x:{eyetop:1,tailbars:1},w:82},
+  scorpion:{d:11,p:21,s:3.4,pt:.2,tail:'round',dor:'spikes',c:['#b0513a','#f0c2a8','#c96a4a','#5a2a1c'],pat:{blotch:6}},
+  rabbit:{d:12,p:22,s:2.6,pt:.35,tail:'fork',dor:'spiny',c:['#9aa35a','#f0f0cf','#c9c46a','#6a7a3e'],pat:{wavy:5},x:{smallmouth:1}},
+  surgeon:{d:13,p:21,s:2.4,pt:.35,tail:'lunate',dor:'long',c:['#5a4fa3','#b9b1e6','#7a6fd0','#f2c230'],x:{scalpel:1}},
+  wrasse:{d:9,p:22,s:3,pt:.5,tail:'round',dor:'long',c:['#2fae8f','#d9f2ea','#e06aa8','#2f6fd0'],pat:{lines:3,color:1}},
+  catfish:{d:8.5,p:20,s:2.4,pt:.1,tail:'fork',dor:'tall',c:['#5b6168','#d9dde0','#4a4f55','#2b2f33'],x:{whisk:3}},
+  damsel:{d:11,p:21,s:2.8,pt:.35,tail:'fork',dor:'long',c:['#2f7fd8','#bfe0ff','#3f95ee','#0e3d7a'],w:58},
+  butterfly:{d:15,p:20,s:2.6,pt:.55,tail:'trunc',dor:'long',c:['#f4cf3a','#fff5c8','#f0b820','#1f1f1f'],pat:{bars:2,eyebar:1},w:58},
+  cardinal:{d:11,p:21,s:3,pt:.3,tail:'fork',dor:'two',c:['#e8866a','#fbe3d8','#f0a080','#6b2a1a'],pat:{stripes:2,faint:1},w:58},
+  goby:{d:6.5,p:20,s:2.6,pt:.1,tail:'round',dor:'two',c:['#c9b48f','#f2e9d8','#a8926b','#6b5a3e'],pat:{spots:12,small:1},x:{bigeye:1},w:70},
+  tiny:{d:5.5,p:22,s:1.8,pt:.6,tail:'fork',dor:'two',c:['#9fb8c8','#eef4f8','#b8ccd8','#5a7a8e'],pat:{stripe:1,silver:1},w:66},
+  ribbon:{d:5,p:24,s:.8,pt:.9,tail:'point',dor:'long',c:['#c9d3dc','#f6f8fa','#dde4ea','#8e9eab'],x:{fangs:1},w:92},
+  shark:{c:['#7d8b96','#e7ebee','#6c7a86','#ffffff']}, ray:{c:['#8a7358','#c9b597','#6b563e','#3b2f22']}, eel:{c:['#5b7a3a','#a9c27a','#4a6630','#e8f0c0']},
+  seahorse:{c:['#f0a63c','#f7d38a','#d98a20','#ffffff']}, pipe:{c:['#c98a3a','#f0c98a','#b07028','#ffffff']}, flat:{c:['#b89b74','#e9dcc6','#a0845e','#5a4630']},
+  puffer:{c:['#c9b26a','#f5eccd','#a88e44','#5a4a1e']}, box:{c:['#f0c93c','#fbeeb3','#d9a722','#2a2a2a']}, trigger:{c:['#5a6f8c','#dfe6ee','#44566e','#f2c230']}, crab:{c:['#3f78c0','#6fa0dc','#2f5f9e','#e0564a']},
+};
+// Kuwaiti favourites: their real look
+const FA_SP={
+  hamour:{k:'grouper'},
+  epinephelus_areolatus:{k:'grouper',c:['#8c7b64','#e6d8c2','#7a6a52','#6b3f22'],pat:{spots:26},x:{tailedge:1}},
+  sparidentex_hasta:{k:'bream',c:['#8a949d','#eef1f3','#6c7780','#5e6a74']},
+  acanthopagrus_arabicus:{k:'bream',c:['#8f9aa4','#f2f4f6','#f2c230','#6d7884']},
+  acanthopagrus_bifasciatus:{k:'bream',c:['#9aa4ad','#f2f4f6','#f2c230','#1f2a33'],pat:{headbars:1}},
+  argyrops_spinifer:{k:'bream',c:['#d86a6a','#fbe0da','#e88080','#ffffff'],dor:'tall'},
+  rhabdosargus_haffara:{k:'bream',c:['#98a3ac','#f2f4f6','#f2c230','#d8b440'],pat:{lines:4,faint:1}},
+  shaari:{k:'bream',c:['#8a9a86','#eef0e8','#c7a870','#3aa0d8'],pat:{spots:14,small:1},x:{cheek:1}},
+  lutjanus_malabaricus:{k:'snapper',c:['#c8403c','#f5b8ae','#d8504a','#ffe0d8']},
+  pomadasys_kaakan:{k:'grunt'},
+  otolithes_ruber:{k:'croaker',c:['#a8a08e','#f2eee4','#c9b98a','#6b604c'],x:{fangs:1}},
+  johnius_carutta:{k:'croaker'},
+  eleutheronema_tetradactylum:{k:'threadfin'},
+  mugil_cephalus:{k:'mullet'}, planiliza_abu:{k:'mullet',c:['#7f8a78','#eef0ea','#c9b86a','#56604d']},
+  nematalosa_nasus:{k:'sardine',d:9.5,c:['#8fa0a0','#f4f1e2','#d9c98a','#2b3a3a'],pat:{dotlines:4,blotch1:1},x:{thread:1}},
+  tenualosa_ilisha:{k:'sardine',d:10,c:['#7f97ad','#f4f6f8','#b9c9d6','#46607a']},
+  scolopsis_taeniata:{k:'snapper',c:['#b9ae8f','#f3efe4','#d8cfb4','#4a2a1c'],pat:{stripe:1,dark:1},x:{eyering:1}},
+  chirocentrus_dorab:{k:'knife'}, tylosurus_crocodilus:{k:'needle'},
+  platycephalus_indicus:{k:'flathead'},
+  kanaad:{k:'tuna',c:['#566f86','#eef2f5','#6f8aa3','#3a4c5e'],pat:{bars:10,wave:1}},
+  zubaidi:{k:'pomfret'}, safi:{k:'rabbit'},
+  gnathanodon_speciosus:{k:'jack',c:['#e0b83a','#fbefc0','#f0c94a','#2a2a2a'],pat:{bars:7}},
+  terapon_puta:{k:'terapon'},
+  gubgub:{k:'crab'},
+};
+function faHexShift(hex,dh,dl){ const n=parseInt(hex.slice(1),16); let r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255; const mx=Math.max(r,g,b),mn=Math.min(r,g,b); let h=0,s=0,l=(mx+mn)/2; if(mx!==mn){ const d=mx-mn; s=l>.5?d/(2-mx-mn):d/(mx+mn); h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4; h*=60; } h=(h+dh+360)%360; l=Math.max(.08,Math.min(.95,l+dl/100)); return `hsl(${h.toFixed(0)},${(s*100).toFixed(0)}%,${(l*100).toFixed(0)}%)`; }
+function faSpec(sp){
+  const o=FA_SP[sp.id]||{}; const k=o.k||FA_FAM[sp.family]||'fish';
+  const base=FA_KIND[k]||{};
+  const spec={...base,...o,k,pat:{...(base.pat||{}),...(o.pat||{})},x:{...(base.x||{}),...(o.x||{})}};
+  let c=(o.c||base.c||FA_KIND.fish.c).slice();
+  if(!o.c&&sp.id){ const hh=hashSeed(sp.id); const dh=(hh%37)-18, dl=((hh>>3)%13)-6; c=[faHexShift(c[0],dh,dl),c[1],faHexShift(c[2],dh,dl/2),faHexShift(c[3],dh,0)]; }
+  spec.c=c; spec.id=sp.id; spec.seed=sp.id?hashSeed(sp.id):7; return spec;
+}
+let faSeq=0;
+/* returns {svg, ar} — ar = width/height of the drawing */
+function fishArt(sp){
+  const S=faSpec(sp), u='fa'+(++faSeq), c=S.c;
+  if(S.k==='shark') return faShark(S,u); if(S.k==='ray') return faRay(S,u); if(S.k==='eel') return faEel(S,u);
+  if(S.k==='seahorse'||S.k==='pipe') return faSeahorse(S,u); if(S.k==='flat') return faFlat(S,u);
+  if(S.k==='puffer') return faPuffer(S,u); if(S.k==='box') return faBox(S,u); if(S.k==='trigger') return faTrigger(S,u); if(S.k==='crab') return faCrab(S,u);
+  const W=S.w||70, cy=20, d=S.d, s=S.s;
+  let h=3, beakLen=0; if(S.x.beak){ beakLen=12; h=14; } if(S.x.bill){ beakLen=14; h=16; }
+  const t=W-17, p=Math.min(S.p+(h-3),t-8);
+  const kk=S.pt==null?.5:S.pt; // how pointed the snout is
+  const body=`M${h} ${cy} C${(h+2*kk).toFixed(1)} ${(cy-d*(.75-.45*kk)).toFixed(1)} ${p-8} ${cy-d} ${p} ${cy-d} C${p+10} ${cy-d} ${t-4} ${cy-s-1} ${t} ${cy-s} L${t} ${cy+s} C${t-4} ${cy+s+1} ${p+10} ${cy+d} ${p} ${cy+d} C${p-8} ${cy+d} ${(h+2*kk).toFixed(1)} ${(cy+d*(.75-.45*kk)).toFixed(1)} ${h} ${cy}Z`;
+  const tails={fork:`M${t} ${cy-s} L${t+12} ${cy-s-8} L${t+8} ${cy} L${t+12} ${cy+s+8} L${t} ${cy+s}Z`,
+    lunate:`M${t} ${cy-s} Q${t+6} ${cy-s-4} ${t+13} ${cy-s-10} Q${t+8} ${cy} ${t+13} ${cy+s+10} Q${t+6} ${cy+s+4} ${t} ${cy+s}Z`,
+    round:`M${t} ${cy-s} Q${t+13} ${cy-s-7} ${t+13} ${cy} Q${t+13} ${cy+s+7} ${t} ${cy+s}Z`,
+    trunc:`M${t} ${cy-s} L${t+10} ${cy-s-6} L${t+11} ${cy} L${t+10} ${cy+s+6} L${t} ${cy+s}Z`,
+    point:`M${t} ${cy-s} L${t+14} ${cy} L${t} ${cy+s}Z`};
+  const top=cy-d;
+  const dors={low:`M${p-4} ${top+.8} Q${p+5} ${top-5} ${t-6} ${cy-s-1}Z`,
+    spiny:`M${p-6} ${top+1.2} L${p-4} ${top-5} L${p-2} ${top} L${p} ${top-5.5} L${p+2} ${top} L${p+4} ${top-5} L${p+6} ${top+.2} Q${p+12} ${top-4} ${t-5} ${cy-s-1}Z`,
+    spikes:`M${p-7} ${top+1.5} L${p-5} ${top-7} L${p-3} ${top} L${p-1} ${top-7.5} L${p+1} ${top} L${p+3} ${top-7} L${p+5} ${top} L${p+7} ${top-6} L${p+9} ${top+.5} Q${p+14} ${top-3} ${t-5} ${cy-s-1}Z`,
+    tall:`M${p-4} ${top+1} L${p+1} ${top-10} L${p+7} ${top+1.5}Z`,
+    sail:`M${p-10} ${top+1} Q${p-4} ${top-15} ${p+12} ${top-9} L${p+16} ${top+2}Z`,
+    two:`M${p-5} ${top+1} L${p-1} ${top-5.5} L${p+3} ${top+.8}Z M${p+9} ${top+2} Q${p+13} ${top-3} ${t-5} ${cy-s-1}Z`,
+    long:`M${p-8} ${top+1.4} Q${p+2} ${top-5} ${t-2} ${cy-s-1.5} L${t-2} ${cy-s}Z`};
+  const anal=`M${t-13} ${cy+d*.62} Q${t-8} ${cy+d*.62+4.5} ${t-3} ${cy+s+1}Z`;
+  const pelvic=S.x.nopelvic?'':`M${p-5} ${cy+d-.6} L${p-1} ${cy+d+4.5} L${p+2} ${cy+d-.4}Z`;
+  const ex=h+5+2.5*(1-kk)+(S.x.bigeye?1:0), ey=S.x.eyetop?cy-d*.62:cy-d*.3, er=Math.max(1.7,Math.min(2.8,d*.2))*(S.x.bigeye?1.3:1);
+  const pec=`M${ex+5} ${cy+1} Q${ex+11} ${cy-1} ${ex+12} ${cy+3.5} Q${ex+8} ${cy+4} ${ex+5} ${cy+2}Z`;
+  // pattern (clipped to the body)
+  const P=S.pat, R=(n)=>{ let x=S.seed+n*7919; return ()=>{ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; };
+  let pat='';
+  if(P.spots){ const r=R(1); for(let i=0;i<P.spots;i++){ const x=h+4+r()*(t-h-2), y=cy-d+2+r()*(2*d-4); pat+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(P.small?.7:1)+r()*(P.small?.5:.8)}" fill="${c[3]}" opacity="${P.small?.55:.85}"/>`; } }
+  if(P.bars){ const n=P.bars, x0=P.headbars?h+6:p-6, x1=t-1; for(let i=0;i<n;i++){ const x=x0+(x1-x0)*i/Math.max(1,n-1); pat+=P.wave?`<path d="M${x} ${cy-d} q2 ${d/2} 0 ${d} q-2 ${d/2} 0 ${d}" stroke="${c[3]}" stroke-width="1.6" fill="none" opacity=".55"/>`:`<rect x="${(x-1.2).toFixed(1)}" y="${cy-d}" width="${P.faint?1.6:2.6}" height="${2*d}" fill="${c[3]}" opacity="${P.faint?.35:.6}"/>`; } }
+  if(P.headbars) pat+=`<rect x="${ex-1}" y="${cy-d}" width="2.6" height="${2*d}" fill="${c[3]}" opacity=".7"/><rect x="${ex+6}" y="${cy-d}" width="2.6" height="${2*d}" fill="${c[3]}" opacity=".7"/>`;
+  if(P.stripe) pat+=`<rect x="${h+3}" y="${cy-(P.dark?3.6:1.8)}" width="${t-h}" height="${P.dark?3.2:2.6}" fill="${P.silver?'#ffffff':c[3]}" opacity="${P.dark?.85:.7}"/>`;
+  if(P.stripes){ for(let i=0;i<P.stripes;i++){ const y=cy-d*.55+i*(d*1.1/Math.max(1,P.stripes-1)); pat+=`<rect x="${h+4}" y="${(y-.8).toFixed(1)}" width="${t-h}" height="1.6" fill="${c[3]}" opacity="${P.faint?.35:.75}"/>`; } }
+  if(P.lines){ for(let i=0;i<P.lines;i++){ const y=cy-d*.75+i*(d*1.3/Math.max(1,P.lines)); pat+=`<rect x="${h+6}" y="${y.toFixed(1)}" width="${t-h-4}" height=".8" fill="${P.color?(i%2?c[3]:c[2]):c[3]}" opacity="${P.faint?.3:.5}"/>`; } }
+  if(P.dotlines){ for(let i=0;i<P.dotlines;i++){ const y=cy-d*.8+i*2.2; for(let x=h+12;x<t-1;x+=2.4) pat+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r=".45" fill="${c[3]}" opacity=".55"/>`; } }
+  if(P.wavy){ for(let i=0;i<P.wavy;i++){ const y=cy-d*.6+i*(d*1.2/P.wavy); pat+=`<path d="M${h+6} ${y.toFixed(1)} q3 -1.5 6 0 t6 0 t6 0 t6 0 t6 0 t6 0" stroke="${c[3]}" stroke-width=".7" fill="none" opacity=".55"/>`; } }
+  if(P.blotch){ const r=R(3); for(let i=0;i<P.blotch;i++){ pat+=`<ellipse cx="${(h+6+r()*(t-h-6)).toFixed(1)}" cy="${(cy-d+3+r()*(2*d-6)).toFixed(1)}" rx="${2+r()*2}" ry="${1.5+r()*1.5}" fill="${c[3]}" opacity=".45"/>`; } }
+  if(P.blotch1) pat+=`<circle cx="${ex+7}" cy="${cy-d*.45}" r="2" fill="${c[3]}" opacity=".85"/>`;
+  if(P.eyebar) pat+=`<rect x="${ex-1.3}" y="${cy-d}" width="2.6" height="${2*d}" fill="${c[3]}" opacity=".8"/>`;
+  let extra='';
+  if(S.x.finlets){ for(let i=0;i<5;i++){ const x=t-12+i*2.5; extra+=`<path d="M${x} ${cy-s-1.6+(i*.2)} l1.2 -2 l1.2 2Z M${x} ${cy+s+1.6-(i*.2)} l1.2 2 l1.2 -2Z" fill="${c[2]}"/>`; } }
+  if(S.x.scutes) extra+=`<path d="M${t-14} ${cy} L${t} ${cy}" stroke="${c[3]}" stroke-width="1.2" stroke-dasharray="1.2 .8" opacity=".6"/>`;
+  if(S.x.threads) extra+=[0,1,2,3].map(i=>`<path d="M${ex+6+i} ${cy+d*.55} q${-2+i} 6 ${3+i*1.5} 9" stroke="${c[2]}" stroke-width=".7" fill="none"/>`).join('');
+  if(S.x.whisk) extra+=Array.from({length:S.x.whisk},(_,i)=>`<path d="M${h+1.5} ${cy+1.2+i*.6} q-1 ${4+i*2} ${-2.5-i} ${6+i*2}" stroke="${c[2]}" stroke-width=".8" fill="none" stroke-linecap="round"/>`).join('');
+  if(S.x.fangs) extra+=`<path d="M${h+2.2} ${cy+.2} l.8 1.8 l.7 -1.8Z M${h+4.4} ${cy+.2} l.7 1.6 l.6 -1.6Z" fill="#fff"/>`;
+  if(S.x.beak) extra+=`<path d="M${h+1} ${cy-1.1} L${h-beakLen} ${cy-.2} L${h-beakLen+1} ${cy+.5} L${h+1} ${cy+1.3}Z" fill="${c[0]}"/>`;
+  if(S.x.bill) extra+=`<path d="M${h+1} ${cy-1.4} L${h-beakLen} ${cy-.6} L${h+1} ${cy+.6}Z" fill="${c[0]}"/>`;
+  if(S.x.jaw) extra+=`<path d="M${h-1} ${cy+.8} L${h+6} ${cy+.2} L${h+6} ${cy+1.6}Z" fill="${c[0]}"/>`;
+  if(S.x.wings) extra+=`<path d="M${ex+5} ${cy} Q${ex+18} ${cy-14} ${ex+30} ${cy-9} Q${ex+18} ${cy-3} ${ex+6} ${cy+1.5}Z" fill="${c[2]}" opacity=".75"/>`;
+  if(S.x.thread) extra+=`<path d="M${t-8} ${cy-s-1} Q${t+2} ${cy-s-5} ${t+10} ${cy-s-3}" stroke="${c[2]}" stroke-width=".7" fill="none"/>`;
+  if(S.x.scalpel) extra+=`<path d="M${t-4} ${cy-.6} l3 .6 l-3 .6Z" fill="${c[3]}"/>`;
+  if(S.x.tailbars) extra+=`<path d="M${t+3} ${cy-5} L${t+3} ${cy+5} M${t+7} ${cy-6} L${t+7} ${cy+6}" stroke="#2a2a2a" stroke-width="1.2" opacity=".7"/>`;
+  if(S.x.tailedge) extra+=`<path d="${tails[S.tail]}" fill="none" stroke="#fff" stroke-width=".9" opacity=".85"/>`;
+  if(S.x.cheek) extra+=`<path d="M${ex+1} ${cy+1} l4 1.2 M${ex} ${cy+2.4} l4 1.2" stroke="${c[3]}" stroke-width=".7"/>`;
+  const mouthY=S.x.up?cy-1:cy+.6, mouthW=S.x.bigmouth?7:(S.x.smallmouth?1.8:3.2);
+  const svg=`<svg viewBox="${-beakLen} 0 ${W+beakLen} 40" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="${u}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><clipPath id="${u}c"><path d="${body}"/></clipPath></defs>
+    <path d="${dors[S.dor]||dors.low}" fill="${c[2]}"/><path d="${tails[S.tail]||tails.fork}" fill="${c[2]}"/><path d="${anal}" fill="${c[2]}"/>${pelvic?`<path d="${pelvic}" fill="${c[2]}"/>`:''}
+    <path d="${body}" fill="url(#${u}g)"/><g clip-path="url(#${u}c)">${pat}<path d="M${ex+3.5} ${cy-d*.7} Q${ex+6.5} ${cy} ${ex+3.5} ${cy+d*.7}" stroke="${c[0]}" stroke-width=".8" fill="none" opacity=".45"/></g>
+    <path d="${pec}" fill="${c[2]}" opacity=".85"/>${extra}
+    <path d="M${h+.3} ${mouthY} l${mouthW} ${S.x.up?-1:.9}" stroke="${c[0]}" stroke-width=".8" stroke-linecap="round" opacity=".7"/>
+    ${S.x.eyering?`<circle cx="${ex}" cy="${ey}" r="${er+1}" fill="#f2c230"/>`:''}<circle cx="${ex}" cy="${ey}" r="${er}" fill="#fff"/><circle cx="${ex-.3}" cy="${ey}" r="${er*.58}" fill="#1a1a1a"/><circle cx="${ex-.8}" cy="${ey-.6}" r="${er*.22}" fill="#fff"/></svg>`;
+  return {svg, ar:(W+beakLen)/40};
+}
+function faEye(x,y,r){ return `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/><circle cx="${x-.3}" cy="${y}" r="${r*.58}" fill="#1a1a1a"/><circle cx="${x-.8}" cy="${y-.6}" r="${r*.22}" fill="#fff"/>`; }
+function faShark(S,u){ const c=S.id==='rhincodon_typus'?['#3d5a73','#dfe7ee','#34506a','#ffffff']:S.c;
+  const whale=S.id==='rhincodon_typus';
+  const svg=`<svg viewBox="0 0 80 40" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="${u}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".6" stop-color="${c[1]}"/></linearGradient></defs>
+  <path d="M34 13 L42 1 L47 13Z" fill="${c[2]}"/><path d="M60 19 L78 4 L72 20 L76 30 L60 23Z" fill="${c[2]}"/><path d="M28 24 Q34 36 40 38 L38 25Z" fill="${c[2]}"/><path d="M56 15 L59 10 L61 16Z" fill="${c[2]}"/>
+  <path d="M2 21 Q6 13 20 12 Q42 10 62 18 L62 23 Q42 29 20 28 Q7 28 2 21Z" fill="url(#${u}g)"/>
+  ${whale?Array.from({length:18},(_,i)=>`<circle cx="${14+(i*37%44)}" cy="${14+(i*13%10)}" r=".9" fill="#fff" opacity=".8"/>`).join(''):''}
+  <path d="M17 18 v6 M19.5 18 v6.5 M22 18 v6.5" stroke="${c[0]}" stroke-width=".7" opacity=".6"/><path d="M4 23 q4 1.5 9 .5" stroke="#333" stroke-width=".7" fill="none"/>${faEye(10,18.5,1.6)}</svg>`; return {svg,ar:2}; }
+function faRay(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 70 44" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="${u}g" cx=".4" cy=".45"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[0]}"/></radialGradient></defs>
+  <path d="M40 22 Q56 22 69 30" stroke="${c[2]}" stroke-width="1.6" fill="none"/><g class="aq-ray-flap"><path d="M4 22 Q14 4 30 6 Q40 10 44 22 Q40 34 30 38 Q14 40 4 22Z" fill="url(#${u}g)"/></g>
+  ${Array.from({length:8},(_,i)=>`<circle cx="${14+(i*23%26)}" cy="${14+(i*17%16)}" r="1.1" fill="${c[3]}" opacity=".45"/>`).join('')}${faEye(13,18,1.4)}${faEye(13,26,1.4)}</svg>`; return {svg,ar:1.6}; }
+function faEel(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 84 26" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><path d="M5 13 C15 3 23 23 33 13 S51 3 61 13 S73 21 82 13" fill="none" stroke="${c[0]}" stroke-width="7.5" stroke-linecap="round"/><path d="M5 13 C15 3 23 23 33 13 S51 3 61 13 S73 21 82 13" fill="none" stroke="${c[3]}" stroke-width="1.4" stroke-dasharray="2 3" opacity=".6"/><path d="M3 14.5 l5 .6" stroke="#222" stroke-width=".8"/>${faEye(7,11,1.5)}</svg>`; return {svg,ar:3.2}; }
+function faSeahorse(S,u){ const c=S.c;
+  if(S.k==='pipe'){ const svg=`<svg viewBox="0 0 84 18" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><path d="M2 9 L14 8 Q20 6 40 8 L74 8.6 L82 5 L82 13 L74 9.6 L40 10.4 Q20 12 14 10Z" fill="${c[0]}"/><path d="M16 9 H72" stroke="${c[1]}" stroke-width="1" stroke-dasharray="1.5 1.5"/>${faEye(15,8.4,1.2)}</svg>`; return {svg,ar:4.6}; }
+  const svg=`<svg viewBox="0 0 30 50" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><path d="M16 5 Q24 5 24 12 Q24 16 19 17 Q24 23 22 31 Q20 39 14 41 Q10 43 12 47 Q15 50 18 47" fill="none" stroke="${c[0]}" stroke-width="6.5" stroke-linecap="round"/><path d="M16 5 Q10 6 5 10 L13 12" fill="${c[0]}"/><path d="M22 21 Q27 23 25 28" fill="none" stroke="${c[2]}" stroke-width="2.5" stroke-linecap="round"/><path d="M19 20 Q21 26 19 34" stroke="${c[1]}" stroke-width="1" fill="none" stroke-dasharray="1.4 1.4"/>${faEye(18,10,1.5)}</svg>`; return {svg,ar:.6}; }
+function faFlat(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 66 32" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><path d="M52 16 L64 8 L64 24Z" fill="${c[2]}"/><ellipse cx="29" cy="16" rx="26" ry="12" fill="${c[2]}"/><ellipse cx="29" cy="16" rx="23" ry="9.5" fill="${c[0]}"/>
+  ${Array.from({length:10},(_,i)=>`<circle cx="${12+(i*29%34)}" cy="${10+(i*11%12)}" r="${.8+(i%3)*.4}" fill="${c[3]}" opacity=".5"/>`).join('')}${faEye(11,11.5,1.6)}${faEye(15.5,9.5,1.6)}</svg>`; return {svg,ar:2.06}; }
+function faPuffer(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 54 40" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="${u}g" cx=".4" cy=".35"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[0]}"/></radialGradient></defs><path d="M40 20 L52 11 L50 20 L52 29Z" fill="${c[2]}"/><path d="M24 5 L28 -1 L31 6Z M24 35 L28 41 L31 34Z" fill="${c[2]}"/>
+  <circle cx="23" cy="20" r="16" fill="url(#${u}g)"/>${Array.from({length:16},(_,i)=>{ const a=i/16*Math.PI*2; return `<path d="M${(23+Math.cos(a)*15.5).toFixed(1)} ${(20+Math.sin(a)*15.5).toFixed(1)} l${(Math.cos(a)*2.4).toFixed(1)} ${(Math.sin(a)*2.4).toFixed(1)}" stroke="${c[2]}" stroke-width=".9"/>`; }).join('')}
+  ${Array.from({length:12},(_,i)=>`<circle cx="${14+(i*23%20)}" cy="${10+(i*17%18)}" r="1.1" fill="${c[3]}" opacity=".55"/>`).join('')}<path d="M8 22 q2 1.5 4 0" stroke="#333" stroke-width=".9" fill="none"/>${faEye(14,15,2.6)}</svg>`; return {svg,ar:1.35}; }
+function faBox(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 56 40" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><path d="M42 20 Q52 12 54 20 Q52 28 42 20Z" fill="${c[2]}"/><rect x="6" y="8" width="38" height="24" rx="9" fill="${c[0]}"/>${Array.from({length:14},(_,i)=>`<circle cx="${12+(i*19%28)}" cy="${12+(i*7%16)}" r="1.4" fill="${c[3]}" opacity=".75"/>`).join('')}<path d="M5 21 q2 1.4 4 0" stroke="#333" stroke-width=".9" fill="none"/>${faEye(14,15,2.2)}</svg>`; return {svg,ar:1.4}; }
+function faTrigger(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 64 40" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><path d="M48 20 L60 12 L58 20 L60 28Z" fill="${c[2]}"/><path d="M22 7 L26 -2 L28 8Z" fill="${c[2]}"/><path d="M30 8 Q42 4 47 16Z M30 32 Q42 36 47 24Z" fill="${c[2]}"/>
+  <path d="M3 20 Q8 7 24 6 Q42 8 49 20 Q42 32 24 34 Q8 33 3 20Z" fill="${c[0]}"/><path d="M10 26 Q24 30 40 24" stroke="${c[1]}" stroke-width="3" fill="none" opacity=".6"/>${Array.from({length:8},(_,i)=>`<circle cx="${14+(i*19%26)}" cy="${12+(i*7%12)}" r="1" fill="${c[3]}" opacity=".6"/>`).join('')}${faEye(17,15,2)}</svg>`; return {svg,ar:1.6}; }
+function faCrab(S,u){ const svg=`<svg viewBox="0 0 64 40" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">${[0,1,2].map(i=>`<path d="M${22-i*4} ${24+i*3} l-8 ${4+i}" stroke="#2f5f9e" stroke-width="2" stroke-linecap="round"/><path d="M${42+i*4} ${24+i*3} l8 ${4+i}" stroke="#2f5f9e" stroke-width="2" stroke-linecap="round"/>`).join('')}
+  <path d="M18 18 Q8 12 6 4 M46 18 Q56 12 58 4" stroke="#2f5f9e" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M2 4 Q6 -1 10 4 Q6 7 2 4Z M54 4 Q58 -1 62 4 Q58 7 54 4Z" fill="#e0564a"/>
+  <ellipse cx="32" cy="22" rx="16" ry="10" fill="#3f78c0"/><path d="M16 21 L10 19 M48 21 L54 19" stroke="#3f78c0" stroke-width="3"/><ellipse cx="32" cy="20" rx="11" ry="5" fill="#6fa0dc" opacity=".6"/>${faEye(27,12,1.6)}${faEye(37,12,1.6)}</svg>`; return {svg,ar:1.6}; }
+
+/* a drawing sized to a box: height in px, width follows the drawing */
+function fishArtHtml(sp,hpx,cls){ const a=fishArt(sp); return `<span class="fa ${cls||''}" style="height:${hpx}px;width:${Math.round(hpx*a.ar)}px">${a.svg}</span>`; }
+let _fishIdSet=null;
+function collIsFish(sp){ if(!_fishIdSet) _fishIdSet=new Set(SPECIES_DB.fish.map(x=>x.id)); return !!sp&&_fishIdSet.has(sp.id); }
 const AQ_FAM={
   shark:'Carcharhinidae Carchariidae Galeocerdonidae Ginglymostomatidae Hemigaleidae Hemiscylliidae Rhincodontidae Sphyrnidae Stegostomatidae Triakidae',
   ray:'Dasyatidae Glaucostegidae Gymnuridae Mobulidae Myliobatidae Narcinidae Pristidae Rajidae Rhinidae Torpedinidae',
@@ -4048,13 +4250,10 @@ function aqCreature(sp,scale){
   let size=(AQ_BASE[rar]||24)*scale;
   if(sp.family==='Rhincodontidae') size*=1.5;           // the whale shark really is huge
   if(kind==='shark'||kind==='big') size*=1.15;
-  const hue=hashSeed(sp.id)%360;
-  const tint=(rar==='common'||rar==='uncommon')?`filter:hue-rotate(${hue}deg) saturate(1.25);`:'';
-  let inner, w=size;
-  if(AQ_SVG[kind]){ const [c1,c2]=aqColors(sp); const dims={ray:[1.5,.95],eel:[2,.6],seahorse:[.6,1],flat:[1.5,.75]}[kind]; w=size*dims[0];
-    inner=`<span style="display:inline-block;width:${Math.round(size*dims[0])}px;height:${Math.round(size*dims[1])}px;">${AQ_SVG[kind](c1,c2,hashSeed(sp.id))}</span>`; }
-  else { const emo={shark:'🦈',puffer:'🐡',reef:'🐠',venom:'🐠',big:'🐟',fish:'🐟'}[kind];
-    inner=`<span style="font-size:${Math.round(size)}px;${kind==='shark'?'':tint}${kind==='venom'?'filter:hue-rotate(-40deg) saturate(1.6);':''}">${emo}</span>`; }
+  const art=fishArt(sp);
+  const hf={seahorse:1.15,eel:.55,shark:.74,ray:.84,flat:.74}[kind]||(art.ar>2.2?.5:.8);
+  const hgt=size*hf, w=hgt*art.ar;
+  const inner=`<span style="display:inline-block;width:${Math.round(w)}px;height:${Math.round(hgt)}px;">${art.svg}</span>`;
   // depth + speed that suit the creature
   const lane={ shark:[10,40], big:[10,45], reef:[28,58], fish:[22,60], puffer:[30,58], venom:[58,70], ray:[64,74], flat:[70,76], eel:[66,74], seahorse:[34,56] }[kind]||[20,60];
   const dur={ shark:26, big:18, reef:10, fish:13, puffer:16, venom:22, ray:24, flat:30, eel:28, seahorse:40 }[kind]||14;
@@ -4513,7 +4712,7 @@ function finderItem(sp){
   const have=collIsCollected(collRecord(sp.id)), tier=RARITY_TIERS[sp.rarity];
   const grp=collGroupConfig('fish',sp.group); const alt=(sp.altNames||[]).filter(x=>!/[\u0600-\u06FF]/.test(x)).slice(0,1).join('');
   const u=collImgUrl(sp,120);
-  return `<button type="button" class="fd-item" data-pick="${sp.id}">${u?`<img class="fd-ph" loading="lazy" src="${u}" alt="" onerror="this.replaceWith(document.createTextNode('${sp.icon||'🐟'}'))">`:`<span style="font-size:1.4rem">${sp.icon||'🐟'}</span>`}<span class="nm"><b>${escapeHtml(collName(sp))}</b><small>${escapeHtml([LANG==='ar'?sp.nameEn:sp.nameAr, alt, grp?collGroupName(grp):''].filter(Boolean).join(' · '))}</small></span><span>${tier.icon}</span>${have?`<span class="have">✓</span>`:''}</button>`;
+  return `<button type="button" class="fd-item" data-pick="${sp.id}">${u?`<img class="fd-ph" loading="lazy" src="${u}" alt="" onerror="this.replaceWith(document.createTextNode('${sp.icon||'🐟'}'))">`:`${fishArtHtml(sp,26,'fd-art')}`}<span class="nm"><b>${escapeHtml(collName(sp))}</b><small>${escapeHtml([LANG==='ar'?sp.nameEn:sp.nameAr, alt, grp?collGroupName(grp):''].filter(Boolean).join(' · '))}</small></span><span>${tier.icon}</span>${have?`<span class="have">✓</span>`:''}</button>`;
 }
 function drawCatchFinder(){
   const ar=LANG==='ar', L=collSpeciesList('fish');
@@ -4533,7 +4732,7 @@ function drawCatchFinder(){
   document.getElementById('cardBody').innerHTML=`
     <input class="setup-input fd-search" id="fdQ" placeholder="${ar?'🔎 اكتب أي اسم تعرفه: هامور، زبيدي، grouper…':'🔎 Type any name you know: hamour, grouper, Epinephelus…'}" value="${escapeHtml(_finder.q)}">
     ${q.length>=2?`<div class="fd-sec">${ar?`النتائج (${results.length})`:`Results (${results.length})`}</div><div class="fd-list">${results.slice(0,40).map(finderItem).join('')||`<div class="fd-empty">${ar?'ما لقينا — جرّب الشكل تحت 👇':'Nothing found — try the shape below 👇'}</div>`}</div>`:''}
-    ${q.length<2&&!_finder.shape?`<div class="fd-sec">${ar?'🎣 أسماك الخليج المشهورة':'🎣 Popular Gulf fish'}</div><div class="fd-grid">${gulf.map(sp=>`<button type="button" data-pick="${sp.id}">${sp.img?`<img class="fd-gph" loading="lazy" src="${collImgUrl(sp,120)}" alt="" onerror="this.remove()">`:`<span class="e">${sp.icon||'🐟'}</span>`}${escapeHtml(sp.nameAr)}${ar?'':`<small style="font-weight:400">${escapeHtml(sp.nameEn)}</small>`}</button>`).join('')}</div>`:''}
+    ${q.length<2&&!_finder.shape?`<div class="fd-sec">${ar?'🎣 أسماك الخليج المشهورة':'🎣 Popular Gulf fish'}</div><div class="fd-grid">${gulf.map(sp=>`<button type="button" data-pick="${sp.id}">${sp.img?`<img class="fd-gph" loading="lazy" src="${collImgUrl(sp,120)}" alt="" onerror="this.remove()">`:fishArtHtml(sp,30)}${escapeHtml(sp.nameAr)}${ar?'':`<small style="font-weight:400">${escapeHtml(sp.nameEn)}</small>`}</button>`).join('')}</div>`:''}
     <div class="fd-sec">${ar?'🤔 ما تعرف اسمه؟ وش شكله؟':'🤔 Don’t know the name? What does it look like?'}</div>
     <div class="fd-grid">${FIND_SHAPES.map(sh=>`<button type="button" data-shape="${sh.k}" class="${_finder.shape===sh.k?'on':''}"><span class="e">${sh.e}</span>${ar?sh.ar:sh.en}</button>`).join('')}</div>
     ${_finder.shape&&q.length<2?`<label class="choice" style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:0.84rem;"><input type="checkbox" id="fdGulf"${_finder.gulf?' checked':''}> ${ar?'صدته بالكويت / الخليج':'Caught in Kuwait / the Gulf'}</label>
@@ -4551,8 +4750,8 @@ function confirmFinderPick(sid){
   const sp=collSpeciesInfo('fish',sid), ar=LANG==='ar', tier=RARITY_TIERS[sp.rarity], n=collCatchCount(collRecord(sid)), grp=collGroupConfig('fish',sp.group);
   document.getElementById('dayTitle').textContent=`${sp.icon||'🐟'} ${collName(sp)}`;
   document.getElementById('daySubtitle').textContent=`${tier.icon} ${ar?tier.nameAr:tier.nameEn}${grp?' · '+collGroupName(grp):''}`;
-  const ph=collImgUrl(sp,480), tip=ar?(sp.tipAr||(grp&&grp.hintAr)):(sp.tipEn||(grp&&grp.hintEn));
-  document.getElementById('cardBody').innerHTML=`${ph?`<div class="fd-bigph"><img src="${ph}" alt="" onerror="this.parentNode.remove()"><span>${ar?'صورة مرجعية — قارنها بصيدتك':'Reference photo — compare with your catch'}</span></div>`:''}
+  const fgrp=collFamilyGroup('fish',sp), ph=collImgUrl(sp,480), tip=ar?(sp.tipAr||(fgrp&&fgrp.hintAr)):(sp.tipEn||(fgrp&&fgrp.hintEn));
+  document.getElementById('cardBody').innerHTML=`${ph?`<div class="fd-bigph"><img src="${ph}" alt="" onerror="this.parentNode.remove()"><span>${ar?'صورة مرجعية — قارنها بصيدتك':'Reference photo — compare with your catch'}</span></div>`:`<div class="fd-bigph fd-art-big">${fishArtHtml(sp,120)}</div>`}
     <p class="panel-sub" style="text-align:center;">${escapeHtml(ar?(sp.kw&&sp.descAr?sp.descAr+' · '+sp.nameEn:sp.nameEn):sp.nameAr)}${sp.sci&&sp.sci!==sp.nameEn?' · <i>'+escapeHtml(sp.sci)+'</i>':''}</p>
     ${tip?`<p class="fd-tip">💡 ${escapeHtml(tip)}</p>`:''}
     <p class="panel-sub" style="text-align:center;">${n?(ar?`صدته قبل ${n} مرة`:`You’ve caught it ${n} time${n>1?'s':''} before`):(ar?'أول مرة تصيده! 🎉':'First time catching it! 🎉')}</p>
@@ -11420,6 +11619,7 @@ function collThumbHtml(sp,collected,ownPhoto){
   if(ownPhoto) return `<img src="${ownPhoto}" alt="">`;
   const u=collImgUrl(sp,160);
   if(u) return `<img class="ref" loading="lazy" src="${u}" alt="" onerror="this.replaceWith(document.createTextNode('${sp.icon||'🐟'}'))">${collected?'':'<span class="lock-ic">🔒</span>'}`;
+  if(collIsFish(sp)) return fishArtHtml(sp,34,'in-thumb')+(collected?'':'<span class="lock-ic">🔒</span>');
   return collected?(sp.icon||'🐟'):('<span class="lock-ic">🔒</span>'+(sp.icon||'🐟'));
 }
 /* folds a {speciesId:count} map from an older app version onto today's ids */
@@ -11733,6 +11933,7 @@ let collRegionFilter='all';
 /* Groups are pure navigation — this only reads collCatData to show counts,
    it never writes to it. Opening/entering a group cannot create or change
    any collectible's record. */
+const FISH_GROUP_ART={gulf_market:{id:'hamour'},groupers_seabass:{id:'epinephelus_areolatus'},seabreams:{id:'acanthopagrus_arabicus'},snappers_seabream:{family:'Lutjanidae'},grunts_croakers:{family:'Haemulidae'},jacks_trevallies:{family:'Carangidae'},mackerels_tuna:{family:'Scombridae'},barracudas_billfish:{family:'Istiophoridae'},mullets:{family:'Mugilidae'},herrings_sardines:{family:'Dorosomatidae'},other_catches:{family:'Polynemidae'},needlefish:{family:'Belonidae'},goatfish:{family:'Mullidae'},flatfish:{family:'Soleidae'},sharks_rays:{family:'Carcharhinidae'},rays:{family:'Dasyatidae'},scorpionfish_venomous:{family:'Scorpaenidae'},triggerfish_puffers:{family:'Tetraodontidae'},rabbitfish_surgeonfish:{family:'Siganidae'},wrasses_parrotfish:{family:'Labridae'},catfish_bottom:{family:'Ariidae'},eels:{family:'Muraenidae'},reef_misc:{family:'Chaetodontidae'},gobies_blennies:{family:'Gobiidae'},seahorses_pipefish:{family:'Syngnathidae'},small_misc:{family:'Atherinidae'}};
 let collSmallOpen=false;
 function renderCollGroups(){
   const cat=collCategoryConfig(collCurrentCat), ar=LANG==='ar';
@@ -11743,12 +11944,12 @@ function renderCollGroups(){
   const all=collSpeciesList(collCurrentCat);
   const card=g=>{
     const list=all.filter(sp=>sp.group===g.id); if(!list.length) return '';
-    const got=list.filter(sp=>collIsCollected(collRecord(sp.id))).length;
-    const pics=list.filter(sp=>sp.img).slice(0,3).map(sp=>`<img loading="lazy" src="${collImgUrl(sp,90)}" alt="" onerror="this.remove()">`).join('');
+    const got=list.filter(sp=>collIsCollected(collRecord(sp.id))).length, pct=Math.round(got/list.length*100);
+    const art=collCurrentCat==='fish'&&FISH_GROUP_ART[g.id]?fishArtHtml(FISH_GROUP_ART[g.id],g.tier==='fav'?64:48):`<span class="ic">${g.icon}</span>`;
     return `<div class="coll-cat-card coll-grp-card${g.tier==='fav'?' fav':''}" data-group="${g.id}">
-      <div class="gh"><span class="ic">${g.icon}</span><div class="ttl">${escapeHtml(collGroupName(g))}</div></div>
-      ${pics?`<div class="pics">${pics}</div>`:''}
-      ${g.hintAr?`<div class="hint">${escapeHtml(ar?g.hintAr:g.hintEn)}</div>`:''}
+      <div class="art">${art}${g.tier==='fav'?'<span class="fav-star">⭐</span>':''}</div>
+      <div class="ttl">${escapeHtml(collGroupName(g))}</div>
+      <div class="gbar"><i style="width:${pct}%"></i></div>
       <div class="sub" dir="ltr">${got} / ${list.length}</div></div>`;
   };
   const groups=collGroupList(collCurrentCat);
@@ -11758,7 +11959,7 @@ function renderCollGroups(){
     <div class="coll-allsearch"><input type="search" class="setup-input" id="collAllSearch" placeholder="${ar?`🔎 ابحث بكل ${all.length} — بأي اسم تعرفه`:`🔎 Search all ${all.length} — any name you know`}" autocomplete="off">
       ${collCurrentCat==='fish'?`<button type="button" class="coll-shape-btn" id="collShapeBtn">🎣 ${ar?'ما تعرف اسمها؟ دوّرها بالشكل':'Don’t know the name? Find it by shape'}</button>`:''}</div>
     ${groups.filter(g=>g.tier!=='small').map(card).join('')}
-    ${small.length?`<details class="coll-small-sec"${collSmallOpen?' open':''}><summary>🔬 ${ar?'سمك صغير ونادر ينصاد':'Tiny & rarely-caught fish'} <span class="num">(${smallN})</span><small>${ar?'قوبيون وسمك شعاب صغير وغيرها — للمهتمين':'Gobies, small reef fish and more — for the curious'}</small></summary><div class="coll-grid coll-grid-2">${small.map(card).join('')}</div></details>`:''}`;
+    ${small.length?`<details class="coll-small-sec"${collSmallOpen?' open':''}><summary>🔬 ${ar?'سمك صغير ونادر ينصاد':'Tiny & rarely-caught fish'} <span class="num">(${smallN})</span><span class="chev">⌄</span></summary><div class="coll-grid coll-grid-2">${small.map(card).join('')}</div></details>`:''}`;
   grid.querySelectorAll('.coll-grp-card').forEach(el=>{
     el.addEventListener('click',()=>{ collCurrentGroup=el.dataset.group; collSearch=''; collGoTo('category'); renderCollCategory(); });
   });
@@ -11976,9 +12177,9 @@ async function renderCollSpeciesDetail(){
 
   const el=document.getElementById('collSpeciesDetail');
   el.innerHTML=`
-    <div class="coll-detail-photo ${photo?'':'is-reference'} ${!photo&&sp.img?'has-ref':''} ${collected?'tier-'+sp.rarity:''}">
-      ${photo?`<img src="${photo.dataUrl}" alt="">`:(sp.img?`<img src="${collImgUrl(sp,480)}" alt="" onerror="this.replaceWith(document.createTextNode('${sp.icon||'🐟'}'))">`:sp.icon)}
-      <span class="coll-photo-tag ${photo?'mine':'reference'}">${photo?(LANG==='ar'?'📷 صورتي':'📷 My photo'):(LANG==='ar'?'صورة مرجعية · ويكيميديا':'Reference photo · Wikimedia')}</span>
+    <div class="coll-detail-photo ${photo?'':'is-reference'} ${!photo&&(sp.img||collIsFish(sp))?'has-ref':''} ${collected?'tier-'+sp.rarity:''}">
+      ${photo?`<img src="${photo.dataUrl}" alt="">`:(sp.img?`<img src="${collImgUrl(sp,480)}" alt="" onerror="this.replaceWith(document.createTextNode('${sp.icon||'🐟'}'))">`:(collIsFish(sp)?fishArtHtml(sp,110):sp.icon))}
+      <span class="coll-photo-tag ${photo?'mine':'reference'}">${photo?(LANG==='ar'?'📷 صورتي':'📷 My photo'):(sp.img?(LANG==='ar'?'صورة مرجعية · ويكيميديا':'Reference photo · Wikimedia'):(collIsFish(sp)?(LANG==='ar'?'رسمة توضيحية':'Illustration'):(LANG==='ar'?'صورة مرجعية':'Reference image')))}</span>
     </div>
     <div class="coll-pill-row">
       <span class="coll-status-pill ${collected?'collected':'locked'}">${collected?(LANG==='ar'?'✅ مجموع':'✅ Collected'):(LANG==='ar'?'🔒 غير مجموع':'🔒 Not collected')}</span>
@@ -12039,12 +12240,18 @@ async function renderCollSpeciesDetail(){
   if(removeBtn) removeBtn.addEventListener('click',collRemovePhoto);
 }
 /* every name people use for it + how to tell it apart */
+/* the family group a Kuwaiti favourite would belong to (for its "how to tell" hint) */
+function collFamilyGroup(catId,sp){
+  if(sp.group!=='gulf_market') return collGroupConfig(catId,sp.group);
+  const twin=collSpeciesList(catId).find(x=>x.family===sp.family&&x.group!=='gulf_market');
+  return twin?collGroupConfig(catId,twin.group):collGroupConfig(catId,sp.group);
+}
 function collNamesHtml(sp){
-  const ar=LANG==='ar', grp=collGroupConfig(collCurrentCat,sp.group);
+  const ar=LANG==='ar', grp=collGroupConfig(collCurrentCat,sp.group), fgrp=collFamilyGroup(collCurrentCat,sp);
   const other=ar?(sp.kw&&sp.descAr?sp.descAr+' · '+sp.nameEn:sp.nameEn):(sp.kw&&sp.descEn?sp.descEn+' · '+sp.nameAr:sp.nameAr);
   const alts=(sp.altNames||[]).filter(a=>ar?/[\u0600-\u06FF]/.test(a):!/[\u0600-\u06FF]/.test(a)).filter(a=>a!==sp.descAr&&a!==sp.descEn);
   const alts2=alts.filter(a=>!alts.some(b=>b!==a&&b.startsWith(a+' ('))).slice(0,5);
-  const tip=ar?(sp.tipAr||(grp&&grp.hintAr)):(sp.tipEn||(grp&&grp.hintEn));
+  const tip=ar?(sp.tipAr||(fgrp&&fgrp.hintAr)):(sp.tipEn||(fgrp&&fgrp.hintEn));
   return `<div class="coll-names">
     <div class="other">${escapeHtml(other||'')}</div>
     ${sp.sci?`<div class="sci"><i>${escapeHtml(sp.sci)}</i>${grp?' · '+escapeHtml(collGroupName(grp)):''}</div>`:''}
