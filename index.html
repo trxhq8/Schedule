@@ -612,16 +612,20 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .aq-tank{ background:linear-gradient(180deg,#63d2f2 0%,#249ad0 42%,#0e5f96 100%); }
   .aq-tank.night{ background:linear-gradient(180deg,#0f3b63 0%,#0a2848 50%,#051528 100%); }
   .aq-murk{ background:radial-gradient(ellipse at 50% 55%,rgba(120,150,110,.35),rgba(70,90,70,.55)); }
-  .aq-swim{ position:absolute; left:var(--x0); animation:aqMove var(--dur) ease-in-out infinite alternate; animation-delay:var(--dl); }
+  .aq-swim{ position:absolute; left:0; will-change:transform; }
   @keyframes aqMove{ from{ left:var(--x0); } to{ left:var(--x1); } }
-  .aq-dir{ display:inline-block; animation:aqFlip calc(var(--dur) * 2) steps(1,end) infinite; animation-delay:var(--dl); }
+  .aq-dir{ display:inline-block; will-change:transform; }
   @keyframes aqFlip{ 0%{ transform:scaleX(-1); } 50%{ transform:scaleX(1); } }
-  .aq-bob{ display:inline-block; animation:aqBob var(--bob,2.6s) ease-in-out infinite; line-height:1; }
+  .aq-bob{ display:inline-block; animation:aqBob var(--bob,2.6s) ease-in-out infinite; line-height:1; will-change:transform; }
   .aq-bob svg{ display:block; }
   .aq-bob.r-uncommon{ filter:drop-shadow(0 0 4px rgba(90,170,255,.95)); }
   .aq-bob.r-epic{ filter:drop-shadow(0 0 6px rgba(195,125,255,1)); }
-  .aq-bob.r-mythic{ filter:drop-shadow(0 0 7px rgba(255,80,90,1)); animation:aqBob var(--bob,2.6s) ease-in-out infinite, aqPulseRed 2s ease-in-out infinite; }
-  .aq-bob.r-legendary{ filter:drop-shadow(0 0 7px #ffd76a) drop-shadow(0 0 16px rgba(255,190,60,.85)); animation:aqBob var(--bob,2.6s) ease-in-out infinite, aqPulseGold 2.4s ease-in-out infinite; }
+  .aq-bob.r-mythic{ filter:drop-shadow(0 0 7px rgba(255,80,90,1)); }
+  .aq-bob.r-legendary{ filter:drop-shadow(0 0 7px #ffd76a) drop-shadow(0 0 14px rgba(255,190,60,.8)); }
+  .aq-bob.r-mythic::before, .aq-bob.r-legendary::before{ content:''; position:absolute; inset:-35%; border-radius:50%; pointer-events:none; animation:aqHalo 2.2s ease-in-out infinite; }
+  .aq-bob.r-mythic::before{ background:radial-gradient(circle,rgba(255,80,90,.35),transparent 65%); }
+  .aq-bob.r-legendary::before{ background:radial-gradient(circle,rgba(255,210,100,.45),transparent 65%); }
+  @keyframes aqHalo{ 0%,100%{ opacity:.35; transform:scale(.9); } 50%{ opacity:1; transform:scale(1.1); } }
   @keyframes aqPulseRed{ 0%,100%{ filter:drop-shadow(0 0 5px rgba(255,80,90,.8)); } 50%{ filter:drop-shadow(0 0 12px rgba(255,80,90,1)); } }
   @keyframes aqPulseGold{ 0%,100%{ filter:drop-shadow(0 0 6px #ffd76a) drop-shadow(0 0 12px rgba(255,190,60,.6)); } 50%{ filter:drop-shadow(0 0 10px #fff0b0) drop-shadow(0 0 24px rgba(255,190,60,1)); } }
   .aq-spark{ position:absolute; width:4px; height:4px; border-radius:50%; background:#fff3b0; box-shadow:0 0 6px #ffd76a; animation:aqSpark 1.8s ease-out infinite; pointer-events:none; }
@@ -2113,17 +2117,19 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     @keyframes lgRay{ 0%,100%{ opacity:.35; } 50%{ opacity:.9; } }
     .lgd-bg .lg-bub{ bottom:6%; border-radius:50%; border:1px solid rgba(255,230,160,.8); background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9) 0 18%,rgba(255,220,130,.15) 45%,transparent 70%); animation:bgxRise 8s linear infinite; }
     .lgd-bg .lg-floor{ left:0; right:0; bottom:0; width:100%; height:24%; }
-    .lg-swim{ position:absolute; left:0; width:100%; height:0; animation:lgCross var(--d,20s) linear infinite; pointer-events:none; }
-    .lg-swim > span{ position:absolute; left:100%; display:block; transform:translateY(-50%); filter:drop-shadow(0 0 5px rgba(255,205,90,.9)) drop-shadow(0 0 12px rgba(255,190,60,.5)); animation:lgBob 2.6s ease-in-out infinite; }
+    .lg-swim{ position:absolute; left:0; width:100%; height:0; animation:lgCross var(--d,20s) linear infinite; pointer-events:none; will-change:transform; }
+    .lg-swim > span{ position:absolute; left:100%; display:block; transform:translateY(-50%); animation:lgBob 2.6s ease-in-out infinite; will-change:transform; }
+    .lg-swim > span > svg{ filter:drop-shadow(0 0 5px var(--gl,rgba(255,205,90,.9))); }
     .lg-swim.big > span{ width:34%; max-width:300px; }
     .lg-swim.sm > span{ width:12%; max-width:90px; opacity:.9; }
     @keyframes lgCross{ from{ transform:translateX(4%); } to{ transform:translateX(-140%); } }
     .lg-swim.fxs{ animation-name:lgCrossPx; }
     @keyframes lgCrossPx{ from{ transform:translateX(0); } to{ transform:translateX(calc(-100% - var(--fw,120px) - 20px)); } }
-    @keyframes lgBob{ 0%,100%{ margin-top:0; } 50%{ margin-top:-5px; } }
+    @keyframes lgBob{ 0%,100%{ transform:translateY(-50%); } 50%{ transform:translateY(calc(-50% - 5px)); } }
     .fr2-legend{ --bw:5px; --sp:6s; background:conic-gradient(#ffd24d,#fff3c4,#1fb5c9,#ffd24d,#e0a020,#7fe8f0,#ffd24d); }
     .lg-orbit{ inset:-19%; animation:cxSpinPlain 7s linear infinite reverse; }
-    .lg-orb-fish{ position:absolute; left:50%; top:0; width:48%; transform:translate(-50%,-50%); display:block; filter:drop-shadow(0 0 4px rgba(255,205,90,.95)); }
+    .lg-orb-fish{ position:absolute; left:50%; top:0; width:48%; transform:translate(-50%,-50%); display:block; filter:drop-shadow(0 0 4px var(--gl,rgba(255,205,90,.95))); }
+    .lg-orbit{ will-change:transform; }
     .lg-reveal{ box-shadow:0 0 0 2px #f5c542, 0 10px 30px rgba(245,180,60,.35); }
     .lg-list{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 8px; }
     .lg-list div{ display:flex; align-items:center; gap:8px; background:linear-gradient(135deg,rgba(245,184,61,.14),rgba(255,236,170,.22)); border:1px solid rgba(245,184,61,.55); border-radius:14px; padding:9px 10px; font-size:.8rem; }
@@ -2132,6 +2138,71 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     .lg-pay span{ font-weight:800; background:#1a1408; color:#ffd76a; border:1px solid #f5c542; border-radius:999px; padding:6px 14px; font-variant-numeric:tabular-nums; }
     .lg-wear{ background:linear-gradient(90deg,#e8a820,#f5c542,#e8a820) !important; color:#2a1c00 !important; font-weight:800; }
     @media (prefers-reduced-motion:reduce){ .lg-swim,.lg-swim > span,.lg-orbit,.lgd-bg *{ animation:none !important; } }
+
+
+    /* ===== legendary set scenes ===== */
+    .lgs > *{ position:absolute; pointer-events:none; }
+    .lgs-dawn{ background:linear-gradient(180deg,#ff9a8b 0%,#ffbc9a 24%,#ffe0c2 41%,#4a8fb0 42%,#1c5a7c 70%,#0a2e45 100%); }
+    .lgs-dawn .sun{ left:50%; top:26%; width:24%; aspect-ratio:1; transform:translateX(-50%); border-radius:50%; background:radial-gradient(circle,#fff4d6 0 34%,#ffcf8a 58%,rgba(255,180,120,0) 72%); }
+    .lgs-dawn .skyline{ left:0; top:21%; width:100%; height:21%; }
+    .lgs-dawn .horizon{ left:0; right:0; top:41.6%; height:2px; background:rgba(255,235,210,.8); }
+    .lgs-dawn .shim{ left:32%; width:36%; top:43%; height:12%; background:repeating-linear-gradient(180deg,rgba(255,225,185,.55) 0 1px,transparent 1px 5px); -webkit-mask:radial-gradient(ellipse,#000 30%,transparent 70%); mask:radial-gradient(ellipse,#000 30%,transparent 70%); animation:cxBreathe 3s ease-in-out infinite; }
+    .lgs-dawn .pearl{ bottom:4%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 32% 30%,#fff 0 22%,#f3e6dd 50%,#c9b3a6 90%); box-shadow:0 0 5px rgba(255,240,230,.9); animation:bgxRise 9s linear infinite; }
+    .lgs-speed{ background:linear-gradient(180deg,#1f689b,#0e3c63 60%,#061d33); }
+    .lgs .streak, .cos-hero-effect .streak, .app-fx-layer .streak{ position:absolute; left:100%; height:1.5px; width:30%; background:linear-gradient(90deg,rgba(255,255,255,0),rgba(215,238,255,.85)); animation:lgStreak var(--d,1.4s) linear infinite; will-change:transform; }
+    @keyframes lgStreak{ from{ transform:translateX(0); } to{ transform:translateX(-460%); } }
+    .lgs .ball{ right:6%; top:18%; width:36%; aspect-ratio:1; animation:cxSpinPlain 10s linear infinite; will-change:transform; }
+    .lgs .ball.big{ right:auto; left:50%; top:22%; width:52%; margin-left:-26%; animation-duration:14s; }
+    .lgs .ball span{ position:absolute; left:44%; top:44%; width:13%; display:block; }
+    .lgs-abyss{ background:radial-gradient(ellipse at 50% -20%,rgba(140,90,255,.38),transparent 55%),linear-gradient(180deg,#160c2e,#08041c 60%,#020108); }
+    .lgs .beam{ top:-10%; width:12%; height:85%; background:linear-gradient(180deg,rgba(170,130,255,.28),transparent); transform:skewX(-12deg); filter:blur(3px); animation:lgRay 8s ease-in-out infinite; }
+    .lgs .bio, .cos-hero-effect .bio, .app-fx-layer .bio{ position:absolute; width:3px; height:3px; border-radius:50%; background:#c9a7ff; box-shadow:0 0 6px 2px rgba(170,120,255,.8); animation:fxTw var(--d,3s) ease-in-out infinite; }
+    .lgs-bait{ background:radial-gradient(ellipse at 50% 0%,rgba(255,240,170,.35),transparent 60%),linear-gradient(180deg,#2e93cf,#15639c 55%,#0a3563); }
+    .lgs .sunr{ left:0; right:0; top:0; height:60%; background:repeating-linear-gradient(100deg,rgba(255,250,210,.12) 0 18px,transparent 18px 46px); animation:lgRay 6s ease-in-out infinite; }
+    .lgs .spark{ width:3px; height:3px; border-radius:50%; background:#ffe066; box-shadow:0 0 6px #ffd000; animation:fxTw 2s ease-in-out infinite; }
+    .lgs-mangrove{ background:linear-gradient(180deg,#5d6a3e,#3c4c2c 45%,#1f2a18 100%); }
+    .lgs .roots{ left:0; top:0; width:100%; height:48%; }
+    .lgs .murk{ inset:0; background:radial-gradient(ellipse at 50% 60%,rgba(140,130,80,.25),rgba(30,40,20,.35)); }
+    .k-silt::before{ background:rgba(232,216,160,.75); animation:fxSway var(--sw,5s) ease-in-out infinite alternate; }
+    .lgs-lagoon{ background:linear-gradient(180deg,#6fe6d6,#27b8b3 40%,#0e7f88 75%,#075660); }
+    .lgs .caus, .cos-hero-effect .caus, .app-fx-layer .caus{ position:absolute; inset:-20%; background:radial-gradient(ellipse at 30% 30%,rgba(255,255,255,.28),transparent 40%),radial-gradient(ellipse at 70% 55%,rgba(255,255,255,.22),transparent 38%),radial-gradient(ellipse at 45% 80%,rgba(255,255,255,.18),transparent 35%); animation:lgCaus 9s ease-in-out infinite alternate; will-change:transform; }
+    .lgs .caus.b{ animation-duration:12s; animation-direction:alternate-reverse; opacity:.7; }
+    @keyframes lgCaus{ from{ transform:translate(-4%,-3%) scale(1); } to{ transform:translate(5%,4%) scale(1.12); } }
+    .lgs .grass{ bottom:-2%; width:3px; border-radius:3px 3px 0 0; background:linear-gradient(180deg,#5fd39a,#1c6e46); transform-origin:bottom; animation:lgSway 3.2s ease-in-out infinite alternate; }
+    @keyframes lgSway{ from{ transform:rotate(-7deg); } to{ transform:rotate(7deg); } }
+    .lgs-night{ background:radial-gradient(ellipse at 50% -5%,rgba(200,230,255,.45),transparent 40%),linear-gradient(180deg,#10305a,#081c3a 50%,#030a18); }
+    .lgs .moon{ left:50%; top:-14%; width:30%; aspect-ratio:1; transform:translateX(-50%); border-radius:50%; background:radial-gradient(circle,rgba(238,246,255,.95) 0 28%,rgba(200,225,255,.28) 52%,transparent 70%); }
+    .lgs .surf{ top:9%; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,rgba(220,240,255,.65),transparent); animation:cxBreathe 4s ease-in-out infinite; }
+    .k-pearl::before{ background:radial-gradient(circle at 32% 30%,#fff 0 22%,#f3e6dd 50%,#c9b3a6 90%); box-shadow:0 0 5px rgba(255,240,230,.9); animation:fxSway var(--sw,3s) ease-in-out infinite alternate; }
+    @media (prefers-reduced-motion:reduce){ .lgs *, .streak, .lg-swim{ animation:none !important; } }
+    /* ===== my wardrobe ===== */
+    .wardrobe{ padding-bottom:12px; }
+    .ward-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .ward-head h3{ margin:0; }
+    .ward-store{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:6px 12px; font:inherit; font-size:.76rem; font-weight:700; cursor:pointer; }
+    .ward-tabs{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px; scrollbar-width:none; }
+    .ward-tabs button{ flex:none; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:7px 12px; font:inherit; font-size:.78rem; font-weight:700; cursor:pointer; }
+    .ward-tabs button.on{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+    .ward-tabs .num{ opacity:.7; font-size:.7rem; }
+    .ward-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    @media(min-width:520px){ .ward-grid{ grid-template-columns:repeat(4,1fr); } }
+    .ward-tile{ position:relative; border:1.5px solid var(--line); background:var(--card); border-radius:14px; padding:0; overflow:hidden; cursor:pointer; font:inherit; color:var(--ink); text-align:center; }
+    .ward-tile.on{ border-color:var(--cos-legendary); box-shadow:0 0 0 2px rgba(200,136,11,.35); }
+    .ward-tile .wt-prev{ height:74px !important; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
+    .ward-tile.none .wt-prev{ background:var(--bg); }
+    .ward-tile .wt-prev .cos-fp-wrap{ transform:scale(.78); }
+    .ward-tile .wt-name{ font-size:.7rem; font-weight:700; padding:6px 4px 7px; line-height:1.25; }
+    .ward-tile .wt-on{ position:absolute; top:5px; inset-inline-end:5px; background:var(--cos-legendary); color:#fff; font-size:.7rem; font-weight:800; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .ward-titles{ display:flex; flex-wrap:wrap; gap:6px; }
+    .ward-titles button{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:7px 12px; font:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
+    .ward-titles button.on{ background:var(--cos-legendary); color:#fff; border-color:var(--cos-legendary); }
+    .ward-sets{ display:flex; flex-direction:column; gap:8px; }
+    .ward-set{ display:flex; align-items:center; gap:10px; border:1px solid rgba(245,184,61,.55); background:linear-gradient(135deg,rgba(245,184,61,.12),rgba(255,236,170,.2)); border-radius:14px; padding:8px 10px; }
+    .ward-set-art{ width:70px; display:flex; justify-content:center; }
+    .ward-set-txt{ flex:1; min-width:0; display:flex; flex-direction:column; }
+    .ward-set-txt small{ color:var(--ink-soft); font-size:.74rem; }
+    .ward-set .cos-btn{ width:auto; padding:8px 14px; }
+    .ward-empty{ font-size:.82rem; color:var(--ink-soft); margin:4px 0; }
 
     /* ===== store tiles + preview sheet ===== */
     .cos-frame-preview{ height:112px; }
@@ -2190,6 +2261,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
           <div class="cos-chip" id="profileCoinsChip" style="margin-top:8px;cursor:pointer;"></div>
         </div>
       </div>
+      <div class="setup-card wardrobe" id="profileWardrobe"></div>
       <div class="setup-card">
         <h3 id="profileStreaksTitle"></h3>
         <div class="dash-row-mini" id="profileStreaksRow" style="flex-wrap:wrap;"></div>
@@ -2427,7 +2499,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.48.0';
+const APP_VERSION='v1.49.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2708,6 +2780,9 @@ async function bootApp(){
   migrateRetiredCosmetics();
   try{ await migrateMergedSpecies(); }catch(e){}
   if(!(P.achievements||{}).legend_catch) setTimeout(()=>{ notifyNewUnlocks().catch(()=>{}); },5000);
+  setTimeout(async()=>{ try{ const raw=await storageGet('collections:animals:fish'); const d=raw?JSON.parse(raw):{}; let shown=false;
+    for(const T of LEGEND_THEMES){ const rec=d[T.sid]; if(rec&&collIsCollected(rec)&&!(P.legendSets||{})[T.sid]){ const paid=await grantLegendSet(T.sid); if(paid&&!shown){ enqueueAchievements([{kind:'legendset',sid:T.sid}]); shown=true; } } }
+    if(shown) renderNavXpChip(); }catch(e){} },7000);
   autoUseShield();
   checkQadaForYesterday();
   setTimeout(async()=>{ try{ if(PushService.prefs().enabled&&PushService.supported()&&Notification.permission==='granted'){ const reg=await navigator.serviceWorker.getRegistration('./'); if(reg){ const tk=await firebase.messaging().getToken({serviceWorkerRegistration:reg}); if(tk) await PushService.save(tk); } } }catch(e){} },6000);
@@ -4160,6 +4235,7 @@ let faSeq=0;
 /* returns {svg, ar} — ar = width/height of the drawing */
 function fishArt(sp){
   const S=faSpec(sp), u='fa'+(++faSeq), c=S.c;
+  if(S.k==='sawfish') return faSaw(S,u); if(S.k==='manta') return faManta(S,u);
   if(S.k==='shark') return faShark(S,u); if(S.k==='ray') return faRay(S,u); if(S.k==='eel') return faEel(S,u);
   if(S.k==='seahorse'||S.k==='pipe') return faSeahorse(S,u); if(S.k==='flat') return faFlat(S,u);
   if(S.k==='puffer') return faPuffer(S,u); if(S.k==='box') return faBox(S,u); if(S.k==='trigger') return faTrigger(S,u); if(S.k==='crab') return faCrab(S,u);
@@ -4223,6 +4299,17 @@ function fishArt(sp){
     ${S.x.eyering?`<circle cx="${ex}" cy="${ey}" r="${er+1}" fill="#f2c230"/>`:''}<circle cx="${ex}" cy="${ey}" r="${er}" fill="#fff"/><circle cx="${ex-.3}" cy="${ey}" r="${er*.58}" fill="#1a1a1a"/><circle cx="${ex-.8}" cy="${ey-.6}" r="${er*.22}" fill="#fff"/></svg>`;
   return {svg, ar:(W+beakLen)/40};
 }
+function faSaw(S,u){ const c=S.c; let teeth=''; for(let x=4;x<29;x+=3) teeth+=`<path d="M${x} 15.6 l1 -2.2 l1 2.2Z M${x} 19.4 l1 2.2 l1 -2.2Z" fill="${c[1]}"/>`;
+  const svg=`<svg viewBox="0 0 100 34" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="${u}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".7" stop-color="${c[1]}"/></linearGradient></defs>
+  <path d="M50 10 L56 2 L60 10Z M70 12 L74 6 L77 13Z" fill="${c[2]}"/><path d="M84 15 L99 6 L94 17 L99 26 L84 19Z" fill="${c[2]}"/><path d="M40 21 Q46 31 53 30 L50 22Z" fill="${c[2]}"/>
+  <rect x="2" y="15.6" width="28" height="3.8" rx="1.6" fill="${c[0]}"/>${teeth}<path d="M27 17.5 Q34 9 50 10 Q72 11 84 15 L84 19 Q72 23 50 24 Q34 25 27 17.5Z" fill="url(#${u}g)"/>${faEye(33,14.6,1.4)}</svg>`; return {svg,ar:2.94}; }
+function faManta(S,u){ const c=S.c; const svg=`<svg viewBox="0 0 72 46" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="${u}g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient></defs>
+  <path d="M54 23 L71 24" stroke="${c[2]}" stroke-width="1.4"/><g class="aq-ray-flap"><path d="M9 23 Q20 1 40 5 Q52 9 56 23 Q52 37 40 41 Q20 45 9 23Z" fill="url(#${u}g)"/><path d="M22 14 Q34 12 44 18 M22 32 Q34 34 44 28" stroke="${c[3]}" stroke-width=".8" fill="none" opacity=".6"/></g>
+  <path d="M9 23 L2 17 L8 21Z M9 23 L2 29 L8 25Z" fill="${c[0]}"/>${faEye(11,18.5,1.3)}${faEye(11,27.5,1.3)}</svg>`; return {svg,ar:1.57}; }
+FA_FAM.Pristidae='sawfish'; FA_FAM.Mobulidae='manta';
+FA_KIND.sawfish={c:['#8a8a60','#ddd8b6','#6e6e48','#3a3a24']}; FA_KIND.manta={c:['#1f2f4a','#dfe7f0','#2c4468','#9fb3cc']};
+FA_SP.pristis_zijsron={k:'sawfish',c:['#4f8a6a','#d4ecde','#3a6e54','#1f4a36']};
+FA_SP.anoxypristis_cuspidata={k:'sawfish',c:['#8c8660','#e0dab8','#6e6a48','#3a3a24']};
 function faEye(x,y,r){ return `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/><circle cx="${x-.3}" cy="${y}" r="${r*.58}" fill="#1a1a1a"/><circle cx="${x-.8}" cy="${y-.6}" r="${r*.22}" fill="#fff"/>`; }
 function faShark(S,u){ const c=S.id==='rhincodon_typus'?['#3d5a73','#dfe7ee','#34506a','#ffffff']:S.c;
   const whale=S.id==='rhincodon_typus';
@@ -4329,7 +4416,7 @@ async function renderAquarium(el,big){
     const top=c.lane[0]+(hashSeed(sp.id+'t')%Math.max(1,(c.lane[1]-c.lane[0])));
     const dur=c.dur*(0.85+(hashSeed(sp.id+'d')%30)/100), dl=-((hashSeed(sp.id)%100)/100)*dur*2;
     const spark=c.rar==='legendary'?`<span class="aq-spark" style="left:-4px;top:40%"></span><span class="aq-spark" style="left:-10px;top:60%;animation-delay:.6s"></span><span class="aq-spark" style="left:-6px;top:20%;animation-delay:1.2s"></span>`:'';
-    html+=`<div class="aq-swim" data-sp="${sp.id}" style="top:${top}%;--x0:${c.range[0]}%;--x1:calc(${c.range[1]}% - ${Math.round(c.w)}px + 20px);--dur:${dur.toFixed(1)}s;--dl:${dl.toFixed(1)}s;"><span class="aq-dir"><span class="aq-bob r-${c.rar}" style="--bob:${(2.2+(hashSeed(sp.id+'b')%10)/10).toFixed(1)}s;position:relative;">${c.inner}${spark}</span></span></div>`;
+    html+=`<div class="aq-swim" data-sp="${sp.id}" data-r0="${c.range[0]}" data-r1="${c.range[1]}" data-dur="${dur.toFixed(2)}" data-off="${(-dl).toFixed(2)}" style="top:${top}%;"><span class="aq-dir"><span class="aq-bob r-${c.rar}" style="--bob:${(2.2+(hashSeed(sp.id+'b')%10)/10).toFixed(1)}s;position:relative;">${c.inner}${spark}</span></span></div>`;
   });
   html+=`<div class="aq-murk" style="opacity:${(0.6*(1-clear)).toFixed(2)}"></div>`;
   html+=`<div class="aq-level">🐠 ${ar?'مستوى الحوض':'Tank level'} ${level+1}</div></div>`;
@@ -4343,6 +4430,7 @@ async function renderAquarium(el,big){
   el.innerHTML=(big?'':`<div class="dash-title-row"><div class="home-preview-title" style="margin:0 0 8px;">${ar?'🐠 حوضك':'🐠 Your aquarium'}</div><button type="button" class="dash-link" data-nav="collections">${ar?'المقتنيات':'Collection'}</button></div>`)+html;
   const tank=el.querySelector('.aq-tank');
   if(!tank) return;
+  aqStartMotion(tank);
   if(!big) tank.onclick=()=>{ document.getElementById('dayTitle').textContent=ar?'🐠 حوضك':'🐠 Your aquarium'; document.getElementById('daySubtitle').textContent='';
     document.getElementById('cardBody').innerHTML='<div id="aqBig"></div>'; document.getElementById('overlay').classList.add('open'); renderAquarium(document.getElementById('aqBig'),true); };
   else {
@@ -4355,6 +4443,20 @@ async function renderAquarium(el,big){
     if(fb) fb.onclick=()=>{ playSfx('water'); for(let i=0;i<14;i++){ const fl=document.createElement('div'); fl.className='aq-flake'; fl.style.left=(20+Math.random()*60)+'%'; fl.style.animationDelay=(Math.random()*0.8)+'s'; tank.appendChild(fl); setTimeout(()=>fl.remove(),3800); }
       tank.classList.add('feeding'); setTimeout(()=>tank.classList.remove('feeding'),3200); };
   }
+}
+/* every fish moves with transform only (compositor, no layout work each frame):
+   across the tank and back, turning to face the way it swims */
+function aqStartMotion(tank,tries){
+  const W=tank.clientWidth;
+  if(!W){ if((tries||0)<40) setTimeout(()=>aqStartMotion(tank,(tries||0)+1),300); return; }
+  tank.querySelectorAll('.aq-swim').forEach(f=>{
+    if(f._mv) return;
+    const fw=f.offsetWidth||30, x0=W*(+f.dataset.r0)/100, x1=Math.max(x0+10,W*(+f.dataset.r1)/100-fw+20), dur=(+f.dataset.dur)*1000, off=(+f.dataset.off)*1000;
+    if(!f.animate){ f.style.transform=`translateX(${x0}px)`; return; }
+    f._mv=f.animate([{transform:`translateX(${x0}px)`},{transform:`translateX(${x1}px)`}],{duration:dur,iterations:Infinity,direction:'alternate',easing:'ease-in-out'}); f._mv.currentTime=off%(dur*2);
+    const d=f.querySelector('.aq-dir');
+    if(d){ const fl=d.animate([{transform:'scaleX(-1)',offset:0},{transform:'scaleX(-1)',offset:.499},{transform:'scaleX(1)',offset:.5},{transform:'scaleX(1)',offset:1}],{duration:dur*2,iterations:Infinity}); fl.currentTime=off%(dur*2); }
+  });
 }
 function renderHomeAquarium(){ renderAquarium(document.getElementById('homeAquarium'),false); }
 async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.6*(1-c)).toFixed(2); }
@@ -5684,7 +5786,7 @@ function enqueueAchievements(items){
 function showNextAchievement(){
   const item=achievementQueue.shift();
   if(!item){ achievementModalShowing=false; document.getElementById('achievementOverlay').classList.remove('open'); return; }
-  if(item.kind==='legendset'){ achievementModalShowing=false; document.getElementById('achievementOverlay').classList.remove('open'); openLegendSetReveal(()=>{ if(achievementQueue.length) showNextAchievement(); }); return; }
+  if(item.kind==='legendset'){ achievementModalShowing=false; document.getElementById('achievementOverlay').classList.remove('open'); openLegendSetReveal(item.sid,()=>{ if(achievementQueue.length) showNextAchievement(); }); return; }
   achievementModalShowing=true;
   const kickerKey=item.kind==='challenge' ? 'challenge_complete_kicker' : item.kind==='level' ? 'level_up_kicker' : 'ach_unlocked_kicker';
   const name=LANG==='ar'?(item.nameAr||item.descAr):(item.nameEn||item.descEn);
@@ -7398,8 +7500,7 @@ async function notifyNewUnlocks(){
   renderNavXpChip();
   enqueueAchievements([
     ...newAch.map(a=>({...a,kind:'achievement'})),
-    ...newlyCompleted.map(c=>({...c,kind:'challenge'})),
-    ...(newAch.some(a=>a.id==='legend_catch')?[{kind:'legendset'}]:[])
+    ...newlyCompleted.map(c=>({...c,kind:'challenge'}))
   ]);
   // real Friends architecture: this is the single convergence point after
   // every completion event, so it's the one place that refreshes the public
@@ -8183,7 +8284,7 @@ async function computeUserStats(){
     totalSpecies:coll.totalSpecies,
     rareOrBetterCount,
     legendaryCount:coll.legendaryCount,
-    legendaryFish:coll.legendaryFish||0,
+    legendaryFish:coll.legendaryFish||0, caughtFish:coll.caughtFish||{},
     maxSpeciesCatchCount:coll.maxSpeciesCatchCount,
   };
 }
@@ -8236,7 +8337,7 @@ const ACHIEVEMENTS_CONFIG=[
   {id:'ramadan_full', icon:'🕌', nameEn:'A Complete Ramadan', nameAr:'رمضان كامل', descEn:'Fast 29+ days of Ramadan', descAr:'صم 29 يوم أو أكثر من رمضان', xp:1000, coins:1200, exclusiveCosmetic:'frame-fanous', check:s=>s.bestFasts>=29},
   {id:'khatma', icon:'📖', nameEn:'Khatma', nameAr:'ختمة', descEn:'Read all 30 juz in Ramadan', descAr:'اقرأ الثلاثين جزء برمضان', xp:800, coins:1000, check:s=>s.bestJuz>=30},
   {id:'taraweeh_20', icon:'✨', nameEn:'Nights of Taraweeh', nameAr:'ليالي التراويح', descEn:'Pray taraweeh on 20 nights', descAr:'صلِّ التراويح 20 ليلة', xp:300, coins:350, check:s=>s.bestTar>=20},
-  {id:'legend_catch', icon:'🎣', nameEn:'Legend Hunter', nameAr:'صياد الأساطير', descEn:'Catch your first legendary fish — unlocks the Legend set', descAr:'اصطد أول سمكة أسطورية — يفتح لك طقم الأسطورة', xp:500, coins:750, exclusiveCosmetics:['bg-legend-deep','frame-legend-hook','fx-golden-school'], check:s=>s.legendaryFish>=1},
+  {id:'legend_catch', icon:'🎣', nameEn:'Legend Hunter', nameAr:'صياد الأساطير', descEn:'Catch your first legendary fish — every legendary fish also unlocks its own set', descAr:'اصطد أول سمكة أسطورية — وكل سمكة أسطورية تفتح لك طقمها الخاص', xp:500, coins:750, check:s=>s.legendaryFish>=1},
   {id:'prayers_month', icon:'🌙', nameEn:'Steadfast Month', nameAr:'شهر المحافظة', descEn:'All five prayers, 30 days in a row', descAr:'الصلوات الخمس 30 يوم متتالي', xp:800, coins:1000, check:s=>s.bestPrayerStreak>=30},
 ];
 /* the ONLY place P.achievements is written. Returns the list of newly
@@ -8281,7 +8382,7 @@ const TITLES_CONFIG=[
   {id:'the_champion', icon:'👑', nameEn:'The Champion', nameAr:'البطل', metric:'level', threshold:20},
   {id:'legend_hunter_title', icon:'🎣', nameEn:'Legend Hunter', nameAr:'صياد الأساطير', metric:'legendaryFish', threshold:1},
 ];
-function unlockedTitles(stats){ return TITLES_CONFIG.filter(t=>stats[t.metric]>=t.threshold); }
+function unlockedTitles(stats){ return TITLES_CONFIG.filter(t=>t.speciesId?!!(stats.caughtFish||{})[t.speciesId]:stats[t.metric]>=t.threshold); }
 
 /* ================= SOLO CHALLENGES =================
    Real, computed from real logged history — a challenge is only "complete"
@@ -8535,6 +8636,39 @@ function renderProfileCosmeticHero(){
   const titleId=P.equipped&&P.equipped.title;
   const titleCfg=titleId&&TITLES_CONFIG.find(x=>x.id===titleId);
   titleChip.textContent = titleCfg ? (titleCfg.icon+' '+(LANG==='ar'?titleCfg.nameAr:titleCfg.nameEn)) : t('profile_no_title');
+  renderWardrobe();
+}
+/* ===== My wardrobe: everything you own, one tap to wear it — no store trip ===== */
+let wardTab='background';
+function renderWardrobe(){
+  const box=document.getElementById('profileWardrobe'); if(!box) return;
+  const ar=LANG==='ar', inv=P.inventory||{};
+  const owned=type=>COSMETICS_CATALOG.filter(c=>c.type===type&&inv[c.id]).sort((a,b)=>RARITY_ORDER.indexOf(b.rarity)-RARITY_ORDER.indexOf(a.rarity));
+  const sets=LEGEND_THEMES.filter(T=>{ const i=lgSetIds(T); return inv[i.bg]&&inv[i.frame]&&inv[i.fx]; });
+  const tabs=[['background','🖼️',ar?'خلفيات':'Backgrounds',owned('background').length],['frame','⭕',ar?'إطارات':'Frames',owned('frame').length],['effect','✨',ar?'تأثيرات':'Effects',owned('effect').length],['title','🏷️',ar?'ألقاب':'Titles',''],['set','🎁',ar?'أطقم':'Sets',sets.length]];
+  box.innerHTML=`<div class="ward-head"><h3>🎨 ${ar?'خزانتي':'My wardrobe'}</h3><button type="button" class="ward-store" id="wardStore">🛍️ ${ar?'المتجر':'Store'}</button></div>
+    <div class="ward-tabs">${tabs.map(([k,i,l,n])=>`<button type="button" data-wt="${k}" class="${wardTab===k?'on':''}">${i} ${l}${n!==''?` <span class="num">${n}</span>`:''}</button>`).join('')}</div>
+    <div class="ward-body" id="wardBody"></div>`;
+  box.querySelectorAll('[data-wt]').forEach(b=>b.onclick=()=>{ wardTab=b.dataset.wt; renderWardrobe(); });
+  document.getElementById('wardStore').onclick=()=>{ showPanel('store'); enterSection('store'); };
+  const body=document.getElementById('wardBody');
+  if(wardTab==='title'){
+    computeUserStats().then(stats=>{ const list=unlockedTitles(stats), cur=P.equipped&&P.equipped.title;
+      body.innerHTML=list.length?`<div class="ward-titles"><button type="button" data-ti="" class="${!cur?'on':''}">${ar?'بدون لقب':'No title'}</button>${list.map(ti=>`<button type="button" data-ti="${ti.id}" class="${cur===ti.id?'on':''}">${ti.icon} ${escapeHtml(ar?ti.nameAr:ti.nameEn)}</button>`).join('')}</div>`:`<p class="ward-empty">${ar?'ما عندك ألقاب ليلحين — تنفتح بالإنجازات والصيد':'No titles yet — they unlock with achievements and catches'}</p>`;
+      body.querySelectorAll('[data-ti]').forEach(b=>b.onclick=async()=>{ await equipTitle(b.dataset.ti||null); renderProfileCosmeticHero(); });
+    }); return;
+  }
+  if(wardTab==='set'){
+    if(!sets.length){ body.innerHTML=`<p class="ward-empty">${ar?'كل سمكة أسطورية تصيدها تعطيك طقم كامل خاص فيها 🎣':'Every legendary fish you catch gives you its own full set 🎣'}</p>`; return; }
+    body.innerHTML=`<div class="ward-sets">${sets.map(T=>{ const sp=collSpeciesInfo('fish',T.sid); return `<div class="ward-set"><div class="ward-set-art">${fishArtHtml(lgSp(T),34)}</div><div class="ward-set-txt"><b>${escapeHtml(ar?'طقم '+(sp?collName(sp):''):(sp?collName(sp):'')+' set')}</b><small>${T.title[0]} ${escapeHtml(ar?T.title[1]:T.title[2])}</small></div><button type="button" class="cos-btn primary" data-wear="${T.sid}">${ar?'لبسه':'Wear'}</button></div>`; }).join('')}</div>`;
+    body.querySelectorAll('[data-wear]').forEach(b=>b.onclick=async()=>{ b.disabled=true; await wearLegendSet(b.dataset.wear); renderWardrobe(); });
+    return;
+  }
+  const list=owned(wardTab), cur=P.equipped&&P.equipped[wardTab];
+  if(!list.length){ body.innerHTML=`<p class="ward-empty">${ar?'ما عندك شي هني ليلحين — اشتر من المتجر أو افتحه بالصيد والإنجازات':'Nothing here yet — buy in the Store or unlock by catching and achievements'}</p>`; return; }
+  body.innerHTML=`<div class="ward-grid"><button type="button" class="ward-tile none${!cur?' on':''}" data-wid=""><div class="wt-prev">🚫</div><div class="wt-name">${ar?'بدون':'None'}</div></button>${list.map(it=>`<button type="button" class="ward-tile${cur===it.id?' on':''}" data-wid="${it.id}"><div class="wt-prev"></div><div class="wt-name">${escapeHtml(ar?it.nameAr:it.nameEn)}</div>${cur===it.id?'<span class="wt-on">✓</span>':''}</button>`).join('')}</div>`;
+  body.querySelectorAll('.ward-tile[data-wid]').forEach(b=>{ const id=b.dataset.wid, it=id&&COSMETICS_CATALOG.find(c=>c.id===id); if(it){ const pv=b.querySelector('.wt-prev'); mountCosPreviewTile(pv,it); pv.classList.add('wt-prev'); }
+    b.onclick=async()=>{ await equipCosmetic(wardTab,id||null); playSfx('check'); renderProfileCosmeticHero(); }; });
 }
 document.getElementById('profileAvatarEditBtn').addEventListener('click',()=>{
   if(!P.avatarPhoto){ document.getElementById('profileAvatarFileInput').click(); return; }
@@ -9104,7 +9238,7 @@ const FX_V2={
    Won (never bought) with your first legendary fish — one connected look:
    the same golden sailfish swims through the background, circles your
    photo on the frame, and leads the golden school of the effect. */
-FA_SP.legend_sailfish={k:'billfish',c:['#c98a12','#fff1b8','#f5c542','#fff6d6']};
+FA_SP.legend_sailfish={k:'billfish',c:['#c98a12','#fff1b8','#f5c542','#fff6d6']};  // the golden SAILFISH set (Istiophorus)
 FA_SP.legend_gold={k:'jack',c:['#d9a520','#fff0b0','#f2c94c','#fff6d6'],x:{scutes:0}};
 FA_SP.legend_tuna={k:'tuna',c:['#b8860b','#fff3c4','#e8b830','#ffe9a8']};
 function lgSwimHtml(artId,cls,style,spanStyle){ const a=fishArt({id:artId}); return `<div class="lg-swim ${cls}" style="${style}"><span style="aspect-ratio:${a.ar.toFixed(2)};${spanStyle||''}">${a.svg}</span></div>`; }
@@ -9131,35 +9265,170 @@ const LEGEND_SET=[
   }},
 ];
 (function addLegendSet(){ LEGEND_SET.forEach(it=>{ if(!COSMETICS_CATALOG.find(c=>c.id===it.id)) COSMETICS_CATALOG.push(it); }); })();
-/* the moment you win it: the whole set on your own profile, one tap to wear it */
-function openLegendSetReveal(done){
-  const ar=LANG==='ar', eq={...(P.equipped||{}),background:'bg-legend-deep',frame:'frame-legend-hook',effect:'fx-golden-school'};
+/* ================= ONE SET PER LEGENDARY FISH =================
+   Each legendary fish unlocks its OWN set the first time you catch it —
+   background, frame, effect and title all built around that fish (drawn
+   as that fish) in a theme that is only its own. The golden sailfish set
+   and the Gentle Giant background are reused as the sailfish / whale-shark
+   pieces so nobody who already owns them loses anything. */
+const LEGEND_SET_XP=400, LEGEND_SET_COINS=600;
+const LEGEND_THEMES=[
+ {sid:'sparidentex_hasta',key:'sobaity',scene:'dawn',orbit:8,gl:'rgba(255,240,230,.95)',ring:'conic-gradient(#f7f3ee,#d8c3b4,#ffffff,#b8a596,#f3dccd,#f7f3ee)',glow:['rgba(255,225,205,.65)','rgba(255,170,140,.3)'],acc:'#ffe6d6',
+  title:['👑','سلطان السبيطي','Sobaity Sultan'], n:{bg:['فجر الكويت','Kuwait Dawn'],frame:['لؤلؤة السبيطي','Sobaity Pearl'],fx:['فقاعات اللؤلؤ','Pearl Bubbles']},
+  d:{bg:['فجر وردي فوق أبراج الكويت وبوم على البحر، وسرب سبيطي يسبح تحت الماي','A pink dawn over the Kuwait Towers and a dhow, with a school of sobaity below'],frame:['حلقة لؤلؤ وفضة، يدور حولك السبيطي وتزينها لآلئ الخليج','A pearl-and-silver ring with a sobaity circling you among Gulf pearls'],fx:['فقاعات لؤلؤ تطلع وسبيطي يمر بشاشتك','Pearl bubbles rise as sobaity swim across your screen']}},
+ {sid:'kanaad',key:'kanaad',scene:'speed',orbit:3.6,gl:'rgba(170,220,255,.9)',ring:'conic-gradient(#35607f,#a8cbe0,#1b3850,#d8ebf6,#35607f)',glow:['rgba(120,190,240,.6)','rgba(40,110,180,.3)'],acc:'#bfe3ff',
+  title:['⚡','صياد الكنعد','Kanaad Hunter'], n:{bg:['مطاردة الكنعد','Kanaad Chase'],frame:['خطف الكنعد','Kanaad Dash'],fx:['سرعة الكنعد','Kanaad Speed']},
+  d:{bg:['بحر مفتوح وخطوط سرعة، والكنعد يطارد كرة سردين','Open sea with speed lines as kanaad chase a ball of sardines'],frame:['حلقة فولاذية مخططة مثل الكنعد، يلف حولك بسرعة','A steel ring striped like the kanaad, which races around you'],fx:['خطوط سرعة وكنعد يخطف بشاشتك','Speed lines as kanaad flash across your screen']}},
+ {sid:'istiompax_indica',key:'marlin',scene:'abyss',orbit:9,gl:'rgba(190,140,255,.95)',ring:'conic-gradient(#1a1030,#7a4bd8,#0b0616,#b58cff,#1a1030)',glow:['rgba(160,110,255,.65)','rgba(90,40,200,.35)'],acc:'#c9a7ff',
+  title:['🗡️','قاهر المارلين','Marlin Conqueror'], n:{bg:['هاوية الإمبراطور','Emperor’s Abyss'],frame:['رمح المارلين','Marlin Spear'],fx:['ضوء الأعماق','Deep Glow']},
+  d:{bg:['أعماق بنفسجية مظلمة فيها بلانكتون مضيء، والمارلين الأسود يمر بهدوء','Dark violet depths lit by glowing plankton as the black marlin glides past'],frame:['حلقة سودا وبنفسجية تلمع، يدور حولك المارلين برمحه','A black-and-violet ring with the marlin and its spear circling you'],fx:['بلانكتون مضيء ومارلين يمر بشاشتك','Glowing plankton as a marlin passes across your screen']}},
+ {sid:'istiophorus_platypterus',key:'sail',ids:{bg:'bg-legend-deep',frame:'frame-legend-hook',fx:'fx-golden-school'},title:['⛵','سيد الشراع','Master of the Sail']},
+ {sid:'yellowfin_tuna',key:'tuna',scene:'bait',orbit:4.5,gl:'rgba(255,225,90,.9)',ring:'conic-gradient(#12305e,#f5c518,#1f4f8f,#ffe066,#12305e)',glow:['rgba(245,197,24,.6)','rgba(30,80,160,.35)'],acc:'#ffe066',
+  title:['🎯','صياد التونة','Tuna Striker'], n:{bg:['كرة الطعم','The Bait Ball'],frame:['زعانف الذهب','Golden Finlets'],fx:['هجمة التونة','Tuna Rush']},
+  d:{bg:['كرة سردين تدور والتونة صفراء الزعانف تلف حولها','A spinning ball of sardines circled by yellowfin tuna'],frame:['حلقة كحلي وأصفر بزعانف صغيرة مثل التونة، والتونة تدور حولك','A navy-and-yellow ring with tuna finlets, and a tuna circling you'],fx:['سرب تونة يهجم بشاشتك وشرار أصفر','A school of tuna charges across your screen']}},
+ {sid:'anoxypristis_cuspidata',key:'sawn',scene:'mangrove',orbit:10,gl:'rgba(235,220,160,.85)',ring:'conic-gradient(#5a5a2e,#c9b26a,#3b3a1e,#e8d9a0,#5a5a2e)',glow:['rgba(200,180,100,.55)','rgba(90,90,40,.3)'],acc:'#e8d9a0',
+  title:['🪚','حارس المنشار','Sawfish Keeper'], n:{bg:['جذور المنغروف','Mangrove Roots'],frame:['أسنان المنشار','Saw Teeth'],fx:['طمي النهر','River Silt']},
+  d:{bg:['ماي عكر بين جذور المنغروف، وسمكة المنشار تمشي على القاع','Murky water among mangrove roots as the sawfish cruises the bottom'],frame:['حلقة برونزية بأسنان مثل المنشار، وسمكة المنشار تدور حولك','A bronze ring with saw teeth and the sawfish circling you'],fx:['طمي ينزل بهدوء وسمكة المنشار تمر','Silt drifts down as the sawfish passes']}},
+ {sid:'pristis_zijsron',key:'sawg',scene:'lagoon',orbit:10,gl:'rgba(180,255,225,.9)',ring:'conic-gradient(#0e6b5a,#6ff0c8,#0a4a3e,#b8ffe6,#0e6b5a)',glow:['rgba(90,240,190,.55)','rgba(20,120,100,.3)'],acc:'#b8ffe6',
+  title:['🌿','صاحب المنشار الأخضر','Green Saw Warden'], n:{bg:['البحيرة الفيروزية','Turquoise Lagoon'],frame:['المنشار الأخضر','Green Saw'],fx:['نور البحيرة','Lagoon Light']},
+  d:{bg:['بحيرة فيروزية ضحلة فيها نور يتموج وحشائش بحرية، والمنشار الأخضر يسبح','A bright shallow lagoon of rippling light and seagrass where the green sawfish swims'],frame:['حلقة خضرا بأسنان المنشار وأوراق حشيش البحر','A jade ring with saw teeth and seagrass leaves'],fx:['فقاعات ونور متموج والمنشار الأخضر يمر','Bubbles and rippling light as the green sawfish passes']}},
+ {sid:'mobula_mobular',key:'manta',scene:'night',orbit:9,gl:'rgba(140,220,255,.95)',ring:'conic-gradient(#0b1a3a,#4fd1ff,#081226,#9be8ff,#0b1a3a)',glow:['rgba(80,200,255,.6)','rgba(20,60,160,.35)'],acc:'#9be8ff',
+  title:['🌙','راكب المانتا','Manta Rider'], n:{bg:['ليل المانتا','Manta Night'],frame:['جناح المانتا','Manta Wings'],fx:['بلانكتون الليل','Night Plankton']},
+  d:{bg:['بحر بالليل تحت ضوء القمر، والمانتا تطير بين البلانكتون المضيء','The night sea under the moon as a manta glides through glowing plankton'],frame:['حلقة كحلي وسماوي، والمانتا ترفرف حولك','A navy-and-cyan ring with a manta gliding around you'],fx:['بلانكتون يلمع ومانتا تطير بشاشتك','Glowing plankton as a manta glides across your screen']}},
+ {sid:'rhincodon_typus',key:'whale',scene:'giant',ids:{bg:'gentle-giant'},orbit:12,gl:'rgba(230,245,255,.9)',ring:'conic-gradient(#1c3b5a,#e8f0f6,#2a5578,#ffffff,#1c3b5a)',glow:['rgba(200,230,255,.5)','rgba(40,90,140,.3)'],acc:'#ffffff',
+  title:['🐋','رفيق العملاق','Friend of the Giant'], n:{frame:['نقاط العملاق','Giant’s Spots'],fx:['رفقة العملاق','Giant’s Company']},
+  d:{frame:['حلقة كحلية منقطة بالأبيض مثل القرش الحوت، وهو يدور حولك','A navy ring spotted white like the whale shark, which circles you'],fx:['القرش الحوت يمر بهدوء ومعه سمك صغير وبلانكتون','The whale shark drifts past with little fish and plankton']}},
+];
+/* the set's own fish, drawn with its real family shape */
+function lgSp(T){ return collSpeciesInfo('fish',T.sid)||{id:T.sid}; }
+function lgArt(T){ return fishArt(lgSp(T)); }
+function lgSetIds(T){ const o=T.ids||{}; return {bg:o.bg||'bg-lg-'+T.key, frame:o.frame||'frame-lg-'+T.key, fx:o.fx||'fx-lg-'+T.key, title:'lg_title_'+T.key}; }
+function lgFishHtml(T,cls,style,spanStyle){ const a=lgArt(T); return `<div class="lg-swim ${cls}" style="${style}"><span style="aspect-ratio:${a.ar.toFixed(2)};${spanStyle||''}">${a.svg}</span></div>`; }
+const R_=(a,b)=>a+Math.random()*(b-a);
+function lgScene(T,el){
+  el.style.setProperty('--gl',T.gl); const add=h=>el.insertAdjacentHTML('beforeend',h);
+  if(T.scene==='dawn'){
+    add(`<div class="sun"></div><svg class="skyline" viewBox="0 0 300 60" preserveAspectRatio="xMidYMax meet"><g fill="#6b3f4a" opacity=".85"><rect x="196" y="6" width="2.4" height="54"/><circle cx="197.2" cy="30" r="8.5"/><circle cx="197.2" cy="16" r="4.6"/><rect x="214" y="18" width="2" height="42"/><circle cx="215" cy="34" r="6"/><rect x="228" y="30" width="1.4" height="30"/>
+      <path d="M40 56 L96 56 L90 60 L46 60Z"/><path d="M62 56 L62 26 L64 26 L64 56Z"/><path d="M64 28 Q80 38 86 54 L64 54Z" opacity=".9"/></g></svg><div class="horizon"></div><div class="shim"></div>`);
+    for(let i=0;i<5;i++) add(lgFishHtml(T,'sm',`top:${60+(i%3)*9}%;--d:${R_(20,26).toFixed(1)}s;animation-delay:${-(i*4.3)}s`));
+    for(let i=0;i<12;i++) add(`<div class="pearl" style="left:${R_(4,96).toFixed(1)}%;width:${R_(3,7).toFixed(1)}px;animation-delay:${-R_(0,9).toFixed(1)}s;animation-duration:${R_(7,12).toFixed(1)}s"></div>`);
+  } else if(T.scene==='speed'){
+    for(let i=0;i<16;i++) add(`<div class="streak" style="top:${R_(5,95).toFixed(1)}%;--d:${R_(.9,1.8).toFixed(2)}s;animation-delay:${-R_(0,2).toFixed(2)}s;opacity:${R_(.3,.8).toFixed(2)}"></div>`);
+    const sard=fishArt({id:'x',family:'Dorosomatidae'}); let ball=''; for(let i=0;i<14;i++){ const ang=i/14*360; ball+=`<span style="transform:rotate(${ang}deg) translateY(-${R_(30,44).toFixed(0)}%) rotate(-90deg);aspect-ratio:${sard.ar.toFixed(2)}">${sard.svg}</span>`; }
+    add(`<div class="ball">${ball}</div>`);
+    for(let i=0;i<3;i++) add(lgFishHtml(T,'big',`top:${[38,58,74][i]}%;--d:${[7,9,8][i]}s;animation-delay:${-i*2.6}s`,'width:30%'));
+  } else if(T.scene==='abyss'){
+    [22,58].forEach((l,i)=>add(`<div class="beam" style="left:${l}%;animation-delay:${-i*3}s"></div>`));
+    for(let i=0;i<26;i++) add(`<div class="bio" style="left:${R_(2,98).toFixed(1)}%;top:${R_(4,96).toFixed(1)}%;--d:${R_(2,4.5).toFixed(1)}s;animation-delay:${-R_(0,4).toFixed(1)}s;${i%3?'':'background:#7fe8ff;box-shadow:0 0 6px 2px rgba(90,220,255,.8)'}"></div>`);
+    add(lgFishHtml(T,'big',`top:44%;--d:30s;animation-delay:-8s`));
+  } else if(T.scene==='bait'){
+    add(`<div class="sunr"></div>`);
+    const sard=fishArt({id:'x',family:'Dorosomatidae'}); let ball=''; for(let i=0;i<22;i++){ const ang=i/22*360; ball+=`<span style="transform:rotate(${ang}deg) translateY(-${R_(18,46).toFixed(0)}%) rotate(-90deg);aspect-ratio:${sard.ar.toFixed(2)}">${sard.svg}</span>`; }
+    add(`<div class="ball big">${ball}</div>`);
+    for(let i=0;i<4;i++) add(lgFishHtml(T,'big',`top:${[30,46,62,76][i]}%;--d:${[12,15,13,16][i]}s;animation-delay:${-i*3.7}s`,'width:26%'));
+    for(let i=0;i<10;i++) add(`<div class="spark" style="left:${R_(5,95).toFixed(1)}%;top:${R_(5,90).toFixed(1)}%;animation-delay:${-R_(0,3).toFixed(1)}s"></div>`);
+  } else if(T.scene==='mangrove'){
+    add(`<svg class="roots" viewBox="0 0 300 80" preserveAspectRatio="none"><g fill="none" stroke="#1d2410" stroke-width="5" stroke-linecap="round">${[20,58,96,150,196,240,280].map((x,i)=>`<path d="M${x} -2 Q${x+(i%2?12:-12)} 40 ${x+(i%2?-4:6)} ${60+(i%3)*8}"/><path d="M${x} 10 Q${x+18} 30 ${x+22} 58" stroke-width="3"/>`).join('')}</g></svg><div class="murk"></div>`);
+    fxLanes(el,'k-silt','down',22,{d:[9,16],s:[1.5,3],sw:[4,7],op:[.4,.8]});
+    add(lgFishHtml(T,'big',`top:78%;--d:34s;animation-delay:-11s`,'width:44%'));
+  } else if(T.scene==='lagoon'){
+    add(`<div class="caus a"></div><div class="caus b"></div>`);
+    for(let i=0;i<18;i++) add(`<div class="grass" style="left:${(i*5.6+R_(0,3)).toFixed(1)}%;height:${R_(14,30).toFixed(0)}%;animation-delay:${-R_(0,3).toFixed(1)}s"></div>`);
+    fxLanes(el,'k-bubble','up',8,{d:[7,12],s:[3,7],sw:[2,4]});
+    add(lgFishHtml(T,'big',`top:66%;--d:30s;animation-delay:-6s`,'width:44%'));
+  } else if(T.scene==='night'){
+    add(`<div class="moon"></div><div class="surf"></div>`);
+    fxLanes(el,'k-mote','up',20,{d:[10,18],s:[1.5,3],sw:[3,6],op:[.4,.9]});
+    add(lgFishHtml(T,'big',`top:48%;--d:32s;animation-delay:-10s`,'width:36%'));
+  }
+}
+function lgEffect(T,el,big){
+  el.style.setProperty('--gl',T.gl); const add=h=>el.insertAdjacentHTML('beforeend',h);
+  const swim=(n,w0,w1,d0,d1)=>{ for(let i=0;i<n;i++){ const a=lgArt(T), w=Math.round(R_(w0,w1)*(big?1.5:1)); add(`<div class="lg-swim fxs" style="top:${R_(8,86).toFixed(1)}%;--d:${R_(d0,d1).toFixed(1)}s;--fw:${w}px;animation-delay:${-R_(0,d1).toFixed(1)}s"><span style="width:${w}px;aspect-ratio:${a.ar.toFixed(2)}">${a.svg}</span></div>`); } };
+  if(T.key==='sobaity'){ for(let i=0;i<fxN(12,big);i++) add(`<div class="fxl up k-pearl" style="left:${R_(0,100).toFixed(1)}%;--d:${R_(7,12).toFixed(1)}s;--s:${R_(4,9).toFixed(1)}px;--sw:${R_(2,4).toFixed(1)}s;animation-delay:${-R_(0,10).toFixed(1)}s"></div>`); swim(3,24,34,14,20); }
+  else if(T.key==='kanaad'){ for(let i=0;i<fxN(12,big);i++) add(`<div class="streak" style="top:${R_(5,95).toFixed(1)}%;--d:${R_(.9,1.6).toFixed(2)}s;animation-delay:${-R_(0,2).toFixed(2)}s;opacity:${R_(.25,.6).toFixed(2)}"></div>`); swim(3,36,50,5,8); }
+  else if(T.key==='marlin'){ for(let i=0;i<fxN(18,big);i++) add(`<div class="bio" style="left:${R_(2,98).toFixed(1)}%;top:${R_(4,96).toFixed(1)}%;--d:${R_(2,4.5).toFixed(1)}s;animation-delay:${-R_(0,4).toFixed(1)}s"></div>`); swim(1,90,120,18,24); }
+  else if(T.key==='tuna'){ swim(4,34,48,8,12); fxLanes(el,'k-gold','up',fxN(10,big),{d:[8,14],s:[1.4,3],sw:[1.4,3]}); }
+  else if(T.key==='sawn'){ fxLanes(el,'k-silt','down',fxN(18,big),{d:[9,16],s:[1.5,3],sw:[4,7],op:[.4,.8]}); swim(1,90,120,22,28); }
+  else if(T.key==='sawg'){ fxLanes(el,'k-bubble','up',fxN(9,big),{d:[7,12],s:[3,8],sw:[2,4]}); add('<div class="caus a"></div>'); swim(1,90,120,20,26); }
+  else if(T.key==='manta'){ fxLanes(el,'k-mote','up',fxN(16,big),{d:[10,18],s:[1.5,3],sw:[3,6],op:[.4,.9]}); swim(1,70,90,20,26); }
+  else if(T.key==='whale'){ fxLanes(el,'k-mote','up',fxN(12,big),{d:[12,20],s:[1.5,2.6],sw:[3,6],op:[.4,.8]}); swim(1,110,140,26,32); for(let i=0;i<4;i++){ const a=fishArt({id:'x',family:'Carangidae'}), w=Math.round(R_(12,18)*(big?1.4:1)); add(`<div class="lg-swim fxs" style="top:${R_(20,80).toFixed(1)}%;--d:${R_(12,16).toFixed(1)}s;--fw:${w}px;animation-delay:${-R_(0,16).toFixed(1)}s"><span style="width:${w}px;aspect-ratio:${a.ar.toFixed(2)}">${a.svg}</span></div>`); } }
+}
+function lgFrameDeco(T,h){
+  frxHalo(h,T.ring,6); frxGlow(h,T.glow[0],T.glow[1]);
+  const k=T.key;
+  if(k==='sobaity'){ const u='f'+(++frxSeq); frxSvg(h,'front',`<defs><radialGradient id="${u}p" cx=".35" cy=".35"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f1e2d8"/><stop offset="1" stop-color="#bda79a"/></radialGradient></defs>`+frxAround(10,(a,i)=>{ const [x,y]=frxXY(51.5,a+18); return `<circle cx="${x}" cy="${y}" r="${i%2?2.1:2.7}" fill="url(#${u}p)"/>`; }),'frx-glowy','--gc:rgba(255,235,225,1)'); }
+  if(k==='kanaad'){ frxSvg(h,'back',`<circle cx="50" cy="50" r="55" fill="none" stroke="#a8cbe0" stroke-width="1.6" stroke-dasharray="3 5">${smSpin(3)}</circle>`); frxSvg(h,'front',[0,120,240].map(o=>`<path d="${frxArc(59,o,o+40)}" stroke="rgba(220,240,255,.8)" stroke-width="1.2" fill="none" stroke-linecap="round"/>`).join(''),'frx-spin rev','--sp:2.4s'); }
+  if(k==='marlin'){ frxSvg(h,'front',frxAround(14,(a,i)=>{ const [x,y]=frxXY(56+(i%3)*2,a); return `<circle cx="${x}" cy="${y}" r="${1+(i%2)*.5}" fill="${i%3?'#c9a7ff':'#7fe8ff'}">${smTw(1.6+(i%4)*.4,-i*.3,'0.2;1;0.2')}</circle>`; }),'frx-glowy','--gc:rgba(180,130,255,1)'); }
+  if(k==='tuna'){ frxSvg(h,'front',frxAround(12,a=>`<polygon points="${frxP(49,a-3)} ${frxP(56,a)} ${frxP(49,a+3)}" fill="#f5c518"/>`),'frx-glowy','--gc:rgba(255,220,80,.9)'); }
+  if(k==='sawn'||k==='sawg'){ frxSvg(h,'front',frxAround(22,a=>`<polygon points="${frxP(49.5,a-2.6)} ${frxP(55,a)} ${frxP(49.5,a+2.6)}" fill="${T.acc}"/>`)); if(k==='sawg') frxSvg(h,'back',frxAround(6,(a,i)=>{ const [x,y]=frxXY(57,a+30); return `<ellipse cx="${x}" cy="${y}" rx="6" ry="1.8" fill="#3fbf7f" transform="rotate(${a+120} ${x} ${y})"/>`; })); }
+  if(k==='manta'){ frxSvg(h,'front',frxAround(12,(a,i)=>{ const [x,y]=frxXY(55+(i%2)*4,a); return `<circle cx="${x}" cy="${y}" r="1.1" fill="#9be8ff">${smTw(2+(i%3)*.5,-i*.4,'0.2;1;0.2')}</circle>`; }),'frx-glowy','--gc:rgba(120,220,255,1)'); }
+  if(k==='whale'){ frxSvg(h,'front',frxAround(18,(a,i)=>{ const [x,y]=frxXY(i%2?49:53,a); return `<circle cx="${x}" cy="${y}" r="${i%3?1.2:1.7}" fill="#ffffff" opacity=".9"/>`; })); }
+  const a=lgArt(T); const o=frxEl(h,'front lg-orbit',`animation-duration:${T.orbit||7}s`);
+  o.innerHTML=`<span class="lg-orb-fish" style="aspect-ratio:${a.ar.toFixed(2)};width:${a.ar>2.4?54:(a.ar<1.8?30:44)}%;--gl:${T.gl}">${a.svg}</span>`;
+}
+(function addLegendSets(){
+  let css='';
+  LEGEND_THEMES.forEach(T=>{
+    const ids=lgSetIds(T), note='legendfish:'+T.sid;
+    TITLES_CONFIG.push({id:ids.title, icon:T.title[0], nameAr:T.title[1], nameEn:T.title[2], speciesId:T.sid});
+    if(T.ids){ Object.values(T.ids).forEach(id=>{ const c=COSMETICS_CATALOG.find(x=>x.id===id); if(c&&c.exclusiveNote!=='boss:rhincodon_typus') c.exclusiveNote=note; }); }
+    if(!T.n) return;
+    if(!(T.ids&&T.ids.bg)) COSMETICS_CATALOG.push({id:ids.bg, type:'background', rarity:'legendary', nameAr:T.n.bg[0], nameEn:T.n.bg[1], descAr:T.d.bg[0], descEn:T.d.bg[1], price:null, exclusiveNote:note, cls:'lgs lgs-'+T.scene, mountEffect:el=>lgScene(T,el)});
+    if(!(T.ids&&T.ids.frame)){ COSMETICS_CATALOG.push({id:ids.frame, type:'frame', rarity:'legendary', nameAr:T.n.frame[0], nameEn:T.n.frame[1], descAr:T.d.frame[0], descEn:T.d.frame[1], price:null, exclusiveNote:note, cls:'fr2 frb frs fr2-lg-'+T.key, deco:h=>lgFrameDeco(T,h)}); css+=`.fr2-lg-${T.key}{ --bw:5px; --sp:6s; background:${T.ring}; }`; }
+    if(!(T.ids&&T.ids.fx)) COSMETICS_CATALOG.push({id:ids.fx, type:'effect', rarity:'legendary', nameAr:T.n.fx[0], nameEn:T.n.fx[1], descAr:T.d.fx[0], descEn:T.d.fx[1], price:null, exclusiveNote:note, mountEffect:(el,big)=>lgEffect(T,el,big)});
+  });
+  const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+})();
+/* first catch of a legendary fish → its set. `already` guards a second device
+   that doesn't know yet: if every piece is already owned, nothing pays twice. */
+async function grantLegendSet(sid){
+  const T=LEGEND_THEMES.find(t=>t.sid===sid); if(!T) return false;
+  P.legendSets=P.legendSets||{}; if(P.legendSets[sid]) return false;
+  const ids=lgSetIds(T), pieces=[ids.bg,ids.frame,ids.fx];
+  const already=pieces.every(id=>P.inventory&&P.inventory[id]);
+  P.legendSets[sid]=new Date().toISOString(); P.inventory=P.inventory||{};
+  pieces.forEach(id=>{ if(!P.inventory[id]){ P.inventory[id]={acquiredAt:new Date().toISOString(),source:'legend'}; persistInventoryItem(id); } });
+  if(!already){ P.xp=(P.xp||0)+LEGEND_SET_XP; P.coins=(P.coins||0)+LEGEND_SET_COINS; }
+  await storageSet('profile',JSON.stringify(P));
+  if(!already) await incrementXpCoins(LEGEND_SET_XP,LEGEND_SET_COINS);
+  return !already;
+}
+/* the moment you win it: the set on your own profile, one tap to wear it */
+function openLegendSetReveal(sid,done){
+  const T=LEGEND_THEMES.find(t=>t.sid===sid); if(!T){ if(done) done(); return; }
+  const ar=LANG==='ar', ids=lgSetIds(T), sp=collSpeciesInfo('fish',sid), fishName=sp?collName(sp):'';
+  const item=id=>COSMETICS_CATALOG.find(c=>c.id===id)||{};
+  const eq={...(P.equipped||{}),background:ids.bg,frame:ids.frame,effect:ids.fx};
   const uname=(P.publicProfile&&P.publicProfile.username)||'';
-  document.getElementById('dayTitle').textContent=ar?'🏆 فزت بطقم الأسطورة!':'🏆 You won the Legend set!';
-  document.getElementById('daySubtitle').textContent=ar?'مكافأة أول سمكة أسطورية':'Reward for your first legendary fish';
+  document.getElementById('dayTitle').textContent=ar?`🏆 طقم ${fishName}!`:`🏆 The ${fishName} set!`;
+  document.getElementById('daySubtitle').textContent=ar?`مكافأة أول ${fishName} تصيده`:`Reward for your first ${fishName}`;
   document.getElementById('cardBody').innerHTML=`
     <div class="cos-hero cos-pv-hero lg-reveal"><div class="cos-hero-bg" id="lgBg"></div><div class="cos-hero-effect" id="lgFx"></div><div class="cos-hero-scrim"></div>
       <div class="cos-hero-card"><div class="cos-avatar-wrap cos-pv-wrap"><div class="cos-frame-ring" id="lgRing"></div><div class="cos-avatar" id="lgAv">👤</div></div>
-      ${uname?`<b style="font-size:.95rem;">@${escapeHtml(uname)}</b>`:''}<span class="cos-chip">🎣 ${ar?'صياد الأساطير':'Legend Hunter'}</span></div></div>
+      ${uname?`<b style="font-size:.95rem;">@${escapeHtml(uname)}</b>`:''}<span class="cos-chip">${T.title[0]} ${escapeHtml(ar?T.title[1]:T.title[2])}</span></div></div>
     <div class="lg-list">
-      <div><span>🖼️</span><b>${ar?'خلفية أعماق الأسطورة':"Legend's Deep background"}</b></div>
-      <div><span>⭕</span><b>${ar?'إطار الشص الذهبي':'Golden Hook frame'}</b></div>
-      <div><span>✨</span><b>${ar?'تأثير السرب الذهبي':'Golden School effect'}</b></div>
-      <div><span>🏷️</span><b>${ar?'لقب صياد الأساطير':'Legend Hunter title'}</b></div>
+      <div><span>🖼️</span><b>${escapeHtml(ar?item(ids.bg).nameAr:item(ids.bg).nameEn)}</b></div>
+      <div><span>⭕</span><b>${escapeHtml(ar?item(ids.frame).nameAr:item(ids.frame).nameEn)}</b></div>
+      <div><span>✨</span><b>${escapeHtml(ar?item(ids.fx).nameAr:item(ids.fx).nameEn)}</b></div>
+      <div><span>🏷️</span><b>${escapeHtml(ar?T.title[1]:T.title[2])}</b></div>
     </div>
-    <div class="lg-pay"><span>+750 🪙</span><span>+500 XP</span></div>
+    <div class="lg-pay"><span>+${LEGEND_SET_COINS} 🪙</span><span>+${LEGEND_SET_XP} XP</span></div>
     <button type="button" class="setup-btn lg-wear" id="lgWear">✨ ${ar?'لبّسني الطقم كامل':'Wear the whole set'}</button>
-    <button type="button" class="setup-btn" id="lgLater" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">${ar?'بعدين':'Later'}</button>`;
+    <button type="button" class="setup-btn" id="lgLater" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">${ar?'بعدين — بلقاه بخزانتي':'Later — it’s in my wardrobe'}</button>`;
   mountCosmeticSet(document.getElementById('lgBg'),document.getElementById('lgFx'),document.getElementById('lgRing'),eq);
   const av=document.getElementById('lgAv'); if(P.avatarPhoto){ av.style.backgroundImage=`url(${P.avatarPhoto})`; av.textContent=''; }
   const close=()=>{ overlay.classList.remove('open'); if(done) done(); };
   document.getElementById('lgLater').onclick=close;
-  document.getElementById('lgWear').onclick=async e=>{ e.target.disabled=true;
-    try{ for(const [slot,id] of [['background','bg-legend-deep'],['frame','frame-legend-hook'],['effect','fx-golden-school']]) if(P.inventory&&P.inventory[id]) await equipCosmetic(slot,id);
-      await equipTitle('legend_hunter_title'); }catch(err){}
-    if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero();
-    renderAppBackground(); playSfx('success'); showToast(ar?'🎣 لابس طقم الأسطورة!':'🎣 Wearing the Legend set!','success'); close(); };
+  document.getElementById('lgWear').onclick=async e=>{ e.target.disabled=true; await wearLegendSet(sid); close(); };
   overlay.classList.add('open'); playSfx('success');
+}
+async function wearLegendSet(sid){
+  const T=LEGEND_THEMES.find(t=>t.sid===sid); if(!T) return; const ids=lgSetIds(T), ar=LANG==='ar';
+  try{ for(const [slot,id] of [['background',ids.bg],['frame',ids.frame],['effect',ids.fx]]) if(P.inventory&&P.inventory[id]) await equipCosmetic(slot,id);
+    await equipTitle(ids.title); }catch(err){}
+  if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero();
+  renderAppBackground(); playSfx('success'); showToast(ar?'✨ لابس الطقم كامل!':'✨ Wearing the whole set!','success');
 }
 
 /* one place that paints a hero card (bg + effect + frame) from an equipped map */
@@ -9337,6 +9606,10 @@ function exclusiveUnlockInfo(it){
     const nm=sp?((sp.bossData&&(ar?sp.bossData.titleAr:sp.bossData.titleEn))||collName(sp)):sid;
     return {text:ar?`🎣 اصطد <b>${escapeHtml(nm)}</b> (زعيم أسطوري) من المقتنيات`:`🎣 Catch <b>${escapeHtml(nm)}</b> (a legendary boss) in your Collection`, nav:'collections', catId, sid};
   }
+  if(note.startsWith('legendfish:')){
+    const sid=note.slice(11), sp=collSpeciesInfo('fish',sid), nm=sp?collName(sp):sid;
+    return {text:ar?`🎣 اصطد <b>${escapeHtml(nm)}</b> (أسطورية) ويفتح لك طقمها كامل`:`🎣 Catch <b>${escapeHtml(nm)}</b> (legendary) to unlock its whole set`, nav:'collections', catId:'fish', sid};
+  }
   if(note.startsWith('achievement:')){
     const a=ACHIEVEMENTS_CONFIG.find(x=>x.id===note.slice(12));
     return {text:a?(ar?`🏆 افتح إنجاز <b>${escapeHtml(a.nameAr)}</b>: ${escapeHtml(a.descAr)}`:`🏆 Unlock the <b>${escapeHtml(a.nameEn)}</b> achievement: ${escapeHtml(a.descEn)}`):'', nav:'profile'};
@@ -9442,7 +9715,8 @@ async function renderStoreSection(){
   content.insertAdjacentHTML('beforeend',`<p class="panel-sub cos-refund-note">👁️ ${ar?'اضغط على أي تصميم تشوفه على ملفك قبل لا تشتري.':'Tap any design to see it on your profile before you buy.'} ↩️ ${ar?'غيّرت رايك؟ ترجع لك كل عملاتك خلال ٤٨ ساعة، وبعدها النص.':'Changed your mind? Full refund within 48 hours, half after that.'}</p>`);
   const rewards=items.filter(c=>c.exclusiveNote);
   if(rewards.length){
-    content.insertAdjacentHTML('beforeend',`<div class="cos-rewards-banner">🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b><br>${rewards.map(r=>`${escapeHtml(ar?r.nameAr:r.nameEn)}: ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?' ✅':''}`).join('<br>')}</div>`);
+    const seenNote=new Set(), uniq=rewards.filter(r=>{ if(seenNote.has(r.exclusiveNote)) return false; seenNote.add(r.exclusiveNote); return true; });
+    content.insertAdjacentHTML('beforeend',`<div class="cos-rewards-banner">🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b><br>${uniq.map(r=>`${/^legendfish:/.test(r.exclusiveNote)?'🎁':escapeHtml(ar?r.nameAr:r.nameEn)+':'} ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?' ✅':''}`).join('<br>')}</div>`);
   }
   const byPrice=(x,y)=>(x.price==null?1e9:x.price)-(y.price==null?1e9:y.price);
   RARITY_ORDER_LIST.forEach(rar=>{
@@ -11954,7 +12228,7 @@ function renderCollRoot(){
    here AND by the Profile/Achievements/Challenges systems, so "how many
    species has this user collected" is never computed two different ways. */
 async function computeCollectionStats(){
-  let totalCollected=0, totalSpecies=0, legendaryCount=0, legendaryFish=0, maxSpeciesCatchCount=0;
+  let totalCollected=0, totalSpecies=0, legendaryCount=0, legendaryFish=0, maxSpeciesCatchCount=0; const caughtFish={};
   const catchSums={}, rarityCounts={}, perCategory={};
   for(const cat of ANIMAL_CATEGORIES){
     const raw=await storageGet('collections:animals:'+cat.id);
@@ -11976,13 +12250,14 @@ async function computeCollectionStats(){
         rarityCounts[sp.rarity]=(rarityCounts[sp.rarity]||0)+1;
         if(sp.rarity==='legendary') legendaryCount++;
         if(sp.rarity==='legendary' && cat.id==='fish') legendaryFish++;
+        if(cat.id==='fish') caughtFish[sp.id]=true;
       }
     });
     totalCollected+=got; totalSpecies+=total;
     catchSums[cat.id]=catchSum;
     perCategory[cat.id]={collected:got,total};
   }
-  return {totalCollected,totalSpecies,catchSums,legendaryCount,legendaryFish,rarityCounts,perCategory,maxSpeciesCatchCount,
+  return {totalCollected,totalSpecies,catchSums,legendaryCount,legendaryFish,caughtFish,rarityCounts,perCategory,maxSpeciesCatchCount,
     totalCatches:Object.values(catchSums).reduce((a,b)=>a+b,0)};
 }
 async function renderCollAnimals(){
@@ -12415,7 +12690,9 @@ function collGrantFirstCatchReward(sp){
       P.inventory=P.inventory||{};
       if(!P.inventory['gentle-giant']){ P.inventory['gentle-giant']={acquiredAt:new Date().toISOString(),source:'boss'}; persistInventoryItem('gentle-giant'); await storageSet('profile',JSON.stringify(P)); }
     }
+    const gotSet=sp?await grantLegendSet(sp.id):false;
     await notifyNewUnlocks();
+    if(gotSet) enqueueAchievements([{kind:'legendset',sid:sp.id}]);
     if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
   })();
 }
