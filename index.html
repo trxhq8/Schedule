@@ -2104,6 +2104,35 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     @keyframes fxSweep{ 0%{ left:-40%; } 60%,100%{ left:130%; } }
     @media (prefers-reduced-motion:reduce){ .app-fx-layer{ display:none; } .fxl,.fxl::before,.fx-orb,.fx-fly,.fx-aur,.fx-meteor,.fx-bolt,.fx-flash,.fx-sweep,.frx,.frs{ animation:none !important; } }
 
+
+    /* ===== The Legend set ===== */
+    .lgd-bg{ background:radial-gradient(ellipse at 50% -10%,rgba(255,214,120,.42),transparent 58%),linear-gradient(180deg,#0c3d60 0%,#07263f 55%,#041320 100%); }
+    .lgd-bg > *{ position:absolute; pointer-events:none; }
+    .lgd-bg .lg-sun{ left:50%; top:-30%; width:70%; aspect-ratio:1; transform:translateX(-50%); border-radius:50%; background:radial-gradient(circle,rgba(255,220,130,.55),rgba(255,200,90,.12) 45%,transparent 70%); animation:cxBreathe 6s ease-in-out infinite; }
+    .lgd-bg .lg-ray{ top:-10%; width:14%; height:95%; background:linear-gradient(180deg,rgba(255,215,120,.32),rgba(255,215,120,0)); transform:skewX(-14deg); filter:blur(3px); animation:lgRay 7s ease-in-out infinite; }
+    @keyframes lgRay{ 0%,100%{ opacity:.35; } 50%{ opacity:.9; } }
+    .lgd-bg .lg-bub{ bottom:6%; border-radius:50%; border:1px solid rgba(255,230,160,.8); background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9) 0 18%,rgba(255,220,130,.15) 45%,transparent 70%); animation:bgxRise 8s linear infinite; }
+    .lgd-bg .lg-floor{ left:0; right:0; bottom:0; width:100%; height:24%; }
+    .lg-swim{ position:absolute; left:0; width:100%; height:0; animation:lgCross var(--d,20s) linear infinite; pointer-events:none; }
+    .lg-swim > span{ position:absolute; left:100%; display:block; transform:translateY(-50%); filter:drop-shadow(0 0 5px rgba(255,205,90,.9)) drop-shadow(0 0 12px rgba(255,190,60,.5)); animation:lgBob 2.6s ease-in-out infinite; }
+    .lg-swim.big > span{ width:34%; max-width:300px; }
+    .lg-swim.sm > span{ width:12%; max-width:90px; opacity:.9; }
+    @keyframes lgCross{ from{ transform:translateX(4%); } to{ transform:translateX(-140%); } }
+    .lg-swim.fxs{ animation-name:lgCrossPx; }
+    @keyframes lgCrossPx{ from{ transform:translateX(0); } to{ transform:translateX(calc(-100% - var(--fw,120px) - 20px)); } }
+    @keyframes lgBob{ 0%,100%{ margin-top:0; } 50%{ margin-top:-5px; } }
+    .fr2-legend{ --bw:5px; --sp:6s; background:conic-gradient(#ffd24d,#fff3c4,#1fb5c9,#ffd24d,#e0a020,#7fe8f0,#ffd24d); }
+    .lg-orbit{ inset:-19%; animation:cxSpinPlain 7s linear infinite reverse; }
+    .lg-orb-fish{ position:absolute; left:50%; top:0; width:48%; transform:translate(-50%,-50%); display:block; filter:drop-shadow(0 0 4px rgba(255,205,90,.95)); }
+    .lg-reveal{ box-shadow:0 0 0 2px #f5c542, 0 10px 30px rgba(245,180,60,.35); }
+    .lg-list{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 8px; }
+    .lg-list div{ display:flex; align-items:center; gap:8px; background:linear-gradient(135deg,rgba(245,184,61,.14),rgba(255,236,170,.22)); border:1px solid rgba(245,184,61,.55); border-radius:14px; padding:9px 10px; font-size:.8rem; }
+    .lg-list span{ font-size:1.1rem; }
+    .lg-pay{ display:flex; justify-content:center; gap:10px; margin:10px 0 14px; }
+    .lg-pay span{ font-weight:800; background:#1a1408; color:#ffd76a; border:1px solid #f5c542; border-radius:999px; padding:6px 14px; font-variant-numeric:tabular-nums; }
+    .lg-wear{ background:linear-gradient(90deg,#e8a820,#f5c542,#e8a820) !important; color:#2a1c00 !important; font-weight:800; }
+    @media (prefers-reduced-motion:reduce){ .lg-swim,.lg-swim > span,.lg-orbit,.lgd-bg *{ animation:none !important; } }
+
     /* ===== store tiles + preview sheet ===== */
     .cos-frame-preview{ height:112px; }
     .cos-frame-preview, .cos-preview{ cursor:pointer; }
@@ -2398,7 +2427,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.47.1';
+const APP_VERSION='v1.48.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2678,6 +2707,7 @@ async function bootApp(){
   await migrateRewardValuesV2();
   migrateRetiredCosmetics();
   try{ await migrateMergedSpecies(); }catch(e){}
+  if(!(P.achievements||{}).legend_catch) setTimeout(()=>{ notifyNewUnlocks().catch(()=>{}); },5000);
   autoUseShield();
   checkQadaForYesterday();
   setTimeout(async()=>{ try{ if(PushService.prefs().enabled&&PushService.supported()&&Notification.permission==='granted'){ const reg=await navigator.serviceWorker.getRegistration('./'); if(reg){ const tk=await firebase.messaging().getToken({serviceWorkerRegistration:reg}); if(tk) await PushService.save(tk); } } }catch(e){} },6000);
@@ -5654,6 +5684,7 @@ function enqueueAchievements(items){
 function showNextAchievement(){
   const item=achievementQueue.shift();
   if(!item){ achievementModalShowing=false; document.getElementById('achievementOverlay').classList.remove('open'); return; }
+  if(item.kind==='legendset'){ achievementModalShowing=false; document.getElementById('achievementOverlay').classList.remove('open'); openLegendSetReveal(()=>{ if(achievementQueue.length) showNextAchievement(); }); return; }
   achievementModalShowing=true;
   const kickerKey=item.kind==='challenge' ? 'challenge_complete_kicker' : item.kind==='level' ? 'level_up_kicker' : 'ach_unlocked_kicker';
   const name=LANG==='ar'?(item.nameAr||item.descAr):(item.nameEn||item.descEn);
@@ -7367,7 +7398,8 @@ async function notifyNewUnlocks(){
   renderNavXpChip();
   enqueueAchievements([
     ...newAch.map(a=>({...a,kind:'achievement'})),
-    ...newlyCompleted.map(c=>({...c,kind:'challenge'}))
+    ...newlyCompleted.map(c=>({...c,kind:'challenge'})),
+    ...(newAch.some(a=>a.id==='legend_catch')?[{kind:'legendset'}]:[])
   ]);
   // real Friends architecture: this is the single convergence point after
   // every completion event, so it's the one place that refreshes the public
@@ -8151,6 +8183,7 @@ async function computeUserStats(){
     totalSpecies:coll.totalSpecies,
     rareOrBetterCount,
     legendaryCount:coll.legendaryCount,
+    legendaryFish:coll.legendaryFish||0,
     maxSpeciesCatchCount:coll.maxSpeciesCatchCount,
   };
 }
@@ -8203,6 +8236,7 @@ const ACHIEVEMENTS_CONFIG=[
   {id:'ramadan_full', icon:'🕌', nameEn:'A Complete Ramadan', nameAr:'رمضان كامل', descEn:'Fast 29+ days of Ramadan', descAr:'صم 29 يوم أو أكثر من رمضان', xp:1000, coins:1200, exclusiveCosmetic:'frame-fanous', check:s=>s.bestFasts>=29},
   {id:'khatma', icon:'📖', nameEn:'Khatma', nameAr:'ختمة', descEn:'Read all 30 juz in Ramadan', descAr:'اقرأ الثلاثين جزء برمضان', xp:800, coins:1000, check:s=>s.bestJuz>=30},
   {id:'taraweeh_20', icon:'✨', nameEn:'Nights of Taraweeh', nameAr:'ليالي التراويح', descEn:'Pray taraweeh on 20 nights', descAr:'صلِّ التراويح 20 ليلة', xp:300, coins:350, check:s=>s.bestTar>=20},
+  {id:'legend_catch', icon:'🎣', nameEn:'Legend Hunter', nameAr:'صياد الأساطير', descEn:'Catch your first legendary fish — unlocks the Legend set', descAr:'اصطد أول سمكة أسطورية — يفتح لك طقم الأسطورة', xp:500, coins:750, exclusiveCosmetics:['bg-legend-deep','frame-legend-hook','fx-golden-school'], check:s=>s.legendaryFish>=1},
   {id:'prayers_month', icon:'🌙', nameEn:'Steadfast Month', nameAr:'شهر المحافظة', descEn:'All five prayers, 30 days in a row', descAr:'الصلوات الخمس 30 يوم متتالي', xp:800, coins:1000, check:s=>s.bestPrayerStreak>=30},
 ];
 /* the ONLY place P.achievements is written. Returns the list of newly
@@ -8223,7 +8257,7 @@ async function checkAndAwardAchievements(stats){
     P.xp=(P.xp||0)+totalXp;
     P.coins=(P.coins||0)+totalCoins;
     newlyUnlocked.forEach(a=>{
-      if(a.exclusiveCosmetic){ P.inventory=P.inventory||{}; if(!P.inventory[a.exclusiveCosmetic]){ P.inventory[a.exclusiveCosmetic]={acquiredAt:new Date().toISOString(),source:'achievement'}; persistInventoryItem(a.exclusiveCosmetic); } }
+      [...(a.exclusiveCosmetics||[]),...(a.exclusiveCosmetic?[a.exclusiveCosmetic]:[])].forEach(cid=>{ P.inventory=P.inventory||{}; if(!P.inventory[cid]){ P.inventory[cid]={acquiredAt:new Date().toISOString(),source:'achievement'}; persistInventoryItem(cid); } });
     });
     await storageSet('profile',JSON.stringify(P));
     await incrementXpCoins(totalXp,totalCoins);
@@ -8245,6 +8279,7 @@ const TITLES_CONFIG=[
   {id:'hydration_master_title', icon:'💧', nameEn:'Hydration Master', nameAr:'سيد الترطيب', metric:'waterDaysHit', threshold:30},
   {id:'xp_legend', icon:'⚡', nameEn:'XP Legend', nameAr:'أسطورة الخبرة', metric:'xp', threshold:5000},
   {id:'the_champion', icon:'👑', nameEn:'The Champion', nameAr:'البطل', metric:'level', threshold:20},
+  {id:'legend_hunter_title', icon:'🎣', nameEn:'Legend Hunter', nameAr:'صياد الأساطير', metric:'legendaryFish', threshold:1},
 ];
 function unlockedTitles(stats){ return TITLES_CONFIG.filter(t=>stats[t.metric]>=t.threshold); }
 
@@ -9064,6 +9099,69 @@ const FX_V2={
   });
   apply(FRAME_V2,'frame'); apply(FX_V2,'effect');
 })();
+
+/* ================= THE LEGEND SET =================
+   Won (never bought) with your first legendary fish — one connected look:
+   the same golden sailfish swims through the background, circles your
+   photo on the frame, and leads the golden school of the effect. */
+FA_SP.legend_sailfish={k:'billfish',c:['#c98a12','#fff1b8','#f5c542','#fff6d6']};
+FA_SP.legend_gold={k:'jack',c:['#d9a520','#fff0b0','#f2c94c','#fff6d6'],x:{scutes:0}};
+FA_SP.legend_tuna={k:'tuna',c:['#b8860b','#fff3c4','#e8b830','#ffe9a8']};
+function lgSwimHtml(artId,cls,style,spanStyle){ const a=fishArt({id:artId}); return `<div class="lg-swim ${cls}" style="${style}"><span style="aspect-ratio:${a.ar.toFixed(2)};${spanStyle||''}">${a.svg}</span></div>`; }
+const LEGEND_SET=[
+  {id:'bg-legend-deep', type:'background', rarity:'legendary', nameEn:"Legend's Deep", nameAr:'أعماق الأسطورة', descEn:'A gold-lit deep sea where a golden sailfish glides past its golden school', descAr:'بحر عميق يضويه نور ذهبي، يمر فيه سمك شراع ذهبي مع سربه الذهبي', price:null, exclusiveNote:'achievement:legend_catch', cls:'lgd-bg', mountEffect:el=>{
+    el.insertAdjacentHTML('beforeend','<div class="lg-sun"></div>'+[14,36,60,82].map((l,i)=>`<div class="lg-ray" style="left:${l}%;animation-delay:${-i*1.7}s"></div>`).join(''));
+    el.insertAdjacentHTML('beforeend',lgSwimHtml('legend_sailfish','big','top:30%;--d:28s;animation-delay:-9s'));
+    for(let i=0;i<7;i++) el.insertAdjacentHTML('beforeend',lgSwimHtml(i%3?'legend_gold':'legend_tuna','sm',`top:${52+(i%4)*7}%;--d:${18+(i%3)*3}s;animation-delay:${-(i*2.1+3)}s`));
+    for(let i=0;i<14;i++){ const b=cxAddEl(el,'lg-bub'); b.style.left=(4+Math.random()*92)+'%'; const z=2+Math.random()*4; b.style.width=b.style.height=z+'px'; b.style.animationDelay=(-Math.random()*9)+'s'; b.style.animationDuration=(6+Math.random()*5)+'s'; }
+    el.insertAdjacentHTML('beforeend',`<svg class="lg-floor" viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M0,60 L0,34 Q40,18 90,30 T190,26 T300,30 L300,60Z" fill="#06182a"/><path d="M0,34 Q40,18 90,30 T190,26 T300,30" fill="none" stroke="rgba(255,205,90,.45)" stroke-width="1.2"/>${[[24,30],[34,22],[250,28],[262,20]].map(([x,h])=>`<path d="M${x},${34-2} q-4,-${h/2} 0,-${h} q4,-${h/3} 0,-${h*.3}" stroke="#0e4a4a" stroke-width="3" fill="none" stroke-linecap="round"/>`).join('')}</svg>`);
+  }},
+  {id:'frame-legend-hook', type:'frame', rarity:'legendary', nameEn:'Golden Hook', nameAr:'الشص الذهبي', descEn:'A gold-and-sea ring with the golden sailfish circling you and a golden hook below', descAr:'حلقة ذهب وموج، يدور حولك سمك الشراع الذهبي وتحتها شص ذهبي', price:null, exclusiveNote:'achievement:legend_catch', cls:'fr2 frb frs fr2-legend', deco:h=>{
+    frxHalo(h,'conic-gradient(#ffd24d,#fff3c4,#1fb5c9,#ffd24d,#e0a020,#7fe8f0,#ffd24d)',6); frxGlow(h,'rgba(255,200,80,.65)','rgba(40,190,210,.3)');
+    frxSvg(h,'back',`<circle cx="50" cy="50" r="55" fill="none" stroke="rgba(120,230,240,.7)" stroke-width="1.4" stroke-dasharray="7 6" stroke-linecap="round">${smSpin(9)}</circle>`);
+    const o=frxEl(h,'front lg-orbit'); const a=fishArt({id:'legend_sailfish'}); o.innerHTML=`<span class="lg-orb-fish" style="aspect-ratio:${a.ar.toFixed(2)}">${a.svg}</span>`;
+    frxSvg(h,'front',`<path d="M50 99 L50 106" stroke="rgba(255,255,255,.7)" stroke-width=".6"/><path d="M50 106 L50 113 Q50 119 45 119 Q40 119 40 114 L42.5 115.5" fill="none" stroke="#f5c542" stroke-width="2" stroke-linecap="round"/><circle cx="50" cy="106" r="1.4" fill="#f5c542"/>${frxBubbles([0,6,94,100])}`,'frx-glowy','--gc:rgba(255,210,110,1)');
+  }},
+  {id:'fx-golden-school', type:'effect', rarity:'legendary', nameEn:'Golden School', nameAr:'السرب الذهبي', descEn:'A school of golden fish swims across your screen through shimmering gold dust', descAr:'سرب سمك ذهبي يسبح بشاشتك وسط غبار ذهب يلمع', price:null, exclusiveNote:'achievement:legend_catch', mountEffect:(el,big)=>{
+    fxAdd(el,'fx-haze bot','--c:rgba(255,196,70,.24)');
+    const n=big?9:6;
+    for(let i=0;i<n;i++){ const w=Math.round((big?34:20)+Math.random()*(big?30:16)), id=i===0?'legend_sailfish':(i%3?'legend_gold':'legend_tuna'), ww=i===0?w*1.8:w;
+      el.insertAdjacentHTML('beforeend',lgSwimHtml(id,'fxs',`top:${(6+Math.random()*80).toFixed(1)}%;--d:${(9+Math.random()*8).toFixed(1)}s;--fw:${Math.round(ww)}px;animation-delay:${(-Math.random()*16).toFixed(1)}s`,`width:${Math.round(ww)}px`)); }
+    fxLanes(el,'k-gold','up',fxN(14,big),{d:[10,18],s:[1.4,3.2],sw:[1.4,3]});
+  }},
+];
+(function addLegendSet(){ LEGEND_SET.forEach(it=>{ if(!COSMETICS_CATALOG.find(c=>c.id===it.id)) COSMETICS_CATALOG.push(it); }); })();
+/* the moment you win it: the whole set on your own profile, one tap to wear it */
+function openLegendSetReveal(done){
+  const ar=LANG==='ar', eq={...(P.equipped||{}),background:'bg-legend-deep',frame:'frame-legend-hook',effect:'fx-golden-school'};
+  const uname=(P.publicProfile&&P.publicProfile.username)||'';
+  document.getElementById('dayTitle').textContent=ar?'🏆 فزت بطقم الأسطورة!':'🏆 You won the Legend set!';
+  document.getElementById('daySubtitle').textContent=ar?'مكافأة أول سمكة أسطورية':'Reward for your first legendary fish';
+  document.getElementById('cardBody').innerHTML=`
+    <div class="cos-hero cos-pv-hero lg-reveal"><div class="cos-hero-bg" id="lgBg"></div><div class="cos-hero-effect" id="lgFx"></div><div class="cos-hero-scrim"></div>
+      <div class="cos-hero-card"><div class="cos-avatar-wrap cos-pv-wrap"><div class="cos-frame-ring" id="lgRing"></div><div class="cos-avatar" id="lgAv">👤</div></div>
+      ${uname?`<b style="font-size:.95rem;">@${escapeHtml(uname)}</b>`:''}<span class="cos-chip">🎣 ${ar?'صياد الأساطير':'Legend Hunter'}</span></div></div>
+    <div class="lg-list">
+      <div><span>🖼️</span><b>${ar?'خلفية أعماق الأسطورة':"Legend's Deep background"}</b></div>
+      <div><span>⭕</span><b>${ar?'إطار الشص الذهبي':'Golden Hook frame'}</b></div>
+      <div><span>✨</span><b>${ar?'تأثير السرب الذهبي':'Golden School effect'}</b></div>
+      <div><span>🏷️</span><b>${ar?'لقب صياد الأساطير':'Legend Hunter title'}</b></div>
+    </div>
+    <div class="lg-pay"><span>+750 🪙</span><span>+500 XP</span></div>
+    <button type="button" class="setup-btn lg-wear" id="lgWear">✨ ${ar?'لبّسني الطقم كامل':'Wear the whole set'}</button>
+    <button type="button" class="setup-btn" id="lgLater" style="margin-top:10px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">${ar?'بعدين':'Later'}</button>`;
+  mountCosmeticSet(document.getElementById('lgBg'),document.getElementById('lgFx'),document.getElementById('lgRing'),eq);
+  const av=document.getElementById('lgAv'); if(P.avatarPhoto){ av.style.backgroundImage=`url(${P.avatarPhoto})`; av.textContent=''; }
+  const close=()=>{ overlay.classList.remove('open'); if(done) done(); };
+  document.getElementById('lgLater').onclick=close;
+  document.getElementById('lgWear').onclick=async e=>{ e.target.disabled=true;
+    try{ for(const [slot,id] of [['background','bg-legend-deep'],['frame','frame-legend-hook'],['effect','fx-golden-school']]) if(P.inventory&&P.inventory[id]) await equipCosmetic(slot,id);
+      await equipTitle('legend_hunter_title'); }catch(err){}
+    if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero();
+    renderAppBackground(); playSfx('success'); showToast(ar?'🎣 لابس طقم الأسطورة!':'🎣 Wearing the Legend set!','success'); close(); };
+  overlay.classList.add('open'); playSfx('success');
+}
+
 /* one place that paints a hero card (bg + effect + frame) from an equipped map */
 function mountCosmeticSet(bgEl,fxEl,ringEl,eq){
   const find=id=>id&&COSMETICS_CATALOG.find(c=>c.id===id);
@@ -11856,7 +11954,7 @@ function renderCollRoot(){
    here AND by the Profile/Achievements/Challenges systems, so "how many
    species has this user collected" is never computed two different ways. */
 async function computeCollectionStats(){
-  let totalCollected=0, totalSpecies=0, legendaryCount=0, maxSpeciesCatchCount=0;
+  let totalCollected=0, totalSpecies=0, legendaryCount=0, legendaryFish=0, maxSpeciesCatchCount=0;
   const catchSums={}, rarityCounts={}, perCategory={};
   for(const cat of ANIMAL_CATEGORIES){
     const raw=await storageGet('collections:animals:'+cat.id);
@@ -11877,13 +11975,14 @@ async function computeCollectionStats(){
         if(recCount>maxSpeciesCatchCount) maxSpeciesCatchCount=recCount;
         rarityCounts[sp.rarity]=(rarityCounts[sp.rarity]||0)+1;
         if(sp.rarity==='legendary') legendaryCount++;
+        if(sp.rarity==='legendary' && cat.id==='fish') legendaryFish++;
       }
     });
     totalCollected+=got; totalSpecies+=total;
     catchSums[cat.id]=catchSum;
     perCategory[cat.id]={collected:got,total};
   }
-  return {totalCollected,totalSpecies,catchSums,legendaryCount,rarityCounts,perCategory,maxSpeciesCatchCount,
+  return {totalCollected,totalSpecies,catchSums,legendaryCount,legendaryFish,rarityCounts,perCategory,maxSpeciesCatchCount,
     totalCatches:Object.values(catchSums).reduce((a,b)=>a+b,0)};
 }
 async function renderCollAnimals(){
