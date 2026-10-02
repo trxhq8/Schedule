@@ -991,6 +991,26 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-cat-card .soon-tag{ position:absolute; top:10px; inset-inline-end:10px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); font-size:0.6rem; font-family:var(--font-head); font-weight:700; padding:2px 8px; border-radius:999px; }
 
   .coll-cat-title{ text-align:center; color:var(--heading); font-size:1.1rem; margin:10px 0 14px; }
+  /* ===== AI assistant + photo ID ===== */
+  .ai-chat{ display:flex; flex-direction:column; gap:10px; }
+  .ai-msgs{ max-height:52vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px; }
+  .ai-msg{ max-width:88%; padding:9px 12px; border-radius:16px; font-size:.86rem; line-height:1.65; white-space:normal; word-wrap:break-word; }
+  .ai-msg.me{ align-self:flex-end; background:var(--accent-deep,#111); color:#fff; border-end-end-radius:4px; }
+  .ai-msg.bot{ align-self:flex-start; background:var(--bg); border:1px solid var(--line); border-end-start-radius:4px; }
+  .ai-msg.thinking{ opacity:.65; font-style:italic; }
+  .ai-chips{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+  .ai-chips button{ flex:none; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:7px 12px; font:inherit; font-size:.76rem; font-weight:700; cursor:pointer; }
+  .ai-input{ display:flex; gap:8px; align-items:flex-end; }
+  .ai-input textarea{ flex:1; resize:none; border:1px solid var(--line); border-radius:14px; padding:10px 12px; font:inherit; font-size:.88rem; background:var(--card); color:var(--ink); max-height:120px; }
+  .ai-input button{ width:44px; height:44px; border-radius:50%; border:none; background:var(--accent-deep,#111); color:#fff; font-size:1.1rem; cursor:pointer; flex:none; }
+  .ai-input button:disabled{ opacity:.5; }
+  .ai-note{ font-size:.68rem; color:var(--ink-soft); margin:0; }
+  .ai-clear{ background:none; border:none; color:var(--ink-soft); text-decoration:underline; font:inherit; font-size:.68rem; cursor:pointer; padding:0; }
+  .ai-photo-btn{ width:100%; margin-bottom:10px; padding:12px; border-radius:14px; border:1.5px dashed #2f9bc4; background:linear-gradient(135deg,#e7f6fc,#d3eef8); color:#0f3a4d; font:inherit; font-weight:800; font-size:.86rem; cursor:pointer; }
+  .ai-photo-btn small{ font-weight:600; opacity:.7; }
+  .ai-fish-photo{ width:100%; max-height:240px; object-fit:cover; border-radius:16px; margin-bottom:10px; }
+  .ai-conf{ font-weight:800; font-size:.8rem; color:#2e8b57; margin-inline-start:6px; }
+  .ai-why{ font-size:.74rem; color:var(--ink-soft); margin:-2px 6px 8px; }
   /* ===== quick log + sea card + catch history ===== */
   .quick-fab{ position:fixed; z-index:46; inset-inline-end:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 78px); width:54px; height:54px; border-radius:50%; border:none; background:var(--accent-deep,#111); color:#fff; font-size:1.8rem; line-height:1; box-shadow:0 8px 22px rgba(0,0,0,.28); cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .quick-fab:active{ transform:scale(.94); }
@@ -2544,7 +2564,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.50.0';
+const APP_VERSION='v1.51.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2849,7 +2869,163 @@ function handleLaunchShortcut(){
   if(go==='catch'){ showPanel('collections'); enterSection('collections'); openCatchFinder(); }
   else if(go==='water'){ adjustWater(0.25); showToast(LANG==='ar'?'💧 انضاف كوب ماي':'💧 Added a glass of water'); }
   else if(go==='quick'){ openQuickLog(); }
+  else if(go==='ai'){ openAiChat(); }
   else if(['today','habits','collections','home','health'].includes(go)) navTo(go);
+}
+
+
+/* ================= AI (Gemini through Firebase AI Logic) =================
+   No API key lives in this page: requests go through Firebase AI Logic,
+   and App Check (reCAPTCHA v3) proves they come from this site, so the
+   project's free Gemini quota can't be used from anywhere else. The
+   modular Firebase SDK is loaded only the first time an AI feature is
+   used, as a separate named app, so it never slows down the app launch.
+   Until AI_CFG.siteKey is filled in (after the owner turns AI Logic + App
+   Check on in the Firebase console) every AI button explains that it's
+   coming soon instead of failing. */
+const AI_CFG={ siteKey:'', models:['gemini-3.8-flash','gemini-2.5-flash'], sdk:'12.19.0', dailyCap:40 };
+let _aiLib=null;
+function aiReady(){ return !!AI_CFG.siteKey; }
+async function aiLib(){
+  if(!aiReady()) throw new Error('ai-off');
+  if(_aiLib) return _aiLib;
+  const base='https://www.gstatic.com/firebasejs/'+AI_CFG.sdk+'/';
+  const [A,G,C]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js'),import(base+'firebase-app-check.js')]);
+  const app=A.initializeApp(firebaseConfig,'planner-ai');
+  C.initializeAppCheck(app,{provider:new C.ReCaptchaV3Provider(AI_CFG.siteKey),isTokenAutoRefreshEnabled:true});
+  _aiLib={ai:G.getAI(app,{backend:new G.GoogleAIBackend()}), getGenerativeModel:G.getGenerativeModel};
+  return _aiLib;
+}
+function aiUseToday(){ try{ const u=JSON.parse(localStorage.getItem('aiUse')||'{}'); return u.d===dateKeyOf(new Date())?(u.n||0):0; }catch(e){ return 0; } }
+function aiCountUse(){ try{ localStorage.setItem('aiUse',JSON.stringify({d:dateKeyOf(new Date()),n:aiUseToday()+1})); }catch(e){} }
+/* one call; tries the newest model first and falls back if it isn't available */
+async function aiGenerate(systemInstruction, request, generationConfig){
+  if(aiUseToday()>=AI_CFG.dailyCap) throw new Error('ai-cap');
+  const L=await aiLib(); let last;
+  for(const m of AI_CFG.models){
+    try{ const model=L.getGenerativeModel(L.ai,{model:m, systemInstruction, ...(generationConfig?{generationConfig}:{})});
+      const r=await model.generateContent(request); aiCountUse(); return r.response.text(); }
+    catch(e){ last=e; if(!/not.?found|404|unsupported|not supported|invalid model/i.test(String(e&&(e.message||e)))) break; }
+  }
+  throw last;
+}
+function aiErrText(e){
+  const m=String(e&&(e.message||e.code||e)), ar=LANG==='ar';
+  if(m==='ai-off') return ar?'🧠 المساعد الذكي قريب — ليلحين ما تفعّل':'🧠 The AI assistant is coming soon — not switched on yet';
+  if(m==='ai-cap') return ar?`وصلت حد اليوم (${AI_CFG.dailyCap} سؤال) — يرجع بكرة 🌙`:`You’ve reached today’s limit (${AI_CFG.dailyCap}) — back tomorrow 🌙`;
+  if(/quota|429|exhaust|rate/i.test(m)) return ar?'المساعد مشغول الحين — جرّب بعد دقيقة':'The assistant is busy — try again in a minute';
+  if(/app.?check|recaptcha|permission|403|unauth/i.test(m)) return ar?'ما قدرنا نتحقق من الجهاز — حدّث الصفحة وجرّب':'Couldn’t verify this device — refresh and try again';
+  if(/network|fetch|offline|unavailable/i.test(m)) return ar?'الاتصال ضعيف — جرّب لما يرجع النت':'Weak connection — try again when you’re back online';
+  if(/safety|blocked/i.test(m)) return ar?'ما أقدر أجاوب على هذا':'I can’t help with that one';
+  return ar?'صار خطأ مع المساعد — جرّب مرة ثانية':'Something went wrong — please try again';
+}
+/* what the assistant knows about your day (nothing leaves the app except this summary) */
+async function aiDayContext(){
+  const c={}; const put=(k,f)=>{ try{ const v=f(); if(v!==undefined&&v!==null&&v!=='') c[k]=v; }catch(e){} };
+  put('date',()=>new Date().toLocaleDateString(LANG==='ar'?'ar-KW':'en-GB',{weekday:'long',day:'numeric',month:'long'}));
+  put('time',()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+  put('name',()=>(P.publicProfile||{}).displayName);
+  put('level',()=>levelFromXP(P.xp||0));
+  put('waterLitersToday',()=>`${dailyTrack.water||0} of ${(P.foodSetup&&P.foodSetup.waterTarget)||3.5}`);
+  put('workoutDoneToday',()=>!!dailyTrack.workoutDone);
+  put('dailyCalorieTarget',()=>calorieTarget());
+  put('goal',()=>P.foodSetup&&P.foodSetup.goal);
+  put('latestWeightKg',()=>weightLog.length?weightLog[weightLog.length-1].kg:null);
+  put('prayersDoneToday',()=>prayerHabitIds().filter(id=>dailyTrack.habits&&dailyTrack.habits[id]).length+' of 5');
+  put('otherHabitsDoneToday',()=>{ const hs=(P.habits||[]).filter(h=>h.group!=='prayers'); return hs.filter(h=>dailyTrack.habits&&dailyTrack.habits[h.id]).length+' of '+hs.length; });
+  put('streaks',()=>P.streaks?Object.fromEntries(Object.entries(P.streaks).map(([k,v])=>[k,(v&&v.current)||0])):null);
+  put('xpThisWeek',()=>(P.weekXp||{})[weekKeySat(0)]||0);
+  try{ const pr=await computeHomeTodoProgress(); c.todayChecklist=pr.done+' of '+pr.total; }catch(e){}
+  try{ const st=await computeCollectionStats(); c.fishSpeciesCollected=st.perCategory.fish.collected; c.fishCaughtTotal=st.catchSums.fish; }catch(e){}
+  return c;
+}
+const AI_SYS_AR=`أنت «مساعد مخططي»، مساعد ذكي داخل تطبيق «مخططي» (جدول، أكل، تمارين، صلوات، عادات، وحداق السمك بالكويت).
+- تكلّم باللهجة الكويتية الخفيفة، وإذا كتب المستخدم بالإنجليزي رد بالإنجليزي.
+- ردودك قصيرة وعملية (من ٣ إلى ٧ أسطر)، واستخدم بيانات يومه المرفقة لما تفيد.
+- لا تشخّص أمراض ولا تعطي جرعات أدوية؛ بالأمور الصحية الجدية انصحه يراجع مختص.
+- احترم الدين والعادات، ولا تستهزئ بالعبادات.
+- لا تستخدم كلمة «لسه» أبداً — قل «ليلحين».
+- لا تخترع أرقام أو حقائق؛ إذا ما تعرف قل ما أعرف.`;
+let _aiChat=[];
+function aiRender(t){ return escapeHtml(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^[\-•]\s?/gm,'• ').replace(/\n/g,'<br>'); }
+function openAiChat(starter){
+  const ar=LANG==='ar';
+  try{ _aiChat=JSON.parse(localStorage.getItem('aiChat')||'[]').slice(-16); }catch(e){ _aiChat=[]; }
+  document.getElementById('dayTitle').textContent=ar?'🧠 مساعد مخططي':'🧠 Planner assistant';
+  document.getElementById('daySubtitle').textContent=aiReady()?(ar?`${Math.max(0,AI_CFG.dailyCap-aiUseToday())} سؤال باقي اليوم`:`${Math.max(0,AI_CFG.dailyCap-aiUseToday())} questions left today`):(ar?'قريباً':'Coming soon');
+  const chips=ar?['شنو أسوي الحين؟','شنو أطبخ من اللي عندي؟','لخّص أسبوعي','نصيحة للحداق اليوم']:['What should I do now?','What can I cook with what I have?','Sum up my week','A fishing tip for today'];
+  document.getElementById('cardBody').innerHTML=`<div class="ai-chat"><div class="ai-msgs" id="aiMsgs"></div>
+    <div class="ai-chips">${chips.map(c=>`<button type="button" data-aic="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join('')}</div>
+    <div class="ai-input"><textarea id="aiIn" rows="1" maxlength="600" placeholder="${ar?'اسألني أي شي عن يومك…':'Ask me anything about your day…'}"></textarea><button type="button" id="aiSend" aria-label="${ar?'إرسال':'Send'}">➤</button></div>
+    <p class="ai-note">${ar?'المساعد يشوف ملخص يومك بس، وممكن يغلط — تأكد من الأمور المهمة.':'The assistant only sees a summary of your day and can make mistakes — double-check important things.'}${_aiChat.length?` · <button type="button" class="ai-clear" id="aiClear">${ar?'مسح المحادثة':'Clear chat'}</button>`:''}</p></div>`;
+  const msgs=document.getElementById('aiMsgs');
+  const draw=()=>{ msgs.innerHTML=(_aiChat.length?_aiChat:[{role:'model',text:ar?'هلا! أنا مساعدك 👋 اسألني عن جدولك، أكلك، تمرينك أو الحداق.':'Hi! I’m your assistant 👋 Ask me about your schedule, food, training or fishing.'}]).map(m=>`<div class="ai-msg ${m.role==='user'?'me':'bot'}">${m.role==='user'?escapeHtml(m.text):aiRender(m.text)}</div>`).join(''); msgs.scrollTop=msgs.scrollHeight; };
+  draw();
+  const send=async q=>{
+    q=String(q||'').trim(); if(!q) return;
+    if(/أطبخ|cook/i.test(q)&&!/[،,:]/.test(q)&&q.length<40){ const items=prompt(ar?'شنو عندك بالثلاجة؟ (مثال: دجاج، رز، طماط)':'What do you have? (e.g. chicken, rice, tomato)'); if(!items) return; q=(ar?'شنو أطبخ من: ':'What can I cook with: ')+items+(ar?' — يناسب سعراتي':' — fitting my calories'); }
+    _aiChat.push({role:'user',text:q}); draw();
+    const thinking=document.createElement('div'); thinking.className='ai-msg bot thinking'; thinking.textContent=ar?'… يفكر':'… thinking'; msgs.appendChild(thinking); msgs.scrollTop=msgs.scrollHeight;
+    const sendBtn=document.getElementById('aiSend'); if(sendBtn) sendBtn.disabled=true;
+    try{
+      const ctx=await aiDayContext();
+      const contents=_aiChat.slice(-10).map((m,i,arr)=>({role:m.role==='user'?'user':'model', parts:[{text:(i===arr.length-1&&m.role==='user')?`[بيانات يومي من التطبيق: ${JSON.stringify(ctx)}]\n\n${m.text}`:m.text}]}));
+      const reply=await aiGenerate(AI_SYS_AR,{contents});
+      _aiChat.push({role:'model',text:String(reply||'').trim()||'…'});
+    }catch(e){ _aiChat.push({role:'model',text:(String(e&&e.message)==='ai-off'?'':'⚠️ ')+aiErrText(e)}); }
+    try{ localStorage.setItem('aiChat',JSON.stringify(_aiChat.slice(-16))); }catch(e){}
+    draw(); if(sendBtn) sendBtn.disabled=false;
+    const st=document.getElementById('daySubtitle'); if(st&&aiReady()) st.textContent=ar?`${Math.max(0,AI_CFG.dailyCap-aiUseToday())} سؤال باقي اليوم`:`${Math.max(0,AI_CFG.dailyCap-aiUseToday())} questions left today`;
+  };
+  const inp=document.getElementById('aiIn');
+  document.getElementById('aiSend').onclick=()=>{ const v=inp.value; inp.value=''; send(v); };
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); document.getElementById('aiSend').click(); } });
+  document.querySelectorAll('[data-aic]').forEach(b=>b.onclick=()=>send(b.dataset.aic));
+  const cl=document.getElementById('aiClear'); if(cl) cl.onclick=()=>{ _aiChat=[]; try{ localStorage.removeItem('aiChat'); }catch(e){} openAiChat(); };
+  overlay.classList.add('open');
+  if(starter) send(starter);
+}
+/* 📷 photo → which fish is it? matched against the collection */
+async function aiIdentifyFishFromFile(file){
+  const ar=LANG==='ar';
+  document.getElementById('dayTitle').textContent=ar?'📷 وش هالسمكة؟':'📷 Which fish is this?';
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`<div class="ai-fishid"><div class="dash-empty">${ar?'… قاعد أشوف الصورة':'… looking at your photo'}</div></div>`;
+  overlay.classList.add('open');
+  const box=document.querySelector('.ai-fishid');
+  let dataUrl; try{ dataUrl=await collCompressImage(file); }catch(e){ box.innerHTML=`<div class="dash-empty">${escapeHtml(e.message)}</div>`; return; }
+  box.insertAdjacentHTML('afterbegin',`<img class="ai-fish-photo" src="${dataUrl}" alt="">`);
+  const favs=SPECIES_DB.fish.filter(x=>x.kw&&x.sci).map(x=>`${x.nameAr}=${x.sci}`).join('; ');
+  const sys='You are an expert ichthyologist for Kuwait and the Arabian Gulf. You identify fish (and crabs) from photos. Reply with JSON only.';
+  const ask=`Identify the animal in this photo (likely caught in Kuwait). Kuwaiti local names for reference: ${favs}.
+Return exactly: {"isFish":true|false,"candidates":[{"sci":"Genus species","kuwaitiName":"Arabic local name or empty","englishName":"","confidence":0.0-1.0,"why":"one short reason in ${ar?'Arabic (Kuwaiti dialect)':'English'}"}]} — up to 3 candidates, most likely first.`;
+  let res;
+  try{
+    const txt=await aiGenerate(sys,{contents:[{role:'user',parts:[{text:ask},{inlineData:{mimeType:dataUrl.slice(5,dataUrl.indexOf(';')),data:dataUrl.split(',')[1]}}]}]},{responseMimeType:'application/json'});
+    res=JSON.parse(String(txt).replace(/^```(json)?|```$/g,'').trim());
+  }catch(e){ box.querySelector('.dash-empty').textContent=aiErrText(e); return; }
+  const L=collSpeciesList('fish'), found=[];
+  (res.candidates||[]).slice(0,3).forEach(cd=>{
+    const sci=String(cd.sci||'').toLowerCase().trim(), kn=normAr(cd.kuwaitiName||''), en=String(cd.englishName||'').toLowerCase();
+    let sp=L.find(x=>x.sci&&x.sci.toLowerCase()===sci)
+      ||(kn&&L.find(x=>[x.nameAr,...(x.altNames||[])].some(n=>normAr(n)===kn)))
+      ||(sci&&L.find(x=>x.sci&&x.sci.toLowerCase().split(' ')[0]===sci.split(' ')[0]&&x.kw))
+      ||(en&&L.find(x=>String(x.nameEn||x.descEn||'').toLowerCase()===en));
+    if(sp&&!found.some(f=>f.sp.id===sp.id)) found.push({sp,cd});
+  });
+  const empty=box.querySelector('.dash-empty'); if(empty) empty.remove();
+  if(res.isFish===false){ box.insertAdjacentHTML('beforeend',`<p class="dash-empty">${ar?'ما شفت سمكة واضحة بالصورة — جرّب صورة أوضح للجنب كامل':'I couldn’t see a clear fish — try a clearer side-on photo'}</p>`); }
+  else if(!found.length){ box.insertAdjacentHTML('beforeend',`<p class="dash-empty">${ar?'ما لقيتها بمقتنياتك — جرّب البحث بالشكل':'I couldn’t match it to your collection — try finding it by shape'}</p>`); }
+  else box.insertAdjacentHTML('beforeend',`<div class="fd-sec">${ar?'أقرب احتمالات — اختار الصح':'Most likely — pick the right one'}</div><div class="fd-list">${found.map(({sp,cd})=>finderItem(sp).replace('</button>',`<span class="ai-conf">${Math.round((+cd.confidence||0)*100)}%</span></button>`)+(cd.why?`<div class="ai-why">💡 ${escapeHtml(String(cd.why).slice(0,140))}</div>`:'')).join('')}</div>`);
+  box.insertAdjacentHTML('beforeend',`<p class="ai-note">${ar?'الذكاء ممكن يغلط — قارن بالصورة المرجعية قبل لا تسجّل.':'AI can be wrong — compare with the reference photo before logging.'}</p><button type="button" class="setup-btn" id="aiFishShape" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">🔎 ${ar?'دوّرها بنفسي':'Find it myself'}</button>`);
+  box.querySelectorAll('[data-pick]').forEach(b=>b.onclick=async()=>{ await collLoadCategory('fish'); collCurrentCat='fish'; confirmFinderPick(b.dataset.pick); });
+  document.getElementById('aiFishShape').onclick=()=>openCatchFinder();
+}
+function aiPickFishPhoto(){
+  if(!aiReady()){ showToast(aiErrText(new Error('ai-off'))); return; }
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.setAttribute('capture','environment');
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(f) aiIdentifyFishFromFile(f); };
+  inp.click();
 }
 
 /* ================= QUICK LOG ("+") =================
@@ -2864,6 +3040,8 @@ function openQuickLog(){
     ['workout','🏋️',ar?'تمرين اليوم':'Today’s workout',ar?'افتح التمرين':'Open your workout'],
     ['weight','⚖️',ar?'وزني':'My weight',ar?'سجّل وزن اليوم':'Log today’s weight'],
     ['task','📅',ar?'موعد أو مهمة':'Event or task',ar?'أضف للجدول':'Add to your schedule'],
+    ['ai','🧠',ar?'مساعد مخططي':'Assistant',ar?'اسأل الذكاء الاصطناعي':'Ask the AI'],
+    ['fishphoto','📷',ar?'صوّر سمكتك':'Photo ID',ar?'الذكاء يعرف نوعها':'AI names the fish'],
   ];
   document.getElementById('dayTitle').textContent=ar?'➕ سجّل بسرعة':'➕ Quick log';
   document.getElementById('daySubtitle').textContent='';
@@ -2877,6 +3055,8 @@ function openQuickLog(){
     else if(k==='workout') navTo('workout');
     else if(k==='weight') navTo('home-weight');
     else if(k==='task') navTo('schedule-add');
+    else if(k==='ai') openAiChat();
+    else if(k==='fishphoto') aiPickFishPhoto();
   });
 }
 document.getElementById('quickLogFab').addEventListener('click',()=>{ playSfx('pop'); openQuickLog(); });
@@ -5035,6 +5215,7 @@ function drawCatchFinder(){
   const gulf=L.filter(sp=>sp.group==='gulf_market');
   const unknown=(P.unknownCatches||[]).length;
   document.getElementById('cardBody').innerHTML=`
+    <button type="button" class="ai-photo-btn" id="fdAiPhoto">📷 ${ar?'صوّرها وخلّ الذكاء الاصطناعي يعرفها':'Snap it — let AI name the fish'}${aiReady()?'':` <small>${ar?'(قريباً)':'(soon)'}</small>`}</button>
     <input class="setup-input fd-search" id="fdQ" placeholder="${ar?'🔎 اكتب أي اسم تعرفه: هامور، زبيدي، grouper…':'🔎 Type any name you know: hamour, grouper, Epinephelus…'}" value="${escapeHtml(_finder.q)}">
     ${q.length>=2?`<div class="fd-sec">${ar?`النتائج (${results.length})`:`Results (${results.length})`}</div><div class="fd-list">${results.slice(0,40).map(finderItem).join('')||`<div class="fd-empty">${ar?'ما لقينا — جرّب الشكل تحت 👇':'Nothing found — try the shape below 👇'}</div>`}</div>`:''}
     ${q.length<2&&!_finder.shape?`<div class="fd-sec">${ar?'🎣 أسماك الخليج المشهورة':'🎣 Popular Gulf fish'}</div><div class="fd-grid">${gulf.map(sp=>`<button type="button" data-pick="${sp.id}">${sp.img?`<img class="fd-gph" loading="lazy" src="${collImgUrl(sp,120)}" alt="" onerror="this.remove()">`:fishArtHtml(sp,30)}${escapeHtml(sp.nameAr)}${ar?'':`<small style="font-weight:400">${escapeHtml(sp.nameEn)}</small>`}</button>`).join('')}</div>`:''}
@@ -5050,6 +5231,7 @@ function drawCatchFinder(){
   const g=document.getElementById('fdGulf'); if(g) g.onchange=()=>{ _finder.gulf=g.checked; drawCatchFinder(); };
   document.querySelectorAll('#cardBody [data-pick]').forEach(b=>b.onclick=()=>confirmFinderPick(b.dataset.pick));
   document.getElementById('fdUnknown').onclick=saveUnknownCatch;
+  const aiB=document.getElementById('fdAiPhoto'); if(aiB) aiB.onclick=aiPickFishPhoto;
 }
 function confirmFinderPick(sid){
   const sp=collSpeciesInfo('fish',sid), ar=LANG==='ar', tier=RARITY_TIERS[sp.rarity], n=collCatchCount(collRecord(sid)), grp=collGroupConfig('fish',sp.group);
