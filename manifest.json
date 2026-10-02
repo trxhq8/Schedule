@@ -1,7 +1,8 @@
 {
-  "name": "My Planner | مخططي",
+  "id": "./",
+  "name": "مخططي · My Planner",
   "short_name": "مخططي",
-  "description": "مخطط يومي شخصي: تودو، أكل، وتمارين",
+  "description": "يومك كله بمكان واحد: الجدول، الأكل، التمرين، الصلوات والعادات — مع حوض سمك ومقتنيات الحداق ودوري مع أصدقائك. Your whole day in one place: schedule, meals, training, prayers and habits — plus a fishing collection, aquarium and a friends league.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -10,18 +11,22 @@
   "theme_color": "#4c6350",
   "dir": "rtl",
   "lang": "ar",
+  "categories": ["lifestyle", "productivity", "health", "sports"],
   "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "صدت سمكة؟", "short_name": "صدت سمكة", "description": "دوّر سمكتك وسجّلها", "url": "./index.html?go=catch", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
+    { "name": "سجّل بسرعة", "short_name": "سجّل", "description": "ماي، صلاة، تمرين، وزن", "url": "./index.html?go=quick", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
+    { "name": "صلواتي وعاداتي", "short_name": "صلواتي", "url": "./index.html?go=habits", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
+    { "name": "جدول اليوم", "short_name": "الجدول", "url": "./index.html?go=today", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] }
+  ],
+  "screenshots": [
+    { "src": "./screenshot-home.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "يومك بنظرة وحدة" },
+    { "src": "./screenshot-fishing.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "حالة البحر والحداق" },
+    { "src": "./screenshot-quick.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "سجّل بسرعة" }
   ]
 }

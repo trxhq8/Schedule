@@ -10,7 +10,24 @@
 <meta name="application-name" content="مخططي">
 <meta name="theme-color" content="#7c9473">
 <meta name="msapplication-TileColor" content="#4c6350">
-<meta name="description" content="مخطط يومي شخصي: تودو، أكل، وتمارين">
+<meta name="description" content="مخططي — جدولك وأكلك وتمارينك وصلواتك وعاداتك بمكان واحد، مع حوض سمك ومقتنيات ودوري أصدقاء. My Planner — your day, meals, training, prayers and habits in one place.">
+<!-- link previews (WhatsApp, Telegram, iMessage, X…) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="مخططي · My Planner">
+<meta property="og:title" content="مخططي · My Planner — يومك كله بمكان واحد">
+<meta property="og:description" content="جدولك، أكلك، تمرينك، صلواتك وعاداتك — وحوض سمك، مقتنيات ودوري مع أصدقائك 🐠">
+<meta property="og:url" content="https://trxhq8.github.io/Schedule/">
+<meta property="og:image" content="https://trxhq8.github.io/Schedule/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="مخططي — My Planner">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="مخططي · My Planner">
+<meta name="twitter:description" content="جدولك، أكلك، تمرينك، صلواتك وعاداتك — بمكان واحد 🐠">
+<meta name="twitter:image" content="https://trxhq8.github.io/Schedule/og-image.jpg">
 <title>My Planner | مخططي</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMzMzQ0M0EiLz4KPHJlY3QgeD0iMjciIHk9IjI0IiB3aWR0aD0iMTAiIGhlaWdodD0iNTIiIHJ4PSI0IiBmaWxsPSIjRTBBNDU4Ii8+CjxyZWN0IHg9IjMzIiB5PSIyMCIgd2lkdGg9IjQyIiBoZWlnaHQ9IjYwIiByeD0iNSIgZmlsbD0iI0Y3RjVFRSIvPgo8cmVjdCB4PSI0MSIgeT0iMzQiIHdpZHRoPSIyNiIgaGVpZ2h0PSIzLjQiIHJ4PSIxLjciIGZpbGw9IiNCOUM0QjUiLz4KPHJlY3QgeD0iNDEiIHk9IjQ1IiB3aWR0aD0iMjYiIGhlaWdodD0iMy40IiByeD0iMS43IiBmaWxsPSIjQjlDNEI1Ii8+CjxyZWN0IHg9IjQxIiB5PSI1NiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjMuNCIgcng9IjEuNyIgZmlsbD0iI0I5QzRCNSIvPgo8cGF0aCBkPSJNNDAgNjggTDQ4LjUgNzYgTDY1IDU3IiBmaWxsPSJub25lIiBzdHJva2U9IiNFMEE0NTgiIHN0cm9rZS13aWR0aD0iNi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
@@ -974,6 +991,28 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-cat-card .soon-tag{ position:absolute; top:10px; inset-inline-end:10px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); font-size:0.6rem; font-family:var(--font-head); font-weight:700; padding:2px 8px; border-radius:999px; }
 
   .coll-cat-title{ text-align:center; color:var(--heading); font-size:1.1rem; margin:10px 0 14px; }
+  /* ===== quick log + sea card + catch history ===== */
+  .quick-fab{ position:fixed; z-index:46; inset-inline-end:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 78px); width:54px; height:54px; border-radius:50%; border:none; background:var(--accent-deep,#111); color:#fff; font-size:1.8rem; line-height:1; box-shadow:0 8px 22px rgba(0,0,0,.28); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .quick-fab:active{ transform:scale(.94); }
+  @media(min-width:900px){ .quick-fab{ bottom:24px; inset-inline-end:24px; } }
+  .ql-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ql-item{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:start; padding:14px 12px; border-radius:16px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit; cursor:pointer; min-height:92px; }
+  .ql-item .e{ font-size:1.6rem; } .ql-item b{ font-size:.9rem; } .ql-item small{ font-size:.72rem; color:var(--ink-soft); }
+  .sea-card{ background:linear-gradient(160deg,#e3f4fb,#c9e8f4); border:1px solid #a9d6e8; border-radius:18px; padding:12px 14px; margin-bottom:12px; color:#0f2a3a; }
+  .sea-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .sea-head select{ border:1px solid #a9d6e8; background:#fff; border-radius:999px; padding:5px 10px; font:inherit; font-size:.78rem; color:#0f2a3a; }
+  .sea-verdict{ font-weight:800; font-size:.9rem; padding:8px 10px; border-radius:12px; margin-bottom:8px; }
+  .sea-verdict.good{ background:#d7f5df; color:#14532d; } .sea-verdict.mid{ background:#fff2cc; color:#7a5a00; } .sea-verdict.bad{ background:#fde2e1; color:#8a1c1c; }
+  .sea-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  @media(max-width:380px){ .sea-grid{ grid-template-columns:1fr 1fr; } }
+  .sea-grid > div{ background:rgba(255,255,255,.7); border-radius:12px; padding:8px 6px; text-align:center; display:flex; flex-direction:column; gap:1px; }
+  .sea-grid span{ font-size:1.15rem; } .sea-grid b{ font-size:.85rem; } .sea-grid small{ font-size:.64rem; color:#3b5566; line-height:1.3; }
+  .sea-row{ font-size:.78rem; margin-top:8px; line-height:1.6; }
+  .sea-note{ font-size:.66rem; color:#4b6676; margin:6px 0 0; }
+  .coll-hist{ margin:4px 0 16px; } .coll-hist h3{ font-size:.85rem; margin:0 0 6px; }
+  .ch-row{ display:flex; flex-wrap:wrap; gap:4px 10px; font-size:.78rem; padding:7px 10px; border:1px solid var(--line); border-radius:12px; margin-bottom:6px; background:var(--card); }
+  .ch-row .d{ font-weight:700; }
+
   .coll-cat-hint{ text-align:center; font-size:0.8rem; color:var(--ink-soft); margin:-6px 8px 14px; line-height:1.55; }
   .coll-allsearch{ grid-column:1/-1; display:flex; flex-direction:column; gap:8px; }
   .coll-allsearch input{ margin:0; }
@@ -1220,7 +1259,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .habit-remove{ padding:8px 10px; }
   .dash-water-btn{ min-height:38px; padding:6px 14px; font-size:0.8rem; }
   .tag-chip button{ padding:4px 8px; }
-  .bottom-nav-item{ min-width:64px; min-height:48px; font-size:0.7rem; }
+  .bottom-nav-item{ min-width:56px; min-height:48px; font-size:0.68rem; padding-inline:4px; }
   /* the iOS toolbar eats the bottom of 88vh modals; dvh accounts for it
      (browsers without dvh just keep the 88vh rule above) */
   .card{ max-height:88dvh; }
@@ -2348,6 +2387,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
     <!-- level 0: Animals / Plants -->
     <div class="coll-view active" id="collView-root">
+      <div id="collSeaCard"></div>
       <div id="collFinderCard"></div>
       <div id="collAquarium" style="margin-bottom:14px;"></div>
       <div class="coll-grid coll-grid-2" id="collRootGrid"></div>
@@ -2420,11 +2460,13 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 <div class="sheet-backdrop hidden" id="guideSheet" role="dialog" aria-modal="true"><div class="sheet" id="guideSheetBody"></div></div>
 
 <!-- ============ BOTTOM NAV (mobile app-shell navigation) ============ -->
+<button type="button" id="quickLogFab" class="quick-fab hidden" aria-label="سجّل بسرعة / Quick log">＋</button>
 <nav id="bottomNav" class="hidden" aria-label="Main">
   <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic" aria-hidden="true">🏠</span><span data-i18n="bottom_nav_home"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic" aria-hidden="true">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="health"><span class="ic" aria-hidden="true">🩺</span><span data-i18n="bottom_nav_health"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="challenges"><span class="ic" aria-hidden="true">🎯</span><span data-i18n="bottom_nav_challenges"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="collections"><span class="ic" aria-hidden="true">🎣</span><span data-i18n="bottom_nav_collection"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="profile-hub"><span class="ic" aria-hidden="true">👤</span><span data-i18n="bottom_nav_profile"></span></button>
 </nav>
 
@@ -2502,7 +2544,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.49.1';
+const APP_VERSION='v1.50.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2796,7 +2838,116 @@ async function bootApp(){
   // publish your look + collection for friends once, without waiting for the next completed action
   if(!P._showcaseV1Done) setTimeout(()=>{ try{ PublicProfileService.syncStats(); }catch(e){} },3000);
   launchApp();
+  setTimeout(()=>{ try{ handleLaunchShortcut(); }catch(e){} },700);
 }
+/* long-press the app icon → straight to the thing (manifest "shortcuts") */
+function handleLaunchShortcut(){
+  let go=null; try{ go=new URLSearchParams(location.search).get('go'); }catch(e){}
+  if(!go) return;
+  try{ history.replaceState(null,'',location.pathname); }catch(e){}
+  if(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed) return;
+  if(go==='catch'){ showPanel('collections'); enterSection('collections'); openCatchFinder(); }
+  else if(go==='water'){ adjustWater(0.25); showToast(LANG==='ar'?'💧 انضاف كوب ماي':'💧 Added a glass of water'); }
+  else if(go==='quick'){ openQuickLog(); }
+  else if(['today','habits','collections','home','health'].includes(go)) navTo(go);
+}
+
+/* ================= QUICK LOG ("+") =================
+   One button on every screen for the things people log most — each one
+   reuses the app's own flow, so rewards/streaks behave exactly the same. */
+function openQuickLog(){
+  const ar=LANG==='ar';
+  const items=[
+    ['catch','🎣',ar?'صدت سمكة':'Caught a fish',ar?'دوّرها وسجّلها':'Find it and log it'],
+    ['water','💧',ar?'كوب ماي':'A glass of water',ar?'+٠٫٢٥ لتر':'+0.25 L'],
+    ['prayer','🕌',ar?'صلواتي':'My prayers',ar?'علّم صلاة':'Tick a prayer'],
+    ['workout','🏋️',ar?'تمرين اليوم':'Today’s workout',ar?'افتح التمرين':'Open your workout'],
+    ['weight','⚖️',ar?'وزني':'My weight',ar?'سجّل وزن اليوم':'Log today’s weight'],
+    ['task','📅',ar?'موعد أو مهمة':'Event or task',ar?'أضف للجدول':'Add to your schedule'],
+  ];
+  document.getElementById('dayTitle').textContent=ar?'➕ سجّل بسرعة':'➕ Quick log';
+  document.getElementById('daySubtitle').textContent='';
+  document.getElementById('cardBody').innerHTML=`<div class="ql-grid">${items.map(([k,e,t1,t2])=>`<button type="button" class="ql-item" data-ql="${k}"><span class="e">${e}</span><b>${t1}</b><small>${t2}</small></button>`).join('')}</div>`;
+  overlay.classList.add('open');
+  document.querySelectorAll('[data-ql]').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.ql; overlay.classList.remove('open');
+    if(k==='catch'){ showPanel('collections'); enterSection('collections'); openCatchFinder(); }
+    else if(k==='water'){ await adjustWater(0.25); showToast(ar?`💧 انضاف كوب — صار ${(+dailyTrack.water||0).toFixed(2).replace(/\.?0+$/,'')} لتر`:`💧 Added — ${(+dailyTrack.water||0).toFixed(2).replace(/\.?0+$/,'')} L today`); }
+    else if(k==='prayer') navTo('habits');
+    else if(k==='workout') navTo('workout');
+    else if(k==='weight') navTo('home-weight');
+    else if(k==='task') navTo('schedule-add');
+  });
+}
+document.getElementById('quickLogFab').addEventListener('click',()=>{ playSfx('pop'); openQuickLog(); });
+/* shown whenever the main nav is (signed in, past the username gate) */
+function syncQuickFab(){
+  const nav=document.getElementById('bottomNav'), fab=document.getElementById('quickLogFab'); if(!nav||!fab) return;
+  const show=!nav.classList.contains('hidden') && !(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed) && !usernameHardGateActive();
+  fab.classList.toggle('hidden',!show);
+}
+new MutationObserver(syncQuickFab).observe(document.getElementById('bottomNav'),{attributes:true,attributeFilter:['class']});
+setInterval(syncQuickFab,2000);
+
+
+/* ================= SEA CONDITIONS (Kuwait) =================
+   Free Open-Meteo data (no key): wind, waves, sea temperature and the tide
+   curve for a few Kuwaiti spots, plus moon phase (computed here) and the
+   dawn/dusk windows. Cached 30 minutes. Forecasts are estimates. */
+const SEA_SPOTS=[
+  {id:'city', ar:'مدينة الكويت', en:'Kuwait City', lat:29.38, lon:48.0},
+  {id:'khiran', ar:'الخيران', en:'Khiran', lat:28.65, lon:48.40},
+  {id:'failaka', ar:'فيلكا', en:'Failaka', lat:29.43, lon:48.33},
+  {id:'jahra', ar:'جون الكويت (الجهراء)', en:'Kuwait Bay (Jahra)', lat:29.37, lon:47.75},
+];
+function moonPhase(d){ const syn=29.530588853, ref=Date.UTC(2000,0,6,18,14); const age=(((d.getTime()-ref)/864e5)%syn+syn)%syn; const i=Math.round(age/syn*8)%8;
+  const names=[['محاق','New moon'],['هلال متزايد','Waxing crescent'],['تربيع أول','First quarter'],['أحدب متزايد','Waxing gibbous'],['بدر','Full moon'],['أحدب متناقص','Waning gibbous'],['تربيع أخير','Last quarter'],['هلال متناقص','Waning crescent']];
+  return {age, i, e:['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][i], ar:names[i][0], en:names[i][1]}; }
+async function seaData(spot){
+  const key='seaCache:'+spot.id; try{ const c=JSON.parse(localStorage.getItem(key)||'null'); if(c&&Date.now()-c.at<30*60e3) return c.d; }catch(e){}
+  const q=`latitude=${spot.lat}&longitude=${spot.lon}&timezone=Asia%2FKuwait&forecast_days=2`;
+  const [m,w]=await Promise.all([
+    fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=wave_height,sea_surface_temperature,sea_level_height_msl`).then(r=>r.json()),
+    fetch(`https://api.open-meteo.com/v1/forecast?${q}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m&daily=sunrise,sunset&wind_speed_unit=kmh`).then(r=>r.json())]);
+  const d={m,w}; try{ localStorage.setItem(key,JSON.stringify({at:Date.now(),d})); }catch(e){}
+  return d;
+}
+function seaHourIdx(times){ const now=new Date(), pad=n=>String(n).padStart(2,'0'); const k=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:00`; const i=(times||[]).indexOf(k); return i<0?0:i; }
+const seaHM=iso=>{ const d=new Date(iso); return d.toLocaleTimeString(LANG==='ar'?'ar':'en',{hour:'numeric',minute:'2-digit'}); };
+async function renderSeaCard(){
+  const box=document.getElementById('collSeaCard'); if(!box) return;
+  const ar=LANG==='ar', spot=SEA_SPOTS.find(x=>x.id===P.seaSpot)||SEA_SPOTS[0], mp=moonPhase(new Date());
+  box.innerHTML=`<div class="sea-card"><div class="sea-head"><b>🌊 ${ar?'حالة البحر اليوم':'Sea today'}</b><select id="seaSpotSel" aria-label="${ar?'المكان':'Spot'}">${SEA_SPOTS.map(x=>`<option value="${x.id}"${x.id===spot.id?' selected':''}>${ar?x.ar:x.en}</option>`).join('')}</select></div><div class="sea-body">…</div></div>`;
+  document.getElementById('seaSpotSel').onchange=e=>{ P.seaSpot=e.target.value; storageSet('profile',JSON.stringify(P)); renderSeaCard(); };
+  const body=box.querySelector('.sea-body');
+  let d; try{ d=await seaData(spot); }catch(e){ body.innerHTML=`<p class="sea-note">${ar?'ما قدرنا نجيب حالة البحر الحين — تأكد من النت':'Couldn’t load sea conditions — check your connection'}</p>`; return; }
+  const W=d.w&&d.w.hourly||{}, M=d.m&&d.m.hourly||{}, wi=seaHourIdx(W.time), mi=seaHourIdx(M.time);
+  const wind=Math.round(W.wind_speed_10m?.[wi]??0), gust=Math.round(W.wind_gusts_10m?.[wi]??0), dir=W.wind_direction_10m?.[wi]??0;
+  const wave=M.wave_height?.[mi], sst=M.sea_surface_temperature?.[mi], air=W.temperature_2m?.[wi];
+  // tide: turning points in the next 24h from the sea-level curve
+  const sl=M.sea_level_height_msl||[], tt=M.time||[], turns=[];
+  for(let i=Math.max(1,mi);i<Math.min(sl.length-1,mi+24);i++){ if(sl[i]==null) continue; if(sl[i]>sl[i-1]&&sl[i]>=sl[i+1]) turns.push(['high',tt[i]]); else if(sl[i]<sl[i-1]&&sl[i]<=sl[i+1]) turns.push(['low',tt[i]]); }
+  const rising=sl[mi+1]!=null&&sl[mi]!=null?sl[mi+1]>sl[mi]:null;
+  const dirName=['شمال','شمال شرق','شرق','جنوب شرق','جنوب','جنوب غرب','غرب','شمال غرب'][Math.round(dir/45)%8], dirEn=['N','NE','E','SE','S','SW','W','NW'][Math.round(dir/45)%8];
+  let verdict, cls;
+  if(wind>=30||gust>=48||(wave!=null&&wave>=1.2)){ verdict=ar?'⚠️ البحر مو زين اليوم — هوا قوي أو موج عالي':'⚠️ Rough today — strong wind or high waves'; cls='bad'; }
+  else if(wind>=20||gust>=35||(wave!=null&&wave>=0.7)){ verdict=ar?'🙂 مقبول — انتبه من الهوا':'🙂 Okay — mind the wind'; cls='mid'; }
+  else { verdict=ar?'👍 يوم حلو للحداق':'👍 A good day to fish'; cls='good'; }
+  const sr=d.w.daily&&d.w.daily.sunrise&&d.w.daily.sunrise[0], ss=d.w.daily&&d.w.daily.sunset&&d.w.daily.sunset[0];
+  const win=(iso,a,b)=>{ const t=new Date(iso).getTime(); return `${seaHM(new Date(t+a*60e3))}–${seaHM(new Date(t+b*60e3))}`; };
+  const moonGood=mp.i===0||mp.i===4;
+  body.innerHTML=`<div class="sea-verdict ${cls}">${verdict}</div>
+    <div class="sea-grid">
+      <div><span>💨</span><b dir="ltr">${wind} km/h</b><small>${ar?`${dirName} · هبّات ${gust}`:`${dirEn} · gusts ${gust}`}</small></div>
+      <div><span>🌊</span><b dir="ltr">${wave!=null?wave.toFixed(1)+' m':'—'}</b><small>${ar?'ارتفاع الموج':'Wave height'}</small></div>
+      <div><span>🌡️</span><b dir="ltr">${sst!=null?Math.round(sst)+'°':'—'}</b><small>${ar?`حرارة البحر · الجو ${air!=null?Math.round(air)+'°':'—'}`:`Sea · air ${air!=null?Math.round(air)+'°':'—'}`}</small></div>
+      <div><span>${mp.e}</span><b>${ar?mp.ar:mp.en}</b><small>${moonGood?(ar?'وقت قوي للصيد':'Strong fishing time'):(ar?'طور القمر':'Moon phase')}</small></div>
+    </div>
+    <div class="sea-row">↕️ ${ar?'المد':'Tide'}: ${rising==null?'—':(rising?(ar?'يرتفع الحين':'rising now'):(ar?'ينزل الحين':'falling now'))}${turns.slice(0,3).map(([k,t])=>` · ${k==='high'?(ar?'أعلى مد':'high'):(ar?'أقل جزر':'low')} ${seaHM(t)}`).join('')}</div>
+    ${sr&&ss?`<div class="sea-row">⏰ ${ar?'أحلى وقت':'Best times'}: ${ar?'الفجر':'dawn'} ${win(sr,-45,75)} · ${ar?'المغرب':'dusk'} ${win(ss,-75,45)}${turns[0]?` · ${ar?'وقت تغيّر المد':'tide turn'} ${seaHM(turns[0][1])}`:''}</div>`:''}
+    <p class="sea-note">${ar?'تقديرات من Open-Meteo — تأكد بنفسك قبل تطلع البحر':'Estimates from Open-Meteo — always check before heading out'}</p>`;
+}
+
 /* Removed at the earliest point the app actually knows what to show
    next (auth screen or the booted app) — never on a fixed delay, so it
    never flashes away early on a slow connection and never lingers once
@@ -3311,7 +3462,7 @@ const I18N={
 };
 /* IA v2 strings — merged over the main dictionaries (overrides included) */
 Object.assign(I18N.ar,{
-  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_health:'الصحة',bottom_nav_challenges:'التحديات',bottom_nav_profile:'حسابي',
+  bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_health:'الصحة',bottom_nav_challenges:'التحديات',bottom_nav_profile:'حسابي',bottom_nav_collection:'الحداق',
   back_home:'الرئيسية',back_schedule:'الجدول',back_health:'الصحة',back_challenges:'التحديات',back_you:'حسابي',back_nutrition:'الأكل',back_training:'التمرين',
   back_habits:'العادات',back_progress:'التقدم',back_profile:'ملفي',back_friends:'الأصدقاء',back_store:'المتجر',back_collection:'المقتنيات',back_generic:'رجوع',
   health_title:'🩺 الصحة',health_sub:'أكلك وتمرينك وعاداتك — كل قسم بصفحته الكاملة.',
@@ -3360,7 +3511,7 @@ Object.assign(I18N.en,{
   daily_routine_title:'🔁 Recurring commitments (add / edit)',
 });
 Object.assign(I18N.en,{
-  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_health:'Health',bottom_nav_challenges:'Challenges',bottom_nav_profile:'You',
+  bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_health:'Health',bottom_nav_challenges:'Challenges',bottom_nav_profile:'You',bottom_nav_collection:'Fishing',
   back_home:'Home',back_schedule:'Schedule',back_health:'Health',back_challenges:'Challenges',back_you:'You',back_nutrition:'Nutrition',back_training:'Training',
   back_habits:'Habits',back_progress:'Progress',back_profile:'Profile',back_friends:'Friends',back_store:'Store',back_collection:'Collection',back_generic:'Back',
   health_title:'🩺 Health',health_sub:'Your food, training and habits — each has its own full page.',
@@ -3701,8 +3852,8 @@ document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ sh
    is lit. Back goes to wherever the panel was opened FROM (returnTo) —
    e.g. Nutrition opened from Home backs to Home — falling back to the
    parent section when there's no history. */
-const ROOT_PANELS=['home','today','health','challenges','profile-hub'];
-const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
+const ROOT_PANELS=['home','today','health','challenges','collections','profile-hub'];
+const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub',
   food:'health', workout:'health', habits:'health' };
 const BACK_LABEL={ home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
   food:'back_nutrition', workout:'back_training', habits:'back_habits', progress:'back_progress', profile:'back_profile', social:'back_friends', store:'back_store', collections:'back_collection' };
@@ -12194,9 +12345,9 @@ function collCompactCatches(record){
   if(!record||!Array.isArray(record.catches)||record.catches.length<2) return false;
   const out=[]; let changed=false;
   record.catches.forEach(c=>{
-    const plain=c&&(!c.measurements||!Object.keys(c.measurements).length);
+    const plain=c&&(!c.measurements||!Object.keys(c.measurements).length)&&!c.bait&&!c.spot&&!c.note;
     const prev=out[out.length-1];
-    const prevPlain=prev&&(!prev.measurements||!Object.keys(prev.measurements).length);
+    const prevPlain=prev&&(!prev.measurements||!Object.keys(prev.measurements).length)&&!prev.bait&&!prev.spot&&!prev.note;
     if(plain&&prevPlain&&String(prev.date).slice(0,19)===String(c.date).slice(0,19)){ prev.n=(prev.n||1)+((c.n)||1); changed=true; }
     else out.push(c);
   });
@@ -12259,7 +12410,7 @@ function collBack(){
   else if(target==='animals') renderCollAnimals();
 }
 document.getElementById('collectionsBackBtn').addEventListener('click',collBack);
-function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); renderCollFinderCard(); renderAquarium(document.getElementById('collAquarium'),true); }
+function enterCollections(){ collStack=['root']; collShowView('root'); renderCollRoot(); renderCollFinderCard(); renderSeaCard(); renderAquarium(document.getElementById('collAquarium'),true); }
 /* Every Collections render function reads LANG live, but nothing re-ran
    them on a language switch — so whatever screen was already drawn just
    stayed in its old language until the user re-entered it. Re-render
@@ -12633,11 +12784,16 @@ async function renderCollSpeciesDetail(){
     </div>
 
     <div class="coll-records-grid">${recordsHtml}</div>
+    ${collHistoryHtml(rec,cat)}
 
     <div class="setup-card">
-      <h3 style="font-size:0.85rem;">${LANG==='ar'?'📝 سجّل القياسات هالمرة (اختياري)':'📝 Log measurements for this time (optional)'}</h3>
+      <h3 style="font-size:0.85rem;">${LANG==='ar'?'📝 سجّل هالصيدة بالتفصيل (اختياري)':'📝 Log this catch in detail (optional)'}</h3>
       <div class="coll-log-form">
         ${logInputsHtml}
+        ${collCurrentCat==='fish'?`<input type="text" id="collLogBait" maxlength="40" list="collBaitList" placeholder="${LANG==='ar'?'🪱 الطعم (روبيان، يوافة…)':'🪱 Bait (shrimp, lure…)'}">
+        <input type="text" id="collLogSpot" maxlength="40" list="collSpotList" placeholder="${LANG==='ar'?'📍 المكان (الخيران، الشويخ…)':'📍 Spot (Khiran, pier…)'}">
+        <datalist id="collBaitList">${[...new Set([...((P.fishLog||{}).baits||[]),...(LANG==='ar'?['روبيان','يوافة','بياح','حبار','سردين','طعم صناعي','خبز','عجين']:['Shrimp','Squid','Sardine','Mullet','Lure','Bread','Dough'])])].map(x=>`<option value="${escapeHtml(x)}">`).join('')}</datalist>
+        <datalist id="collSpotList">${[...new Set([...((P.fishLog||{}).spots||[]),...(LANG==='ar'?['الخيران','فيلكا','الشويخ','المسيلة','الفنطاس','الجهراء','الدوحة','بنيدر','النويصيب','قارب']:['Khiran','Failaka','Shuwaikh','Messila','Fintas','Jahra','Doha','Bnaider','Nuwaiseeb','Boat'])])].map(x=>`<option value="${escapeHtml(x)}">`).join('')}</datalist>`:''}
         <button id="collLogSaveBtn">${LANG==='ar'?'حفظ':'Save'}</button>
       </div>
       <p class="sub" style="margin:0;">${LANG==='ar'?'يسوي زيادة تلقائية بالعداد':'This also adds one to the counter above'}</p>
@@ -12665,12 +12821,21 @@ async function renderCollSpeciesDetail(){
       const raw=document.getElementById('collLogInput-'+m.key).value;
       if(raw!==''&&!isNaN(parseFloat(raw))) measurements[m.key]=parseFloat(raw);
     });
-    collAddCatch(measurements);
+    const bi=document.getElementById('collLogBait'), si=document.getElementById('collLogSpot');
+    collAddCatch(measurements,{bait:bi?bi.value:'',spot:si?si.value:''});
   });
   document.getElementById('collUploadBtn').addEventListener('click',()=>document.getElementById('collPhotoInput').click());
   document.getElementById('collPhotoInput').addEventListener('change',collHandlePhotoUpload);
   const removeBtn=document.getElementById('collRemovePhotoBtn');
   if(removeBtn) removeBtn.addEventListener('click',collRemovePhoto);
+}
+/* your last catches of this species — date, size, bait, spot */
+function collHistoryHtml(rec,cat){
+  const ar=LANG==='ar', list=(rec.catches||[]).filter(c=>c&&(c.bait||c.spot||(c.measurements&&Object.keys(c.measurements).length))).slice(-6).reverse();
+  if(!list.length) return '';
+  return `<div class="coll-hist"><h3>${ar?'🗒️ آخر صيداتك':'🗒️ Your recent catches'}</h3>${list.map(c=>{
+    const ms=cat.measurements.filter(m=>c.measurements&&typeof c.measurements[m.key]==='number').map(m=>`<span dir="ltr">${c.measurements[m.key]} ${m.unit}</span>`).join(' · ');
+    return `<div class="ch-row"><span class="d">${collFmtDate(c.date)}</span>${ms?`<span>${ms}</span>`:''}${c.bait?`<span>🪱 ${escapeHtml(c.bait)}</span>`:''}${c.spot?`<span>📍 ${escapeHtml(c.spot)}</span>`:''}</div>`; }).join('')}</div>`;
 }
 /* every name people use for it + how to tell it apart */
 /* the family group a Kuwaiti favourite would belong to (for its "how to tell" hint) */
@@ -12764,12 +12929,14 @@ function collShouldReward(rec){
   if(rec.rewarded) return false;
   return !collIsCollected(rec);
 }
-function collAddCatch(measurements){
+function collAddCatch(measurements,extra){
   const rec=collRecord(collCurrentSpecies);
   if(!collCatData[collCurrentSpecies]) collCatData[collCurrentSpecies]=rec;
   const shouldReward=collShouldReward(rec);
   rec.catches=rec.catches||[];
-  rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:measurements||{}});
+  const ex={}; if(extra){ ['bait','spot','note'].forEach(k=>{ const v=String(extra[k]||'').trim().slice(0,40); if(v) ex[k]=v; }); }
+  rec.catches.push({id:collGenId(), date:new Date().toISOString(), measurements:measurements||{}, ...ex});
+  if(ex.bait||ex.spot){ P.fishLog=P.fishLog||{baits:[],spots:[]}; if(ex.bait) P.fishLog.baits=[ex.bait,...P.fishLog.baits.filter(x=>x!==ex.bait)].slice(0,12); if(ex.spot) P.fishLog.spots=[ex.spot,...P.fishLog.spots.filter(x=>x!==ex.spot)].slice(0,12); storageSet('profile',JSON.stringify(P)); }
   rec.rewarded=true;
   renderCollSpeciesDetail();     // instant feedback — never block the tap on a network round-trip
   collSaveCategory(collCurrentCat);
