@@ -2564,7 +2564,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.51.1';
+const APP_VERSION='v1.51.2';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2883,7 +2883,7 @@ function handleLaunchShortcut(){
    Until AI_CFG.siteKey is filled in (after the owner turns AI Logic + App
    Check on in the Firebase console) every AI button explains that it's
    coming soon instead of failing. */
-const AI_CFG={ siteKey:'6Ld3stwtAAAAAMQjfGYbB8tZN278YkoiXA09UIqf', models:['gemini-3.8-flash','gemini-2.5-flash'], sdk:'12.19.0', dailyCap:40 };
+const AI_CFG={ siteKey:'6Ld3stwtAAAAAMQjfGYbB8tZN278YkoiXA09UIqf', models:['gemini-3.8-flash','gemini-flash-latest','gemini-flash-lite-latest'], sdk:'12.19.0', dailyCap:40 };
 let _aiLib=null;
 function aiReady(){ return !!AI_CFG.siteKey; }
 async function aiLib(){
@@ -2905,7 +2905,7 @@ async function aiGenerate(systemInstruction, request, generationConfig){
   for(const m of AI_CFG.models){
     try{ const model=L.getGenerativeModel(L.ai,{model:m, systemInstruction, ...(generationConfig?{generationConfig}:{})});
       const r=await model.generateContent(request); aiCountUse(); return r.response.text(); }
-    catch(e){ last=e; if(!/not.?found|404|unsupported|not supported|invalid model/i.test(String(e&&(e.message||e)))) break; }
+    catch(e){ last=e; if(!/not.?found|404|unsupported|not supported|invalid model|429|quota|exhaust|rate|overload|unavailable|50[03]/i.test(String(e&&(e.message||e)))) break; }
   }
   throw last;
 }
@@ -2995,10 +2995,14 @@ async function aiIdentifyFishFromFile(file){
   const box=document.querySelector('.ai-fishid');
   let dataUrl; try{ dataUrl=await collCompressImage(file); }catch(e){ box.innerHTML=`<div class="dash-empty">${escapeHtml(e.message)}</div>`; return; }
   box.insertAdjacentHTML('afterbegin',`<img class="ai-fish-photo" src="${dataUrl}" alt="">`);
-  const favs=SPECIES_DB.fish.filter(x=>x.kw&&x.sci).map(x=>`${x.nameAr}=${x.sci}`).join('; ');
-  const sys='You are an expert ichthyologist for Kuwait and the Arabian Gulf. You identify fish (and crabs) from photos. Reply with JSON only.';
-  const ask=`Identify the animal in this photo (likely caught in Kuwait). Kuwaiti local names for reference: ${favs}.
-Return exactly: {"isFish":true|false,"candidates":[{"sci":"Genus species","kuwaitiName":"Arabic local name or empty","englishName":"","confidence":0.0-1.0,"why":"one short reason in ${ar?'Arabic (Kuwaiti dialect)':'English'}"}]} — up to 3 candidates, most likely first.`;
+  const favs=SPECIES_DB.fish.filter(x=>x.kw&&x.sci).map(x=>`- ${x.nameAr} = ${x.sci} (${x.nameEn}): ${x.tipEn||x.descEn||''}`).join(String.fromCharCode(10));
+  const sys='You are an expert ichthyologist for Kuwait and the Arabian Gulf. You identify fish (and crabs) from photos taken by Kuwaiti fishermen (on the boat, on the deck, in hand, at the market, or underwater). Reply with JSON only.';
+  const ask=`Identify the animal in this photo.
+Step 1 — look carefully and note: body shape and depth, head profile, mouth and lips, eye size, colour and any stripes/spots/bars, dorsal fin (spiny/soft, length), tail shape.
+Step 2 — compare these features against this list of common Kuwait fish FIRST (Kuwaiti name = scientific name: key ID features):
+${favs}
+Only pick a species outside this list if the features clearly do not fit any of them.
+Return exactly: {"isFish":true|false,"features":"short notes from step 1","candidates":[{"sci":"Genus species","kuwaitiName":"Arabic local name or empty","englishName":"","confidence":0.0-1.0,"why":"one short reason in ${ar?'Arabic (Kuwaiti dialect)':'English'}"}]} — up to 3 candidates, most likely first.`;
   let res;
   try{
     const txt=await aiGenerate(sys,{contents:[{role:'user',parts:[{text:ask},{inlineData:{mimeType:dataUrl.slice(5,dataUrl.indexOf(';')),data:dataUrl.split(',')[1]}}]}]},{responseMimeType:'application/json'});
