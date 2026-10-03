@@ -2564,7 +2564,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.51.0';
+const APP_VERSION='v1.51.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2883,7 +2883,7 @@ function handleLaunchShortcut(){
    Until AI_CFG.siteKey is filled in (after the owner turns AI Logic + App
    Check on in the Firebase console) every AI button explains that it's
    coming soon instead of failing. */
-const AI_CFG={ siteKey:'', models:['gemini-3.8-flash','gemini-2.5-flash'], sdk:'12.19.0', dailyCap:40 };
+const AI_CFG={ siteKey:'6Ld3stwtAAAAAMQjfGYbB8tZN278YkoiXA09UIqf', models:['gemini-3.8-flash','gemini-2.5-flash'], sdk:'12.19.0', dailyCap:40 };
 let _aiLib=null;
 function aiReady(){ return !!AI_CFG.siteKey; }
 async function aiLib(){
@@ -2892,7 +2892,7 @@ async function aiLib(){
   const base='https://www.gstatic.com/firebasejs/'+AI_CFG.sdk+'/';
   const [A,G,C]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js'),import(base+'firebase-app-check.js')]);
   const app=A.initializeApp(firebaseConfig,'planner-ai');
-  C.initializeAppCheck(app,{provider:new C.ReCaptchaV3Provider(AI_CFG.siteKey),isTokenAutoRefreshEnabled:true});
+  C.initializeAppCheck(app,{provider:new C.ReCaptchaEnterpriseProvider(AI_CFG.siteKey),isTokenAutoRefreshEnabled:true});
   _aiLib={ai:G.getAI(app,{backend:new G.GoogleAIBackend()}), getGenerativeModel:G.getGenerativeModel};
   return _aiLib;
 }
