@@ -932,6 +932,37 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .emoji-picker-pop{ position:fixed; z-index:200; background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,0.2); padding:8px; display:grid; grid-template-columns:repeat(6,1fr); gap:2px; max-width:220px; }
   .emoji-picker-pop button{ border:none; background:none; font-size:1.2rem; padding:6px; border-radius:8px; cursor:pointer; line-height:1; }
   .emoji-picker-pop button:hover{ background:var(--bg); }
+  /* commitments list (Schedule) */
+  .commit-list{ display:flex; flex-direction:column; gap:8px; margin:6px 0 10px; }
+  .cm-row{ display:flex; align-items:stretch; gap:10px; padding:10px 12px; border-radius:16px; background:var(--card); border:1px solid rgba(127,127,127,.18); border-inline-start:4px solid #4c6350; }
+  .cm-row.cm-conf{ border-inline-start-color:#e5484d; }
+  .cm-row.cm-upcoming{ border-inline-start-color:#ffb703; }
+  .cm-row.cm-ended{ opacity:.55; border-inline-start-color:rgba(127,127,127,.4); }
+  .cm-time{ flex:0 0 70px; display:flex; flex-direction:column; justify-content:center; gap:2px; font-size:.78rem; color:var(--heading); white-space:nowrap; }
+  .cm-time b{ font-size:.82rem; }
+  .cm-time small{ color:var(--ink-soft); font-size:.72rem; }
+  .cm-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .cm-title{ font-weight:800; font-size:.92rem; color:var(--heading); overflow-wrap:anywhere; }
+  .cm-meta{ font-size:.74rem; color:var(--ink-soft); line-height:1.5; }
+  .cm-tags{ display:flex; flex-wrap:wrap; gap:5px; }
+  .cm-tags:empty{ display:none; }
+  .cm-tag{ font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(127,127,127,.12); color:var(--ink-soft); }
+  .cm-tag.bad{ background:rgba(229,72,77,.12); color:#d13b40; }
+  .cm-tag.up{ background:rgba(255,183,3,.15); color:#9a6a00; }
+  .cm-act{ display:flex; flex-direction:column; justify-content:center; gap:4px; }
+  .cm-act button{ width:30px; height:30px; border-radius:50%; border:none; background:rgba(127,127,127,.1); color:var(--heading); cursor:pointer; font-size:.8rem; }
+  .cm-sep{ display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:.78rem; font-weight:700; color:var(--ink-soft); }
+  .cm-sep button{ border:none; background:none; color:#d13b40; font:inherit; font-size:.74rem; cursor:pointer; text-decoration:underline; }
+  .cm-empty{ font-size:.8rem; color:var(--ink-soft); }
+  /* today's commitments (Home To-Do) */
+  .cmt-row{ width:100%; display:flex; align-items:center; gap:10px; padding:9px 4px; border:none; border-bottom:1px solid rgba(127,127,127,.15); background:none; color:var(--heading); font:inherit; text-align:start; cursor:pointer; }
+  .cmt-row:last-child{ border-bottom:none; }
+  .cmt-t{ flex:0 0 auto; min-width:64px; font-size:.74rem; font-weight:700; color:var(--ink-soft); }
+  .cmt-l{ flex:1; font-size:.88rem; font-weight:600; }
+  .cmt-row.done .cmt-l{ text-decoration:line-through; opacity:.55; }
+  .cmt-count{ font-size:.78rem; color:var(--ink-soft); margin-inline-start:6px; }
+  .cmt-empty{ display:flex; flex-direction:column; gap:4px; font-size:.85rem; color:var(--heading); margin:6px 0 10px; }
+  .cmt-empty small{ color:var(--ink-soft); font-size:.76rem; }
   .commit-chip .pin-btn{ opacity:0; transition:opacity 0.15s; background:none; border:none; cursor:pointer; font-size:0.85rem; padding:2px; }
   .commit-chip:hover .pin-btn, .commit-chip .pin-btn.pinned-visible{ opacity:1; }
   .tag-chip button{ border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:0.85rem; padding:0; line-height:1; }
@@ -1578,6 +1609,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
       <div id="homeChest"></div>
     <div id="dashboardSummary">
+      <div class="dash-card" id="dashCommitCard"></div>
       <div id="homeHabitsSlot">
       <div class="dash-card" id="habitsCard">
         <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
@@ -2684,7 +2716,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.53.0';
+const APP_VERSION='v1.54.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -7111,32 +7143,48 @@ function buildCommitDaysGrid(){
     grid.appendChild(el);
   });
 }
-function renderCommitList(){
-  const box=document.getElementById('commitListChips'); box.innerHTML='';
-  const list=P._commitments||[];
-  // retroactively flag any pair that's already conflicting — e.g. loaded
-  // from before this feature existed, or created some other way — so a
-  // real conflict is never invisible just because it wasn't caught at
-  // add-time.
-  const conflicts=findAllScheduleConflicts(list);
-  const conflictedSet=new Set();
-  conflicts.forEach(cf=>{ if(cf.kind==='overlap'){ conflictedSet.add(cf.a); conflictedSet.add(cf.b); } });
-  const sorted=list.map((c,i)=>({c,i})).sort((a,b)=>{
-    if(!!b.c.pinned!==!!a.c.pinned) return (b.c.pinned?1:0)-(a.c.pinned?1:0);
-    const sa=commitTimeSpan(a.c), sb=commitTimeSpan(b.c);
-    return (sa?sa.start:-1)-(sb?sb.start:-1);
-  });
-  sorted.forEach(({c,i})=>{
-    const dayLabels=c.days.map(d=>DAY_NAMES[LANG][d]).join(LANG==='ar'?'،':', ');
-    const rangeLabel=(c.fromDate||c.toDate) ? ` [${c.fromDate||'…'} → ${c.toDate||'…'}]` : '';
-    const conflictBadge=conflictedSet.has(c) ? `<span style="color:var(--err);font-weight:700;">${t('conflict_badge')}</span> ` : '';
-    const chip=document.createElement('div'); chip.className='tag-chip commit-chip';
-    chip.innerHTML=`<span>${conflictBadge}📌 ${escapeHtml(c.label)} (${formatCommitRange(c)}, ${dayLabels}${rangeLabel})${c.hard===false?' 🔓':''}</span><button class="pin-btn${c.pinned?' pinned-visible':''}" type="button" title="${LANG==='ar'?'ثبّت':'Pin'}">${c.pinned?'📌':'📍'}</button><button type="button">✕</button>`;
-    chip.querySelector('.pin-btn').addEventListener('click',()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); });
-    chip.querySelector('button:last-child').addEventListener('click',()=>{ P._commitments.splice(i,1); renderCommitList(); persistCommitments(); });
-    box.appendChild(chip);
-  });
+function commitDaysText(c){
+  const ar=LANG==='ar', d=[...(c.days||[])].sort((a,b)=>a-b);
+  if(d.length===7) return ar?'كل يوم':'Every day';
+  if(d.join()==='1,2,3,4,5') return ar?'الأحد – الخميس':'Sun – Thu';
+  return d.map(i=>DAY_NAMES[LANG][i]).join(ar?'، ':', ');
 }
+function commitDateText(iso){ if(!iso) return ''; const [y,m,dd]=iso.split('-').map(Number); return new Date(y,m-1,dd).toLocaleDateString(LANG==='ar'?'ar-KW':'en-GB',{day:'numeric',month:'short'}); }
+function commitStatus(c){ const n=new Date(), today=isoDateStr(n.getFullYear(),n.getMonth(),n.getDate()); if(c.toDate&&c.toDate<today) return 'ended'; if(c.fromDate&&c.fromDate>today) return 'upcoming'; return 'active'; }
+/* one tidy card per commitment: time on the side, days + dates in words,
+   who it clashes with, and finished ones tucked at the bottom */
+function renderCommitList(){
+  const box=document.getElementById('commitListChips'); if(!box) return; box.innerHTML=''; box.className='commit-list';
+  const ar=LANG==='ar', list=P._commitments||[];
+  const live=list.filter(c=>commitStatus(c)!=='ended'), withMap=new Map();
+  findAllScheduleConflicts(live).forEach(cf=>{ if(cf.kind!=='overlap') return; [[cf.a,cf.b],[cf.b,cf.a]].forEach(([x,y])=>{ if(!withMap.has(x)) withMap.set(x,[]); withMap.get(x).push(y); }); });
+  const rank={active:0,upcoming:1,ended:2};
+  const sorted=list.map((c,i)=>({c,i,st:commitStatus(c)})).sort((a,b)=>{
+    if(rank[a.st]!==rank[b.st]) return rank[a.st]-rank[b.st];
+    if(!!b.c.pinned!==!!a.c.pinned) return (b.c.pinned?1:0)-(a.c.pinned?1:0);
+    const sa=commitTimeSpan(a.c), sb=commitTimeSpan(b.c); return (sa?sa.start:-1)-(sb?sb.start:-1);
+  });
+  if(!sorted.length){ box.innerHTML=`<p class="cm-empty">${ar?'ما ضفت التزامات ليلحين':'No commitments yet'}</p>`; return; }
+  let endedHead=false;
+  sorted.forEach(({c,i,st})=>{
+    if(st==='ended'&&!endedHead){ endedHead=true; box.insertAdjacentHTML('beforeend',`<div class="cm-sep"><span>✓ ${ar?'التزامات خلصت':'Finished'}</span><button type="button" id="cmClearEnded">${ar?'امسحها كلها':'Clear them'}</button></div>`); }
+    const others=withMap.get(c)||[];
+    const range=c.fromDate&&c.toDate?`${commitDateText(c.fromDate)} – ${commitDateText(c.toDate)}`:c.fromDate?((st==='upcoming'?(ar?'يبدأ ':'Starts '):(ar?'من ':'From '))+commitDateText(c.fromDate)):c.toDate?((ar?'لين ':'Until ')+commitDateText(c.toDate)):'';
+    const row=document.createElement('div'); row.className='cm-row cm-'+st+(others.length?' cm-conf':'');
+    row.innerHTML=`<div class="cm-time">${c.from?`<b>${formatTime12h(c.from)}</b>${c.to?`<small>${formatTime12h(c.to)}</small>`:''}`:`<b>${ar?'طول اليوم':'All day'}</b>`}</div>
+      <div class="cm-main"><div class="cm-title">${c.pinned?'📌 ':''}${escapeHtml(c.label)}</div>
+        <div class="cm-meta">🔁 ${escapeHtml(commitDaysText(c))}${range?` · 📅 ${range}`:''}</div>
+        <div class="cm-tags">${others.length?`<span class="cm-tag bad">⚠️ ${ar?'يتعارض مع':'Clashes with'} ${others.map(o=>escapeHtml(o.label)).join(ar?'، ':', ')}</span>`:''}${c.hard===false?`<span class="cm-tag">🔓 ${ar?'مرن':'Flexible'}</span>`:''}${st==='upcoming'?`<span class="cm-tag up">⏳ ${ar?'ما بدأ':'Not started'}</span>`:''}</div></div>
+      <div class="cm-act"><button type="button" class="cm-pin" title="${ar?'ثبّت فوق':'Pin to top'}">${c.pinned?'📌':'📍'}</button><button type="button" class="cm-del" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`;
+    row.querySelector('.cm-pin').onclick=()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); };
+    row.querySelector('.cm-del').onclick=()=>{ P._commitments.splice(i,1); renderCommitList(); persistCommitments(); };
+    box.appendChild(row);
+  });
+  const ce=document.getElementById('cmClearEnded');
+  if(ce) ce.onclick=()=>{ if(!confirm(ar?'تمسح كل الالتزامات اللي خلصت؟':'Delete all finished commitments?')) return; P._commitments=(P._commitments||[]).filter(c=>commitStatus(c)!=='ended'); renderCommitList(); persistCommitments(); };
+}
+/* two commitments with date ranges that never meet can't clash */
+function commitDatesOverlap(a,b){ return (a.fromDate||'0000')<=(b.toDate||'9999') && (b.fromDate||'0000')<=(a.toDate||'9999'); }
 function resetCommitForm(){
   document.getElementById('commitLabel').value='';
   document.getElementById('commitAllDayToggle').checked=false;
@@ -7380,6 +7428,7 @@ function findConflictsFor(candidate, existing, bufferMin){
     if(other===candidate) return;
     const sharedDays=daysIntersect(candidate,other);
     if(!sharedDays.length) return;
+    if(!commitDatesOverlap(candidate,other)) return;
     const s2=commitTimeSpan(other);
     if(spansOverlap(s1,s2)){
       results.push({other, sharedDays, kind:'overlap', type:overlapType(s1,s2)});
@@ -11990,6 +12039,7 @@ async function computeHomeTodoProgress(){
   const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
   if(supList.length){ total++; if(supList.every((s,i)=>dailyTrack.supplements['other'+i])) done++; }
   total++; if(await isWeightLoggedForDate(homeSelectedDate)) done++;
+  if(isSameCalendarDate(homeSelectedDate,new Date())){ const cm=commitmentsForDate(homeSelectedDate); if(cm.length){ total++; const dn=dailyTrack.commitDone||{}; if(cm.every(c=>dn[commitKey(c)])) done++; } }
   return {done,total};
 }
 async function renderHomeTodoProgress(){
@@ -12145,6 +12195,38 @@ document.getElementById('profileBar').addEventListener('click',()=>{ showPanel('
    nothing is shown as a fake/placeholder number: sections hide themselves
    and show an explicit "not set up" message when the underlying data
    doesn't exist yet. */
+/* ---- Home To-Do: today's commitments + schedule notes, each one tickable ---- */
+function commitKey(c){ return 'c:'+(c.label||'')+'|'+(c.from||''); }
+async function todayCommitItems(){
+  const ar=LANG==='ar', d=new Date();
+  const cm=commitmentsForDate(d).map(c=>({k:commitKey(c), label:c.label, time:c.from?commitTimeSpan(c).start:-1, timeLabel:c.from?(formatTime12h(c.from)+(c.to?' – '+formatTime12h(c.to):'')):(ar?'طول اليوم':'All day'), commit:true}));
+  let notes=[]; try{ notes=(await getAgendaForDate(d)).map(n=>({k:'n:'+n.label+'|'+n.time, label:n.label, time:n.time, timeLabel:n.timeLabel})); }catch(e){}
+  return cm.concat(notes).sort((a,b)=>(a.time<0?-1:a.time)-(b.time<0?-1:b.time));
+}
+function nextCommitAfterToday(){
+  const ar=LANG==='ar';
+  for(let i=1;i<=14;i++){ const d=new Date(); d.setDate(d.getDate()+i); const list=commitmentsForDate(d).sort((a,b)=>{ const sa=commitTimeSpan(a), sb=commitTimeSpan(b); return (sa?sa.start:-1)-(sb?sb.start:-1); });
+    if(list.length){ const c=list[0], when=i===1?(ar?'بكرة':'Tomorrow'):d.toLocaleDateString(ar?'ar-KW':'en-GB',{weekday:'long'});
+      return `${when} · ${escapeHtml(c.label)}${c.from?' · '+formatTime12h(c.from):''}${list.length>1?(ar?` (+${list.length-1})`:` (+${list.length-1})`):''}`; } }
+  return '';
+}
+async function renderDashCommitCard(){
+  const el=document.getElementById('dashCommitCard'); if(!el) return;
+  const ar=LANG==='ar', items=await todayCommitItems(), done=dailyTrack.commitDone||{};
+  let html=`<div class="dash-card-title dash-title-row"><span>📅 ${ar?'التزامات اليوم':'Today’s commitments'}${items.length?` <span class="num cmt-count">${items.filter(x=>done[x.k]).length}/${items.length}</span>`:''}</span><button type="button" class="dash-link" data-nav="today">${ar?'الجدول':'Schedule'}</button></div>`;
+  if(!items.length){
+    const nx=nextCommitAfterToday();
+    html+=`<div class="cmt-empty">${ar?'ما عندك التزامات اليوم 🎉':'Nothing scheduled today 🎉'}${nx?`<small>⏭️ ${ar?'الجاي:':'Next:'} ${nx}</small>`:''}</div><button type="button" class="cta-btn" data-nav="schedule-add">➕ ${ar?'أضف التزام':'Add a commitment'}</button>`;
+  } else {
+    html+=items.map(it=>`<button type="button" class="cmt-row${done[it.k]?' done':''}" data-ck="${escapeHtml(it.k)}"><span class="cmt-t">${escapeHtml(it.timeLabel)}</span><span class="cmt-l">${escapeHtml(it.label)}</span><span class="dash-toggle${done[it.k]?' done':''}">${done[it.k]?'✓':''}</span></button>`).join('');
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('[data-ck]').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.ck; dailyTrack.commitDone={...(dailyTrack.commitDone||{})};
+    if(dailyTrack.commitDone[k]) delete dailyTrack.commitDone[k]; else { dailyTrack.commitDone[k]=true; playSfx('pop'); }
+    await saveDailyTrack(); renderDashCommitCard();
+  });
+}
 function renderDailySummary(){
   document.getElementById('dashCalTitle').textContent=t('dash_cal_title');
   document.getElementById('dashCalPlannedLbl').textContent=t('dash_cal_planned');
@@ -12216,6 +12298,7 @@ function renderDailySummary(){
   // ---- commitments mini badge ----
   const commits=commitmentsForToday();
   document.getElementById('dashCommitMini').innerHTML=`${t('dash_commit_mini')}<span class="n">${commits.length}</span>`;
+  renderDashCommitCard();
 
   renderHabits();
 }
