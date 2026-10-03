@@ -735,6 +735,51 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .wk-go{ font-weight:800; font-size:.8rem; background:rgba(255,255,255,.2); border-radius:999px; padding:5px 10px; white-space:nowrap; }
   .wk-text{ line-height:1.85; font-size:.92rem; color:var(--heading); }
   .wk-rep .cos-btn{ width:100%; margin-top:10px; }
+  /* aquarium v3: free placement, preview, play */
+  .aq-flip{ display:block; }
+  .aq-dbub{ position:absolute; bottom:72% !important; pointer-events:none; }
+  .aq-school{ left:0; width:26%; height:11%; animation:aqSchool 46s linear infinite; }
+  @keyframes aqSchool{ from{ transform:translateX(-110%); } to{ transform:translateX(400%); } }
+  .aq-lanternd{ animation:aqJelly 7s ease-in-out infinite; filter:drop-shadow(0 0 10px rgba(255,190,80,.85)); }
+  .aq-lava{ animation:aqLava 2.4s ease-in-out infinite alternate; }
+  @keyframes aqLava{ from{ opacity:.55; } to{ opacity:1; } }
+  .aq-deco2.fr{ z-index:2; }
+  .aq-tank.big .aq-deco2{ cursor:pointer; }
+  .aq-deco2.poke svg{ animation:aqPoke .55s ease; }
+  @keyframes aqPoke{ 0%{ transform:scale(1); } 30%{ transform:scale(1.12,.9); } 60%{ transform:scale(.95,1.08); } 100%{ transform:scale(1); } }
+  .aq-burst{ position:absolute; width:7px; height:7px; border-radius:50%; pointer-events:none; animation:aqBurst 1s ease-out forwards; z-index:3; }
+  .aq-burst.bub{ border:1.5px solid rgba(255,255,255,.9); background:rgba(255,255,255,.15); }
+  .aq-burst.coin{ background:radial-gradient(circle at 35% 35%,#fff3b0,#f2b52a); box-shadow:0 0 4px #ffd76a; }
+  .aq-burst.pearl{ background:radial-gradient(circle at 35% 35%,#fff,#d9d4ee); box-shadow:0 0 5px #fff; }
+  .aq-burst.spark{ width:5px; height:5px; background:#fff; box-shadow:0 0 8px #d9a6ff,0 0 3px #fff; }
+  @keyframes aqBurst{ from{ transform:translate(-50%,-50%) scale(.6); opacity:1; } to{ transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1); opacity:0; } }
+  .aq-ripple{ position:absolute; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; border:2px solid rgba(255,255,255,.85); animation:aqRipple .8s ease-out forwards; pointer-events:none; z-index:3; }
+  @keyframes aqRipple{ to{ transform:scale(7); opacity:0; } }
+  .aq-bob.scare{ animation:aqScare .65s ease-out !important; }
+  @keyframes aqScare{ 0%{ transform:translate(0,0); } 25%{ transform:translate(-12px,-7px) rotate(-10deg); } 55%{ transform:translate(9px,3px) rotate(7deg); } 100%{ transform:translate(0,0); } }
+  .aq-heart{ position:absolute; color:#ff5d8f; font-size:13px; pointer-events:none; animation:aqHeart 1.1s ease-out forwards; z-index:3; }
+  @keyframes aqHeart{ from{ transform:translate(-50%,0) scale(.6); opacity:1; } to{ transform:translate(-50%,-28px) scale(1.25); opacity:0; } }
+  .aq-mood{ display:flex; flex-direction:column; gap:2px; margin-top:8px; padding:8px 10px; border-radius:12px; background:rgba(255,93,143,.08); font-size:.8rem; font-weight:700; color:var(--heading); }
+  .aq-mood small{ font-weight:500; color:var(--ink-soft); font-size:.72rem; }
+  .aq-edit .aq-deco2{ pointer-events:auto; cursor:grab; touch-action:none; }
+  .aq-edit .aq-deco2.sel{ outline:2px dashed #ffb703; outline-offset:4px; border-radius:10px; }
+  .aq-edit .aq-deco2.drag{ cursor:grabbing; filter:drop-shadow(0 8px 10px rgba(0,0,0,.4)); }
+  .aq-edit{ touch-action:none; }
+  .aq-edbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:10px; padding:8px 10px; border-radius:14px; background:rgba(127,127,127,.1); font-size:.8rem; color:var(--heading); min-height:44px; }
+  .aq-edbar span{ color:var(--ink-soft); font-size:.76rem; }
+  .aq-edbar b{ margin-inline-end:auto; }
+  .aq-edbar button{ border:1px solid rgba(127,127,127,.3); background:var(--card); color:var(--heading); border-radius:999px; padding:6px 10px; font:inherit; font-size:.76rem; font-weight:700; cursor:pointer; }
+  .aq-count{ float:inline-end; font-size:.8rem; color:var(--ink-soft); }
+  .aq-pick-it{ position:relative; }
+  .aq-pick-it i{ position:absolute; top:4px; inset-inline-end:6px; font-style:normal; font-weight:800; font-size:.8rem; color:#2e9d5b; }
+  .aqs-tile{ position:relative; cursor:pointer; }
+  .aqs-try{ position:absolute; bottom:6px; inset-inline-start:6px; font-size:.66rem; font-weight:800; color:#fff; background:rgba(0,0,0,.42); border-radius:999px; padding:3px 8px; }
+  .aqs-price{ font-weight:800; font-size:.85rem; margin:4px 0; color:var(--heading); }
+  .aqs-price.gift{ color:#2e9d5b; font-size:.78rem; }
+  .cos-btn.aqs-lockbtn{ opacity:1; background:rgba(127,127,127,.12); color:var(--ink-soft); border-color:transparent; font-size:.72rem; white-space:normal; }
+  .aqs-tip{ margin:4px 0 0; }
+  .aqpv{ position:relative; }
+  .aqpv-badge{ position:absolute; top:10px; inset-inline-end:10px; z-index:5; font-size:.68rem; font-weight:800; color:#3a2600; background:#ffb703; border-radius:999px; padding:3px 9px; }
   .aq-legend span{ border:1px solid var(--line); border-radius:999px; padding:2px 8px; }
 
   /* ---- collection finder + guide ---- */
@@ -2639,7 +2684,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.52.0';
+const APP_VERSION='v1.53.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4843,11 +4888,12 @@ function aqDecoHtml(level,big){
    Drawn scenes instead of emoji: a theme (water, light, back rocks, sand,
    swaying weed) plus up to 4 decoration spots on the sand. Spots open with
    the tank level, the level gifts are free, and more themes/decorations
-   are in the Store (🐠 tab). Spots + theme live in P.equipped
-   (tank, aq0..aq3, aqSet) so they sync like every other equipped slot. */
+   are in the Store (🐠 tab). Decorations are placed freely: dragged anywhere
+   on the sand, flipped, behind or in front of the fish. Theme + layout live
+   in P.equipped (tank, aqDeco) so they sync like every other equipped slot. */
 let _aqU=0;
 const AQ_SPOTS=[10,33,59,84];
-function aqSpotCount(level){ return Math.min(AQ_SPOTS.length,1+level); }
+function aqMaxDecos(level){ return Math.min(8,2+level); }
 function aqSvg(vb,inner){ return `<svg viewBox="${vb}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">${inner}</svg>`; }
 const AQ_TANKS=[
   {id:'tank-gulf',type:'tank',rarity:'common',price:null,nameAr:'بحر الخليج',nameEn:'Gulf Waters',descAr:'ماي أزرق صافي ورمل ذهبي — الحوض الأساسي',descEn:'Clear blue water and golden sand — the starter tank',
@@ -4866,13 +4912,13 @@ const AQ_TANKS=[
 const AQ_DECOS=[
   {id:'aqd-coral',type:'aqdeco',rarity:'common',price:null,lvl:1,w:44,nameAr:'مرجان أحمر',nameEn:'Red coral',descAr:'هدية مستوى الحوض ٢',descEn:'Tank level 2 gift',
     svg:u=>aqSvg('0 0 60 62',`<defs><linearGradient id="a${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff917e"/><stop offset="1" stop-color="#c3364a"/></linearGradient></defs><g fill="none" stroke="url(#a${u})" stroke-linecap="round" stroke-linejoin="round"><path d="M30 61 V40 M30 46 Q19 41 16 28 M16 34 Q8 30 7 19 M30 42 Q41 36 44 23 M44 31 Q53 27 54 16 M30 38 Q32 25 28 11" stroke-width="5.5"/><path d="M16 28 Q14 22 17 16 M28 11 Q27 7 30 4 M44 23 Q45 18 42 13 M7 19 Q6 15 8 12 M54 16 Q55 12 53 9" stroke-width="4"/></g><g fill="#ffd6cc" opacity=".8">${[[17,24],[29,16],[43,20],[9,22],[52,19],[24,40],[37,44],[30,30]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.2"/>`).join('')}</g>`)},
-  {id:'aqd-chest',type:'aqdeco',rarity:'common',price:null,lvl:2,w:46,cls:'aq-chest2',bubbles:1,nameAr:'صندوق الكنز',nameEn:'Treasure chest',descAr:'هدية مستوى الحوض ٣',descEn:'Tank level 3 gift',
+  {id:'aqd-chest',type:'aqdeco',rarity:'common',price:null,lvl:2,w:46,cls:'aq-chest2',bubbles:1,poke:'coin',nameAr:'صندوق الكنز',nameEn:'Treasure chest',descAr:'هدية مستوى الحوض ٣',descEn:'Tank level 3 gift',
     svg:u=>aqSvg('0 0 64 50',`<defs><linearGradient id="w${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a06838"/><stop offset="1" stop-color="#5a371a"/></linearGradient><radialGradient id="g${u}" cx=".5" cy=".55" r=".55"><stop offset="0" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffd24a" stop-opacity="0"/></radialGradient></defs><ellipse cx="32" cy="22" rx="28" ry="15" fill="url(#g${u})"/><path d="M10 25 Q8 12 14 5 L50 5 Q56 12 54 25Z" fill="#6a4020"/><path d="M14 5 L50 5" stroke="#f2c14e" stroke-width="2.4"/><path d="M12 24 Q32 13 52 24Z" fill="#f6c84a"/><g fill="#ffe27a">${[[20,21],[27,18],[34,17],[41,19],[46,22],[30,21],[38,22]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.1" stroke="#c99a26" stroke-width=".6"/>`).join('')}</g><rect x="8" y="24" width="48" height="23" rx="3" fill="url(#w${u})"/><path d="M8 31 H56 M8 38 H56" stroke="#3e240e" stroke-width="1" opacity=".55"/><g fill="#f2c14e"><rect x="13" y="24" width="4" height="23"/><rect x="47" y="24" width="4" height="23"/><rect x="8" y="23" width="48" height="3"/><rect x="28" y="28" width="8" height="9" rx="1.5"/></g><circle cx="32" cy="32" r="1.6" fill="#5a371a"/>`)},
   {id:'aqd-anchor',type:'aqdeco',rarity:'common',price:null,lvl:3,w:44,nameAr:'باورة',nameEn:'Anchor',descAr:'هدية مستوى الحوض ٤',descEn:'Tank level 4 gift',
     svg:u=>aqSvg('0 0 54 64',`<defs><linearGradient id="m${u}" x1="0" x2="1"><stop offset="0" stop-color="#56636b"/><stop offset=".5" stop-color="#a3b0b7"/><stop offset="1" stop-color="#46525a"/></linearGradient></defs><g transform="rotate(-14 27 34)"><g stroke="url(#m${u})" fill="none" stroke-linecap="round"><circle cx="27" cy="8" r="5" stroke-width="3.5"/><path d="M27 13 V56" stroke-width="5"/><path d="M15 20 H39" stroke-width="4"/><path d="M8 40 Q10 56 27 58 Q44 56 46 40" stroke-width="4.5"/></g><g fill="#7e8b92"><path d="M3 43 L8 33 L13 44Z"/><path d="M51 43 L46 33 L41 44Z"/></g><g fill="#a65a2e" opacity=".5"><circle cx="27" cy="30" r="1.6"/><circle cx="16" cy="50" r="1.3"/><circle cx="38" cy="53" r="1.5"/><circle cx="33" cy="20" r="1"/></g></g>`)},
   {id:'aqd-towers',type:'aqdeco',rarity:'common',price:null,lvl:4,w:46,nameAr:'أبراج الكويت',nameEn:'Kuwait Towers',descAr:'هدية مستوى الحوض ٥',descEn:'Tank level 5 gift',
     svg:u=>aqSvg('0 0 74 116',`<defs><radialGradient id="s${u}" cx=".36" cy=".3" r=".78"><stop offset="0" stop-color="#6fb6dc"/><stop offset=".55" stop-color="#245e8a"/><stop offset="1" stop-color="#0f3250"/></radialGradient><pattern id="p${u}" width="3.6" height="3.6" patternUnits="userSpaceOnUse"><circle cx="1.8" cy="1.8" r="1.25" fill="#9fe0f0" opacity=".55"/></pattern><linearGradient id="n${u}" x1="0" x2="1"><stop offset="0" stop-color="#8e9aa3"/><stop offset=".5" stop-color="#f2f5f7"/><stop offset="1" stop-color="#85919a"/></linearGradient></defs><path d="M26 114 L36 114 L32 2 L30 2Z" fill="url(#n${u})"/><path d="M47 114 L54 114 L51 34 L50 34Z" fill="url(#n${u})"/><path d="M62 114 L66 114 L64.4 46 L63.6 46Z" fill="url(#n${u})"/><circle cx="31" cy="66" r="17" fill="url(#s${u})"/><circle cx="31" cy="66" r="17" fill="url(#p${u})"/><circle cx="31" cy="34" r="10" fill="url(#s${u})"/><circle cx="31" cy="34" r="10" fill="url(#p${u})"/><circle cx="50.5" cy="62" r="11.5" fill="url(#s${u})"/><circle cx="50.5" cy="62" r="11.5" fill="url(#p${u})"/><path d="M14 66 Q31 72 48 66 M21 34 Q31 38 41 34 M39 62 Q50.5 67 62 62" stroke="#0b2a42" stroke-width="1.2" fill="none" opacity=".5"/><g fill="#fff" opacity=".38"><ellipse cx="24" cy="59" rx="5" ry="3.2"/><ellipse cx="27" cy="29.5" rx="3" ry="1.9"/><ellipse cx="46" cy="57" rx="3.4" ry="2.2"/></g><path d="M16 114 Q36 106 72 114Z" fill="#000" opacity=".16"/>`)},
-  {id:'aqd-crystal',type:'aqdeco',rarity:'common',price:null,lvl:5,w:38,cls:'aq-glowd',nameAr:'كريستال',nameEn:'Crystal cluster',descAr:'هدية مستوى الحوض ٦',descEn:'Tank level 6 gift',
+  {id:'aqd-crystal',type:'aqdeco',rarity:'common',price:null,lvl:5,w:38,cls:'aq-glowd',poke:'spark',nameAr:'كريستال',nameEn:'Crystal cluster',descAr:'هدية مستوى الحوض ٦',descEn:'Tank level 6 gift',
     svg:u=>aqSvg('0 0 56 60',`<defs><linearGradient id="c${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1e2ff"/><stop offset=".5" stop-color="#a874ff"/><stop offset="1" stop-color="#5a2ab3"/></linearGradient><linearGradient id="d${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2fbff"/><stop offset=".5" stop-color="#59d0f0"/><stop offset="1" stop-color="#1c7aa8"/></linearGradient></defs><polygon points="6,59 4,45 8,38 12,45 13,59" fill="url(#d${u})"/><polygon points="16,59 10,32 15,22 21,32 22,59" fill="url(#d${u})"/><polygon points="25,59 21,20 28,5 35,20 32,59" fill="url(#c${u})"/><polygon points="34,59 36,30 42,22 48,32 43,59" fill="url(#c${u})" opacity=".92"/><polygon points="45,59 47,42 51,37 54,43 52,59" fill="url(#d${u})"/><g stroke="#fff" stroke-width=".9" opacity=".55" fill="none"><path d="M28 5 V40 M15 22 V44 M42 22 V46"/></g>`)},
   {id:'aqd-brain',type:'aqdeco',rarity:'common',price:150,w:46,nameAr:'مرجان دماغي',nameEn:'Brain coral',descAr:'قبة مرجان بنقش متعرّج',descEn:'A dome of coral with a winding pattern',
     svg:u=>aqSvg('0 0 64 40',`<defs><radialGradient id="b${u}" cx=".45" cy=".3" r=".8"><stop offset="0" stop-color="#f8d993"/><stop offset="1" stop-color="#b47a35"/></radialGradient></defs><path d="M3 40 Q1 7 32 5 Q63 7 61 40Z" fill="url(#b${u})"/><g fill="none" stroke="#86561f" stroke-width="1.7" stroke-linecap="round" opacity=".7"><path d="M10 35 Q12 20 22 16 Q30 13 28 22 Q26 30 36 28 Q46 26 44 16"/><path d="M16 38 Q18 29 26 31 Q34 35 40 35 Q50 35 52 25 Q54 16 48 12"/><path d="M8 27 Q8 16 16 12 M55 35 Q59 27 57 20 M30 10 Q38 8 42 12"/></g>`)},
@@ -4887,40 +4933,51 @@ const AQ_DECOS=[
   {id:'aqd-anemone',type:'aqdeco',rarity:'uncommon',price:480,w:46,nameAr:'شقائق البحر',nameEn:'Sea anemone',descAr:'لوامس وردية تتحرك مع الماي',descEn:'Pink tentacles moving with the water',
     svg:u=>{ const t=Array.from({length:13},(_,i)=>{ const a=(-72+i*12)*Math.PI/180, x2=30+Math.sin(a)*25, y2=31-Math.cos(a)*23; return `<path d="M30 33 Q${(30+Math.sin(a)*12+(i%2?3:-3)).toFixed(1)} ${(31-Math.cos(a)*14).toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/><circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.1" fill="#ffe0ef" stroke="none"/>`; }).join('');
       return aqSvg('0 0 60 56',`<defs><linearGradient id="n${u}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f06b9c"/><stop offset="1" stop-color="#ffb3cf"/></linearGradient><linearGradient id="o${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f08a4b"/><stop offset="1" stop-color="#b9532a"/></linearGradient></defs><g class="aq-tent" stroke="url(#n${u})" stroke-width="3.2" fill="none" stroke-linecap="round">${t}</g><path d="M17 56 Q15 39 30 33 Q45 39 43 56Z" fill="url(#o${u})"/><path d="M22 52 Q30 47 38 52" stroke="#8f3d1d" stroke-width="1" fill="none" opacity=".5"/>`); }},
-  {id:'aqd-clam',type:'aqdeco',rarity:'uncommon',price:560,w:44,nameAr:'محارة اللولو',nameEn:'Pearl clam',descAr:'محارة تنفتح وتبيّن لولوة — مثل أيام الغوص',descEn:'A clam that opens to show a pearl',
+  {id:'aqd-clam',type:'aqdeco',rarity:'uncommon',price:560,w:44,poke:'pearl',nameAr:'محارة اللولو',nameEn:'Pearl clam',descAr:'محارة تنفتح وتبيّن لولوة — مثل أيام الغوص',descEn:'A clam that opens to show a pearl',
     svg:u=>{ const edge=(y0,dir)=>Array.from({length:9},(_,i)=>`${6+i*6.5},${y0+(i%2?dir*3:0)}`).join(' ');
       return aqSvg('0 0 64 46',`<defs><radialGradient id="p${u}" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d6d0ee"/></radialGradient><linearGradient id="s${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2d1b2"/><stop offset="1" stop-color="#9c8664"/></linearGradient></defs><path d="M6 33 Q32 47 58 33 Q54 27 32 27 Q10 27 6 33Z" fill="url(#s${u})"/><path d="M11 31 Q32 37 53 31 Q32 27 11 31Z" fill="#2b6db0"/><circle cx="32" cy="29.5" r="5" fill="url(#p${u})" class="aq-pearl"/><g class="aq-clam-lid"><path d="M6 30 Q4 9 32 5 Q60 9 58 30 Q32 23 6 30Z" fill="url(#s${u})"/><g stroke="#8a7452" stroke-width="1" opacity=".6" fill="none">${[-4,-2,0,2,4].map(k=>`<path d="M32 26 L${32+k*6} ${9+Math.abs(k)*2}"/>`).join('')}</g><polyline points="${edge(29,-1)}" fill="none" stroke="#f3e6cc" stroke-width="1.2"/></g>`); }},
   {id:'aqd-helmet',type:'aqdeco',rarity:'epic',price:1600,w:40,bubbles:1,nameAr:'خوذة الغواص',nameEn:'Diving helmet',descAr:'خوذة نحاسية قديمة تطلع منها فقاعات',descEn:'An old brass helmet that breathes bubbles',
     svg:u=>aqSvg('0 0 56 58',`<defs><radialGradient id="h${u}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#ffe6a4"/><stop offset=".55" stop-color="#c88f37"/><stop offset="1" stop-color="#734c18"/></radialGradient></defs><path d="M6 56 Q5 46 12 43 L44 43 Q51 46 50 56Z" fill="#87591f"/><g fill="#f0cc78">${[10,18,28,38,46].map(x=>`<circle cx="${x}" cy="47" r="1.4"/>`).join('')}</g><circle cx="28" cy="25" r="19" fill="url(#h${u})"/><path d="M28 6 V2" stroke="#c88f37" stroke-width="3.2" stroke-linecap="round"/><circle cx="28" cy="26" r="8.5" fill="#123546" stroke="#efc670" stroke-width="2.6"/><path d="M20 26 H36 M28 18 V34" stroke="#efc670" stroke-width="1" opacity=".7"/><circle cx="25" cy="23" r="2.4" fill="#fff" opacity=".35"/><circle cx="11.5" cy="26" r="4.4" fill="#123546" stroke="#efc670" stroke-width="2"/><circle cx="44.5" cy="26" r="4.4" fill="#123546" stroke="#efc670" stroke-width="2"/><path d="M14 12 Q20 7 26 7" stroke="#fff" stroke-width="1.6" opacity=".35" fill="none" stroke-linecap="round"/>`)},
   {id:'aqd-dhow',type:'aqdeco',rarity:'epic',price:2100,w:98,nameAr:'جالبوت غارق',nameEn:'Sunken dhow',descAr:'جالبوت خشب كويتي قديم نايم بقاع البحر',descEn:'An old Kuwaiti wooden dhow resting on the sea floor',
     svg:u=>aqSvg('0 0 124 58',`<defs><linearGradient id="k${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93613a"/><stop offset="1" stop-color="#432812"/></linearGradient></defs><g transform="rotate(-6 62 42)"><path d="M2 14 L10 30 Q24 50 62 52 Q98 52 112 36 L120 26 L104 31 L18 31Z" fill="url(#k${u})"/><path d="M2 14 L6 13 L14 30" stroke="#5c3a1e" stroke-width="2" fill="none"/><path d="M12 36 Q62 46 108 35 M18 42 Q62 52 102 41" stroke="#2c180a" stroke-width="1.3" fill="none" opacity=".7"/><path d="M18 31 L104 31" stroke="#b9844f" stroke-width="2.4"/><g stroke="#2c180a" stroke-width="1.2" opacity=".5">${[30,44,58,72,86].map(x=>`<path d="M${x} 31 V${44+(x%3)}"/>`).join('')}</g><ellipse cx="44" cy="42" rx="5" ry="3" fill="#1a0f06"/><path d="M60 31 L78 6" stroke="#6b4426" stroke-width="3.6" stroke-linecap="round"/><path d="M78 6 L83 4" stroke="#6b4426" stroke-width="2.4" stroke-linecap="round"/><path d="M64 26 Q72 15 75 10 L69 28Z" fill="#dccca6" opacity=".75"/><g stroke="#4f8a3a" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".9"><path d="M24 31 Q20 22 25 16"/><path d="M92 31 Q96 22 91 15"/><path d="M98 32 Q103 26 100 20"/></g></g>`)},
-  {id:'aqd-jelly',type:'aqdeco',rarity:'mythic',price:4800,w:26,float:1,cls:'aq-jellyd',nameAr:'قنديل مضيء',nameEn:'Glowing jellyfish',descAr:'قنديل بحر يطفو ويضوي بنفسجي',descEn:'A jellyfish that floats and glows violet',
+  {id:'aqd-jelly',type:'aqdeco',rarity:'mythic',price:4800,w:26,float:1,cls:'aq-jellyd',poke:'spark',nameAr:'قنديل مضيء',nameEn:'Glowing jellyfish',descAr:'قنديل بحر يطفو ويضوي بنفسجي',descEn:'A jellyfish that floats and glows violet',
     svg:u=>aqSvg('0 0 40 66',`<defs><radialGradient id="j${u}" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#fff0ff"/><stop offset=".6" stop-color="#e996ff" stop-opacity=".88"/><stop offset="1" stop-color="#9b4dff" stop-opacity=".55"/></radialGradient></defs><path d="M4 22 Q4 2 20 2 Q36 2 36 22 Q32 20 28 23 Q24 20 20 23 Q16 20 12 23 Q8 20 4 22Z" fill="url(#j${u})"/><g class="aq-tent" fill="none" stroke="#f4c0ff" stroke-width="1.4" stroke-linecap="round" opacity=".85"><path d="M10 22 Q6 36 11 48 Q14 56 9 64"/><path d="M17 23 Q14 40 19 52"/><path d="M24 23 Q28 38 23 54 Q21 60 24 65"/><path d="M31 22 Q35 34 30 46"/></g><ellipse cx="15" cy="10" rx="5" ry="3" fill="#fff" opacity=".4"/>`)},
+  {id:'aqd-bottle',type:'aqdeco',rarity:'common',price:180,w:46,nameAr:'رسالة بقنينة',nameEn:'Message in a bottle',descAr:'قنينة خضرا فيها رسالة ملفوفة',descEn:'A green bottle with a rolled-up note inside',
+    svg:u=>aqSvg('0 0 62 28',`<defs><linearGradient id="g${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8ecbb" stop-opacity=".85"/><stop offset="1" stop-color="#2c8652" stop-opacity=".92"/></linearGradient></defs><g transform="rotate(-6 31 16)"><path d="M6 10 Q6 4 12 4 L36 4 Q40 4 44 8 L52 10 L52 18 L44 20 Q40 24 36 24 L12 24 Q6 24 6 18Z" fill="url(#g${u})"/><rect x="52" y="10.5" width="6.5" height="7" rx="1.6" fill="#b07a46"/><rect x="14" y="9" width="20" height="10" rx="3" fill="#f4e5c2"/><path d="M16 12 H31 M16 15 H27" stroke="#ae966a" stroke-width="1"/><path d="M10 7 Q20 5 34 6" stroke="#fff" stroke-width="1.6" opacity=".55" fill="none"/></g>`)},
+  {id:'aqd-lantern',type:'aqdeco',rarity:'uncommon',price:650,w:24,float:1,cls:'aq-lanternd',poke:'spark',nameAr:'فانوس',nameEn:'Lantern',descAr:'فانوس نحاسي يطفو ويضوي دافي',descEn:'A brass lantern that floats and glows warm',
+    svg:u=>aqSvg('0 0 36 58',`<defs><radialGradient id="l${u}" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff7cf"/><stop offset=".6" stop-color="#ffcb4f"/><stop offset="1" stop-color="#e0891f"/></radialGradient></defs><circle cx="18" cy="4" r="3" fill="none" stroke="#b8862f" stroke-width="2"/><path d="M10 12 L18 6 L26 12Z" fill="#c9953a"/><rect x="9" y="12" width="18" height="3" fill="#a87a2a"/><path d="M9 15 L7 40 L29 40 L27 15Z" fill="url(#l${u})"/><path d="M13 15 L12 40 M18 15 V40 M23 15 L24 40" stroke="#a87a2a" stroke-width="1.4"/><path d="M9 22 H27 M8 32 H28" stroke="#a87a2a" stroke-width="1.2"/><path d="M6 40 H30 L27 46 H9Z" fill="#c9953a"/><path d="M12 46 L18 56 L24 46Z" fill="#a87a2a"/>`)},
+  {id:'aqd-volcano',type:'aqdeco',rarity:'epic',price:1800,w:58,bubbles:2,poke:'spark',nameAr:'بركان فقاعات',nameEn:'Bubble volcano',descAr:'بركان صغير يطلع منه فقاعات وضوء نار',descEn:'A little volcano puffing bubbles and a fiery glow',
+    svg:u=>aqSvg('0 0 70 44',`<defs><linearGradient id="v${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e5d55"/><stop offset="1" stop-color="#2c2421"/></linearGradient><radialGradient id="o${u}" cx=".5" cy=".2" r=".6"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient></defs><ellipse cx="35" cy="10" rx="18" ry="11" fill="url(#o${u})" class="aq-lava"/><path d="M2 44 L26 8 Q35 4 44 8 L68 44Z" fill="url(#v${u})"/><ellipse cx="35" cy="9" rx="9.5" ry="3" fill="#ff7a2a"/><path d="M33 10 Q30 22 34 30 Q31 36 33 44" stroke="#ff8a3a" stroke-width="2" fill="none" opacity=".75"/><g fill="#4a3d38"><circle cx="18" cy="34" r="2"/><circle cx="52" cy="30" r="2.4"/><circle cx="44" cy="38" r="1.6"/></g>`)},
 ];
 const AQ_ITEMS=[...AQ_TANKS,...AQ_DECOS];
 function cosFind(id){ return COSMETICS_CATALOG.find(c=>c.id===id)||AQ_ITEMS.find(c=>c.id===id); }
 function aqTheme(id){ return AQ_TANKS.find(x=>x.id===id)||AQ_TANKS[0]; }
 function aqDecoById(id){ return AQ_DECOS.find(x=>x.id===id); }
 function aqOwns(id,level){ if(id==='tank-gulf') return true; const d=aqDecoById(id); if(d&&d.lvl&&level>=d.lvl) return true; return !!(P.inventory||{})[id]; }
-function aqLayout(level){
-  const eq=P.equipped||{}, n=aqSpotCount(level), out=[];
-  if(!eq.aqSet){ const gifts=AQ_DECOS.filter(d=>d.lvl&&level>=d.lvl).map(d=>d.id); for(let i=0;i<n;i++) out.push(gifts[i]||null); return out; }
-  for(let i=0;i<n;i++){ const id=eq['aq'+i]; out.push(id&&aqDecoById(id)&&aqOwns(id,level)?id:null); }
-  return out;
+function aqParse(str){ return String(str||'').split(';').filter(Boolean).map(t=>{ const a=t.split(','); return {id:a[0], x:Math.max(2,Math.min(98,+a[1]||50)), front:a[2]==='f', flip:a[3]==='1', y:a[4]!=null&&a[4]!==''?Math.max(14,Math.min(72,+a[4])):null}; }); }
+function aqStr(items){ return items.map(it=>[it.id,Math.round(it.x),it.front?'f':'b',it.flip?1:0,it.y!=null?Math.round(it.y):''].join(',')).join(';'); }
+/* what is in the tank: saved layout → the older 4-spot layout → the level gifts */
+function aqItems(level){
+  const eq=P.equipped||{}; let items;
+  if(eq.aqDeco!=null) items=aqParse(eq.aqDeco);
+  else if(eq.aqSet) items=[0,1,2,3].map(i=>eq['aq'+i]?{id:eq['aq'+i],x:AQ_SPOTS[i],front:false,flip:false,y:null}:null).filter(Boolean);
+  else items=AQ_DECOS.filter(d=>d.lvl&&level>=d.lvl).map((d,i)=>({id:d.id,x:AQ_SPOTS[i%4]+(i>=4?12:0),front:false,flip:false,y:null}));
+  const seen=new Set();
+  return items.filter(it=>{ if(seen.has(it.id)||!aqDecoById(it.id)||!aqOwns(it.id,level)) return false; seen.add(it.id); return true; }).slice(0,aqMaxDecos(level));
 }
-function aqSaveLayout(arr){
-  P.equipped=P.equipped||{}; const upd={aqSet:1};
-  arr.forEach((id,i)=>{ P.equipped['aq'+i]=id||null; upd['aq'+i]=id||null; });
-  P.equipped.aqSet=1;
-  if(fbDb&&currentUser){ try{ fsDataRef('profile').set({equipped:upd},{merge:true}).catch(()=>{}); }catch(e){} }
-  storageSet('profile',JSON.stringify(P));
+function aqSaveItems(items){ P.equipped=P.equipped||{}; P.equipped.aqDeco=aqStr(items); persistEquippedSlot('aqDeco'); storageSet('profile',JSON.stringify(P)); }
+/* the middle of the widest empty stretch of sand */
+function aqFreeX(items){
+  const xs=[0,...items.filter(i=>!(aqDecoById(i.id)||{}).float).map(i=>i.x).sort((a,b)=>a-b),100]; let best=50,gap=-1;
+  for(let i=1;i<xs.length;i++){ const g=xs[i]-xs[i-1]; if(g>gap){ gap=g; best=(xs[i]+xs[i-1])/2; } }
+  return Math.max(8,Math.min(92,best));
 }
 function aqSetTank(id){ P.equipped=P.equipped||{}; P.equipped.tank=id; persistEquippedSlot('tank'); storageSet('profile',JSON.stringify(P)); }
-/* put a new decoration in the first free spot (keeps the current look) */
+/* a new decoration goes to the widest free stretch of sand (if there's room) */
 function aqAutoPlace(id,level){
-  const lay=aqLayout(level); if(lay.includes(id)) return true;
-  const i=lay.indexOf(null); if(i<0){ aqSaveLayout(lay); return false; }
-  lay[i]=id; aqSaveLayout(lay); return true;
+  const items=aqItems(level); if(items.some(i=>i.id===id)) return true;
+  if(items.length>=aqMaxDecos(level)) return false;
+  items.push({id,x:aqFreeX(items),front:false,flip:false,y:null}); aqSaveItems(items); return true;
 }
 function aqHash(s){ return (typeof hashSeed==='function')?hashSeed(s):[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7); }
 function aqWeedSvg(T,u,i){
@@ -4957,19 +5014,16 @@ function aqSceneBack(T,o){
   if(T.ray) p.push([12,42,70].map((l,i)=>`<div class="aq-ray" style="left:${l}%;animation-delay:${-i*2}s;opacity:${T.ray}"></div>`).join(''));
   p.push(`<div class="aq-caustic" style="opacity:${T.dark?.18:.5}"></div>`);
   p.push(`<div class="aq-back2">${aqBackHtml(T,u)}</div>`);
+  if(!o.mini&&!o.center) p.push(`<div class="aq-school" style="top:${T.dark?36:30}%;color:${T.dark?'rgba(170,225,255,.3)':'rgba(8,40,72,.22)'}">${AQ_SCHOOL_SVG}</div>`);
   p.push(aqExtraHtml(T,u,o.big));
   [[2,1],[21,.7],[46,.85],[71,.75],[93,1.05],[12,.5],[82,.55]].forEach(([x,s],i)=>{ const h=Math.round(58*s*(o.center?.62:z)); p.push(`<div class="aq-weed" style="left:${x}%;height:${h}px;width:${Math.round(h*.5)}px;animation-delay:${-i*1.3}s;animation-duration:${4.5+i%3}s">${aqWeedSvg(T,u,i)}</div>`); });
   p.push(`<div class="aq-sand2">${aqSandHtml(T,u)}</div>`);
-  (o.layout||[]).forEach((id,i)=>{ const d=id&&aqDecoById(id); if(!d) return;
-    const left=o.center?50:AQ_SPOTS[i]; let w=Math.round(d.w*z*(o.center?1.35:1));
-    if(o.center&&o.h){ const m=d.svg('x').match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/); if(m) w=Math.min(w,Math.round(o.h*.7*(+m[1])/(+m[2]))); }
-    p.push(`<div class="aq-deco2${d.cls?' '+d.cls:''}" style="left:${left}%;width:${w}px;max-width:${o.center?60:(d.w>80?36:21)}%;${d.float?`bottom:${o.center?22:30}%;`:''}">${d.svg(u+'_'+i)}</div>`);
-    if(d.bubbles) for(let k=0;k<3;k++) p.push(`<div class="aq-bub" style="left:calc(${left}% + ${k*4-4}px);bottom:${12+k*2}%;animation-delay:${-k*1.2}s;animation-duration:${3.4+k*.7}s"></div>`);
-  });
+  p.push(aqDecosHtml(o,false,u,z));
   return p.join('');
 }
 function aqSceneFront(T,o){
-  const p=[];
+  const p=[], z=o.big?2:(o.mini?.72:1.22);
+  p.push(aqDecosHtml(o,true,++_aqU,z));
   if(!o.mini) p.push(`<div class="aq-weed aq-front" style="left:-3%;height:${o.big?88:52}px;width:${o.big?40:24}px;animation-duration:6s">${aqWeedSvg(T,'f'+(++_aqU),9)}</div><div class="aq-weed aq-front" style="left:98%;height:${o.big?74:44}px;width:${o.big?34:20}px;animation-duration:5.2s;animation-delay:-2s">${aqWeedSvg(T,'f'+(++_aqU),11)}</div>`);
   if(!o.mini) p.push(Array.from({length:5},(_,i)=>`<div class="aq-bub" style="left:${14+i*17}%;animation-delay:${-i*0.9}s;animation-duration:${4+i%3}s"></div>`).join(''));
   p.push(`<div class="aq-surface"></div>`);
@@ -4979,15 +5033,87 @@ function aqSceneFront(T,o){
 }
 function aqTankStyle(T){ return `background:linear-gradient(180deg,${T.water[0]} 0%,${T.water[1]} 48%,${T.water[2]} 100%)`; }
 /* small static tank for the Store tiles */
-function aqMiniHtml(T,layout,center,h){ return `<div class="aq-tank aq-mini" style="${aqTankStyle(T)};height:${h||96}px">${aqSceneBack(T,{mini:!center,layout,center,h:h||96})}${aqSceneFront(T,{mini:true})}</div>`; }
+function aqMiniHtml(T,o,h){ o=o||{}; const oo={mini:!o.center,items:o.items,center:o.center,h:h||96}; return `<div class="aq-tank aq-mini" style="${aqTankStyle(T)};height:${h||96}px">${aqSceneBack(T,oo)}${aqSceneFront(T,{...oo,mini:true})}</div>`; }
+const AQ_SCHOOL_SVG=`<svg viewBox="0 0 120 30" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">${[[8,12],[24,6],[30,18],[46,10],[60,20],[66,4],[82,13],[96,8],[104,20]].map(([x,y])=>`<g transform="translate(${x},${y})" fill="currentColor"><ellipse cx="6" cy="3" rx="5.5" ry="2.3"/><path d="M1 3 L-3 0 L-3 6Z"/></g>`).join('')}</svg>`;
+function aqDecoHtml(d,it,i,u,z,o){
+  let w=Math.round(d.w*z*(o.center?1.35:(it.front?1.12:1)));
+  if(o.center&&o.h){ const m=d.svg('x').match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/); if(m) w=Math.min(w,Math.round(o.h*.7*(+m[1])/(+m[2]))); }
+  const bottom=d.float?(o.center?22:(it.y!=null?it.y:32)):(it.front?0:4);
+  const bub=d.bubbles?Array.from({length:d.bubbles>1?5:3},(_,k)=>`<span class="aq-bub aq-dbub" style="left:${42+k*5}%;animation-delay:${-k*0.9}s;animation-duration:${3+k*.6}s"></span>`).join(''):'';
+  return `<div class="aq-deco2${d.cls?' '+d.cls:''}${it.front?' fr':''}" data-di="${i}" data-did="${d.id}" style="left:${o.center?50:it.x}%;width:${w}px;max-width:${o.center?60:(d.w>80?36:22)}%;bottom:${bottom}%"><div class="aq-flip"${it.flip?' style="transform:scaleX(-1)"':''}>${d.svg(u+'_'+i)}</div>${bub}</div>`;
+}
+function aqDecosHtml(o,front,u,z){
+  if(o.center){ if(front) return ''; const d=aqDecoById(o.center); return d?aqDecoHtml(d,{x:50},0,u,z,o):''; }
+  return (o.items||[]).map((it,i)=>{ if(!!it.front!==front) return ''; const d=aqDecoById(it.id); return d?aqDecoHtml(d,it,i,u,z,o):''; }).join('');
+}
+/* ---- playing with the tank (big view) ---- */
+function aqDayStr(off){ const d=new Date(); d.setDate(d.getDate()-(off||0)); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function aqMoodHtml(clear,items){
+  const ar=LANG==='ar', fed=!!(P.aqFed&&P.aqFed.day===aqDayStr(0));
+  const n=(fed?2:0)+(clear>=.7?2:(clear>=.35?1:0))+(items.length>=3?1:0), tips=[];
+  if(!fed) tips.push(ar?'أكّلهم 🍤':'feed them 🍤'); if(clear<.7) tips.push(ar?'خلّص مهام يومك':'finish today’s tasks'); if(items.length<3) tips.push(ar?'زيّن الحوض':'decorate');
+  return `<div class="aq-mood"><span>${ar?'مزاج السمك':'Fish mood'} ${'❤️'.repeat(n)}${'🤍'.repeat(5-n)}</span><small>${tips.length?(ar?'يرفعه: ':'Raise it: ')+tips.join(' · '):(ar?'سمكك مستانس 🥰':'Your fish are happy 🥰')}</small></div>`;
+}
+async function aqFeedReward(){
+  const today=aqDayStr(0); P.aqFed=P.aqFed||{};
+  if(P.aqFed.day===today) return null;
+  const streak=P.aqFed.day===aqDayStr(1)?(P.aqFed.streak||0)+1:1, coins=Math.min(15,5+Math.floor(streak/3)*2);
+  P.aqFed={day:today,streak}; P.coins=(P.coins||0)+coins;
+  await storageSet('profile',JSON.stringify(P)); try{ await incrementXpCoins(0,coins); }catch(e){}
+  try{ renderNavXpChip(); }catch(e){}
+  return {coins,streak};
+}
+/* food falls, every fish swims over to a flake, eats it (❤) and swims back */
+async function aqFeed(tank){
+  if(tank._feeding) return; tank._feeding=1; playSfx('water');
+  const W=tank.clientWidth, spots=[];
+  for(let i=0;i<10;i++){ const x=12+Math.random()*76, fl=document.createElement('div'); fl.className='aq-flake'; fl.style.left=x+'%'; fl.style.animationDelay=(Math.random()*0.5)+'s'; tank.appendChild(fl); spots.push({x,fl}); setTimeout(()=>fl.remove(),3800); }
+  tank.classList.add('feeding');
+  const face=dx=>`scaleX(${dx>0?-1:1})`;
+  [...tank.querySelectorAll('.aq-swim')].forEach((f,i)=>{
+    if(!f._mv||!f.animate) return;
+    const sp=spots[i%spots.length], d=f.querySelector('.aq-dir'), fw=f.offsetWidth||30;
+    let cur=0; try{ cur=new DOMMatrixReadOnly(getComputedStyle(f).transform).m41; }catch(e){}
+    const tx=Math.max(0,Math.min(W-fw,W*sp.x/100-fw/2));
+    f._mv.pause(); const dAn=d&&d.getAnimations?d.getAnimations():[]; dAn.forEach(a=>a.pause());
+    const dur=2600+Math.random()*700, a=`translateX(${cur}px)`, b=`translateX(${tx}px)`;
+    /* one continuous trip: out to the food, nibble, back to where it was — it ends exactly where the
+       paused swim left off, so resuming is seamless even if the finish event arrives late */
+    const trip=f.animate([{transform:a,offset:0,easing:'ease-out'},{transform:b,offset:.42},{transform:b,offset:.6,easing:'ease-in-out'},{transform:a,offset:1}],{duration:dur,fill:'forwards'});
+    const turn=d&&d.animate([{transform:face(tx-cur),offset:0},{transform:face(tx-cur),offset:.6},{transform:face(cur-tx),offset:.601},{transform:face(cur-tx),offset:1}],{duration:dur,fill:'forwards'});
+    let done=false; const resume=()=>{ if(done) return; done=true; trip.cancel(); if(turn) turn.cancel(); f._mv.play(); dAn.forEach(x=>x.play()); };
+    trip.onfinish=resume; trip.oncancel=resume;
+    setTimeout(()=>{ if(i<10){ const h=document.createElement('div'); h.className='aq-heart'; h.textContent='❤'; h.style.left=(tx+fw/2)+'px'; h.style.top=Math.max(4,f.offsetTop-8)+'px'; tank.appendChild(h); setTimeout(()=>h.remove(),1200); } sp.fl.style.opacity='0'; },dur*.45);
+  });
+  setTimeout(()=>{ tank.classList.remove('feeding'); tank._feeding=0; },3600);
+  const rw=await aqFeedReward(), ar=LANG==='ar';
+  if(rw){ showToast(ar?`🍤 سمكك شبعان! +${rw.coins} 🪙 · أكّلتهم ${rw.streak} يوم ورا بعض`:`🍤 Your fish are full! +${rw.coins} 🪙 · fed ${rw.streak} day${rw.streak>1?'s':''} in a row`,'success');
+    const m=tank.parentElement&&tank.parentElement.querySelector('.aq-mood'); if(m&&tank._mood) m.outerHTML=aqMoodHtml(tank._mood.clear,tank._mood.items); }
+}
+function aqInRect(el,e,pad){ const r=el.getBoundingClientRect(); pad=pad||0; return e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad; }
+function aqHitFish(tank,e){ let hit=null; tank.querySelectorAll('.aq-swim').forEach(f=>{ if(aqInRect(f,e,6)) hit=f; }); return hit; }
+function aqPoke(tank,el){
+  el.classList.remove('poke'); void el.offsetWidth; el.classList.add('poke'); playSfx('pop');
+  const d=aqDecoById(el.dataset.did), tr=tank.getBoundingClientRect(), r=el.getBoundingClientRect(), cx=r.left+r.width/2-tr.left, cy=r.top+r.height*.35-tr.top, kind=(d&&d.poke)||'bub';
+  for(let k=0;k<8;k++){ const s=document.createElement('div'); s.className='aq-burst '+kind; s.style.left=cx+'px'; s.style.top=cy+'px'; s.style.setProperty('--dx',(Math.random()*70-35)+'px'); s.style.setProperty('--dy',(-25-Math.random()*45)+'px'); s.style.animationDelay=(k*0.04)+'s'; tank.appendChild(s); setTimeout(()=>s.remove(),1200); }
+}
+/* tap a decoration → it reacts; tap the water → ripple and nearby fish dart away */
+function aqTapScene(tank,e){
+  let deco=null; tank.querySelectorAll('.aq-deco2').forEach(el=>{ if(aqInRect(el,e)) deco=el; });
+  if(deco){ aqPoke(tank,deco); return; }
+  const tr=tank.getBoundingClientRect(), x=e.clientX-tr.left, y=e.clientY-tr.top, rp=document.createElement('div');
+  rp.className='aq-ripple'; rp.style.left=x+'px'; rp.style.top=y+'px'; tank.appendChild(rp); setTimeout(()=>rp.remove(),800); playSfx('water');
+  tank.querySelectorAll('.aq-swim').forEach(f=>{ const r=f.getBoundingClientRect(), cx=r.left+r.width/2-tr.left, cy=r.top+r.height/2-tr.top;
+    if(Math.hypot(cx-x,cy-y)<tr.width*.32){ const b=f.querySelector('.aq-bob'); if(b){ b.classList.remove('scare'); void b.offsetWidth; b.classList.add('scare'); setTimeout(()=>b.classList.remove('scare'),700); } } });
+}
 
-async function renderAquarium(el,big){
+async function renderAquarium(el,big,ov){
   if(!el) return;
   const {list,total}=await aquariumFish(big?24:12), clear=await tankClarity(), ar=LANG==='ar';
   const hr=new Date().getHours(), night=(hr>=19||hr<5);
   const level=aqLevel(total), next=AQ_LEVELS[level+1];
-  const T=aqTheme((P.equipped||{}).tank), layout=aqLayout(level);
-  let html=`<div class="aq-tank aq2${big?' big':''}${night?' night':''}" style="${aqTankStyle(T)}">`+aqSceneBack(T,{big,layout});
+  const T=aqTheme((ov&&ov.tank)||(P.equipped||{}).tank), items=(ov&&ov.items)||aqItems(level);
+  let html=`<div class="aq-tank aq2${big?' big':''}${night?' night':''}" style="${aqTankStyle(T)}">`+aqSceneBack(T,{big,items});
   if(!list.length) html+=`<div class="aq-empty">${ar?'🎣 سجّل أول صيدة بالمقتنيات وبتسبح هني':'🎣 Log your first catch in the Collection and it will swim here'}</div>`;
   list.forEach(({sp},i)=>{
     const c=aqCreature(sp,big?1.25:0.9);
@@ -4996,14 +5122,15 @@ async function renderAquarium(el,big){
     const spark=c.rar==='legendary'?`<span class="aq-spark" style="left:-4px;top:40%"></span><span class="aq-spark" style="left:-10px;top:60%;animation-delay:.6s"></span><span class="aq-spark" style="left:-6px;top:20%;animation-delay:1.2s"></span>`:'';
     html+=`<div class="aq-swim" data-sp="${sp.id}" data-r0="${c.range[0]}" data-r1="${c.range[1]}" data-dur="${dur.toFixed(2)}" data-off="${(-dl).toFixed(2)}" style="top:${top}%;"><span class="aq-dir"><span class="aq-bob r-${c.rar}" style="--bob:${(2.2+(hashSeed(sp.id+'b')%10)/10).toFixed(1)}s;position:relative;">${c.inner}${spark}</span></span></div>`;
   });
-  html+=aqSceneFront(T,{big,night});
-  html+=`<div class="aq-murk" style="opacity:${(0.6*(1-clear)).toFixed(2)}"></div>`;
+  html+=aqSceneFront(T,{big,night,items});
+  html+=`<div class="aq-murk" style="opacity:${(0.4*(1-clear)).toFixed(2)}"></div>`;
   html+=`<div class="aq-level">🐠 ${ar?'مستوى الحوض':'Tank level'} ${level+1}</div></div>`;
   const pct=Math.round(clear*100);
   html+=`<div class="aq-cap"><span>🐠 <b class="num">${total}</b> ${ar?'نوع':'species'} · ${ar?'نقاء الماء':'water'} <b class="num">${pct}%</b></span><span>${pct>=100?(ar?'✨ يلمع!':'✨ Sparkling!'):(ar?'خلّص يومك وينظف':'finish today to clear it')}</span></div>`;
-  if(big){
+  if(big&&!(ov&&ov.preview)){
+    html+=aqMoodHtml(clear,items);
     html+=`<div class="aq-legend"><span>🟢 ${ar?'شائع':'common'}</span><span style="border-color:#5aaaff">🔵 ${ar?'غير شائع — توهج أزرق':'uncommon — blue glow'}</span><span style="border-color:#c37dff">🟣 ${ar?'ملحمي — بنفسجي':'epic — purple'}</span><span style="border-color:#ff5060">🔴 ${ar?'خرافي — أحمر نابض':'mythic — red pulse'}</span><span style="border-color:#ffd76a">🟡 ${ar?'أسطوري — ذهبي ولمعان':'legendary — gold sparkle'}</span></div>`;
-    if(next) html+=`<p class="panel-sub" style="margin:8px 0 0;">🎁 ${ar?`المستوى الجاي (${aqSpotCount(level+1)>aqSpotCount(level)?'مكان زينة جديد + ':''}هدية) لما توصل ${next.n} نوع`:`Next level (${aqSpotCount(level+1)>aqSpotCount(level)?'a new decoration spot + ':''}a gift) at ${next.n} species`}</p>`;
+    if(next) html+=`<p class="panel-sub" style="margin:8px 0 0;">🎁 ${ar?`المستوى الجاي (زينة زيادة + هدية) لما توصل ${next.n} نوع`:`Next level (one more decoration + a gift) at ${next.n} species`}</p>`;
     html+=`<div class="aq-tools"><button type="button" id="aqFeed">🍤 ${ar?'أكّل السمك':'Feed the fish'}</button><button type="button" id="aqArrange">🛠️ ${ar?'رتّب':'Arrange'}</button><button type="button" id="aqShop">🛒 ${ar?'المتجر':'Store'}</button><button type="button" data-nav="collections" id="aqToColl">🎣 ${ar?'المقتنيات':'Collection'}</button></div>`;
   }
   el.innerHTML=(big?'':`<div class="dash-title-row"><div class="home-preview-title" style="margin:0 0 8px;">${ar?'🐠 حوضك':'🐠 Your aquarium'}</div><button type="button" class="dash-link" data-nav="collections">${ar?'المقتنيات':'Collection'}</button></div>`)+html;
@@ -5013,7 +5140,8 @@ async function renderAquarium(el,big){
   if(!big) tank.onclick=()=>{ document.getElementById('dayTitle').textContent=ar?'🐠 حوضك':'🐠 Your aquarium'; document.getElementById('daySubtitle').textContent='';
     document.getElementById('cardBody').innerHTML='<div id="aqBig"></div>'; document.getElementById('overlay').classList.add('open'); renderAquarium(document.getElementById('aqBig'),true); };
   else {
-    tank.onclick=e=>{ const f=e.target.closest('.aq-swim'); if(!f) return; const sp=collSpeciesInfo('fish',f.dataset.sp); if(!sp) return;
+    tank._mood={clear,items};
+    tank.onclick=e=>{ const f=aqHitFish(tank,e); if(!f){ aqTapScene(tank,e); return; } const sp=collSpeciesInfo('fish',f.dataset.sp); if(!sp) return;
       tank.querySelectorAll('.aq-tip').forEach(x=>x.remove());
       const r=f.getBoundingClientRect(), tr=tank.getBoundingClientRect(), tip=document.createElement('div'); tip.className='aq-tip';
       tip.textContent=`${collName(sp)} · ${RARITY_TIERS[sp.rarity].icon} ${ar?RARITY_TIERS[sp.rarity].nameAr:RARITY_TIERS[sp.rarity].nameEn}`;
@@ -5021,8 +5149,7 @@ async function renderAquarium(el,big){
     const ab=el.querySelector('#aqArrange'); if(ab) ab.onclick=()=>openAqArrange();
     const sb=el.querySelector('#aqShop'); if(sb) sb.onclick=()=>{ overlay.classList.remove('open'); storeActiveTab='aquarium'; navTo('store'); };
     const fb=el.querySelector('#aqFeed');
-    if(fb) fb.onclick=()=>{ playSfx('water'); for(let i=0;i<14;i++){ const fl=document.createElement('div'); fl.className='aq-flake'; fl.style.left=(20+Math.random()*60)+'%'; fl.style.animationDelay=(Math.random()*0.8)+'s'; tank.appendChild(fl); setTimeout(()=>fl.remove(),3800); }
-      tank.classList.add('feeding'); setTimeout(()=>tank.classList.remove('feeding'),3200); };
+    if(fb) fb.onclick=()=>aqFeed(tank);
   }
 }
 /* every fish moves with transform only (compositor, no layout work each frame):
@@ -5040,85 +5167,139 @@ function aqStartMotion(tank,tries){
   });
 }
 function renderHomeAquarium(){ renderAquarium(document.getElementById('homeAquarium'),false); }
-async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.6*(1-c)).toFixed(2); }
+async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.4*(1-c)).toFixed(2); }
 
 /* ---- Store → 🐠 tab: tank themes + decorations ---- */
+async function aqLevelNow(){ const {total}=await aquariumFish(1); return aqLevel(total); }
+/* buy → theme goes on / decoration goes into the tank (if there's room) */
+async function aqBuy(it,level){
+  const ar=LANG==='ar', name=ar?it.nameAr:it.nameEn;
+  const ok=await confirmPurchase(it,name); if(!ok) return false;
+  try{ await buyCosmetic(it.id); let msg=name+(ar?' — تم الشراء':' purchased');
+    if(it.type==='tank') aqSetTank(it.id); else msg+=aqAutoPlace(it.id,level)?(ar?' وانحطت بحوضك 🐠':' and placed in your tank 🐠'):(ar?' — حوضك مليان، رتّبه عشان تحطها':' — your tank is full, arrange it to fit this in');
+    showToast(msg,'success'); renderHomeAquarium(); return true; }
+  catch(err){ showToast(err.message==='already owned'?t('store_owned'):err.message, err.message==='already owned'?undefined:'error'); return false; }
+}
+function aqItemState(it,level,items,curT){
+  const owned=aqOwns(it.id,level), isTank=it.type==='tank', inUse=isTank?curT.id===it.id:items.some(x=>x.id===it.id);
+  const coins=P.coins||0, short=it.price!=null?Math.max(0,it.price-coins):0;
+  return {owned,isTank,inUse,short};
+}
+/* the main button of a card / preview: Buy · Use · Put it in · Locked */
+function aqWireMain(b,it,level,items,curT,after){
+  const ar=LANG==='ar', st=aqItemState(it,level,items,curT);
+  if(st.owned){
+    if(st.isTank){ b.textContent=st.inUse?t('store_equipped'):(ar?'استخدمه':'Use it'); b.classList.add(st.inUse?'equipped':'primary');
+      b.onclick=()=>{ if(st.inUse) return; aqSetTank(it.id); playSfx('pop'); showToast((ar?'🐠 صار حوضك: ':'🐠 Your tank is now: ')+(ar?it.nameAr:it.nameEn),'success'); renderHomeAquarium(); if(after) after(); }; }
+    else { b.textContent=st.inUse?(ar?'✅ بحوضك — حرّكها':'✅ In your tank — move it'):(ar?'🛠️ حطها بالحوض':'🛠️ Put it in'); b.classList.add(st.inUse?'equipped':'primary'); b.onclick=()=>openAqArrange(it.id); }
+  } else if(it.lvl){ b.disabled=true; b.classList.add('aqs-lockbtn'); b.textContent=ar?`🔒 تنفتح بمستوى الحوض ${it.lvl+1} (${AQ_LEVELS[it.lvl].n} نوع)`:`🔒 Unlocks at tank level ${it.lvl+1} (${AQ_LEVELS[it.lvl].n} species)`; }
+  else if(st.short>0){ b.disabled=true; b.classList.add('aqs-lockbtn'); b.textContent=ar?`ناقصك ${st.short.toLocaleString()} 🪙`:`You need ${st.short.toLocaleString()} more 🪙`; }
+  else { b.classList.add('primary'); b.textContent=(ar?'اشتري':'Buy')+' · '+it.price.toLocaleString()+' 🪙'; b.onclick=async()=>{ b.disabled=true; await aqBuy(it,level); if(after) after(); }; }
+}
 async function renderStoreAquariumTab(content){
-  const ar=LANG==='ar', {total}=await aquariumFish(1), level=aqLevel(total), layout=aqLayout(level), curT=aqTheme((P.equipped||{}).tank);
+  const ar=LANG==='ar', level=await aqLevelNow(), items=aqItems(level), curT=aqTheme((P.equipped||{}).tank);
   if(storeActiveTab!=='aquarium') return;
-  const next=AQ_LEVELS[level+1];
-  content.innerHTML=`<div class="aqs-hero">${aqMiniHtml(curT,layout,false,130)}<div class="aqs-hero-row"><span>🐠 ${ar?'مستوى الحوض':'Tank level'} <b class="num">${level+1}</b> · ${ar?'أماكن الزينة':'Spots'} <b class="num">${aqSpotCount(level)}/4</b></span><button type="button" class="cos-btn primary" id="aqsArrange">🛠️ ${ar?'رتّب حوضك':'Arrange your tank'}</button></div>${next?`<p class="panel-sub" style="margin:6px 0 0">🎁 ${ar?`المستوى الجاي لما توصل ${next.n} نوع بالمقتنيات`:`Next level at ${next.n} species in your Collection`}</p>`:''}</div>
+  const next=AQ_LEVELS[level+1], max=aqMaxDecos(level);
+  content.innerHTML=`<div class="aqs-hero">${aqMiniHtml(curT,{items},130)}<div class="aqs-hero-row"><span>🐠 ${ar?'مستوى الحوض':'Tank level'} <b class="num">${level+1}</b> · ${ar?'الزينة':'Decorations'} <b class="num">${items.length}/${max}</b></span><button type="button" class="cos-btn primary" id="aqsArrange">🛠️ ${ar?'رتّب حوضك':'Arrange your tank'}</button></div>${next?`<p class="panel-sub" style="margin:6px 0 0">🎁 ${ar?`لما توصل ${next.n} نوع بالمقتنيات: مستوى جديد، مكان زينة زيادة وهدية`:`At ${next.n} species: a new level, one more decoration and a gift`}</p>`:''}</div>
+    <p class="panel-sub aqs-tip">👁️ ${ar?'اضغط على أي تصميم وجرّبه بحوضك مع سمكك قبل لا تشتري.':'Tap any design to try it in your own tank, with your fish, before you buy.'}</p>
     <h3 class="aqs-h">🖼️ ${ar?'ثيمات الحوض':'Tank themes'}</h3><div class="cos-grid" id="aqsTanks"></div>
-    <h3 class="aqs-h">🪸 ${ar?'الزينة':'Decorations'}</h3><p class="panel-sub">${ar?'كل مستوى حوض يفتح مكان زينة جديد (لين ٤) — وإنت تختار وين تحط كل وحدة.':'Each tank level opens a new spot (up to 4) — you choose where each one goes.'}</p><div class="cos-grid" id="aqsDecos"></div>`;
+    <h3 class="aqs-h">🪸 ${ar?'الزينة':'Decorations'}</h3><div class="cos-grid" id="aqsDecos"></div>`;
   const mk=(it,tile)=>{
-    const owned=aqOwns(it.id,level), isTank=it.type==='tank', inUse=isTank?curT.id===it.id:layout.includes(it.id);
-    const name=ar?it.nameAr:it.nameEn, desc=ar?it.descAr:it.descEn, rf=refundInfo(it);
-    const c=document.createElement('div'); c.className='cos-card aqs-card rar-'+it.rarity+(inUse?' is-equipped':'');
-    c.innerHTML=`${tile}<div class="cos-card-body"><div class="cos-card-name">${escapeHtml(name)}</div><div><span class="cos-tag aqs-rar" style="--rc:var(--cos-${it.rarity})">${t('cos_rarity_'+it.rarity)}</span>${owned&&it.price!=null?`<span class="cos-tag">${t('store_owned')}</span>`:''}</div>
-      <div class="cos-price">${escapeHtml(desc||'')}</div>
+    const st=aqItemState(it,level,items,curT), name=ar?it.nameAr:it.nameEn, desc=ar?it.descAr:it.descEn, rf=refundInfo(it);
+    const c=document.createElement('div'); c.className='cos-card aqs-card rar-'+it.rarity+(st.inUse?' is-equipped':'');
+    c.innerHTML=`<div class="aqs-tile" role="button" tabindex="0">${tile}<span class="aqs-try">👁️ ${ar?'جرّب':'Try'}</span></div><div class="cos-card-body"><div class="cos-card-name">${escapeHtml(name)}</div><div><span class="cos-tag aqs-rar" style="--rc:var(--cos-${it.rarity})">${t('cos_rarity_'+it.rarity)}</span>${st.owned&&it.price!=null?`<span class="cos-tag">${t('store_owned')}</span>`:''}</div>
+      <div class="cos-price">${escapeHtml(desc||'')}</div>${it.price!=null&&!st.owned?`<div class="aqs-price">${it.price.toLocaleString()} 🪙</div>`:(it.lvl&&!st.owned?`<div class="aqs-price gift">🎁 ${ar?'هدية مجانية':'Free gift'}</div>`:'')}
       <button type="button" class="cos-btn cos-btn-main"></button>${rf?`<button type="button" class="cos-btn cos-refund-btn">↩️ ${ar?`استرجاع +${rf.amount.toLocaleString()}`:`Refund +${rf.amount.toLocaleString()}`} 🪙</button>`:''}</div>`;
-    const b=c.querySelector('.cos-btn-main');
-    if(owned){
-      if(isTank){ b.textContent=inUse?t('store_equipped'):(ar?'استخدمه':'Use it'); if(inUse) b.classList.add('equipped');
-        b.onclick=()=>{ if(inUse) return; aqSetTank(it.id); playSfx('pop'); showToast((ar?'🐠 صار حوضك: ':'🐠 Your tank is now: ')+name,'success'); renderStoreSection(); renderHomeAquarium(); }; }
-      else { b.textContent=inUse?(ar?'✅ بحوضك — غيّر مكانها':'✅ In your tank — move it'):(ar?'🛠️ حطها بالحوض':'🛠️ Put it in'); if(inUse) b.classList.add('equipped'); b.onclick=()=>openAqArrange(it.id); }
-    } else if(it.lvl){ b.outerHTML=`<div class="aqs-locked">🔒 ${ar?`تنفتح بمستوى الحوض ${it.lvl+1} (${AQ_LEVELS[it.lvl].n} نوع)`:`Unlocks at tank level ${it.lvl+1} (${AQ_LEVELS[it.lvl].n} species)`}</div>`; }
-    else {
-      const can=(P.coins||0)>=it.price; b.classList.add('primary'); b.disabled=!can;
-      b.textContent=can?t('store_buy')+' · '+it.price.toLocaleString()+' 🪙':t('store_not_enough');
-      b.onclick=async()=>{
-        const ok=await confirmPurchase(it,name); if(!ok){ renderStoreSection(); return; }
-        b.disabled=true;
-        try{ await buyCosmetic(it.id); let msg=name+(ar?' — تم الشراء':' purchased');
-          if(isTank) aqSetTank(it.id); else msg+=aqAutoPlace(it.id,level)?(ar?' وانحطت بحوضك 🐠':' and placed in your tank 🐠'):(ar?' — رتّب حوضك عشان تحطها':' — arrange your tank to place it');
-          showToast(msg,'success'); }
-        catch(err){ showToast(err.message==='already owned'?t('store_owned'):err.message, err.message==='already owned'?undefined:'error'); }
-        renderStoreSection(); renderHomeAquarium();
-      };
-    }
+    aqWireMain(c.querySelector('.cos-btn-main'),it,level,items,curT,()=>renderStoreSection());
+    const tl=c.querySelector('.aqs-tile'); tl.onclick=()=>openAqPreview(it); tl.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openAqPreview(it); } };
     const rb=c.querySelector('.cos-refund-btn'); if(rb) rb.onclick=()=>askRefund(it,()=>{ renderStoreSection(); renderHomeAquarium(); });
     return c;
   };
   const byPrice=(a,b)=>(RARITY_ORDER_LIST.indexOf(a.rarity)-RARITY_ORDER_LIST.indexOf(b.rarity))||((a.price==null?-1:a.price)-(b.price==null?-1:b.price));
   const tg=document.getElementById('aqsTanks'), dg=document.getElementById('aqsDecos');
-  [...AQ_TANKS].sort(byPrice).forEach(it=>tg.appendChild(mk(it,aqMiniHtml(it,layout,false,96))));
-  [...AQ_DECOS].sort((a,b)=>(a.lvl?0:1)-(b.lvl?0:1)||byPrice(a,b)).forEach(it=>dg.appendChild(mk(it,aqMiniHtml(curT,[it.id],true,96))));
+  [...AQ_TANKS].sort(byPrice).forEach(it=>tg.appendChild(mk(it,aqMiniHtml(it,{items},96))));
+  [...AQ_DECOS].sort((a,b)=>(a.lvl?0:1)-(b.lvl?0:1)||byPrice(a,b)).forEach(it=>dg.appendChild(mk(it,aqMiniHtml(curT,{center:it.id},96))));
   document.getElementById('aqsArrange').onclick=()=>openAqArrange();
 }
-/* ---- arrange: pick a spot, then a decoration; pick a theme ---- */
-let _aqSel=0;
+/* ---- try it: your real tank, your fish, with this theme / decoration ---- */
+async function openAqPreview(it){
+  const ar=LANG==='ar', level=await aqLevelNow(), mine=aqItems(level), curT=aqTheme((P.equipped||{}).tank);
+  let tank=curT.id, items=mine.map(x=>({...x}));
+  if(it.type==='tank') tank=it.id;
+  else if(!items.some(x=>x.id===it.id)) items.push({id:it.id,x:aqFreeX(items),front:false,flip:false,y:null});
+  const name=ar?it.nameAr:it.nameEn;
+  document.getElementById('dayTitle').textContent='👁️ '+name;
+  document.getElementById('daySubtitle').textContent=ar?'معاينة بحوضك — ما تنحفظ إلا إذا اشتريت':'A preview in your tank — nothing is saved unless you buy';
+  document.getElementById('cardBody').innerHTML=`<div class="aqpv"><div class="aqpv-badge">👁️ ${ar?'معاينة':'Preview'}</div><div id="aqPv"></div><p class="cos-pv-desc">${escapeHtml((ar?it.descAr:it.descEn)||'')}</p><div class="cos-pv-status"><span class="dot" style="background:var(--cos-${it.rarity});"></span>${t('cos_rarity_'+it.rarity)}${it.price!=null?` · ${it.price.toLocaleString()} 🪙`:''} · ${ar?'رصيدك':'You have'} ${(P.coins||0).toLocaleString()} 🪙</div>
+    <button type="button" class="cos-btn cos-btn-main cos-pv-btn" id="aqPvMain"></button><button type="button" class="cos-btn cos-pv-btn" id="aqPvClose">${ar?'رجوع للمتجر':'Back to the Store'}</button></div>`;
+  overlay.classList.add('open');
+  await renderAquarium(document.getElementById('aqPv'),true,{tank,items,preview:true});
+  aqWireMain(document.getElementById('aqPvMain'),it,level,mine,curT,()=>{ renderStoreSection(); openAqPreview(it); });
+  document.getElementById('aqPvClose').onclick=()=>overlay.classList.remove('open');
+}
+/* ---- arrange: drag decorations anywhere, flip them, put them in front of / behind the fish ---- */
+let _aqSelI=-1;
 async function openAqArrange(focusId){
-  const ar=LANG==='ar', {total}=await aquariumFish(1), level=aqLevel(total), n=aqSpotCount(level);
-  let lay=aqLayout(level);
-  if(focusId){ const at=lay.indexOf(focusId); _aqSel=at>=0?at:lay.indexOf(null); }
-  if(!(_aqSel>=0&&_aqSel<n)) _aqSel=0;
+  const ar=LANG==='ar', level=await aqLevelNow(), max=aqMaxDecos(level);
+  let items=aqItems(level).map(x=>({...x}));
+  _aqSelI=-1;
+  if(focusId){ let i=items.findIndex(x=>x.id===focusId);
+    if(i<0&&aqOwns(focusId,level)){ if(items.length<max){ items.push({id:focusId,x:aqFreeX(items),front:false,flip:false,y:null}); aqSaveItems(items); i=items.length-1; } else showToast(ar?`حوضك مليان (${max}) — شيل زينة عشان تحط هذي`:`Your tank is full (${max}) — remove one to add this`); }
+    _aqSelI=i; }
   document.getElementById('dayTitle').textContent=ar?'🛠️ رتّب حوضك':'🛠️ Arrange your tank';
-  document.getElementById('daySubtitle').textContent=ar?'اختار مكان، بعدين اختار الزينة':'Pick a spot, then a decoration';
+  document.getElementById('daySubtitle').textContent=ar?'اسحب الزينة لأي مكان · اضغطها عشان تعدّلها':'Drag decorations anywhere · tap one to edit it';
+  const save=()=>{ aqSaveItems(items); renderHomeAquarium(); };
   const draw=()=>{
-    const T=aqTheme((P.equipped||{}).tank);
-    const decos=AQ_DECOS.filter(x=>aqOwns(x.id,level)), tanks=AQ_TANKS.filter(x=>aqOwns(x.id,level));
-    const spots=AQ_SPOTS.map((x,i)=>i<n?`<button type="button" class="aq-spot${i===_aqSel?' on':''}" data-spot="${i}" style="left:${x}%" aria-label="${ar?'مكان':'Spot'} ${i+1}">${i+1}</button>`:`<span class="aq-spot locked" style="left:${x}%">🔒</span>`).join('');
-    document.getElementById('cardBody').innerHTML=`<div class="aq-arr"><div class="aq-tank aq2 big" style="${aqTankStyle(T)}">${aqSceneBack(T,{big:true,layout:lay})}${aqSceneFront(T,{big:true})}${spots}</div>
-      <div class="aq-arr-h">📍 ${ar?`المكان ${_aqSel+1} — اختار شنو تحط فيه`:`Spot ${_aqSel+1} — choose what goes here`}</div>
-      <div class="aq-pick">${decos.map(d=>`<button type="button" class="aq-pick-it${lay[_aqSel]===d.id?' on':''}" data-deco="${d.id}"><span class="pv">${d.svg('pk_'+d.id)}</span><small>${escapeHtml(ar?d.nameAr:d.nameEn)}</small></button>`).join('')}<button type="button" class="aq-pick-it" data-deco=""><span class="pv none">✕</span><small>${ar?'فاضي':'Empty'}</small></button></div>
-      ${!decos.length?`<p class="panel-sub">${ar?'ما عندك زينة ليلحين — صيد أنواع أكثر أو اشتري من المتجر.':'No decorations yet — catch more species or buy some in the Store.'}</p>`:''}
-      ${n<4&&AQ_LEVELS[level+1]?`<p class="panel-sub">🔒 ${ar?`المكان الجاي ينفتح لما توصل ${AQ_LEVELS[level+1].n} نوع`:`The next spot opens at ${AQ_LEVELS[level+1].n} species`}</p>`:''}
+    const T=aqTheme((P.equipped||{}).tank), sel=items[_aqSelI], sd=sel&&aqDecoById(sel.id);
+    const owned=AQ_DECOS.filter(x=>aqOwns(x.id,level)), tanks=AQ_TANKS.filter(x=>aqOwns(x.id,level));
+    const next=AQ_LEVELS[level+1];
+    document.getElementById('cardBody').innerHTML=`<div class="aq-arr"><div class="aq-tank aq2 big aq-edit" id="aqEdit" style="${aqTankStyle(T)}">${aqSceneBack(T,{big:true,items})}${aqSceneFront(T,{big:true,items})}</div>
+      <div class="aq-edbar">${sd?`<b>${escapeHtml(ar?sd.nameAr:sd.nameEn)}</b><button type="button" data-act="flip">↔️ ${ar?'اقلب':'Flip'}</button><button type="button" data-act="layer">${sel.front?(ar?'⬇️ ورا السمك':'⬇️ Behind fish'):(ar?'⬆️ قدّام السمك':'⬆️ In front')}</button><button type="button" data-act="del">🗑️ ${ar?'شيل':'Remove'}</button>`:`<span>👆 ${ar?'اضغط على زينة بالحوض عشان تقلبها أو تقدّمها أو تشيلها — أو اسحبها لأي مكان':'Tap a decoration to flip it, bring it forward or remove it — or drag it anywhere'}</span>`}</div>
+      <div class="aq-arr-h">🪸 ${ar?'زينتك':'Your decorations'} <span class="aq-count">${ar?`${items.length} من ${max}`:`${items.length} of ${max}`}</span></div>
+      <div class="aq-pick">${owned.map(d=>{ const on=items.some(x=>x.id===d.id); return `<button type="button" class="aq-pick-it${on?' on':''}" data-pick="${d.id}"><span class="pv">${d.svg('pk_'+d.id)}</span><small>${escapeHtml(ar?d.nameAr:d.nameEn)}</small><i>${on?'✓':'+'}</i></button>`; }).join('')}</div>
+      ${!owned.length?`<p class="panel-sub">${ar?'ما عندك زينة ليلحين — صيد أنواع أكثر أو اشتري من المتجر.':'No decorations yet — catch more species or buy some in the Store.'}</p>`:''}
+      ${next&&max<8?`<p class="panel-sub">🔓 ${ar?`لما توصل ${next.n} نوع تقدر تحط ${max+1} زينات`:`At ${next.n} species you can place ${max+1}`}</p>`:''}
       <div class="aq-arr-h">🖼️ ${ar?'ثيم الحوض':'Tank theme'}</div>
       <div class="aq-themes">${tanks.map(x=>`<button type="button" class="aq-theme-it${x.id===T.id?' on':''}" data-tank="${x.id}" style="${aqTankStyle(x)}"><span>${escapeHtml(ar?x.nameAr:x.nameEn)}</span></button>`).join('')}</div>
       <button type="button" class="setup-btn aq-arr-shop" id="aqArrShop" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">🛒 ${ar?'زينة وثيمات أكثر بالمتجر':'More themes & decorations in the Store'}</button>
       <button type="button" class="setup-btn" id="aqArrDone" style="margin-top:10px">${ar?'تم ✅':'Done ✅'}</button></div>`;
-    const body=document.getElementById('cardBody');
-    body.querySelectorAll('[data-spot]').forEach(b=>b.onclick=()=>{ _aqSel=+b.dataset.spot; playSfx('pop'); draw(); });
-    body.querySelectorAll('[data-deco]').forEach(b=>b.onclick=()=>{
-      const id=b.dataset.deco||null, j=id?lay.indexOf(id):-1;
-      if(j>=0&&j!==_aqSel) lay[j]=lay[_aqSel];
-      lay[_aqSel]=id; aqSaveLayout(lay); playSfx('pop');
-      if(id){ const nx=lay.indexOf(null); if(nx>=0) _aqSel=nx; }
-      draw(); renderHomeAquarium();
+    const tank=document.getElementById('aqEdit');
+    tank.querySelectorAll('.aq-deco2').forEach(el=>el.classList.toggle('sel',+el.dataset.di===_aqSelI));
+    let drag=null;
+    tank.onpointerdown=e=>{
+      const el=e.target.closest('.aq-deco2');
+      if(!el){ if(_aqSelI!==-1){ _aqSelI=-1; draw(); } return; }
+      e.preventDefault(); const i=+el.dataset.di, r=tank.getBoundingClientRect();
+      drag={el,i,r,sx:e.clientX,sy:e.clientY,x0:items[i].x,y0:items[i].y!=null?items[i].y:32,moved:false,float:!!(aqDecoById(items[i].id)||{}).float};
+      try{ tank.setPointerCapture(e.pointerId); }catch(_){}
+      tank.querySelectorAll('.aq-deco2').forEach(x=>x.classList.toggle('sel',x===el)); el.classList.add('drag');
+    };
+    tank.onpointermove=e=>{
+      if(!drag) return; const dx=(e.clientX-drag.sx)/drag.r.width*100, dy=-(e.clientY-drag.sy)/drag.r.height*100;
+      if(Math.abs(dx)>1||Math.abs(dy)>1) drag.moved=true;
+      const it=items[drag.i]; it.x=Math.max(3,Math.min(97,drag.x0+dx)); drag.el.style.left=it.x+'%';
+      if(drag.float){ it.y=Math.max(14,Math.min(72,drag.y0+dy)); drag.el.style.bottom=it.y+'%'; }
+    };
+    tank.onpointerup=tank.onpointercancel=()=>{
+      if(!drag) return; const d=drag; drag=null; d.el.classList.remove('drag');
+      _aqSelI=d.i; if(d.moved){ playSfx('pop'); save(); } draw();
+    };
+    document.querySelectorAll('.aq-edbar [data-act]').forEach(b=>b.onclick=()=>{
+      const it=items[_aqSelI]; if(!it) return; const a=b.dataset.act;
+      if(a==='flip') it.flip=!it.flip;
+      if(a==='layer') it.front=!it.front;
+      if(a==='del'){ items.splice(_aqSelI,1); _aqSelI=-1; }
+      playSfx('pop'); save(); draw();
     });
-    body.querySelectorAll('[data-tank]').forEach(b=>b.onclick=()=>{ aqSetTank(b.dataset.tank); playSfx('pop'); draw(); renderHomeAquarium(); });
+    document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.pick, i=items.findIndex(x=>x.id===id);
+      if(i>=0){ _aqSelI=i; draw(); return; }
+      if(items.length>=max){ showToast(ar?`حوضك مليان (${max}) — شيل وحدة أول`:`Your tank is full (${max}) — remove one first`); return; }
+      items.push({id,x:aqFreeX(items),front:false,flip:false,y:null}); _aqSelI=items.length-1; playSfx('pop'); save(); draw();
+    });
+    document.querySelectorAll('[data-tank]').forEach(b=>b.onclick=()=>{ aqSetTank(b.dataset.tank); playSfx('pop'); renderHomeAquarium(); draw(); });
     document.getElementById('aqArrShop').onclick=()=>{ overlay.classList.remove('open'); storeActiveTab='aquarium'; navTo('store'); };
-    document.getElementById('aqArrDone').onclick=()=>{ overlay.classList.remove('open'); renderHomeAquarium(); };
+    document.getElementById('aqArrDone').onclick=()=>{ overlay.classList.remove('open'); renderHomeAquarium(); if(storeActiveTab==='aquarium'&&document.getElementById('aqsTanks')) renderStoreSection(); };
   };
   draw(); overlay.classList.add('open');
 }
@@ -10228,6 +10409,7 @@ async function refundCosmetic(id){
     const upd={refunded:{[id]:now}};
     if(P.equipped&&P.equipped[it.type]===id){ P.equipped[it.type]=null; upd.equipped={[it.type]:null}; }
     if(P.equipped) for(let i=0;i<4;i++) if(P.equipped['aq'+i]===id){ P.equipped['aq'+i]=null; upd.equipped={...(upd.equipped||{}),['aq'+i]:null}; }
+    if(P.equipped&&P.equipped.aqDeco&&it.type==='aqdeco'){ P.equipped.aqDeco=aqStr(aqParse(P.equipped.aqDeco).filter(x=>x.id!==id)); upd.equipped={...(upd.equipped||{}),aqDeco:P.equipped.aqDeco}; }
     if(fbDb&&currentUser){
       upd.inventory={[id]:firebase.firestore.FieldValue.delete()};
       try{ fsDataRef('profile').set(upd,{merge:true}).catch(()=>{}); }catch(e){}
