@@ -356,6 +356,130 @@
 @keyframes bgxLeaf{ 0%{ transform:translateY(-30px) rotate(0deg) translateX(0); } 100%{ transform:translateY(900px) rotate(540deg) translateX(-80px); } }
 @keyframes bgxSand{ 0%{ transform:translateX(0); opacity:0; } 15%{ opacity:.8; } 100%{ transform:translateX(-420px); opacity:0; } }
 @keyframes bgxAura{ 0%,100%{ box-shadow:inset 0 0 38px rgba(255,196,80,.30), inset 0 0 3px rgba(255,220,140,.9); } 50%{ box-shadow:inset 0 0 70px rgba(255,196,80,.45), inset 0 0 4px rgba(255,236,170,1); } }
+/* ===== cosmetics v3 ===== */
+@keyframes bgnSlideL{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+@keyframes bgnCrossL{ from{ transform:translateX(100%); } to{ transform:translateX(-14%); } }
+@keyframes bgnCrossL2{ from{ transform:translateX(100%); } to{ transform:translateX(-38%); } }
+@keyframes bgnFlap{ from{ transform:scaleY(1); } to{ transform:scaleY(.35); } }
+@keyframes bgnSpin{ to{ transform:rotate(360deg); } }
+@keyframes bgnRipple{ 0%{ transform:translate(-50%,-50%) scale(.1); opacity:0; } 12%{ opacity:.85; } 100%{ transform:translate(-50%,-50%) scale(1); opacity:0; } }
+@keyframes bgnCaus{ from{ background-position:0 0,0 0; } to{ background-position:160px 160px,-120px 120px; } }
+@keyframes bgnBob{ from{ transform:translateY(-8px); } to{ transform:translateY(8px); } }
+@keyframes bgnRock{ from{ transform:rotate(-2.5deg); } to{ transform:rotate(2.5deg); } }
+@keyframes bgnGlow{ 0%,100%{ opacity:.45; } 50%{ opacity:1; } }
+@keyframes bgnWiggle{ from{ transform:skewY(-5deg); } to{ transform:skewY(5deg); } }
+@keyframes bgnPad{ from{ transform:rotate(var(--r)) translateY(-2px); } to{ transform:rotate(calc(var(--r) + 6deg)) translateY(2px); } }
+@keyframes bgnBokeh{ from{ opacity:.18; transform:scale(.9); } to{ opacity:.6; transform:scale(1.05); } }
+@keyframes bgnDrop{ from{ transform:translateY(-6%); } to{ transform:translateY(104%); } }
+@keyframes bgnWin{ 0%,100%{ opacity:.25; } 50%{ opacity:1; } }
+@keyframes bgnShimmer{ 0%,100%{ opacity:.35; transform:scaleX(.75); } 50%{ opacity:1; transform:scaleX(1.12); } }
+@keyframes bgnBlink{ 0%,55%{ opacity:1; } 56%,100%{ opacity:.12; } }
+@keyframes bgnDhow{ from{ transform:translateX(470px); } to{ transform:translateX(-70px); } }
+@keyframes bgnMantaL{ from{ transform:rotate(-8deg); } to{ transform:rotate(10deg); } }
+@keyframes bgnMantaR{ from{ transform:rotate(8deg); } to{ transform:rotate(-10deg); } }
+@keyframes bgnLid{ 0%,35%,100%{ transform:rotate(0); } 50%,85%{ transform:rotate(-24deg); } }
+@keyframes bgnSeed{ from{ transform:translateY(-10px) rotate(-12deg); } to{ transform:translateY(10px) rotate(12deg); } }
+@keyframes bgnDraw{ 0%,8%{ stroke-dashoffset:100; opacity:0; } 10%{ opacity:1; } 45%{ stroke-dashoffset:0; opacity:1; } 78%{ stroke-dashoffset:0; opacity:1; } 92%,100%{ stroke-dashoffset:0; opacity:0; } }
+
+/* morning mist */
+.bgn-mist{ background:linear-gradient(180deg,#f8eadb 0%,#f2d8cb 32%,#cfdae6 62%,#a8bacd 100%); }
+.bgn-mist .sun{ top:12%; left:56%; width:44%; max-width:300px; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,#fff7e4 0 26%,rgba(255,236,205,.55) 42%,transparent 70%); animation:bgxPulse 9s ease-in-out infinite; }
+.bgn-mist .hill{ left:0; bottom:0; width:100%; }
+.bgn-mist .hill.h1{ height:54%; } .bgn-mist .hill.h2{ height:42%; } .bgn-mist .hill.h3{ height:30%; }
+.bgn-mist .mist{ left:0; width:200%; height:15%; background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,255,255,.62),transparent 70%); background-size:25% 100%; background-repeat:repeat-x; filter:blur(6px); animation:bgnSlideL 80s linear infinite; }
+.bgn-mist .mist.m1{ bottom:36%; } .bgn-mist .mist.m2{ bottom:20%; opacity:.75; animation-duration:110s; }
+.bgn-mist .flock{ left:0; width:100%; height:26px; color:rgba(58,68,92,.55); animation:bgnCrossL 40s linear infinite; }
+.bgn-mist .bird{ position:absolute; width:20px; display:block; animation:bgnFlap .5s ease-in-out infinite alternate; }
+
+/* paper tide */
+.bgn-paper{ background:linear-gradient(180deg,#fff2e8 0%,#fde1d6 60%,#f8cdc4 100%); }
+.bgn-paper .psun{ top:12%; left:58%; width:30%; max-width:210px; aspect-ratio:1; border-radius:50%; background:#ffd2b0; box-shadow:0 8px 18px rgba(170,80,80,.16); }
+.bgn-paper .pcloud{ left:0; width:100%; height:9%; animation:bgnCrossL2 90s linear infinite; }
+.bgn-paper .pcloud svg{ width:30%; max-width:200px; filter:drop-shadow(0 4px 6px rgba(160,80,80,.14)); }
+.bgn-paper .pw{ left:0; bottom:0; width:200%; animation:bgnSlideL linear infinite; filter:drop-shadow(0 -3px 6px rgba(120,50,70,.16)); }
+.bgn-paper .w1{ height:48%; animation-duration:64s; } .bgn-paper .w2{ height:37%; animation-duration:46s; } .bgn-paper .w3{ height:27%; animation-duration:34s; } .bgn-paper .w4{ height:17%; animation-duration:24s; }
+
+/* koi pond */
+.bgn-koi{ background:radial-gradient(ellipse at 50% 40%,#2f8077 0%,#1c5c57 55%,#0e383b 100%); }
+.bgn-koi .caus{ inset:0; background-image:radial-gradient(circle at 30% 30%,rgba(255,255,255,.2) 0 8%,transparent 9%),radial-gradient(circle at 70% 60%,rgba(255,255,255,.14) 0 6%,transparent 7%); background-size:160px 160px,120px 120px; filter:blur(3px); mix-blend-mode:soft-light; animation:bgnCaus 24s linear infinite; }
+.bgn-koi .stones{ width:42%; height:30%; } .bgn-koi .stones.tl{ left:0; top:0; } .bgn-koi .stones.br{ right:0; bottom:0; }
+.bgn-koi .orbit{ aspect-ratio:1; border-radius:50%; animation:bgnSpin 38s linear infinite; z-index:1; }
+.bgn-koi .orbit.ccw{ animation-direction:reverse; }
+.bgn-koi .orbit .koi{ position:absolute; left:50%; top:0; width:34%; transform:translate(-50%,-50%); filter:drop-shadow(0 7px 5px rgba(0,0,0,.28)); }
+.bgn-koi .orbit.ccw .koi{ transform:translate(-50%,-50%) scaleX(-1); }
+.bgn-koi .orbit .koi svg, .fxn-orb .koi svg{ transform-origin:80% 50%; animation:bgnWiggle 1.4s ease-in-out infinite alternate; }
+.bgn-koi .pad{ z-index:2; transform:rotate(var(--r)); filter:drop-shadow(0 4px 4px rgba(0,0,0,.25)); animation:bgnPad 10s ease-in-out infinite alternate; }
+.bgn-koi .ripple{ width:90px; height:90px; border-radius:50%; border:1.5px solid rgba(255,255,255,.5); animation:bgnRipple 6.4s ease-out infinite; }
+
+/* rain on the window */
+.bgn-rain{ background:linear-gradient(180deg,#141a30 0%,#232845 45%,#3a2c48 100%); }
+.bgn-rain .bokeh{ border-radius:50%; filter:blur(4px); mix-blend-mode:screen; animation:bgnBokeh 7s ease-in-out infinite alternate; }
+.bgn-rain .fog{ inset:0; background:linear-gradient(180deg,rgba(210,215,240,.05),rgba(210,215,240,.13)); }
+.bgn-rain .dot{ border-radius:50%/60% 60% 40% 40%; background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.8),rgba(255,255,255,.14) 45%,rgba(0,0,0,.18) 100%); opacity:.55; }
+.bgn-rain .slide{ top:0; width:5px; height:100%; animation:bgnDrop 8s cubic-bezier(.45,0,1,1) infinite; }
+.bgn-rain .slide::before{ content:''; position:absolute; top:-40px; left:2px; width:3px; height:72px; border-radius:3px; background:linear-gradient(180deg,rgba(255,255,255,0),rgba(220,230,255,.22) 60%,rgba(255,255,255,.35)); }
+.bgn-rain .slide::after{ content:''; position:absolute; top:28px; left:0; width:8px; height:10px; border-radius:50%/60% 60% 40% 40%; background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),rgba(255,255,255,.25) 50%,rgba(0,0,0,.2)); }
+
+/* glowing bay */
+.bgn-bay{ background:linear-gradient(180deg,#040814 0%,#08142c 40%,#0b1f3d 52%,#06101f 100%); }
+.bgn-bay .moon{ top:8%; right:14%; width:12%; max-width:46px; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 35% 35%,#fffbe8,#e8e2c4); box-shadow:0 0 40px 10px rgba(255,250,220,.22); }
+.bgn-bay .sea{ left:0; right:0; top:50%; bottom:0; background:linear-gradient(180deg,#0e2a4f 0%,#071a33 40%,#030a16 100%); }
+.bgn-bay .mpath{ top:50%; right:12%; width:90px; height:40%; background:repeating-linear-gradient(180deg,rgba(255,250,220,.5) 0 2px,transparent 2px 9px); -webkit-mask:linear-gradient(180deg,#000,transparent); mask:linear-gradient(180deg,#000,transparent); animation:bgnShimmer 3.4s ease-in-out infinite; }
+.bgn-bay .bw{ left:0; width:200%; animation:bgnSlideL linear infinite; }
+.bgn-bay .bw.b0{ top:46%; height:14%; opacity:.8; } .bgn-bay .bw.b1{ bottom:30%; height:22%; } .bgn-bay .bw.b2{ bottom:15%; height:24%; } .bgn-bay .bw.b3{ bottom:0; height:26%; }
+.bgn-bay .crest{ filter:drop-shadow(0 0 3px #5fe8ff); animation:bgnGlow 5s ease-in-out infinite; }
+.bgn-bay .b2 .crest{ animation-duration:4s; } .bgn-bay .b3 .crest{ animation-duration:3.2s; }
+.bgn-bay .shore{ left:0; bottom:0; width:100%; height:9%; }
+.bgn-bay .spark{ width:3px; height:3px; border-radius:50%; background:#a5f8ff; box-shadow:0 0 6px #5fe8ff; animation:bgxTwinkle 3s ease-in-out infinite; }
+.bgn-bay .glowmote{ bottom:12%; width:3px; height:3px; border-radius:50%; background:#7ff3ff; box-shadow:0 0 6px #5fe8ff; opacity:.6; animation:bgxRise 14s linear infinite; }
+
+/* kuwait nights */
+.bgn-kw{ background:linear-gradient(180deg,#0a0b28 0%,#241a4f 42%,#5a2f68 62%,#c46a6a 76%,#e79a72 82%,#2a1a40 83%); }
+.bgn-kw .moon{ top:9%; left:14%; width:34px; height:34px; border-radius:50%; box-shadow:inset -9px 3px 0 0 #fff4d6; filter:drop-shadow(0 0 10px rgba(255,240,200,.6)); }
+.bgn-kw .haze{ left:0; right:0; top:58%; height:26%; background:radial-gradient(ellipse 65% 100% at 50% 100%,rgba(255,160,120,.28),transparent 70%); }
+.bgn-kw .kwsky{ left:0; bottom:0; width:100%; height:62%; }
+.bgn-kw .win{ fill:#ffd27a; animation:bgnWin 6s ease-in-out infinite; }
+.bgn-kw .refl{ transform-box:fill-box; transform-origin:50% 0; animation:bgnShimmer 3.2s ease-in-out infinite; }
+.bgn-kw .beacon{ animation:bgnBlink 2.4s linear infinite; }
+.bgn-kw .dhow{ animation:bgnDhow 80s linear infinite; }
+.bgn-kw .rock, .bgn-pearl .rock{ transform-box:fill-box; transform-origin:50% 100%; animation:bgnRock 4.2s ease-in-out infinite alternate; }
+
+/* pearl diver's dream */
+.bgn-pearl{ background:linear-gradient(180deg,#0a1230 0%,#1b2b5a 29%,#3f7aa0 33.6%,#1d6a8a 34.4%,#0e4a66 55%,#06283b 80%,#03131e 100%); }
+.bgn-pearl .moon{ top:7%; left:18%; width:12%; max-width:52px; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 40% 40%,#fffdf0,#e9e4cc); box-shadow:0 0 50px 14px rgba(255,250,225,.22); }
+.bgn-pearl .surf{ left:0; top:33%; width:200%; height:3%; animation:bgnSlideL 18s linear infinite; }
+.bgn-pearl .boat{ top:34%; left:54%; width:24%; transform:translateY(-62%); z-index:2; }
+.bgn-pearl .boat .rope{ position:absolute; left:82.5%; top:58%; width:1.5px; height:520%; background:linear-gradient(180deg,rgba(225,205,165,.85),rgba(225,205,165,.25)); }
+.bgn-pearl .boat .rope::after{ content:''; position:absolute; bottom:0; left:-4px; width:9px; height:7px; border-radius:40%; background:#4c4c4c; }
+.bgn-pearl .ray{ top:34%; width:14%; height:58%; background:linear-gradient(180deg,rgba(200,245,255,.26),transparent 85%); filter:blur(5px); transform-origin:top center; animation:bgxSway 9s ease-in-out infinite alternate; }
+.bgn-pearl .school2{ left:0; width:100%; height:5%; animation:bgnCrossL2 50s linear infinite; }
+.bgn-pearl .school2 .sb{ position:absolute; left:0; top:0; width:30%; height:100%; animation:bgnBob 3.4s ease-in-out infinite alternate; }
+.bgn-pearl .manta{ left:0; top:50%; width:100%; height:14%; animation:bgnCrossL2 74s linear infinite; }
+.bgn-pearl .manta .mb{ position:absolute; left:0; width:30%; max-width:240px; animation:bgnBob 5s ease-in-out infinite alternate; opacity:.92; }
+.bgn-pearl .manta .wing{ transform-box:fill-box; transform-origin:100% 80%; animation:bgnMantaL 3s ease-in-out infinite alternate; }
+.bgn-pearl .manta .wing.r{ transform-origin:0% 80%; animation-name:bgnMantaR; }
+.bgn-pearl .bed{ left:0; bottom:0; width:100%; height:15%; }
+.bgn-pearl .kelp{ bottom:5%; width:34px; transform-origin:50% 100%; animation:bgxSway 6s ease-in-out infinite alternate; opacity:.9; }
+.bgn-pearl .oyster{ width:9%; max-width:70px; z-index:2; }
+.bgn-pearl .oyster .lid{ transform-box:fill-box; transform-origin:50% 100%; animation:bgnLid 8s ease-in-out infinite; }
+.bgn-pearl .oyster .pearl{ filter:drop-shadow(0 0 5px #fff); animation:bgnGlow 8s ease-in-out infinite; }
+.bgn-pearl .bub{ bottom:6%; border-radius:50%; border:1px solid rgba(220,250,255,.7); animation:bgxRise 12s linear infinite; }
+.bgn-pearl .snow2{ bottom:0; width:2px; height:2px; border-radius:50%; background:rgba(220,240,255,.6); animation:bgxRise 18s linear infinite; }
+
+/* effects */
+.fxn-seed{ position:absolute; left:0; width:100%; height:22px; pointer-events:none; animation:bgnCrossL 22s linear infinite; }
+.fxn-seed i{ position:absolute; left:0; width:18px; display:block; animation:bgnSeed 4s ease-in-out infinite alternate; }
+.fxn-ring{ position:absolute; width:70px; height:70px; border-radius:50%; border:1.5px solid rgba(255,255,255,.55); pointer-events:none; animation:bgnRipple 5.5s ease-out infinite; }
+.fxn-koiwrap{ position:absolute; left:50%; top:50%; height:86%; aspect-ratio:1; transform:translate(-50%,-50%); --d:26s; pointer-events:none; opacity:.85; }
+.fxn-koiwrap.big{ top:55%; height:auto; width:min(86vw,560px); opacity:.5; }
+.fxn-orb{ position:absolute; inset:0; animation:bgnSpin var(--d) linear infinite; }
+.fxn-orb .koi{ position:absolute; left:50%; top:0; width:20%; transform:translate(-50%,-50%); filter:drop-shadow(0 5px 4px rgba(0,0,0,.25)); }
+.fxn-orb.trail i{ position:absolute; left:50%; top:0; width:9px; height:9px; border-radius:50%; border:1px solid rgba(255,255,255,.85); }
+.fxn-const{ position:absolute; left:50%; top:50%; height:96%; aspect-ratio:1; transform:translate(-50%,-50%); overflow:visible; pointer-events:none; }
+.fxn-const.big{ top:46%; height:auto; width:min(84vw,540px); opacity:.75; }
+.fxn-const .ln{ fill:none; stroke:rgba(232,255,170,.8); stroke-width:.5; stroke-dasharray:100; stroke-dashoffset:100; filter:drop-shadow(0 0 1.5px #e6ff9a); animation:bgnDraw 14s ease-in-out infinite; }
+.fxn-const .st{ fill:#f2ff9a; filter:drop-shadow(0 0 2px #dfff6a); animation:fxBlink 2.6s ease-in-out infinite; }
+.fxn-const .eye{ fill:#f2ff9a; animation:bgnGlow 14s ease-in-out infinite; }
 
   /* cosmetic perf: half the background particles on phones; frozen (but visible) for reduced motion */
   @media (max-width:600px){ .app-bg-layer > :is(.st,.bub,.emb,.flake,.drop,.fly,.leaf,.mote,.snow,.sand):nth-child(2n){ display:none; } }
@@ -2778,7 +2902,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.56.0';
+const APP_VERSION='v1.57.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -10321,6 +10445,113 @@ const LEGEND_SET=[
   }},
 ];
 (function addLegendSet(){ LEGEND_SET.forEach(it=>{ if(!COSMETICS_CATALOG.find(c=>c.id===it.id)) COSMETICS_CATALOG.push(it); }); })();
+/* ================= COSMETICS v3 — the new quality bar =================
+   Every loop is one-directional (enters and leaves off-screen) or circular,
+   so nothing ever runs backwards, teleports or waits; the engine phase-locks
+   them to the clock. Higher rarity = a more composed scene, not more glow. */
+const KOI_SVG=(c1,c2,c3,u)=>`<svg viewBox="0 0 60 24" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible"><defs><clipPath id="kb${u}"><path d="M58,12 C52,4 34,3 22,7 C14,9 8,11 2,6 L5,12 L2,18 C8,13 14,15 22,17 C34,21 52,20 58,12Z"/></clipPath></defs><path d="M30,7 Q26,0 20,1 Q24,5 26,8Z M30,17 Q26,24 20,23 Q24,19 26,16Z" fill="${c1}" opacity=".85"/><path d="M58,12 C52,4 34,3 22,7 C14,9 8,11 2,6 L5,12 L2,18 C8,13 14,15 22,17 C34,21 52,20 58,12Z" fill="${c1}"/><g clip-path="url(#kb${u})"><ellipse cx="44" cy="9" rx="9" ry="5" fill="${c2}"/><ellipse cx="28" cy="14" rx="7" ry="5" fill="${c3}"/><ellipse cx="14" cy="10" rx="5" ry="3" fill="${c2}"/></g><circle cx="53" cy="10" r="1.2" fill="#111"/></svg>`;
+const BIRD_SVG=`<svg viewBox="0 0 20 8" width="100%" style="display:block"><path d="M0,6 Q5,0 10,5 Q15,0 20,6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+function bgnRows(el,cls,n,o){ for(let i=0;i<n;i++){ const r=cxAddEl(el,cls); r.style.top=(o.top[0]+Math.random()*(o.top[1]-o.top[0])).toFixed(1)+'%'; r.style.animationDuration=(o.d[0]+Math.random()*(o.d[1]-o.d[0])).toFixed(1)+'s'; r.style.animationDelay=(-Math.random()*o.d[1]).toFixed(1)+'s'; if(o.html) r.innerHTML=o.html(i); } }
+function bgnTile(el,cls,vbW,vbH,path,fill,extra){ bgSvg(el,cls,`0 0 ${vbW} ${vbH}`,`<path d="${path}" fill="${fill}"/>${extra||''}`); return el.lastElementChild; }
+/* a wave path that repeats every `per` units across `w` units — tiling it at 200% width and sliding -50% is seamless */
+function bgnWave(w,per,y,amp,bottom){ let d=`M0,${y}`; for(let x=0;x<w;x+=per){ d+=` Q${x+per/4},${y-amp} ${x+per/2},${y} T${x+per},${y}`; } return d+` L${w},${bottom} L0,${bottom} Z`; }
+function bgnCrest(w,per,y,amp){ let d=`M0,${y}`; for(let x=0;x<w;x+=per){ d+=` Q${x+per/4},${y-amp} ${x+per/2},${y} T${x+per},${y}`; } return d; }
+
+const COS_V3=[
+  /* ---------- COMMON ---------- */
+  {id:'bg-morning-mist', type:'background', rarity:'common', price:170, isNew:true, cls:'bgx bgn-mist', nameAr:'ضباب الصبح', nameEn:'Morning Mist', descAr:'تلال هادية، شمس ناعمة، ضباب يمشي ببطء وطيور تعبر', descEn:'Calm rolling hills, a soft sun, slow drifting mist and passing birds',
+    mountEffect:el=>{
+      cxAddEl(el,'sun');
+      const hill=(cls,y,amp,col)=>bgnTile(el,'hill '+cls,400,100,`M0,${y} C60,${y-amp} 120,${y+amp*.6} 200,${y-amp*.4} S330,${y-amp} 400,${y} L400,100 L0,100 Z`,col);
+      hill('h1',38,14,'#c3cfdc'); cxAddEl(el,'mist m1'); hill('h2',46,12,'#9fb1c4'); cxAddEl(el,'mist m2'); hill('h3',58,10,'#7a8fa6');
+      bgnRows(el,'flock',2,{top:[14,30],d:[34,46],html:()=>[0,1,2].map(k=>`<i class="bird" style="left:${k*3.2}%;top:${(k%2)*10}px;animation-delay:${-k*0.17}s">${BIRD_SVG}</i>`).join('')});
+    }},
+  {id:'bg-paper-tide', type:'background', rarity:'common', price:160, isNew:true, cls:'bgx bgn-paper', nameAr:'موج ورقي', nameEn:'Paper Tide', descAr:'طبقات موج ورقي بألوان الغروب تتحرك كل وحدة بسرعتها', descEn:'Layers of paper-cut waves in sunset tones, each drifting at its own pace',
+    mountEffect:el=>{
+      cxAddEl(el,'psun');
+      [[10,70],[24,95],[6,120]].forEach(([top,d],i)=>{ const c=cxAddEl(el,'pcloud'); c.style.top=top+'%'; c.style.animationDuration=d+'s'; c.style.animationDelay=(-i*d/3)+'s'; c.innerHTML=`<svg viewBox="0 0 120 40" width="100%" style="display:block"><path d="M10,34 Q8,20 24,20 Q28,6 46,10 Q58,0 72,10 Q92,6 96,20 Q112,20 110,34Z" fill="#fff8f2"/></svg>`; });
+      [['w1','#f6c1b6',34,7],['w2','#ec9a9a',30,6],['w3','#d27493',26,5],['w4','#9c5582',22,4]].forEach(([c,col,y,a])=>bgnTile(el,'pw '+c,800,60,bgnWave(800,200,y,a*2.2,60),col));
+    }},
+  /* ---------- UNCOMMON ---------- */
+  {id:'bg-koi-pond', type:'background', rarity:'uncommon', price:720, isNew:true, cls:'bgx bgn-koi', nameAr:'بركة الكوي', nameEn:'Koi Pond', descAr:'بركة من فوق: سمك كوي يدور بهدوء، أوراق زنبق ولوتس وتموجات', descEn:'A pond from above: koi circling calmly, lily pads, lotus flowers and ripples',
+    mountEffect:el=>{
+      cxAddEl(el,'caus');
+      bgSvg(el,'stones tl','0 0 100 100','<g fill="#5d6a62"><ellipse cx="8" cy="10" rx="16" ry="11"/><ellipse cx="30" cy="2" rx="12" ry="8" fill="#6f7c73"/><ellipse cx="2" cy="34" rx="10" ry="12" fill="#4f5b54"/></g><g fill="#fff" opacity=".12"><ellipse cx="6" cy="6" rx="8" ry="3"/><ellipse cx="28" cy="0" rx="6" ry="2"/></g>','xMinYMin meet');
+      bgSvg(el,'stones br','0 0 100 100','<g fill="#5d6a62"><ellipse cx="92" cy="92" rx="18" ry="12"/><ellipse cx="70" cy="99" rx="12" ry="7" fill="#6f7c73"/><ellipse cx="99" cy="68" rx="9" ry="12" fill="#4f5b54"/></g>','xMaxYMax meet');
+      [[22,48,3,0.6,'#e0a63a','#f6f1e6','#e0a63a',38],[64,30,4,0.5,'#f6f1e6','#e1452f','#f6f1e6',30],[58,72,1,0.55,'#f2f0ea','#1a1a1a','#e6512e',46]].forEach(([l,tp,k,w,a,b,c,d],i)=>{
+        const o=cxAddEl(el,'orbit'+(i===1?' ccw':'')); o.style.left=l+'%'; o.style.top=tp+'%'; o.style.width=(w*100)+'%'; o.style.animationDuration=d+'s';
+        o.innerHTML=`<div class="koi">${KOI_SVG(a,b,c,'p'+i)}</div>`; });
+      const pad=(x,y,s,r,lotus)=>{ const p=cxAddEl(el,'pad'); p.style.left=x+'%'; p.style.top=y+'%'; p.style.width=s+'%'; p.style.setProperty('--r',r+'deg');
+        p.innerHTML=`<svg viewBox="0 0 40 40" width="100%" style="display:block;overflow:visible"><defs><radialGradient id="lp${x}" cx=".4" cy=".4" r=".7"><stop offset="0" stop-color="#8fd16f"/><stop offset="1" stop-color="#2e7a3c"/></radialGradient></defs><path d="M20,20 L39,17 A19,19 0 1,0 39,23 Z" fill="url(#lp${x})"/><g stroke="#256b33" stroke-width=".7" opacity=".6">${[0,50,100,150,200,250,300].map(a=>`<line x1="20" y1="20" x2="${(20+17*Math.cos(a*Math.PI/180)).toFixed(1)}" y2="${(20+17*Math.sin(a*Math.PI/180)).toFixed(1)}"/>`).join('')}</g>${lotus?`<g transform="translate(16,18)">${[0,60,120,180,240,300].map(a=>`<ellipse cx="0" cy="-5" rx="2.6" ry="5.4" fill="#f7b7cf" transform="rotate(${a})"/>`).join('')}${[30,90,150,210,270,330].map(a=>`<ellipse cx="0" cy="-3.6" rx="1.8" ry="3.6" fill="#fde3ec" transform="rotate(${a})"/>`).join('')}<circle r="1.8" fill="#ffd54a"/></g>`:''}</svg>`; };
+      pad(8,62,16,-20,true); pad(76,10,14,40,false); pad(80,52,11,120,false); pad(30,14,10,200,true); pad(44,84,13,80,false);
+      [[34,30],[70,44],[18,80],[86,82]].forEach(([l,t],i)=>{ const r=cxAddEl(el,'ripple'); r.style.left=l+'%'; r.style.top=t+'%'; r.style.animationDelay=(-i*1.7)+'s'; });
+    }},
+  {id:'bg-rain-window', type:'background', rarity:'uncommon', price:680, isNew:true, cls:'bgx bgn-rain', nameAr:'مطر على الشباك', nameEn:'Rain on the Window', descAr:'أضواء المدينة مغبّشة ورا زجاج عليه قطرات مطر تنزل', descEn:'Blurred city lights behind a window, with raindrops sliding down the glass',
+    mountEffect:el=>{
+      const cols=['#ffb05c','#ff7a6b','#ffe08a','#7fc8ff','#c49bff','#ff9fd0'];
+      for(let i=0;i<24;i++){ const b=cxAddEl(el,'bokeh'); const z=18+Math.random()*60; b.style.cssText+=`left:${(Math.random()*100).toFixed(1)}%;top:${(22+Math.random()*74).toFixed(1)}%;width:${z.toFixed(0)}px;height:${z.toFixed(0)}px;background:${cols[i%cols.length]};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:${(-Math.random()*8).toFixed(1)}s`; }
+      cxAddEl(el,'fog');
+      for(let i=0;i<70;i++){ const d=cxAddEl(el,'dot'); const z=3+Math.random()*8; d.style.cssText+=`left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;width:${z.toFixed(1)}px;height:${(z*1.15).toFixed(1)}px`; }
+      for(let i=0;i<12;i++){ const s=cxAddEl(el,'slide'); s.style.left=(Math.random()*98).toFixed(1)+'%'; s.style.animationDuration=(5+Math.random()*7).toFixed(1)+'s'; s.style.animationDelay=(-Math.random()*12).toFixed(1)+'s'; }
+    }},
+  /* ---------- EPIC ---------- */
+  {id:'bg-glow-bay', type:'background', rarity:'epic', price:2300, isNew:true, cls:'bgx bgn-bay', nameAr:'خليج يضوي', nameEn:'Glowing Bay', descAr:'ليل على البحر: أمواج تضوي أزرق لما تنكسر، ورمل يلمع تحت القمر', descEn:'Night at sea: waves glow blue as they break, sand sparkling under the moon',
+    mountEffect:el=>{
+      bgStars(el,46,44); cxAddEl(el,'moon'); cxAddEl(el,'sea'); cxAddEl(el,'mpath');
+      [['b0',40,3,'#0d2a4d',90,'#3fcfef',1],['b1',34,5,'#0b2443',62,'#5fe8ff',1.4],['b2',36,6,'#081a33',46,'#7ff3ff',1.8],['b3',40,8,'#05122a',34,'#b5faff',2.4]].forEach(([c,y,a,fill,dur,glow,sw])=>{
+        bgSvg(el,'bw '+c,'0 0 800 100',`<defs><linearGradient id="bwg${c}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${glow}" stop-opacity=".28"/><stop offset=".25" stop-color="${fill}"/><stop offset="1" stop-color="#03070f"/></linearGradient></defs><path d="${bgnWave(800,160,y,a*1.6,100)}" fill="url(#bwg${c})"/><path class="crest" d="${bgnCrest(800,160,y,a*1.6)}" fill="none" stroke="${glow}" stroke-width="${sw}"/>`); el.lastElementChild.style.animationDuration=dur+'s'; });
+      bgSvg(el,'shore','0 0 400 40','<path d="M0,14 Q100,4 200,12 T400,10 L400,40 L0,40 Z" fill="#0d1420"/>');
+      for(let i=0;i<26;i++){ const s=cxAddEl(el,'spark'); s.style.left=(Math.random()*100).toFixed(1)+'%'; s.style.bottom=(2+Math.random()*9).toFixed(1)+'%'; s.style.animationDuration=(1.8+Math.random()*2.6).toFixed(1)+'s'; s.style.animationDelay=(-Math.random()*4).toFixed(1)+'s'; }
+      bgRand(el,'glowmote',10,{dur:14});
+    }},
+  /* ---------- MYTHIC ---------- */
+  {id:'bg-kuwait-nights', type:'background', rarity:'mythic', price:6600, isNew:true, cls:'bgx bgn-kw', nameAr:'ليل الكويت', nameEn:'Kuwait Nights', descAr:'أبراج الكويت وبرج التحرير على الخليج: أضواء تنعكس على الماي وبوم يعبر بهدوء', descEn:'Kuwait Towers and Liberation Tower over the Gulf: lights shimmering on the water and a dhow sailing past',
+    mountEffect:el=>{
+      bgStars(el,40,40); cxAddEl(el,'moon'); cxAddEl(el,'shoot'); cxAddEl(el,'haze');
+      const win=[]; const bld=(x,w,h)=>{ let s=`<rect x="${x}" y="${140-h}" width="${w}" height="${h}" fill="#110c24"/>`; for(let yy=140-h+5;yy<136;yy+=7) for(let xx=x+3;xx<x+w-3;xx+=6){ if(Math.random()<.38) win.push(`<rect class="win" x="${xx}" y="${yy}" width="2.6" height="3" style="animation-duration:${(3+Math.random()*7).toFixed(1)}s;animation-delay:${(-Math.random()*9).toFixed(1)}s"/>`); } return s; };
+      const city=[bld(0,22,44),bld(24,16,62),bld(42,26,38),bld(70,14,72),bld(86,20,50),bld(108,18,34),bld(126,12,26),bld(196,10,30),bld(206,14,40),bld(222,22,58),bld(246,10,34),bld(278,12,40),bld(290,24,66),bld(316,16,46),bld(334,26,80),bld(362,18,52),bld(382,18,36)].join('');
+      const towers=`<g fill="#0c0820"><path d="M147,140 L153,140 L150.6,20 L149.4,20Z"/><path d="M168,140 L173,140 L170.8,62 L170.2,62Z"/><path d="M184,140 L187,140 L185.8,74 L185.2,74Z"/><path d="M259,140 L271,140 L266.5,40 L263.5,40Z"/><ellipse cx="265" cy="48" rx="8.5" ry="6"/><path d="M264.6,42 L265,8 L265.4,42Z"/></g><defs><radialGradient id="kws" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#3f86b8"/><stop offset=".6" stop-color="#1b4a74"/><stop offset="1" stop-color="#0c2140"/></radialGradient><pattern id="kwt" width="2.6" height="2.6" patternUnits="userSpaceOnUse"><circle cx="1.3" cy="1.3" r=".85" fill="#8fd6f2" opacity=".55"/></pattern></defs>${[[150,80,13],[150,54,7.5],[170.5,90,9]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r+2.4}" fill="#3fb6e8" opacity=".12"/><circle cx="${x}" cy="${y}" r="${r}" fill="url(#kws)"/><circle cx="${x}" cy="${y}" r="${r}" fill="url(#kwt)"/><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${(r*.16).toFixed(2)}" fill="#ffe2a0" opacity=".85"/>`).join('')}<g class="beacon"><circle cx="150" cy="20" r="1.4" fill="#ff5a5a"/><circle cx="265" cy="8" r="1.4" fill="#ff5a5a"/></g><g fill="#ffd27a"><rect x="257" y="47" width="16" height="1.4"/></g>`;
+      const refl=[[150,'#9fe3ff',30],[170,'#9fe3ff',20],[265,'#ffd27a',26],[34,'#ffd27a',14],[96,'#ffcf8a',16],[232,'#ffd9a0',16],[345,'#ffd27a',22],[60,'#e6e9ff',10]].map(([x,c,w],i)=>`<g class="refl" style="animation-delay:${-i*0.7}s">${[0,1,2,3,4,5,6,7].map(k=>`<rect x="${x-w/2+(k%2)*2}" y="${144+k*6}" width="${w*(1-k*.08)}" height="1.3" fill="${c}" opacity="${(0.75-k*.07).toFixed(2)}"/>`).join('')}</g>`).join('');
+      const dhow=`<g class="dhow"><g class="rock"><path d="M-24,0 L24,0 L18,8 L-16,8 Z" fill="#06040c"/><path d="M-24,0 L-30,-6 L-22,0Z" fill="#06040c"/><path d="M-2,0 L-2,-30" stroke="#06040c" stroke-width="1.6"/><path d="M-2,-30 Q12,-18 14,-2 L-2,-4Z" fill="#1a1430"/><circle cx="16" cy="-3" r="1.5" fill="#ffcf6a"/><circle cx="16" cy="-3" r="4" fill="#ffcf6a" opacity=".25"/></g></g>`;
+      el.insertAdjacentHTML('beforeend',`<svg class="kwsky" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="kwsea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1438"/><stop offset="1" stop-color="#05030c"/></linearGradient></defs><rect x="-200" y="140" width="800" height="60" fill="url(#kwsea)"/>${refl}${city}${towers}<g>${win.join('')}</g><g transform="translate(0,166)">${dhow}</g></svg>`);
+    }},
+  /* ---------- LEGENDARY ---------- */
+  {id:'bg-pearl-dream', type:'background', rarity:'legendary', price:17500, isNew:true, cls:'bgx bgn-pearl', nameAr:'حلم الغوّاص', nameEn:'Pearl Diver’s Dream', descAr:'فوق: بوم تحت القمر وحبل الغوّاص نازل. تحت: أسراب سمك، مانتا تطير ببطء ومحار يفتح ويلمع لولوه', descEn:'Above: a dhow under the moon, the diver’s rope descending. Below: fish schools, a gliding manta and oysters opening to glowing pearls',
+    mountEffect:el=>{
+      bgStars(el,34,26); cxAddEl(el,'moon');
+      bgSvg(el,'surf','0 0 800 20',`<path d="${bgnWave(800,100,8,3,20)}" fill="rgba(170,230,255,.28)"/>`);
+      el.insertAdjacentHTML('beforeend',`<div class="boat"><svg viewBox="0 0 80 50" width="100%" style="display:block;overflow:visible"><g class="rock"><path d="M6,30 L74,30 L66,42 L14,42Z" fill="#170f0a"/><path d="M6,30 L0,22 L10,30Z" fill="#170f0a"/><path d="M38,30 L38,2" stroke="#170f0a" stroke-width="2"/><path d="M38,4 Q58,14 62,28 L38,26Z" fill="#2b2033"/><circle cx="66" cy="27" r="1.8" fill="#ffd27a"/><circle cx="66" cy="27" r="6" fill="#ffd27a" opacity=".22"/></g></svg><i class="rope"></i></div>`);
+      [12,34,58,80].forEach((l,i)=>{ const r=cxAddEl(el,'ray'); r.style.left=l+'%'; r.style.animationDelay=(-i*2.2)+'s'; });
+      const fish=(n,col)=>`<svg viewBox="0 0 ${n*14} 22" width="100%" height="100%" style="display:block">${Array.from({length:n},(_,k)=>{ const x=k*14+((k*7)%5), y=4+((k*11)%12); return `<g transform="translate(${x},${y})"><ellipse cx="5" cy="3" rx="5" ry="2.2" fill="${col}"/><path d="M9.5,3 L13,0.4 L13,5.6Z" fill="${col}"/></g>`; }).join('')}</svg>`;
+      [[46,48,'rgba(200,240,255,.7)',9],[60,64,'rgba(150,215,240,.55)',7],[38,82,'rgba(230,250,255,.8)',11]].forEach(([top,d,col,n],i)=>{ const r=cxAddEl(el,'school2'); r.style.top=top+'%'; r.style.animationDuration=d+'s'; r.style.animationDelay=(-i*19)+'s'; r.innerHTML=`<div class="sb">${fish(n,col)}</div>`; });
+      el.insertAdjacentHTML('beforeend',`<div class="manta"><div class="mb"><svg viewBox="0 0 120 50" width="100%" style="display:block;overflow:visible"><g class="wing"><path d="M60,25 C44,6 18,4 2,18 C20,20 36,28 46,34 Z" fill="#163a52"/></g><g class="wing r"><path d="M60,25 C76,6 102,4 118,18 C100,20 84,28 74,34 Z" fill="#163a52"/></g><ellipse cx="60" cy="28" rx="15" ry="9" fill="#1d4a66"/><path d="M60,36 L60,49" stroke="#163a52" stroke-width="1.6"/><path d="M50,21 L46,15 M70,21 L74,15" stroke="#1d4a66" stroke-width="3" stroke-linecap="round"/></svg></div></div>`);
+      bgSvg(el,'bed','0 0 400 60','<path d="M0,24 Q60,10 130,22 T260,18 T400,24 L400,60 L0,60Z" fill="#0b2232"/><path d="M0,34 Q90,22 200,32 T400,30 L400,60 L0,60Z" fill="#071723"/>');
+      [8,30,52,74,92].forEach((l,i)=>{ const w=cxAddEl(el,'kelp'); w.style.left=l+'%'; w.style.height=(14+((i*7)%9))+'%'; w.style.animationDelay=(-i*1.4)+'s'; w.innerHTML=`<svg viewBox="0 0 30 100" preserveAspectRatio="none" width="100%" height="100%"><path d="M12,100 C4,80 20,62 10,42 C4,28 14,14 10,2 C18,14 20,28 16,42 C24,62 10,80 18,100Z" fill="#2f7d4f"/><path d="M18,100 C26,84 14,70 22,52 C26,42 22,30 26,20 C30,32 28,44 26,54 C20,70 28,84 22,100Z" fill="#1f5c3a" opacity=".9"/></svg>`; });
+      [[18,2],[44,1],[68,3],[86,2]].forEach(([l,b],i)=>{ const o=cxAddEl(el,'oyster'); o.style.left=l+'%'; o.style.bottom=b+'%'; o.innerHTML=`<svg viewBox="0 0 40 26" width="100%" style="display:block;overflow:visible"><path d="M2,18 Q20,28 38,18 Q34,14 20,14 Q6,14 2,18Z" fill="#7d6a58"/><circle class="pearl" cx="20" cy="15" r="4" fill="#fff8ee"/><g class="lid" style="animation-delay:${-i*2.3}s"><path d="M2,16 Q4,2 20,1 Q36,2 38,16 Q20,10 2,16Z" fill="#9c8670"/></g></svg>`; });
+      bgRand(el,'bub',12,{size:[3,8],dur:12}); bgRand(el,'snow2',22,{dur:18});
+    }},
+  /* ---------- EFFECTS ---------- */
+  {id:'fx-dandelion', type:'effect', rarity:'common', price:170, isNew:true, nameAr:'بذور الهندباء', nameEn:'Dandelion Seeds', descAr:'بذور خفيفة تطير مع الهوا وتتمايل', descEn:'Feather-light seeds drifting on the breeze',
+    mountEffect:(el,big)=>{ bgnRows(el,'fxn-seed',fxN(9,big),{top:[6,90],d:[16,28],html:()=>`<i><svg viewBox="0 0 20 20" width="100%" style="display:block"><g stroke="rgba(255,255,255,.85)" stroke-width=".7">${Array.from({length:12},(_,k)=>{ const a=k*30*Math.PI/180; return `<line x1="10" y1="8" x2="${(10+7*Math.cos(a)).toFixed(1)}" y2="${(8+7*Math.sin(a)).toFixed(1)}"/>`; }).join('')}</g><path d="M10,8 L10,19" stroke="rgba(255,255,255,.7)" stroke-width=".8"/><circle cx="10" cy="19" r="1" fill="#e9dcc0"/></svg></i>`}); }},
+  {id:'fx-ripples', type:'effect', rarity:'uncommon', price:480, isNew:true, nameAr:'تموّجات', nameEn:'Ripples', descAr:'حلقات ناعمة تنتشر مثل قطرات مطر على بركة', descEn:'Soft rings spreading like raindrops on a pond',
+    mountEffect:(el,big)=>{ for(let i=0;i<fxN(7,big);i++){ const l=(6+Math.random()*88).toFixed(1), t=(8+Math.random()*84).toFixed(1), d=(4.5+Math.random()*3).toFixed(1); for(let k=0;k<2;k++) fxAdd(el,'fxn-ring',`left:${l}%;top:${t}%;animation-duration:${d}s;animation-delay:${(-Math.random()*6-k*0.7).toFixed(1)}s`); } }},
+  {id:'fx-koi-orbit', type:'effect', rarity:'epic', price:1350, isNew:true, nameAr:'كوي يدور', nameEn:'Koi Orbit', descAr:'سمكتين كوي — ذهبية وبيضا — تلاحق وحدة الثانية بدايرة، ووراها أثر فقاعات', descEn:'Two koi, gold and white, chase each other in a circle, trailing bubbles',
+    mountEffect:(el,big)=>{
+      const wrap=fxAdd(el,'fxn-koiwrap'+(big?' big':''));
+      [[0,'#f2b43a','#fff3d6','#e58a1e'],[-0.5,'#f6f3ec','#e1452f','#f6f3ec']].forEach(([ph,a,b,c],i)=>{
+        for(let k=5;k>=1;k--){ const t=document.createElement('div'); t.className='fxn-orb trail'; t.style.animationDelay=`calc(${ph}*var(--d) + ${k*0.32}s)`; t.innerHTML=`<i style="opacity:${(0.5-k*0.08).toFixed(2)};transform:translate(-50%,-50%) scale(${(1-k*0.12).toFixed(2)})"></i>`; wrap.appendChild(t); }
+        const o=document.createElement('div'); o.className='fxn-orb'; o.style.animationDelay=`calc(${ph}*var(--d))`; o.innerHTML=`<div class="koi">${KOI_SVG(a,b,c,'fx'+i)}</div>`; wrap.appendChild(o); });
+    }},
+  {id:'fx-firefly-constellation', type:'effect', rarity:'mythic', price:3200, isNew:true, nameAr:'كوكبة يراعات', nameEn:'Firefly Constellation', descAr:'يراعات تلمع وبعدين تتوصل بخيوط نور وترسم سمكة… وتختفي وترجع', descEn:'Fireflies glow, then link with threads of light into a fish… fade, and return',
+    mountEffect:(el,big)=>{
+      const P=[[14,52],[26,36],[44,30],[62,34],[76,46],[88,38],[92,58],[76,56],[62,66],[44,70],[26,64]];
+      const path='M'+P.map(p=>p.join(',')).join(' L')+' Z M76,46 L76,56';
+      el.insertAdjacentHTML('beforeend',`<svg class="fxn-const${big?' big':''}" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><path class="ln" d="${path}" pathLength="100"/>${P.map((p,i)=>`<circle class="st" cx="${p[0]}" cy="${p[1]}" r="1.3" style="animation-delay:${(-i*0.37).toFixed(2)}s"/>`).join('')}<circle cx="32" cy="46" r="1.6" class="eye"/></svg>`);
+      for(let i=0;i<fxN(8,big);i++) fxAdd(el,'fx-fly',`left:${fxRR([4,94]).toFixed(1)}%;top:${fxRR([10,90]).toFixed(1)}%;--d:${fxRR([5,9]).toFixed(1)}s;--bl:${fxRR([1.8,3.4]).toFixed(1)}s`);
+    }},
+];
+(function addCosmeticsV3(){ COS_V3.forEach(it=>{ if(!COSMETICS_CATALOG.find(c=>c.id===it.id)) COSMETICS_CATALOG.push(it); }); })();
+
 /* ================= ONE SET PER LEGENDARY FISH =================
    Each legendary fish unlocks its OWN set the first time you catch it —
    background, frame, effect and title all built around that fish (drawn
