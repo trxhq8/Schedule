@@ -350,11 +350,18 @@
 @keyframes bgxBolt{ 0%,58%,64%,100%{ opacity:0; } 59%,62%{ opacity:1; } 60.5%{ opacity:.2; } }
 @keyframes bgxFlash{ 0%,58%,64%,100%{ opacity:0; } 59%{ opacity:.55; } 61%{ opacity:.25; } 62%{ opacity:.5; } }
 @keyframes bgxBeam{ 0%{ transform:rotate(-28deg); } 100%{ transform:rotate(22deg); } }
-@keyframes bgxSwim{ 0%{ transform:translateX(-90%) translateY(0); } 50%{ transform:translateX(40%) translateY(-8px); } 100%{ transform:translateX(170%) translateY(0); } }
-@keyframes bgxSwimRev{ 0%{ transform:translateX(120%) scaleX(-1); } 100%{ transform:translateX(-140%) scaleX(-1); } }
+@keyframes bgxSwim{ 0%{ transform:translateX(88%) translateY(0); } 50%{ transform:translateX(-6%) translateY(-8px); } 100%{ transform:translateX(-100%) translateY(0); } }
+@keyframes bgxSwimRev{ 0%{ transform:translateX(120%); } 100%{ transform:translateX(-140%); } }
+@keyframes bgxPass{ from{ transform:translateX(160%); } to{ transform:translateX(-160%); } }
 @keyframes bgxLeaf{ 0%{ transform:translateY(-30px) rotate(0deg) translateX(0); } 100%{ transform:translateY(900px) rotate(540deg) translateX(-80px); } }
 @keyframes bgxSand{ 0%{ transform:translateX(0); opacity:0; } 15%{ opacity:.8; } 100%{ transform:translateX(-420px); opacity:0; } }
 @keyframes bgxAura{ 0%,100%{ box-shadow:inset 0 0 38px rgba(255,196,80,.30), inset 0 0 3px rgba(255,220,140,.9); } 50%{ box-shadow:inset 0 0 70px rgba(255,196,80,.45), inset 0 0 4px rgba(255,236,170,1); } }
+
+  /* cosmetic perf: half the background particles on phones; frozen (but visible) for reduced motion */
+  @media (max-width:600px){ .app-bg-layer > :is(.st,.bub,.emb,.flake,.drop,.fly,.leaf,.mote,.snow,.sand):nth-child(2n){ display:none; } }
+  @media (prefers-reduced-motion: reduce){
+    .app-bg-layer, .app-bg-layer *, #appFxLayer *, .cos-hero-bg *, .cos-hero-effect *, .cos-preview *, .aq-tank *{ animation-play-state:paused !important; }
+  }
 .bgx .st{ width:2px; height:2px; border-radius:50%; background:#fff; box-shadow:0 0 4px #fff; animation:bgxTwinkle 3s ease-in-out infinite; }
 .bgx .st.b{ width:3px; height:3px; }
 .bgx .shoot{ width:90px; height:2px; background:linear-gradient(90deg,#fff,transparent); border-radius:2px; top:12%; right:6%; animation:bgxShoot 8s linear infinite; }
@@ -391,7 +398,7 @@
 .bgx-magma .glow{ left:-10%; right:-10%; bottom:-20%; height:60%; background:radial-gradient(ellipse at 50% 100%,rgba(255,150,40,.75),transparent 70%); animation:bgxPulse 3.2s ease-in-out infinite; }
 .bgx-magma .cracks{ left:0; right:0; bottom:0; width:100%; height:48%; filter:drop-shadow(0 0 4px #ff9a2e); animation:bgxPulse 2.4s ease-in-out infinite; }
 .bgx-magma .emb{ bottom:0; width:3px; height:3px; border-radius:50%; background:#ffc15c; box-shadow:0 0 6px 2px rgba(255,140,40,.9); animation:bgxRise 7s linear infinite; }
-.bgx-magma .smoke{ top:-10%; width:70%; height:40%; border-radius:50%; background:rgba(0,0,0,.45); filter:blur(28px); animation:bgxDriftX 14s ease-in-out infinite alternate; }
+.bgx-magma .smoke{ top:-10%; width:70%; height:40%; border-radius:50%; background:rgba(0,0,0,.45); filter:blur(28px); animation:bgxPass 46s linear infinite; }
 
 /* MYTHIC — Crystal Cavern: glowing crystals, light pools, dripping water */
 .bgx-crystal{ background:radial-gradient(ellipse at 50% 70%,#1d1840 0%,#0e0b22 55%,#05040c 100%); }
@@ -434,14 +441,14 @@
 .bgx-forest{ background:linear-gradient(180deg,#123f33 0%,#0b2b23 45%,#041310 100%); }
 .bgx-forest .moonglow{ top:-8%; right:-6%; width:60%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,rgba(230,255,220,.35),transparent 65%); }
 .bgx-forest .god{ top:-10%; width:20%; height:120%; background:linear-gradient(180deg,rgba(235,255,200,.30),transparent 75%); filter:blur(6px); transform:rotate(18deg); transform-origin:top; animation:bgxPulse 5s ease-in-out infinite; }
-.bgx-forest .layer{ left:-4%; right:-4%; bottom:0; width:108%; animation:bgxDriftX 12s ease-in-out infinite alternate; }
+.bgx-forest .layer{ left:-4%; right:-4%; bottom:0; width:108%; }
 .bgx-forest .fly{ width:4px; height:4px; border-radius:50%; background:#e8ff8a; box-shadow:0 0 8px 3px rgba(220,255,120,.8); animation:bgxFirefly 9s ease-in-out infinite, bgxTwinkle 2.4s ease-in-out infinite; }
 .bgx-forest .leaf{ top:-20px; width:9px; height:5px; border-radius:50% 0; background:#4fa06a; animation:bgxLeaf 14s linear infinite; }
-.bgx-forest .mist{ left:-10%; right:-10%; bottom:0; height:26%; background:linear-gradient(0deg,rgba(200,255,220,.18),transparent); filter:blur(8px); animation:bgxDriftX 10s ease-in-out infinite alternate; }
+.bgx-forest .mist{ left:-10%; right:-10%; bottom:0; height:26%; background:linear-gradient(0deg,rgba(200,255,220,.18),transparent); filter:blur(8px); animation:bgxPulse 9s ease-in-out infinite; }
 
 /* LEGENDARY — Tempest Crown: storm, lightning, rain, a sweeping lighthouse */
 .bgx-storm{ background:linear-gradient(180deg,#232e3d 0%,#111822 52%,#070a10 100%); }
-.bgx-storm .cloud{ width:80%; height:26%; border-radius:50%; background:rgba(150,165,185,.35); filter:blur(22px); animation:bgxDriftX 16s ease-in-out infinite alternate; }
+.bgx-storm .cloud{ width:80%; height:26%; border-radius:50%; background:rgba(150,165,185,.35); filter:blur(22px); animation:bgxPass 54s linear infinite; }
 .bgx-storm .flash{ inset:0; background:#cfe0ff; opacity:0; animation:bgxFlash 7s linear infinite; }
 .bgx-storm .bolt{ top:4%; left:22%; width:22%; height:48%; filter:drop-shadow(0 0 8px #bcd6ff); opacity:0; animation:bgxBolt 7s linear infinite; }
 .bgx-storm .drop{ top:-30px; width:1px; height:18px; background:linear-gradient(180deg,transparent,rgba(210,225,255,.55)); animation:bgxRain .9s linear infinite; }
@@ -454,7 +461,7 @@
 /* LEGENDARY (boss reward) — The Gentle Giant: a whale shark glides past */
 .bgx-whale{ background:linear-gradient(180deg,#0c7196 0%,#06496f 35%,#032a48 70%,#01152a 100%); }
 .bgx-whale .ray{ top:-10%; width:14%; height:90%; background:linear-gradient(180deg,rgba(200,250,255,.35),transparent 80%); filter:blur(5px); transform-origin:top; animation:bgxSway 8s ease-in-out infinite alternate; }
-.bgx-whale .shark{ top:34%; left:0; width:120%; height:30%; animation:bgxSwim 34s linear infinite; animation-delay:-13s; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+.bgx-whale .shark{ top:34%; left:0; width:120%; height:30%; animation:bgxSwim 34s linear infinite; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
 .bgx-whale .snow{ bottom:0; width:2px; height:2px; border-radius:50%; background:rgba(255,255,255,.75); animation:bgxRise 16s linear infinite; }
 .bgx-whale .school{ top:24%; left:0; width:100%; height:20px; animation:bgxSwimRev 18s linear infinite; }
 
@@ -462,7 +469,7 @@
 .bgx-oasis{ background:linear-gradient(180deg,#070b30 0%,#151a57 38%,#3f2769 66%,#b86b48 88%,#2a1633 100%); }
 .bgx-oasis .moon{ top:10%; left:60%; width:24%; aspect-ratio:1; border-radius:50%; background:#fff1c2; box-shadow:0 0 40px 12px rgba(255,225,150,.55); }
 .bgx-oasis .moon::after{ content:''; position:absolute; top:-8%; left:26%; width:92%; height:92%; border-radius:50%; background:#131855; }
-.bgx-oasis .dune{ left:-5%; right:-5%; bottom:0; width:110%; animation:bgxDriftX 18s ease-in-out infinite alternate; }
+.bgx-oasis .dune{ left:-5%; right:-5%; bottom:0; width:110%; }
 .bgx-oasis .lamp{ width:5px; height:5px; border-radius:50%; background:#ffcf6b; box-shadow:0 0 10px 4px rgba(255,190,80,.8); animation:bgxPulse 2s ease-in-out infinite; }
 .bgx-oasis .sand{ width:2px; height:2px; border-radius:50%; background:rgba(255,215,160,.85); animation:bgxSand 7s linear infinite; }
 
@@ -2771,7 +2778,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.55.0';
+const APP_VERSION='v1.56.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5259,6 +5266,7 @@ async function renderAquarium(el,big,ov){
   el.innerHTML=(big?'':`<div class="dash-title-row"><div class="home-preview-title" style="margin:0 0 8px;">${ar?'🐠 حوضك':'🐠 Your aquarium'}</div><button type="button" class="dash-link" data-nav="collections">${ar?'المقتنيات':'Collection'}</button></div>`)+html;
   const tank=el.querySelector('.aq-tank');
   if(!tank) return;
+  cosPhaseSync(tank);
   aqStartMotion(tank);
   if(!big) tank.onclick=()=>{ document.getElementById('dayTitle').textContent=ar?'🐠 حوضك':'🐠 Your aquarium'; document.getElementById('daySubtitle').textContent='';
     document.getElementById('cardBody').innerHTML='<div id="aqBig"></div>'; document.getElementById('overlay').classList.add('open'); renderAquarium(document.getElementById('aqBig'),true); };
@@ -5284,9 +5292,9 @@ function aqStartMotion(tank,tries){
     if(f._mv) return;
     const fw=f.offsetWidth||30, x0=W*(+f.dataset.r0)/100, x1=Math.max(x0+10,W*(+f.dataset.r1)/100-fw+20), dur=(+f.dataset.dur)*1000, off=(+f.dataset.off)*1000;
     if(!f.animate){ f.style.transform=`translateX(${x0}px)`; return; }
-    f._mv=f.animate([{transform:`translateX(${x0}px)`},{transform:`translateX(${x1}px)`}],{duration:dur,iterations:Infinity,direction:'alternate',easing:'ease-in-out'}); f._mv.currentTime=off%(dur*2);
+    f._mv=f.animate([{transform:`translateX(${x0}px)`},{transform:`translateX(${x1}px)`}],{duration:dur,iterations:Infinity,direction:'alternate',easing:'ease-in-out'}); f._mv.currentTime=(Date.now()-COS_EPOCH+off)%(dur*2);
     const d=f.querySelector('.aq-dir');
-    if(d){ const fl=d.animate([{transform:'scaleX(-1)',offset:0},{transform:'scaleX(-1)',offset:.499},{transform:'scaleX(1)',offset:.5},{transform:'scaleX(1)',offset:1}],{duration:dur*2,iterations:Infinity}); fl.currentTime=off%(dur*2); }
+    if(d){ const fl=d.animate([{transform:'scaleX(-1)',offset:0},{transform:'scaleX(-1)',offset:.499},{transform:'scaleX(1)',offset:.5},{transform:'scaleX(1)',offset:1}],{duration:dur*2,iterations:Infinity}); fl.currentTime=(Date.now()-COS_EPOCH+off)%(dur*2); }
   });
 }
 function renderHomeAquarium(){ renderAquarium(document.getElementById('homeAquarium'),false); }
@@ -10031,7 +10039,7 @@ const BG_V2={
     for(let i=0;i<26;i++){ const f=cxAddEl(el,'fly'); f.style.left=(Math.random()*95)+'%'; f.style.top=(30+Math.random()*60)+'%'; f.style.animationDelay=(-Math.random()*9)+'s,'+(-Math.random()*3)+'s'; }
     bgRand(el,'leaf',9,{dur:14}); }},
   'tempest-crown':{cls:'bgx bgx-storm', descEn:'A storm at sea: rolling clouds, forked lightning, driving rain and a lighthouse sweeping its beam', descAr:'عاصفة بالبحر: غيوم، برق متشعب، مطر غزير ومنارة تمسح بشعاعها', mount:el=>{
-    [[-10,2],[35,8],[5,20]].forEach(([l,t],i)=>{ const c=cxAddEl(el,'cloud'); c.style.left=l+'%'; c.style.top=t+'%'; c.style.animationDelay=(-i*4)+'s'; });
+    [[-10,2],[35,8],[5,20]].forEach(([l,t],i)=>{ const c=cxAddEl(el,'cloud'); c.style.left=l+'%'; c.style.top=t+'%'; c.style.animationDelay=(-i*18)+'s'; });
     cxAddEl(el,'flash');
     bgSvg(el,'bolt','0 0 60 120','<polyline points="34,0 22,44 34,46 16,92 30,94 20,120" fill="none" stroke="#f2f7ff" stroke-width="3" stroke-linejoin="round"/><polyline points="22,44 8,60" fill="none" stroke="#dde9ff" stroke-width="1.6"/>','xMidYMid meet');
     bgRand(el,'drop',46,{dur:0.9});
@@ -10505,18 +10513,23 @@ async function wearLegendSet(sid){
 /* one place that paints a hero card (bg + effect + frame) from an equipped map */
 function mountCosmeticSet(bgEl,fxEl,ringEl,eq){
   const find=id=>id&&COSMETICS_CATALOG.find(c=>c.id===id);
+  cosWrapAll();
   const bg=find(eq.background), fx=find(eq.effect), fr=find(eq.frame);
-  if(bgEl){ bgEl.innerHTML=''; bgEl.className='cos-hero-bg'+(bg?' '+bg.cls:''); if(bg&&bg.mountEffect) bg.mountEffect(bgEl); }
-  if(fxEl){ fxEl.innerHTML=''; if(fx&&fx.mountEffect) fx.mountEffect(fxEl,false); }
+  if(bgEl&&bgEl.dataset.sig!==(bg?bg.id:'none')){ bgEl.innerHTML=''; bgEl.className='cos-hero-bg'+(bg?' '+bg.cls:''); if(bg&&bg.mountEffect) bg.mountEffect(bgEl); bgEl.dataset.sig=bg?bg.id:'none'; }
+  if(fxEl&&fxEl.dataset.sig!==(fx?fx.id:'none')){ fxEl.innerHTML=''; if(fx&&fx.mountEffect) fx.mountEffect(fxEl,false); fxEl.dataset.sig=fx?fx.id:'none'; }
   if(ringEl){ ringEl.innerHTML=''; ringEl.className='cos-frame-ring'+(fr?' '+fr.cls:''); mountFrameDeco(ringEl,fr); }
 }
 /* the equipped effect also plays across the whole app, behind the content */
 function renderAppEffect(override){
   const el=document.getElementById('appFxLayer'); if(!el) return;
   const id=P.equipped&&P.equipped.effect;
+  cosWrapAll();
   const it=override||(id&&COSMETICS_CATALOG.find(c=>c.id===id));
+  const sig=override?'':(it?it.id:'none');
+  if(sig&&el.dataset.sig===sig) return;
   el.innerHTML='';
   if(it&&it.mountEffect) it.mountEffect(el,true);
+  el.dataset.sig=sig;
 }
 
 /* ================= REFUNDS =================
@@ -10585,6 +10598,7 @@ function askRefund(it,after){
 
 /* ================= STORE TILES + PREVIEW SHEET ================= */
 function mountCosPreviewTile(el,it){
+  cosWrapAll();
   el.innerHTML='';
   const photo=P.avatarPhoto?`background-image:url(${P.avatarPhoto})`:'';
   if(it.type==='frame'){
@@ -10690,14 +10704,73 @@ function exclusiveUnlockInfo(it){
   return {text:'',nav:null};
 }
 
+/* ================= COSMETIC ANIMATION ENGINE =================
+   Every animated background / effect / tank is a true continuous loop:
+   - mounted once: re-rendering the same item is a no-op (no restart, no reshuffle)
+   - laid out with a per-item seed, so stars/particles sit in the same places every time
+   - phase-locked to the wall clock: each CSS loop's delay becomes "where it would be
+     right now", so there is never a wait before it starts and it continues seamlessly
+     across navigation, refresh and re-equip */
+const COS_EPOCH=Date.UTC(2026,0,1);
+function cosSeeded(seed,fn){
+  const orig=Math.random; let x=(aqHash('cos:'+seed)^0x9e3779b9)|0;
+  Math.random=()=>{ x=(x+0x6D2B79F5)|0; let t=Math.imul(x^(x>>>15),1|x); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; };
+  try{ return fn(); } finally{ Math.random=orig; }
+}
+function cosMs(list){ return String(list).split(',').map(v=>{ v=v.trim(); return v.endsWith('ms')?parseFloat(v):parseFloat(v)*1000; }); }
+function cosPhaseSync(root){
+  if(!root||root._cosSynced) return; root._cosSynced=true;
+  // the clock reading for the current frame (animations advance from the frame time, not from "now")
+  const tl=document.timeline&&document.timeline.currentTime;
+  const now=Date.now()-COS_EPOCH-(tl!=null?Math.max(0,performance.now()-tl):0);
+  if(root.getAnimations){
+    // every running loop (CSS, pseudo-elements, WAAPI) jumps to where the clock says it is
+    root.getAnimations({subtree:true}).forEach(a=>{
+      const ef=a.effect; if(!ef||!ef.getTiming) return; const t=ef.getTiming();
+      if(t.iterations!==Infinity) return; const D=typeof t.duration==='number'?t.duration:0; if(!D) return;
+      const cyc=D*(String(t.direction).includes('alternate')?2:1), d=t.delay||0;
+      // a negative time would count as "not started yet" — whole cycles later is the same frame
+      let ct=d+(((now-d)%cyc)+cyc)%cyc; while(ct<0) ct+=cyc;
+      // anchoring the start to the frame clock keeps it exact even if this frame runs long
+      try{ if(tl!=null) a.startTime=tl-ct; else a.currentTime=ct; }catch(e){ try{ a.currentTime=ct; }catch(_){} }
+    });
+    return;
+  }
+  // older browsers: rewrite the CSS delays instead
+  [root,...root.querySelectorAll('*')].forEach(el=>{
+    const cs=getComputedStyle(el), names=cs.animationName; if(!names||names==='none') return;
+    const n=names.split(',').length, dur=cosMs(cs.animationDuration), del=cosMs(cs.animationDelay), it=cs.animationIterationCount.split(','), dir=cs.animationDirection.split(',');
+    let changed=false; const out=[];
+    for(let i=0;i<n;i++){
+      const D=dur[i%dur.length]||0, d=del[i%del.length]||0;
+      if((it[i%it.length]||'').trim()!=='infinite'||D<=0){ out.push(d+'ms'); continue; }
+      const cyc=D*((dir[i%dir.length]||'').includes('alternate')?2:1), ph=((now-d)%cyc+cyc)%cyc;
+      out.push((-ph).toFixed(0)+'ms'); changed=true;
+    }
+    if(changed) el.style.animationDelay=out.join(',');
+  });
+}
+/* wraps every catalog item's mount once: seeded layout + phase lock */
+function cosWrapAll(){
+  COSMETICS_CATALOG.forEach(it=>{
+    if(!it.mountEffect||it._cw) return; const f=it.mountEffect;
+    it.mountEffect=function(el,...a){ if(el) el._cosSynced=false; const r=cosSeeded(it.id,()=>f.call(this,el,...a)); try{ cosPhaseSync(el); }catch(e){} return r; };
+    it._cw=1;
+  });
+}
 function renderAppBackground(){
   const el=document.getElementById('appBgLayer');
   const scrim=document.getElementById('appBgScrim');
   if(!el||!scrim) return;
+  cosWrapAll();
   const bgId=P.equipped&&P.equipped.background;
   const bgItem=bgId&&COSMETICS_CATALOG.find(c=>c.id===bgId);
-  el.innerHTML=''; el.className='app-bg-layer'+(bgItem?' '+bgItem.cls:'');
-  if(bgItem&&bgItem.mountEffect) bgItem.mountEffect(el);
+  const sig=bgItem?bgItem.id:'none';
+  if(el.dataset.sig!==sig){ // same background already playing → leave it running
+    el.innerHTML=''; el.className='app-bg-layer'+(bgItem?' '+bgItem.cls:'');
+    if(bgItem&&bgItem.mountEffect) bgItem.mountEffect(el);
+    el.dataset.sig=sig;
+  }
   scrim.classList.toggle('active',!!bgItem);
   document.body.classList.toggle('app-bg-active',!!bgItem);
   document.body.classList.toggle('bg-legendary',!!(bgItem&&bgItem.rarity==='legendary'));
@@ -10716,6 +10789,7 @@ function revertCosmeticPreview(){
   // each time even when no preview was running
   if(!cosmeticPreviewTimer) return;
   clearTimeout(cosmeticPreviewTimer); cosmeticPreviewTimer=null;
+  ['appBgLayer','appFxLayer'].forEach(id=>{ const l=document.getElementById(id); if(l) l.dataset.sig=''; });
   renderAppBackground();
   const avatarEl=document.getElementById('profileBarAvatar');
   const oldRing=avatarEl.querySelector('.cos-frame-ring'); if(oldRing) oldRing.remove();
@@ -10725,8 +10799,9 @@ function previewCosmetic(item){
   revertCosmeticPreview();
   const name=LANG==='ar'?item.nameAr:item.nameEn;
   showToast('👁️ '+t('store_preview_toast').replace('{name}',name));
+  cosWrapAll();
   if(item.type==='background'){
-    const el=document.getElementById('appBgLayer');
+    const el=document.getElementById('appBgLayer'); el.dataset.sig='preview';
     const scrim=document.getElementById('appBgScrim');
     el.innerHTML=''; el.className='app-bg-layer '+item.cls;
     if(item.mountEffect) item.mountEffect(el);
