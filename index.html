@@ -864,6 +864,16 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .wk-body{ flex:1; display:flex; flex-direction:column; gap:3px; min-width:0; }
   .wk-body small{ opacity:.92; font-size:.74rem; line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   .wk-go{ font-weight:800; font-size:.8rem; background:rgba(255,255,255,.2); border-radius:999px; padding:5px 10px; white-space:nowrap; }
+
+  .edit-lbl{ display:block; font-size:.8rem; font-weight:800; color:var(--heading); margin:4px 0 6px; }
+  .edit-row{ display:flex; gap:8px; align-items:center; }
+  .edit-row .setup-input{ flex:1; margin:0; }
+  .edit-row .setup-btn{ width:auto; margin:0; padding:10px 16px; }
+  .bc-idle{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; padding:8px 10px; border-radius:12px; background:rgba(255,255,255,.08); font-size:.74rem; }
+  .bc-idle span{ display:flex; flex-direction:column; gap:2px; }
+  .bc-idle small{ opacity:.7; font-size:.68rem; }
+  .bc-idle button{ flex:none; border:none; border-radius:999px; padding:6px 12px; font:inherit; font-size:.74rem; font-weight:800; background:#fff; color:#2a1f3d; cursor:pointer; }
+  .bc-idle em{ flex:none; font-style:normal; opacity:.8; }
   .wk-text{ line-height:1.85; font-size:.92rem; color:var(--heading); }
   .wk-rep .cos-btn{ width:100%; margin-top:10px; }
   /* aquarium v3: free placement, preview, play */
@@ -2902,7 +2912,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.57.0';
+const APP_VERSION='v1.58.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5755,9 +5765,12 @@ function currentCoopBoss(){ const k=weekKeySat(0); return COOP_BOSSES[hashSeed(k
 async function coopState(){
   const k=weekKeySat(0), fr=await friendsWithProfiles(true);
   const mine=await myWeekDamage();
-  const party=[{name:(P.publicProfile&&P.publicProfile.displayName)||'You', me:true, dmg:mine},...fr.map(f=>({name:f.displayName||f.username||'—', dmg:friendWeekDmg(f,k)}))];
+  // friends who haven't done anything this week don't make the boss tougher — they sit out until they show up
+  const active=fr.filter(f=>friendWeekDmg(f,k)>0), idle=fr.filter(f=>!(friendWeekDmg(f,k)>0));
+  const pp=P.publicProfile||{};
+  const party=[{name:pp.displayName||(pp.username?'@'+pp.username:'You'), me:true, dmg:mine},...active.map(f=>({name:f.displayName||f.username||'—', dmg:friendWeekDmg(f,k)}))];
   const hp=COOP_HP_PER_MEMBER*party.length, dealt=party.reduce((a,b)=>a+b.dmg,0);
-  return {k, boss:currentCoopBoss(), party:party.sort((a,b)=>b.dmg-a.dmg), hp, dealt, left:Math.max(0,hp-dealt), dead:dealt>=hp};
+  return {k, boss:currentCoopBoss(), party:party.sort((a,b)=>b.dmg-a.dmg), idle:idle.map(f=>({uid:f.uid,name:f.displayName||f.username||'—'})), hp, dealt, left:Math.max(0,hp-dealt), dead:dealt>=hp};
 }
 let _coopCache={at:0,st:null}, _coopRenderId=0;
 async function renderCoopBossCard(force){
@@ -5774,12 +5787,15 @@ async function renderCoopBossCard(force){
     <div class="bc-hp"><div style="width:${pct}%"></div></div>
     <div class="bc-sub num">${st.dead?(ar?'💀 انهزم!':'💀 Defeated!'):`❤️ ${st.left} / ${st.hp}`}</div>
     <div class="bc-party">${st.party.map(m=>`<div><span>${escapeHtml(m.name)}${m.me?(ar?' (أنت)':' (you)'):''}</span><b class="num">⚔️ ${m.dmg}</b></div>`).join('')}</div>
+    ${(st.idle||[]).length?`<div class="bc-idle"><span>😴 ${ar?`${st.idle.length} ما دخلوا هالأسبوع — ما ينحسبون على الزعيم`:`${st.idle.length} haven’t shown up this week — they don’t count against the boss`}<small>${st.idle.slice(0,4).map(m=>escapeHtml(m.name)).join(ar?'، ':', ')}${st.idle.length>4?' …':''}</small></span>${P._coopNudged===dateKeyOf(new Date())?`<em>👋 ${ar?'حرّكتهم اليوم':'Nudged today'}</em>`:`<button type="button" id="coopNudge">👋 ${ar?'حرّكهم':'Nudge them'}</button>`}</div>`:''}
     ${st.dead&&!claimed?`<button type="button" class="bc-claim" id="coopClaim">🏆 ${ar?`خذ الجائزة (+${COOP_REWARD} عملة)`:`Claim reward (+${COOP_REWARD} coins)`}</button>`:''}
     ${st.dead&&claimed?`<div class="bc-sub" style="margin-top:8px;">✅ ${ar?'أخذت جائزة هالأسبوع':'Reward claimed this week'}</div>`:''}
     <div class="bc-how">${ar?`تضربه بيومك: تمرين +${BOSS_DMG.workout} · يوم كل الصلوات +${BOSS_DMG.prayerDay} · هدف الماء +${BOSS_DMG.water} · يوم أكل +${BOSS_DMG.nutrition} · كل عادة +${BOSS_DMG.habit} · وزن +${BOSS_DMG.weight}`:`You hit it by living your week: workout +${BOSS_DMG.workout} · all prayers +${BOSS_DMG.prayerDay} · water goal +${BOSS_DMG.water} · nutrition day +${BOSS_DMG.nutrition} · each habit +${BOSS_DMG.habit} · weigh-in +${BOSS_DMG.weight}`}</div></div>`;
   const cb=document.getElementById('coopClaim');
   if(cb) cb.onclick=async()=>{ if(P._coopClaimed===st.k) return; P._coopClaimed=st.k; P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.coopKills=(P.lifetimeStats.coopKills||0)+1;
     await awardCoins(COOP_REWARD); playSfx('fanfare'); await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderCoopBossCard(true); };
+  const nb=document.getElementById('coopNudge');
+  if(nb) nb.onclick=async()=>{ nb.disabled=true; for(const m of (st.idle||[])){ try{ await sendCheer(m.uid); }catch(e){} } P._coopNudged=dateKeyOf(new Date()); storageSet('profile',JSON.stringify(P)); showToast(LANG==='ar'?'👋 وصلهم تنبيه — يمكن يرجعون يساعدونك':'👋 Nudge sent — maybe they’ll jump in','success'); renderCoopBossCard(); };
 }
 
 
@@ -8981,6 +8997,39 @@ async function loadDailyTrack(){
   dailyTrackKey=todayKey();
   dailyTrack={...DAILY_TRACK_DEFAULTS};
   try{ const v=await storageGet(dailyTrackKey); if(v){ dailyTrack={...DAILY_TRACK_DEFAULTS,...JSON.parse(v)}; } }catch(e){}
+  watchDailyTrack();
+}
+/* Today's checklist is one document per day. Without a live listener, a device
+   that was already open kept its old copy in memory and its next save wrote it
+   back over a tick made on another device. Now every confirmed server change is
+   applied here right away (our own pending writes are ignored). */
+let _dtUnsub=null, _dtUnsubKey=null;
+function watchDailyTrack(){
+  if(!currentUser||!fbDb) return;
+  const key=dailyTrackKey; if(_dtUnsub&&_dtUnsubKey===key) return;
+  if(_dtUnsub){ try{ _dtUnsub(); }catch(e){} _dtUnsub=null; }
+  _dtUnsubKey=key;
+  try{
+    _dtUnsub=fsDataRef(key).onSnapshot(snap=>{
+      if(!snap.exists||snap.metadata.hasPendingWrites||key!==dailyTrackKey) return;
+      let remote; try{ remote=JSON.parse(snap.data().value); }catch(e){ return; }
+      const next={...DAILY_TRACK_DEFAULTS,...remote};
+      if(JSON.stringify(next)===JSON.stringify(dailyTrack)) return;
+      dailyTrack=next;
+      try{ localStorage.setItem('planner_'+key,snap.data().value); }catch(e){}
+      onRemoteDailyTrack();
+    },()=>{});
+  }catch(e){}
+}
+let _dtRemoteT=null;
+function onRemoteDailyTrack(){
+  clearTimeout(_dtRemoteT);
+  _dtRemoteT=setTimeout(()=>{
+    try{ if(document.getElementById('panel-home').classList.contains('active')) refreshHome(); }catch(e){}
+    try{ renderHomeTodoProgress(); }catch(e){}
+    try{ const act=document.querySelector('section.panel.active'), id=act?act.id.replace('panel-',''):'';
+      if(id==='habits') renderHabits(); else if(id==='food') renderFoodSection(); else if(id==='workout') renderWorkoutSection(); }catch(e){}
+  },150);
 }
 async function checkDayRollover(){
   if(!currentUser || todayKey()===dailyTrackKey) return;
@@ -9886,12 +9935,24 @@ function openUsernameEditModal(){
   const current=(P.publicProfile&&P.publicProfile.username)||'';
   document.getElementById('dayTitle').textContent=t('edit_username_title');
   document.getElementById('daySubtitle').textContent='';
+  const ar=LANG==='ar', curName=(P.publicProfile&&P.publicProfile.displayName)||'';
   document.getElementById('cardBody').innerHTML=`
+    <label class="edit-lbl">${ar?'الاسم اللي يشوفه ربعك':'The name your friends see'}</label>
+    <div class="edit-row"><input type="text" class="setup-input" id="editDisplayNameInput" autocomplete="off" maxlength="30" value="${escapeHtml(curName)}"><button type="button" class="setup-btn" id="editDisplayNameSaveBtn" disabled>${ar?'حفظ':'Save'}</button></div>
+    <div class="username-check-msg" id="editDisplayNameMsg"></div>
+    <label class="edit-lbl">${ar?'اسم المستخدم (@)':'Username (@)'}</label>
     <input type="text" class="setup-input" id="editUsernameInput" autocomplete="off" value="${current}">
     <div class="username-check-msg" id="editUsernameMsg"></div>
     <button type="button" class="setup-btn" id="editUsernameSaveBtn" disabled>${t('save_profile_btn')}</button>
   `;
   overlay.classList.add('open');
+  const dn=document.getElementById('editDisplayNameInput'), dnBtn=document.getElementById('editDisplayNameSaveBtn'), dnMsg=document.getElementById('editDisplayNameMsg');
+  dn.addEventListener('input',()=>{ const v=dn.value.trim(); dnBtn.disabled=!v||v===curName; dnMsg.textContent=''; });
+  dnBtn.addEventListener('click',async()=>{
+    dnBtn.disabled=true;
+    try{ await PublicProfileService.changeDisplayName(dn.value); showToast(ar?'تم تغيير اسمك ✅':'Name updated ✅','success'); overlay.classList.remove('open'); renderProfileSection(); try{ _coopCache={at:0,st:null}; renderCoopBossCard(true); }catch(e){} }
+    catch(e){ dnMsg.textContent=e.message; dnMsg.className='username-check-msg bad'; dnBtn.disabled=false; }
+  });
   const inp=document.getElementById('editUsernameInput');
   const msgEl=document.getElementById('editUsernameMsg');
   const saveBtn=document.getElementById('editUsernameSaveBtn');
@@ -11279,6 +11340,17 @@ const PublicProfileService={
      of leaving it reserved forever) needs the rules to allow deleting
      your OWN usernames/{name} doc — see the rules file's `friendRequests`-
      adjacent `usernames` match, updated alongside this. */
+  async changeDisplayName(raw){
+    if(!fbDb||!currentUser) throw new Error('offline');
+    if(!this.hasProfile()) throw new Error('no profile yet');
+    const name=String(raw||'').replace(/\s+/g,' ').trim().slice(0,30);
+    if(!name) throw new Error(LANG==='ar'?'اكتب اسم':'Type a name');
+    await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, displayName:name, updatedAt:serverNow()},{merge:true});
+    P.publicProfile.displayName=name;
+    await storageSet('profile',JSON.stringify(P));
+    try{ this.syncStats(); }catch(e){}
+    return name;
+  },
   async changeUsername(rawUsername){
     if(!fbDb||!currentUser) throw new Error('offline');
     if(!this.hasProfile()) throw new Error('no profile yet');
