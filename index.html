@@ -2912,7 +2912,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.58.0';
+const APP_VERSION='v1.58.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -13002,9 +13002,44 @@ function yesterdayDateLabel(){
   // label showed a different calendar from every other date in the app
   return d.toLocaleDateString(LANG==='ar'?'ar-EG':'en-US',{month:'short',day:'numeric'});
 }
+/* ONE in-memory copy of yesterday's doc shared by every catch-up section.
+   Each section used to load its own copy, so saving one (e.g. water) wrote an
+   old copy over another section's change (e.g. the workout tick) — the tick
+   vanished after a refresh and its XP guard went with it. */
+let _yShared=null, _yUnsub=null;
 async function loadYesterdayTrack(){
-  try{ const v=await storageGet(yesterdayTrackKey()); if(v) return JSON.parse(v); }catch(e){}
-  return {habits:{},supplements:{},xpAwarded:{habits:{}}};
+  const key=yesterdayTrackKey();
+  if(_yShared&&_yShared.key===key) return _yShared.doc;
+  let doc={habits:{},supplements:{},xpAwarded:{habits:{}}};
+  try{ const v=await storageGet(key); if(v) doc=JSON.parse(v); }catch(e){}
+  if(_yShared&&_yShared.key===key) return _yShared.doc; // another section loaded it meanwhile
+  _yShared={key,doc}; watchYesterdayTrack(key);
+  return doc;
+}
+function watchYesterdayTrack(key){
+  if(_yUnsub){ try{ _yUnsub(); }catch(e){} _yUnsub=null; }
+  if(!currentUser||!fbDb) return;
+  try{
+    _yUnsub=fsDataRef(key).onSnapshot(snap=>{
+      if(!snap.exists||snap.metadata.hasPendingWrites||!_yShared||_yShared.key!==key) return;
+      let remote; try{ remote=JSON.parse(snap.data().value); }catch(e){ return; }
+      const doc=_yShared.doc; if(JSON.stringify(remote)===JSON.stringify(doc)) return;
+      Object.keys(doc).forEach(k=>delete doc[k]); Object.assign(doc,remote);
+      try{ renderWorkoutYesterdayToggle(); renderNutritionYesterdayToggle(); renderWaterYesterdayRow();
+        const hb=document.getElementById('dashHabitsYesterdayList'); if(hb&&!hb.classList.contains('hidden')) renderHabitsYesterdayList(); }catch(e){}
+    },()=>{});
+  }catch(e){}
+}
+/* XP for a catch-up is claimed once on the server (profile doc `xpClaims`),
+   so no lost doc, second device or double tap can ever pay it twice */
+async function xpClaim(id){
+  P.xpClaims=P.xpClaims||{};
+  if(P.xpClaims[id]) return false;
+  if(fbDb&&currentUser){ try{ const d=await fsDataRef('profile').get(); const c=(d.exists&&d.data().xpClaims)||{}; if(c[id]){ P.xpClaims[id]=1; return false; } }catch(e){} }
+  P.xpClaims[id]=1;
+  const ids=Object.keys(P.xpClaims); if(ids.length>300) ids.slice(0,ids.length-300).forEach(k=>delete P.xpClaims[k]);
+  if(fbDb&&currentUser){ try{ fsDataRef('profile').set({xpClaims:{[id]:1}},{merge:true}).catch(()=>{}); }catch(e){} }
+  return true;
 }
 function yesterdayDateObj(){ const d=new Date(); d.setDate(d.getDate()-1); return d; }
 /* an account created today has no yesterday to catch up on */
@@ -13049,7 +13084,7 @@ async function renderWorkoutYesterdayToggle(){
     let justEarnedXp=false;
     if(nowDone && !yDoc.completionCounted){
       yDoc.completionCounted=true;
-      justEarnedXp=true;
+      justEarnedXp=await xpClaim('yw:'+yKey);
     }
     await storageSet(yKey,JSON.stringify(yDoc));
     if(justEarnedXp){
@@ -13091,7 +13126,7 @@ async function renderNutritionYesterdayToggle(){
     yDoc.xpAwarded.nutrition=nowDone;
     paint();
     await storageSet(yKey,JSON.stringify(yDoc));
-    if(nowDone){
+    if(nowDone && await xpClaim('yn:'+yKey)){
       migrateProgressionFields();
       updateNamedStreakForDate('nutrition',yesterdayDateObj());
       P.lifetimeStats.nutritionDaysHit=(P.lifetimeStats.nutritionDaysHit||0)+1;
@@ -13120,7 +13155,7 @@ async function renderWaterYesterdayRow(){
     const amount=yDoc.water||0;
     const done=amount>=target;
     box.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>
-      <div class="habit-row${done?' done':''}" style="cursor:default;"><div class="habit-box">${done?'✓':''}</div><div class="habit-label">${t('water_yesterday_item')}</div></div>
+      <div class="habit-row${done?' done':''}" id="waterYesterdayFill" role="button" tabindex="0"><div class="habit-box">${done?'✓':''}</div><div class="habit-label">${t('water_yesterday_item')}${done?'':` <small style="opacity:.7">(${LANG==='ar'?'اضغط إذا خلصت هدفك':'tap if you hit your goal'})</small>`}</div></div>
       <div class="dash-water-row" style="margin-top:6px;">
         <div class="water-count" id="waterYesterdayCount" style="font-size:0.9rem;">${amount.toFixed(2)} / ${target} L</div>
         <div class="dash-water-btns">
@@ -13128,6 +13163,7 @@ async function renderWaterYesterdayRow(){
           <button type="button" class="dash-water-btn" id="waterYesterdayPlus" dir="ltr">+0.25L</button>
         </div>
       </div>`;
+    document.getElementById('waterYesterdayFill').addEventListener('click',()=>{ const cur=yDoc.water||0; if(cur<target) adjust(+(target-cur).toFixed(2)); });
     document.getElementById('waterYesterdayPlus').addEventListener('click',()=>adjust(0.25));
     document.getElementById('waterYesterdayMinus').addEventListener('click',()=>adjust(-0.25));
   };
@@ -13139,6 +13175,7 @@ async function renderWaterYesterdayRow(){
       yDoc.xpAwarded=yDoc.xpAwarded||{};
       yDoc.xpAwarded.water=true;
       await storageSet(yKey,JSON.stringify(yDoc));
+      if(!(await xpClaim('yh2o:'+yKey))) return;
       migrateProgressionFields();
       updateNamedStreakForDate('water',yesterdayDateObj());
       P.lifetimeStats.waterDaysHit=(P.lifetimeStats.waterDaysHit||0)+1;
@@ -13238,9 +13275,10 @@ async function renderHabitsYesterdayList(){
       row.classList.toggle('done',nowDone);
       row.querySelector('.habit-box').textContent=nowDone?'✓':'';
       yDoc.xpAwarded=yDoc.xpAwarded||{}; yDoc.xpAwarded.habits=yDoc.xpAwarded.habits||{};
-      const justEarnedXp = nowDone && !yDoc.xpAwarded.habits[h.id];
+      let justEarnedXp = nowDone && !yDoc.xpAwarded.habits[h.id];
       if(justEarnedXp) yDoc.xpAwarded.habits[h.id]=true;
       await storageSet(yKey, JSON.stringify(yDoc));
+      if(justEarnedXp) justEarnedXp=await xpClaim('yh:'+yKey+':'+h.id);
       if(justEarnedXp){
         await awardXP(XP_CONFIG.habit_complete);
         await notifyNewUnlocks();
