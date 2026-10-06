@@ -874,6 +874,11 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .bc-idle small{ opacity:.7; font-size:.68rem; }
   .bc-idle button{ flex:none; border:none; border-radius:999px; padding:6px 12px; font:inherit; font-size:.74rem; font-weight:800; background:#fff; color:#2a1f3d; cursor:pointer; }
   .bc-idle em{ flex:none; font-style:normal; opacity:.8; }
+
+  .net-banner{ position:fixed; z-index:70; left:50%; top:calc(env(safe-area-inset-top,0px) + 8px); transform:translate(-50%,-140%); max-width:min(92vw,520px); padding:9px 14px; border-radius:14px; font-size:.78rem; line-height:1.5; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,.18); transition:transform .35s ease; pointer-events:none; }
+  .net-banner.on{ transform:translate(-50%,0); }
+  .net-banner.mini{ padding:5px 12px; font-size:.72rem; opacity:.92; }
+  .net-banner.off{ background:#2b2f36; color:#fff; } .net-banner.sync{ background:#ffb703; color:#3a2600; } .net-banner.ok{ background:#1f9d55; color:#fff; }
   .wk-text{ line-height:1.85; font-size:.92rem; color:var(--heading); }
   .wk-rep .cos-btn{ width:100%; margin-top:10px; }
   /* aquarium v3: free placement, preview, play */
@@ -1640,18 +1645,57 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
      the earliest point the app knows what to show next — the first
      onAuthStateChanged callback — with a timeout safety net in case
      that never fires. -->
-<div id="bootSplash" style="position:fixed;inset:0;z-index:9999;background:#f7f7f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
-  <div id="bootSplashMark" style="font-size:46px;line-height:1;animation:bootBreathe 1.6s ease-in-out infinite;">🗓️</div>
-  <div style="font-family:sans-serif;font-weight:700;font-size:15px;color:#1a1a1a;">My Planner</div>
-  <div dir="rtl" style="font-family:sans-serif;font-size:13px;color:#6b6b6b;">مخططي</div>
-  <div style="width:56px;height:3px;border-radius:999px;background:#e2e2e0;overflow:hidden;margin-top:6px;">
-    <div style="width:40%;height:100%;background:#1a1a1a;animation:bootSlide 1.1s ease-in-out infinite;"></div>
-  </div>
+<div id="bootSplash" role="status" aria-label="Loading" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at 50% 38%,#fbf8ee 0%,#ece8d8 58%,#dcd7c2 100%);transition:opacity .38s ease,transform .38s ease;font-family:Cairo,Tajawal,system-ui,-apple-system,'Segoe UI',sans-serif;">
+  <svg viewBox="0 0 140 140" width="148" height="148" aria-hidden="true" style="overflow:visible">
+    <defs>
+      <linearGradient id="bsG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6f8c72"/><stop offset="1" stop-color="#3e5443"/></linearGradient>
+      <radialGradient id="bsGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9fd6a8" stop-opacity=".55"/><stop offset="1" stop-color="#9fd6a8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="bsW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd6e6" stop-opacity=".0"/><stop offset="1" stop-color="#5fb4cf" stop-opacity=".55"/></linearGradient>
+    </defs>
+    <circle class="bs-glow" cx="70" cy="72" r="58" fill="url(#bsGlow)"/>
+    <circle cx="70" cy="70" r="62" fill="none" stroke="rgba(76,99,80,.16)" stroke-width="1.4" stroke-dasharray="2 7"/>
+    <g class="bs-badge">
+      <rect x="32" y="36" width="76" height="72" rx="20" fill="url(#bsG)"/>
+      <path d="M32,92 Q50,84 70,92 T108,92 L108,88 Q108,108 88,108 L52,108 Q32,108 32,88Z" fill="url(#bsW)"/>
+      <rect x="32" y="36" width="76" height="20" rx="20" fill="#2e4033"/><rect x="32" y="46" width="76" height="10" fill="#2e4033"/>
+      <rect x="50" y="27" width="7" height="18" rx="3.5" fill="#efe9d2"/><rect x="83" y="27" width="7" height="18" rx="3.5" fill="#efe9d2"/>
+      <path class="bs-check" d="M51 76 L64 89 L90 63" fill="none" stroke="#f8f2dc" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g class="bs-orbit"><g transform="translate(70,8)"><path d="M-12,0 C-6,-6 6,-6 10,0 C6,6 -6,6 -12,0Z" fill="#e8a23c"/><path d="M-11,0 L-18,-5 L-17,0 L-18,5Z" fill="#e8a23c"/><circle cx="5" cy="-1" r="1.3" fill="#2b2b2b"/></g></g>
+  </svg>
+  <div class="bs-name" style="font-weight:800;font-size:28px;line-height:1;color:#26352a;">مخططي</div>
+  <div class="bs-sub" style="font-weight:700;font-size:11px;letter-spacing:.32em;color:#6c7a6e;">MY PLANNER</div>
+  <div class="bs-track" style="width:132px;height:4px;border-radius:999px;background:rgba(38,53,42,.10);overflow:hidden;margin-top:6px;"><div class="bs-bar" style="width:45%;height:100%;border-radius:999px;background:linear-gradient(90deg,transparent,#4c6350,transparent);"></div></div>
+  <div id="bootSplashMsg" style="min-height:18px;font-size:12.5px;color:#6c7a6e;opacity:0;transition:opacity .4s ease;text-align:center;padding:0 24px;"></div>
 </div>
 <style>
-@keyframes bootBreathe{0%,100%{transform:scale(1);opacity:0.85}50%{transform:scale(1.08);opacity:1}}
-@keyframes bootSlide{0%{transform:translateX(-140%)}100%{transform:translateX(250%)}}
+#bootSplash .bs-badge{ transform-origin:70px 72px; animation:bsPop .7s cubic-bezier(.2,1.4,.4,1) both, bsFloat 3.2s ease-in-out .7s infinite alternate; }
+#bootSplash .bs-check{ stroke-dasharray:60; stroke-dashoffset:60; animation:bsDraw .7s ease-out .45s forwards; }
+#bootSplash .bs-orbit{ transform-origin:70px 70px; animation:bsSpin 3.6s linear infinite; }
+#bootSplash .bs-bar{ animation:bsBar 1.3s ease-in-out infinite; }
+#bootSplash.dark{ background:radial-gradient(ellipse at 50% 38%,#24302a 0%,#161d19 60%,#0d1210 100%) !important; }
+#bootSplash.dark .bs-name{ color:#eef2ea !important; }
+#bootSplash.dark .bs-sub{ color:#93a597 !important; } #bootSplash.dark .bs-track{ background:rgba(255,255,255,.10) !important; } #bootSplash.dark .bs-bar{ background:linear-gradient(90deg,transparent,#a9dcb2,transparent) !important; } #bootSplash.dark #bootSplashMsg{ color:#a4b3a7 !important; }
+#bootSplash .bs-glow{ transform-origin:70px 72px; animation:bsGlow 2.6s ease-in-out infinite alternate; }
+@keyframes bsGlow{ from{ opacity:.35; transform:scale(.92); } to{ opacity:1; transform:scale(1.06); } }
+#bootSplash.out{ opacity:0; transform:scale(1.04); pointer-events:none; }
+@keyframes bsPop{ from{ transform:scale(.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
+@keyframes bsFloat{ from{ transform:translateY(0); } to{ transform:translateY(-4px); } }
+@keyframes bsDraw{ to{ stroke-dashoffset:0; } }
+@keyframes bsSpin{ to{ transform:rotate(360deg); } }
+@keyframes bsBar{ from{ transform:translateX(-110%); } to{ transform:translateX(230%); } }
+@media (prefers-reduced-motion: reduce){ #bootSplash *{ animation:none !important; } #bootSplash .bs-check{ stroke-dashoffset:0; } }
 </style>
+<script>
+(function(){
+  var s=document.getElementById('bootSplash'), m=document.getElementById('bootSplashMsg'), ar=true;
+  try{ var p=JSON.parse(localStorage.getItem('planner_profile')||'{}'); ar=(p.lang||'ar')==='ar';
+    var dark=p.mode==='dark'||(p.mode!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches); if(dark) s.classList.add('dark'); }catch(e){}
+  function say(t){ if(!m||!document.getElementById('bootSplash')) return; m.textContent=t; m.style.opacity=1; }
+  setTimeout(function(){ say(navigator.onLine===false?(ar?'📴 بدون نت — نفتح النسخة اللي بجهازك':'📴 Offline — opening the copy on your device'):(ar?'لحظة… نجهّز يومك':'One moment… getting your day ready')); },1800);
+  setTimeout(function(){ say(ar?'النت بطيء شوي — نكمل من النسخة اللي بجهازك':'Slow connection — continuing from your device'); },5000);
+})();
+</script>
 
 <div class="app-bg-layer" id="appBgLayer"></div>
 <div class="app-bg-scrim" id="appBgScrim"></div>
@@ -2912,7 +2956,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.58.1';
+const APP_VERSION='v1.59.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -2926,13 +2970,22 @@ if('serviceWorker' in navigator && window.isSecureContext){
    from before (window.storage for the Artifact preview, else localStorage). */
 const _mem={};
 function fsDataRef(key){ return fbDb.collection('users').doc(currentUser.uid).collection('data').doc(key); }
+let _netSlowUntil=0;
 async function storageGet(key){
   if(currentUser&&fbDb){
     try{
-      const doc=await fsDataRef(key).get();
-      const v=doc.exists?doc.data().value:null;
-      if(v!==null){ try{ localStorage.setItem('planner_'+key,v); }catch(e){} }
-      return v;
+      const ref=fsDataRef(key), cacheGet=()=>ref.get({source:'cache'}).catch(()=>null);
+      let doc=null;
+      if(navigator.onLine===false||Date.now()<_netSlowUntil) doc=await cacheGet();
+      if(!doc){
+        doc=await Promise.race([ref.get().then(d=>{ _netSlowUntil=0; return d; }), new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),2500))])
+          .catch(async()=>{ _netSlowUntil=Date.now()+20000; return await cacheGet(); });
+      }
+      if(doc){
+        const v=doc.exists?doc.data().value:null;
+        if(v!==null){ try{ localStorage.setItem('planner_'+key,v); }catch(e){} return v; }
+        if(doc.metadata&&!doc.metadata.fromCache) return null; // the server really has nothing
+      }
     }catch(e){ /* offline/blocked — fall through to the local cache below */ }
   }
   try{ if(window.storage&&window.storage.get){ const r=await window.storage.get(key,false); return r?r.value:null; } }catch(e){}
@@ -3531,11 +3584,30 @@ async function renderSeaCard(){
    genuinely broken boot (Firebase failing silently, an uncaught error
    before this point) — better to reveal the auth screen underneath,
    even non-functional, than trap the user on a splash forever. */
+
+/* ---- offline mode: a calm banner while offline; everything you tick is saved on the
+   device (Firestore's offline queue) and uploaded by itself when the connection is back */
+(function netBanner(){
+  const show=(html,cls,ms)=>{ let b=document.getElementById('netBanner'); if(!b){ b=document.createElement('div'); b.id='netBanner'; document.body.appendChild(b); }
+    b.className='net-banner '+cls; b.innerHTML=html; b.classList.add('on'); clearTimeout(b._t); if(ms) b._t=setTimeout(()=>b.classList.remove('on'),ms); };
+  const ar=()=>LANG==='ar';
+  const offline=()=>{ show(ar()?'📴 <b>بدون نت</b> — تقدر تشوف جدولك وتعلّم، وكل شي يرتفع لما يرجع النت':'📴 <b>Offline</b> — you can see your plan and tick things; it all uploads when you’re back online','off');
+    setTimeout(()=>{ const b=document.getElementById('netBanner'); if(b&&b.classList.contains('off')&&navigator.onLine===false){ b.classList.add('mini'); b.innerHTML='📴 '+(ar()?'بدون نت':'Offline'); } },5000); };
+  window.addEventListener('offline',offline);
+  window.addEventListener('online',()=>{
+    show(ar()?'🔄 رجع النت — نرفع تغييراتك…':'🔄 Back online — uploading your changes…','sync');
+    const done=()=>show(ar()?'✅ انرفع كل شي':'✅ Everything is uploaded','ok',2500);
+    try{ (fbDb&&fbDb.waitForPendingWrites?fbDb.waitForPendingWrites():Promise.resolve()).then(done,done); }catch(e){ done(); }
+    _netSlowUntil=0;
+  });
+  if(navigator.onLine===false) setTimeout(offline,600);
+})();
 function removeBootSplash(){
   const el=document.getElementById('bootSplash');
-  if(el) el.remove();
+  if(!el||el.classList.contains('out')) return;
+  el.classList.add('out'); setTimeout(()=>el.remove(),400);
 }
-setTimeout(removeBootSplash,6000);
+setTimeout(removeBootSplash,12000);
 if(fbAuth){
   fbAuth.getRedirectResult().catch(e=>{ console.error('Redirect sign-in result error:',e.code,e.message); showAuthError(signInErrorMessage(e)); });
   fbAuth.onAuthStateChanged(async(user)=>{
