@@ -1080,6 +1080,17 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .emoji-picker-pop button:hover{ background:var(--bg); }
   /* commitments list (Schedule) */
   .commit-list{ display:flex; flex-direction:column; gap:8px; margin:6px 0 10px; }
+
+  .cm-manager{ margin:16px 0 4px; }
+  .cm-head{ width:100%; display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px; border:1px solid rgba(127,127,127,.25); background:var(--card); color:var(--heading); font:inherit; font-weight:800; font-size:.88rem; cursor:pointer; text-align:start; }
+  .cm-head span{ flex:1; } .cm-head b{ margin-inline-start:4px; }
+  .cm-head em{ font-style:normal; font-size:.72rem; font-weight:800; color:#d13b40; background:rgba(229,72,77,.12); border-radius:999px; padding:3px 9px; }
+  .cm-head i{ font-style:normal; font-size:.74rem; color:var(--ink-soft); }
+  .cm-filters, .cm-days{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .cm-filters button, .cm-days button{ border:1px solid rgba(127,127,127,.25); background:var(--card); color:var(--heading); border-radius:999px; padding:6px 11px; font:inherit; font-size:.74rem; font-weight:700; cursor:pointer; }
+  .cm-days button{ padding:5px 9px; font-size:.7rem; }
+  .cm-filters button.on, .cm-days button.on{ background:var(--accent-deep,#111); color:#fff; border-color:transparent; }
+  .cm-filters .num{ opacity:.7; }
   .cm-row{ display:flex; align-items:stretch; gap:10px; padding:10px 12px; border-radius:16px; background:var(--card); border:1px solid rgba(127,127,127,.18); border-inline-start:4px solid #4c6350; }
   .cm-row.cm-conf{ border-inline-start-color:#e5484d; }
   .cm-row.cm-upcoming{ border-inline-start-color:#ffb703; }
@@ -1939,7 +1950,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <!-- setup, nested + collapsible like the Exercise folder inside Food -->
       <div class="setup-card hidden" id="todoSetupCard">
         <h3 data-i18n="q_commit"></h3>
-        <div class="tag-chips" id="commitListChips"></div>
         <input type="text" class="setup-input" id="commitLabel" data-i18n-ph="commit_label_ph">
         <label style="font-size:0.85rem;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <input type="checkbox" id="commitHardToggle" checked style="width:18px;height:18px;"> <span data-i18n="commit_hard_label"></span>
@@ -1961,6 +1971,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="commit_to_date"></label><input type="date" class="setup-input" id="commitToDate"></div>
         </div>
         <button class="setup-btn" id="commitAddBtn" type="button" data-i18n="add_commit" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);"></button>
+        <div id="commitListChips"></div>
 
         <div class="setup-btn" id="bulkImportToggle" style="margin-top:14px;background:var(--card);color:var(--ink-soft);border:1px dashed var(--line);cursor:pointer;text-align:center;" data-i18n="bulk_import_toggle"></div>
         <div class="hidden" id="bulkImportCard" style="margin-top:10px;">
@@ -2956,7 +2967,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.59.0';
+const APP_VERSION='v1.59.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -7464,8 +7475,9 @@ function commitDateText(iso){ if(!iso) return ''; const [y,m,dd]=iso.split('-').
 function commitStatus(c){ const n=new Date(), today=isoDateStr(n.getFullYear(),n.getMonth(),n.getDate()); if(c.toDate&&c.toDate<today) return 'ended'; if(c.fromDate&&c.fromDate>today) return 'upcoming'; return 'active'; }
 /* one tidy card per commitment: time on the side, days + dates in words,
    who it clashes with, and finished ones tucked at the bottom */
+let _cmOpen=false, _cmFilter='all';
 function renderCommitList(){
-  const box=document.getElementById('commitListChips'); if(!box) return; box.innerHTML=''; box.className='commit-list';
+  const outer=document.getElementById('commitListChips'); if(!outer) return; outer.innerHTML=''; outer.className='cm-manager';
   const ar=LANG==='ar', list=P._commitments||[];
   const live=list.filter(c=>commitStatus(c)!=='ended'), withMap=new Map();
   findAllScheduleConflicts(live).forEach(cf=>{ if(cf.kind!=='overlap') return; [[cf.a,cf.b],[cf.b,cf.a]].forEach(([x,y])=>{ if(!withMap.has(x)) withMap.set(x,[]); withMap.get(x).push(y); }); });
@@ -7475,10 +7487,24 @@ function renderCommitList(){
     if(!!b.c.pinned!==!!a.c.pinned) return (b.c.pinned?1:0)-(a.c.pinned?1:0);
     const sa=commitTimeSpan(a.c), sb=commitTimeSpan(b.c); return (sa?sa.start:-1)-(sb?sb.start:-1);
   });
-  if(!sorted.length){ box.innerHTML=`<p class="cm-empty">${ar?'ما ضفت التزامات ليلحين':'No commitments yet'}</p>`; return; }
+  if(!sorted.length){ outer.innerHTML=`<p class="cm-empty">${ar?'ما ضفت التزامات ليلحين — ضيف أول وحدة فوق 👆':'No commitments yet — add your first one above 👆'}</p>`; return; }
+  const now=new Date(), wd=(now.getDay()+1)%7;
+  const cnt={all:sorted.length,today:0,clash:0,upcoming:0,ended:0};
+  sorted.forEach(({c,st})=>{ if(st==='active'&&c.days.includes(wd)) cnt.today++; if(withMap.has(c)) cnt.clash++; if(st==='upcoming') cnt.upcoming++; if(st==='ended') cnt.ended++; });
+  const fl=[['all',ar?'الكل':'All',cnt.all],['today',ar?'اليوم':'Today',cnt.today],['clash','⚠️ '+(ar?'متعارضة':'Clashes'),cnt.clash],['upcoming','⏳ '+(ar?'ما بدأت':'Not started'),cnt.upcoming],['ended','✓ '+(ar?'خلصت':'Finished'),cnt.ended]].filter(x=>x[0]==='all'||x[0]===_cmFilter||x[2]);
+  outer.innerHTML=`<button type="button" class="cm-head${_cmOpen?' open':''}" aria-expanded="${_cmOpen}"><span>📋 ${ar?'التزاماتك':'Your commitments'} <b class="num">${cnt.all}</b></span>${cnt.clash?`<em>⚠️ ${cnt.clash} ${ar?'متعارضة':'clash'}</em>`:''}<i>${_cmOpen?(ar?'إخفاء ▴':'Hide ▴'):(ar?'عرض ▾':'Show ▾')}</i></button>
+    <div class="cm-filters">${fl.map(([k,l,n])=>`<button type="button" data-cmf="${k}" class="${_cmOpen&&_cmFilter===k?'on':''}">${l} <span class="num">${n}</span></button>`).join('')}</div>
+    ${_cmOpen?`<div class="cm-days">${DAY_NAMES[LANG].map((d,i)=>`<button type="button" data-cmf="d${i}" class="${_cmFilter==='d'+i?'on':''}">${d}</button>`).join('')}</div><div class="commit-list" id="cmItems"></div>`:''}`;
+  outer.querySelector('.cm-head').onclick=()=>{ _cmOpen=!_cmOpen; if(_cmOpen&&!_cmFilter) _cmFilter='all'; renderCommitList(); };
+  outer.querySelectorAll('[data-cmf]').forEach(b=>b.onclick=()=>{ const f=b.dataset.cmf; if(_cmOpen&&_cmFilter===f&&f!=='all'){ _cmFilter='all'; } else { _cmFilter=f; _cmOpen=true; } renderCommitList(); });
+  if(!_cmOpen) return;
+  const box=document.getElementById('cmItems');
+  const pass=({c,st})=>{ const f=_cmFilter; if(f==='today') return st==='active'&&c.days.includes(wd); if(f==='clash') return withMap.has(c); if(f==='upcoming') return st==='upcoming'; if(f==='ended') return st==='ended'; if(f&&f[0]==='d') return c.days.includes(+f.slice(1)); return true; };
+  const shown=sorted.filter(pass);
+  if(!shown.length) box.innerHTML=`<p class="cm-empty">${ar?'ما في شي هني':'Nothing here'}</p>`;
   let endedHead=false;
-  sorted.forEach(({c,i,st})=>{
-    if(st==='ended'&&!endedHead){ endedHead=true; box.insertAdjacentHTML('beforeend',`<div class="cm-sep"><span>✓ ${ar?'التزامات خلصت':'Finished'}</span><button type="button" id="cmClearEnded">${ar?'امسحها كلها':'Clear them'}</button></div>`); }
+  shown.forEach(({c,i,st})=>{
+    if(st==='ended'&&!endedHead&&_cmFilter==='all'){ endedHead=true; box.insertAdjacentHTML('beforeend',`<div class="cm-sep"><span>✓ ${ar?'التزامات خلصت':'Finished'}</span><button type="button" id="cmClearEnded">${ar?'امسحها كلها':'Clear them'}</button></div>`); }
     const others=withMap.get(c)||[];
     const range=c.fromDate&&c.toDate?`${commitDateText(c.fromDate)} – ${commitDateText(c.toDate)}`:c.fromDate?((st==='upcoming'?(ar?'يبدأ ':'Starts '):(ar?'من ':'From '))+commitDateText(c.fromDate)):c.toDate?((ar?'لين ':'Until ')+commitDateText(c.toDate)):'';
     const row=document.createElement('div'); row.className='cm-row cm-'+st+(others.length?' cm-conf':'');
@@ -7531,6 +7557,7 @@ function finalizeAddCommitment(candidate){
   resetCommitForm();
   renderCommitList();
   persistCommitments();
+  try{ showToast((LANG==='ar'?'✅ انضاف: ':'✅ Added: ')+candidate.label,'success'); document.getElementById('commitLabel').focus(); }catch(e){}
 }
 /* Previously "Add" only touched the draft P._commitments — it visibly
    appeared as a chip, which looked saved, but nothing was written to
