@@ -1722,63 +1722,91 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 </head>
 <body>
 
-<!-- Boot splash — deliberately styled with only inline attributes and
-     literal colors (no classes from the stylesheet above, no var(--bg)
-     custom properties, which are only set later by applyTheme()) so it
-     paints the instant the browser reaches this element, regardless of
-     how long the rest of the page/scripts take to arrive. Removed by
-     the earliest point the app knows what to show next — the first
-     onAuthStateChanged callback — with a timeout safety net in case
-     that never fires. -->
-<div id="bootSplash" role="status" aria-label="Loading" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at 50% 38%,#fbf8ee 0%,#ece8d8 58%,#dcd7c2 100%);transition:opacity .38s ease,transform .38s ease;font-family:Cairo,Tajawal,system-ui,-apple-system,'Segoe UI',sans-serif;">
-  <svg viewBox="0 0 140 140" width="148" height="148" aria-hidden="true" style="overflow:visible">
-    <defs>
-      <linearGradient id="bsG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6f8c72"/><stop offset="1" stop-color="#3e5443"/></linearGradient>
-      <radialGradient id="bsGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9fd6a8" stop-opacity=".55"/><stop offset="1" stop-color="#9fd6a8" stop-opacity="0"/></radialGradient>
-      <linearGradient id="bsW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd6e6" stop-opacity=".0"/><stop offset="1" stop-color="#5fb4cf" stop-opacity=".55"/></linearGradient>
-    </defs>
-    <circle class="bs-glow" cx="70" cy="72" r="58" fill="url(#bsGlow)"/>
-    <circle cx="70" cy="70" r="62" fill="none" stroke="rgba(76,99,80,.16)" stroke-width="1.4" stroke-dasharray="2 7"/>
-    <g class="bs-badge">
-      <rect x="32" y="36" width="76" height="72" rx="20" fill="url(#bsG)"/>
-      <path d="M32,92 Q50,84 70,92 T108,92 L108,88 Q108,108 88,108 L52,108 Q32,108 32,88Z" fill="url(#bsW)"/>
-      <rect x="32" y="36" width="76" height="20" rx="20" fill="#2e4033"/><rect x="32" y="46" width="76" height="10" fill="#2e4033"/>
-      <rect x="50" y="27" width="7" height="18" rx="3.5" fill="#efe9d2"/><rect x="83" y="27" width="7" height="18" rx="3.5" fill="#efe9d2"/>
-      <path class="bs-check" d="M51 76 L64 89 L90 63" fill="none" stroke="#f8f2dc" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-    <g class="bs-orbit"><g transform="translate(70,8)"><path d="M-12,0 C-6,-6 6,-6 10,0 C6,6 -6,6 -12,0Z" fill="#e8a23c"/><path d="M-11,0 L-18,-5 L-17,0 L-18,5Z" fill="#e8a23c"/><circle cx="5" cy="-1" r="1.3" fill="#2b2b2b"/></g></g>
-  </svg>
-  <div class="bs-name" style="font-weight:800;font-size:28px;line-height:1;color:#26352a;">مخططي</div>
-  <div class="bs-sub" style="font-weight:700;font-size:11px;letter-spacing:.32em;color:#6c7a6e;">MY PLANNER</div>
-  <div class="bs-track" style="width:132px;height:4px;border-radius:999px;background:rgba(38,53,42,.10);overflow:hidden;margin-top:6px;"><div class="bs-bar" style="width:45%;height:100%;border-radius:999px;background:linear-gradient(90deg,transparent,#4c6350,transparent);"></div></div>
-  <div id="bootSplashMsg" style="min-height:18px;font-size:12.5px;color:#6c7a6e;opacity:0;transition:opacity .4s ease;text-align:center;padding:0 24px;"></div>
+<!-- Boot splash — a tear-off desk calendar whose pages flip back over the
+     rings through the last 24 days and land on today. Styled only with
+     its own #bootSplash rules + literal colors (no var(--…) from the app,
+     which applyTheme() sets later) so it paints the moment the browser
+     reaches it. removeBootSplash() fast-forwards the flip to today when
+     the app is ready early, then fades it out. -->
+<div id="bootSplash" role="status" aria-label="Loading">
+  <div class="bsc-scene"><div class="bsc-pad">
+    <div class="bsc-board"><div class="bsc-rings"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="bsc-block" id="bscBlock"><div class="bsc-stamp">✓</div></div>
+  </div></div>
+  <div class="bsc-brand"><b id="bscName">مخططي</b><span id="bscHij"></span></div>
+  <div id="bootSplashMsg"></div>
 </div>
 <style>
-#bootSplash .bs-badge{ transform-origin:70px 72px; animation:bsPop .7s cubic-bezier(.2,1.4,.4,1) both, bsFloat 3.2s ease-in-out .7s infinite alternate; }
-#bootSplash .bs-check{ stroke-dasharray:60; stroke-dashoffset:60; animation:bsDraw .7s ease-out .45s forwards; }
-#bootSplash .bs-orbit{ transform-origin:70px 70px; animation:bsSpin 3.6s linear infinite; }
-#bootSplash .bs-bar{ animation:bsBar 1.3s ease-in-out infinite; }
-#bootSplash.dark{ background:radial-gradient(ellipse at 50% 38%,#24302a 0%,#161d19 60%,#0d1210 100%) !important; }
-#bootSplash.dark .bs-name{ color:#eef2ea !important; }
-#bootSplash.dark .bs-sub{ color:#93a597 !important; } #bootSplash.dark .bs-track{ background:rgba(255,255,255,.10) !important; } #bootSplash.dark .bs-bar{ background:linear-gradient(90deg,transparent,#a9dcb2,transparent) !important; } #bootSplash.dark #bootSplashMsg{ color:#a4b3a7 !important; }
-#bootSplash .bs-glow{ transform-origin:70px 72px; animation:bsGlow 2.6s ease-in-out infinite alternate; }
-@keyframes bsGlow{ from{ opacity:.35; transform:scale(.92); } to{ opacity:1; transform:scale(1.06); } }
+#bootSplash{ --paper:#fffdf7; --back1:#fdf9f1; --back2:#ece2d2; --ink:#1f1a17; --red:#d8412f; --muted:#9a7b5c; --board1:#e2553d; --board2:#b93a26; --edge1:#efe7d8; --edge2:#e3d8c5; --edge3:#d6c9b2; --desk1:#fbf3e6; --desk2:#f1e2cb; --brand:#3a2414;
+  position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;
+  background:radial-gradient(120% 80% at 50% 38%,var(--desk1),var(--desk2)); transition:opacity .38s ease,transform .38s ease;
+  font-family:Cairo,Tajawal,system-ui,-apple-system,'Segoe UI',sans-serif; overflow:hidden; }
+#bootSplash.dark{ --paper:#2a241f; --back1:#3a322b; --back2:#29231e; --ink:#f4ece3; --red:#ff7a5c; --muted:#c9a27c; --board1:#c94a33; --board2:#8f2f1f; --edge1:#241f1b; --edge2:#1f1a17; --edge3:#1a1613; --desk1:#2a211a; --desk2:#110d0a; --brand:#f4ece3; }
 #bootSplash.out{ opacity:0; transform:scale(1.04); pointer-events:none; }
-@keyframes bsPop{ from{ transform:scale(.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
-@keyframes bsFloat{ from{ transform:translateY(0); } to{ transform:translateY(-4px); } }
-@keyframes bsDraw{ to{ stroke-dashoffset:0; } }
-@keyframes bsSpin{ to{ transform:rotate(360deg); } }
-@keyframes bsBar{ from{ transform:translateX(-110%); } to{ transform:translateX(230%); } }
-@media (prefers-reduced-motion: reduce){ #bootSplash *{ animation:none !important; } #bootSplash .bs-check{ stroke-dashoffset:0; } }
+#bootSplash .bsc-scene{ width:min(64vw,250px); perspective:1100px; perspective-origin:50% 20%; animation:bscEnter .6s cubic-bezier(.2,1.25,.4,1) both; }
+@keyframes bscEnter{ from{ transform:translateY(30px) scale(.9); opacity:0; } }
+#bootSplash .bsc-pad{ position:relative; transform-style:preserve-3d; animation:bscLand .4s ease-out var(--land,3s); }
+@keyframes bscLand{ 35%{ transform:translateY(3px) scale(1.035); } }
+#bootSplash .bsc-board{ position:relative; height:30px; border-radius:16px 16px 4px 4px; background:linear-gradient(var(--board1),var(--board2)); transform:translateZ(16px); box-shadow:0 2px 0 rgba(0,0,0,.15); }
+#bootSplash .bsc-rings{ position:absolute; inset:-9px 14% auto 14%; display:flex; justify-content:space-between; }
+#bootSplash .bsc-rings i{ width:7px; height:22px; border-radius:4px; background:linear-gradient(90deg,#7d7d7d,#f4f4f4 45%,#8c8c8c); box-shadow:0 1px 2px rgba(0,0,0,.35); }
+#bootSplash .bsc-block{ position:relative; aspect-ratio:1/1.08; transform-style:preserve-3d; border-radius:0 0 14px 14px; background:var(--paper);
+  box-shadow:0 2px 0 var(--edge1),0 4px 0 var(--edge2),0 6px 0 var(--edge3),0 22px 34px rgba(90,50,10,.22); }
+#bootSplash .bsc-sheet{ position:absolute; inset:0; transform-origin:50% 0; transform-style:preserve-3d; transform:translateZ(var(--z)); }
+#bootSplash .bsc-face{ position:absolute; inset:0; border-radius:0 0 14px 14px; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; }
+#bootSplash .bsc-front{ background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 8px 12px; border-top:1px dashed rgba(0,0,0,.12); }
+#bootSplash .bsc-back{ background:linear-gradient(var(--back1),var(--back2)); transform:rotateX(180deg); box-shadow:inset 0 -3px 0 rgba(0,0,0,.09), inset 0 1px 0 rgba(255,255,255,.5); }
+#bootSplash .bsc-mon{ font-size:13px; font-weight:800; color:var(--red); }
+#bootSplash .bsc-num{ font-size:72px; font-weight:900; line-height:1.05; color:var(--ink); position:relative; font-variant-numeric:tabular-nums; }
+#bootSplash .bsc-sheet.fri .bsc-num{ color:var(--red); }
+#bootSplash .bsc-wd{ font-size:15px; font-weight:800; color:var(--ink); opacity:.85; }
+#bootSplash .bsc-hj{ font-size:11px; font-weight:700; color:var(--muted); margin-top:2px; }
+#bootSplash .bsc-shade{ position:absolute; inset:0; background:linear-gradient(rgba(0,0,0,.16),rgba(0,0,0,0) 60%); opacity:0; pointer-events:none; }
+@keyframes bscShade{ 35%{ opacity:1; } }
+@keyframes bscFlip{ 0%{ transform:translateZ(var(--z)) rotateX(0deg); } 45%{ transform:translateZ(var(--z)) rotateX(180deg); } 100%{ transform:translateZ(calc(var(--z) - 24px)) rotateX(295deg); } }
+@keyframes bscGone{ to{ visibility:hidden; } }
+#bootSplash .bsc-mark{ position:absolute; inset:-12% -22%; width:144%; height:124%; overflow:visible; pointer-events:none; }
+#bootSplash .bsc-mark path{ fill:none; stroke:var(--red); stroke-width:3.2; stroke-linecap:round; stroke-dasharray:330; stroke-dashoffset:330; animation:bscDraw .55s ease-out var(--land,3s) forwards; }
+@keyframes bscDraw{ to{ stroke-dashoffset:0; } }
+#bootSplash .bsc-stamp{ position:absolute; bottom:-14px; left:-14px; width:46px; height:46px; border-radius:50%; background:#2fa86a; color:#fff; display:grid; place-items:center; font-weight:900; font-size:22px; opacity:0; transform:translateZ(30px) scale(0); box-shadow:0 6px 14px rgba(47,168,106,.45); animation:bscStamp .45s cubic-bezier(.2,1.6,.4,1) calc(var(--land,3s) + .45s) forwards; }
+@keyframes bscStamp{ 0%{ transform:translateZ(30px) scale(1.8) rotate(-20deg); opacity:0; } 100%{ transform:translateZ(30px) scale(1) rotate(-8deg); opacity:1; } }
+#bootSplash .bsc-brand{ display:flex; flex-direction:column; align-items:center; gap:2px; animation:bscRise .6s ease-out calc(var(--land,3s) + .6s) both; }
+@keyframes bscRise{ from{ opacity:0; transform:translateY(10px); } }
+#bootSplash .bsc-brand b{ font-weight:900; font-size:34px; color:var(--brand); line-height:1.1; }
+#bootSplash .bsc-brand span{ font-size:13px; font-weight:700; color:var(--muted); }
+#bootSplashMsg{ min-height:18px; font-size:12.5px; color:var(--muted); opacity:0; transition:opacity .4s ease; text-align:center; padding:0 24px; margin-top:-10px; }
+@media (prefers-reduced-motion: reduce){ #bootSplash *{ animation:none !important; } #bootSplash .bsc-sheet:not(.today){ display:none; } #bootSplash .bsc-mark path{ stroke-dashoffset:0; } #bootSplash .bsc-stamp{ opacity:1; transform:translateZ(30px) scale(1) rotate(-8deg); } }
 </style>
 <script>
 (function(){
   var s=document.getElementById('bootSplash'), m=document.getElementById('bootSplashMsg'), ar=true;
   try{ var p=JSON.parse(localStorage.getItem('planner_profile')||'{}'); ar=(p.lang||'ar')==='ar';
     var dark=p.mode==='dark'||(p.mode!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches); if(dark) s.classList.add('dark'); }catch(e){}
+  try{
+    var now=new Date(); now.setHours(12,0,0,0);
+    var D=function(n){ return ar?String(n).replace(/\d/g,function(d){ return '٠١٢٣٤٥٦٧٨٩'[d]; }):String(n); };
+    var MON=ar?['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']:['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var DAY=ar?['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var hf=null, hfull=''; try{ hf=new Intl.DateTimeFormat((ar?'ar-SA':'en')+'-u-ca-islamic-umalqura',{day:'numeric',month:'long'}); hfull=new Intl.DateTimeFormat((ar?'ar-SA':'en')+'-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(now); }catch(e){}
+    document.getElementById('bscName').textContent=ar?'مخططي':'My Planner';
+    document.getElementById('bscHij').textContent=hfull;
+    var BACK=24, html='';
+    for(var k=0;k<=BACK;k++){ var d=new Date(now); d.setDate(now.getDate()-k); var hj=''; try{ hj=hf?hf.format(d):''; }catch(e){}
+      html+='<div class="bsc-sheet'+(d.getDay()===5?' fri':'')+(k===0?' today':'')+'" style="--z:'+(k*0.4).toFixed(1)+'px"><div class="bsc-face bsc-front"><div class="bsc-mon">'+MON[d.getMonth()]+' '+D(d.getFullYear())+'</div>'+
+        '<div class="bsc-num">'+D(d.getDate())+(k===0?'<svg class="bsc-mark" viewBox="0 0 120 80" preserveAspectRatio="none"><path d="M88 10 C 112 18, 116 52, 82 68 C 52 80, 10 70, 8 42 C 6 18, 40 4, 70 8 C 82 9, 92 13, 96 18"/></svg>':'')+'</div>'+
+        '<div class="bsc-wd">'+DAY[d.getDay()]+'</div><div class="bsc-hj">'+hj+'</div><div class="bsc-shade"></div></div><div class="bsc-face bsc-back"></div></div>'; }
+    var block=document.getElementById('bscBlock'); block.insertAdjacentHTML('afterbegin',html);
+    var sh=block.querySelectorAll('.bsc-sheet'), n=sh.length-1, SLOW=[0,330,240,170,120,85,60], t=380, land=0;
+    for(var j=n;j>=1;j--){ var o=n-j, gap=o===0?0:o===1?120:o===2?80:(j>6?38:SLOW[j]); t+=gap; var dur=j>6?320:380+(6-j)*60;
+      sh[j].style.animation='bscFlip '+dur+'ms cubic-bezier(.45,.05,.55,.95) '+t+'ms forwards, bscGone 1ms step-end '+(t+dur)+'ms forwards';
+      sh[j-1].querySelector('.bsc-shade').style.animation='bscShade '+dur+'ms ease-out '+t+'ms';
+      if(j===1) land=t+dur*0.45; }
+    s.style.setProperty('--land',(land/1000).toFixed(3)+'s');
+    window.__bscLandAt=performance.now()+land; window.__bscStart=performance.now();
+  }catch(e){}
   function say(t){ if(!m||!document.getElementById('bootSplash')) return; m.textContent=t; m.style.opacity=1; }
-  setTimeout(function(){ say(navigator.onLine===false?(ar?'📴 بدون نت — نفتح النسخة اللي بجهازك':'📴 Offline — opening the copy on your device'):(ar?'لحظة… نجهّز يومك':'One moment… getting your day ready')); },1800);
-  setTimeout(function(){ say(ar?'النت بطيء شوي — نكمل من النسخة اللي بجهازك':'Slow connection — continuing from your device'); },5000);
+  setTimeout(function(){ say(navigator.onLine===false?(ar?'📴 بدون نت — نفتح النسخة اللي بجهازك':'📴 Offline — opening the copy on your device'):(ar?'لحظة… نجهّز يومك':'One moment… getting your day ready')); },3400);
+  setTimeout(function(){ say(ar?'النت بطيء شوي — نكمل من النسخة اللي بجهازك':'Slow connection — continuing from your device'); },6000);
 })();
 </script>
 
@@ -3044,7 +3072,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.62.0';
+const APP_VERSION='v1.63.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3741,8 +3769,16 @@ async function renderSeaCard(){
 })();
 function removeBootSplash(){
   const el=document.getElementById('bootSplash');
-  if(!el||el.classList.contains('out')) return;
-  el.classList.add('out'); setTimeout(()=>el.remove(),400);
+  if(!el||el.classList.contains('out')||el._leaving) return;
+  el._leaving=true;
+  // app is ready: if the calendar hasn't reached today yet, flip the rest 3× faster,
+  // let the circle + ✓ land, then fade out
+  const nowT=performance.now(), landAt=window.__bscLandAt||0; let wait=0;
+  if(landAt && nowT<landAt+900){
+    const rate=3; try{ el.getAnimations({subtree:true}).forEach(a=>{ a.playbackRate=rate; }); }catch(e){}
+    wait=Math.max(0,landAt-nowT)/rate+320;
+  }
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),400); },wait);
 }
 setTimeout(removeBootSplash,12000);
 if(fbAuth){
