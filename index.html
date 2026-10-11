@@ -1660,6 +1660,64 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-mode-toggle{ display:flex; gap:8px; margin-bottom:14px; }
   .coll-mode-btn{ flex:1; font-family:var(--font-head); font-weight:700; font-size:0.78rem; padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); cursor:pointer; transition:background .15s ease,color .15s ease; }
   .coll-mode-btn.active{ background:var(--accent-deep); color:#fff; border-color:var(--heading); }
+
+  /* ⚡ what now */
+  .hn-card{ padding:14px 16px; border-inline-start:4px solid var(--accent); }
+  .hn-head{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-head); font-weight:800; font-size:.82rem; color:var(--ink-soft); margin-bottom:8px; }
+  .hn-clock{ font-weight:700; font-size:.75rem; }
+  .hn-main{ display:flex; align-items:center; gap:12px; }
+  .hn-ic{ font-size:2rem; line-height:1; flex-shrink:0; animation:hnPop .4s ease-out; }
+  @keyframes hnPop{ from{ transform:scale(.6); opacity:0; } to{ transform:none; opacity:1; } }
+  .hn-txt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .hn-txt b{ font-family:var(--font-head); font-size:1rem; color:var(--heading); overflow-wrap:anywhere; }
+  .hn-txt small{ color:var(--ink-soft); font-size:.78rem; }
+  .hn-btn{ flex-shrink:0; border:none; background:var(--accent); color:var(--card); font-family:var(--font-head); font-weight:800; font-size:.82rem; border-radius:12px; padding:10px 14px; min-height:42px; cursor:pointer; }
+  .hn-more{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .hn-chip{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:6px 12px; min-height:34px; font-size:.75rem; font-weight:700; cursor:pointer; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* 🔄 missed tasks */
+  .mt-card{ padding:14px 16px; }
+  .mt-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 0; border-top:1px solid var(--line); }
+  .mt-row:first-of-type{ border-top:none; }
+  .mt-l{ flex:1 1 140px; min-width:0; display:flex; flex-direction:column; }
+  .mt-l b{ font-size:.9rem; color:var(--heading); overflow-wrap:anywhere; }
+  .mt-l small{ font-size:.72rem; color:var(--ink-soft); }
+  .mt-acts{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .mt-go{ border:none; background:var(--accent); color:var(--card); border-radius:10px; padding:8px 12px; min-height:38px; font-weight:800; font-size:.76rem; cursor:pointer; }
+  .mt-go:disabled{ opacity:.5; }
+  .mt-sm{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; min-width:38px; min-height:38px; padding:0 10px; font-size:.85rem; cursor:pointer; }
+  .mt-pick{ flex-basis:100%; display:flex; gap:6px; flex-wrap:wrap; }
+  .mt-pick.hidden{ display:none; }
+  .mt-pick .setup-input{ flex:1 1 120px; margin:0; min-width:0; }
+  .mt-all{ margin-top:10px; }
+  .mt-rep{ margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--bg); font-size:.82rem; display:flex; flex-direction:column; gap:8px; }
+  /* 🎁 wrapped */
+  .wrap-view{ position:fixed; inset:0; z-index:95; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; }
+  .wrap-view.open{ display:flex; }
+  .wrap-stage{ position:relative; width:100vw; height:100dvh; background:#1b1150; color:#fff; overflow:hidden; transition:background .5s; touch-action:manipulation; user-select:none; -webkit-user-select:none; }
+  @media(min-width:700px){ .wrap-stage{ height:min(92vh,860px); width:calc(min(92vh,860px)*9/16); border-radius:22px; box-shadow:0 24px 70px rgba(0,0,0,.5); } }
+  .wrap-bars{ position:absolute; top:12px; left:12px; right:12px; display:flex; gap:4px; z-index:2; }
+  .wrap-bars i{ flex:1; height:3px; border-radius:3px; background:rgba(255,255,255,.3); overflow:hidden; }
+  .wrap-bars i b{ display:block; height:100%; width:0; background:#fff; }
+  .wrap-bars i.done b{ width:100%; }
+  .wrap-bars i.on b{ animation:wrapBar 5.2s linear forwards; }
+  .wrap-bars i.on.paused b{ animation-play-state:paused; }
+  [dir=rtl] .wrap-bars i b{ margin-inline-start:0; }
+  @keyframes wrapBar{ to{ width:100%; } }
+  .wrap-x{ position:absolute; top:24px; inset-inline-end:12px; z-index:3; width:40px; height:40px; border-radius:50%; border:none; background:rgba(0,0,0,.25); color:#fff; font-size:1.1rem; cursor:pointer; }
+  .wrap-slide{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:70px 28px 40px; text-align:center; }
+  .wrap-ic{ font-size:5rem; line-height:1; animation:wrapIn .6s cubic-bezier(.2,1.4,.4,1); }
+  .wrap-num{ font-family:var(--font-head); font-weight:900; font-size:clamp(3.5rem,18vw,6rem); line-height:1; font-variant-numeric:tabular-nums; animation:wrapUp .5s ease-out .1s both; }
+  .wrap-big{ font-family:var(--font-head); font-weight:900; font-size:clamp(2rem,9vw,2.8rem); line-height:1.2; animation:wrapUp .5s ease-out .1s both; }
+  .wrap-lbl{ font-size:1.1rem; font-weight:700; opacity:.92; animation:wrapUp .5s ease-out .25s both; }
+  .wrap-sub{ font-size:.9rem; opacity:.8; max-width:30ch; animation:wrapUp .5s ease-out .4s both; }
+  @keyframes wrapIn{ from{ transform:scale(.3) rotate(-12deg); opacity:0; } to{ transform:none; opacity:1; } }
+  @keyframes wrapUp{ from{ transform:translateY(18px); opacity:0; } to{ transform:none; opacity:1; } }
+  .wrap-share{ display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px; width:100%; }
+  .wrap-share img{ width:38%; max-width:170px; aspect-ratio:9/16; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.4); background:rgba(255,255,255,.1); }
+  .wrap-btns{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .wrap-btn{ border:none; background:#fff; color:#2a1550; font-weight:800; border-radius:999px; padding:10px 18px; min-height:44px; cursor:pointer; font-family:var(--font-head); }
+  .wrap-btn.ghost{ background:rgba(255,255,255,.18); color:#fff; }
+  @media (prefers-reduced-motion:reduce){ .wrap-ic,.wrap-num,.wrap-big,.wrap-lbl,.wrap-sub,.hn-ic{ animation:none; } }
 </style>
 </head>
 <body>
@@ -1840,6 +1898,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
     <button type="button" class="setup-chip hidden" id="firstRunChip"></button>
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
+    <div id="homeNow"></div>
+    <div id="homeMissed"></div>
     <div id="homeRecapPrompt"></div>
     <div id="homeRamadan"></div>
     <div id="homeCheers"></div>
@@ -2984,7 +3044,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.61.0';
+const APP_VERSION='v1.62.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4912,9 +4972,11 @@ async function renderRecapCard(){
   if(req!==recapReq||!card.querySelector('.dash-empty')) return;
   const url=canvas.toDataURL('image/png');
   card.querySelector('.dash-empty').outerHTML=`<img class="recap-preview" src="${url}" alt="recap"><div class="recap-actions">
+    <button type="button" class="setup-btn" id="recapWrapBtn">▶️ ${ar?'شغّل ملخص الشهر':'Play your Wrapped'}</button>
     <button type="button" class="setup-btn" id="recapShareBtn">📤 ${ar?'شارك':'Share'}</button>
     <button type="button" class="setup-btn" id="recapSaveBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">⬇️ ${ar?'احفظ الصورة':'Save image'}</button></div>`;
   const fname=`my-planner-${d.getFullYear()}-${d.getMonth()+1}.png`;
+  document.getElementById('recapWrapBtn').onclick=()=>openWrapped(d.getFullYear(),d.getMonth());
   document.getElementById('recapSaveBtn').onclick=()=>{ const a=document.createElement('a'); a.href=url; a.download=fname; a.click(); };
   document.getElementById('recapShareBtn').onclick=async()=>{
     try{ const blob=await new Promise(res=>canvas.toBlob(res,'image/png')); const file=new File([blob],fname,{type:'image/png'});
@@ -4931,7 +4993,339 @@ function renderHomeRecapPrompt(){
   if(now.getDate()>5 || (P._recapSeen||{})[key] || !accountOld || (P.firstRun&&P.firstRun.active)){ box.innerHTML=''; return; }
   const ar=LANG==='ar', nm=last.toLocaleDateString(ar?'ar-EG':'en-GB',{month:'long'});
   box.innerHTML=`<div class="dash-card recap-prompt"><span style="font-size:1.8rem;">📸</span><div style="flex:1;"><b>${ar?`ملخص ${nm} جاهز`:`Your ${nm} recap is ready`}</b><div class="panel-sub" style="margin:0;">${ar?'شوف وش سويت وشاركه':'See what you did and share it'}</div></div><button type="button" class="dash-link" id="recapOpenBtn">${ar?'افتح':'Open'}</button></div>`;
-  document.getElementById('recapOpenBtn').onclick=()=>{ P._recapSeen={...(P._recapSeen||{}),[key]:true}; storageSet('profile',JSON.stringify(P)); recapMonthOffset=1; navTo('progress'); };
+  document.getElementById('recapOpenBtn').onclick=()=>{ P._recapSeen={...(P._recapSeen||{}),[key]:true}; storageSet('profile',JSON.stringify(P)); openWrapped(last.getFullYear(),last.getMonth()); };
+}
+/* ================= ⚡ "WHAT NOW?" CARD =================
+   Rules only (no AI, works offline): the clock + today's schedule + prayer
+   windows + what's still open → ONE suggestion, with two alternatives. */
+function hnMinNow(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+function hnIn(mins){
+  const ar=LANG==='ar'; mins=Math.max(1,Math.round(mins));
+  if(mins<60) return ar?`${mins} دقيقة`:`${mins} min`;
+  const h=Math.floor(mins/60), m=mins%60;
+  if(!ar) return `${h}h${m?` ${m}m`:''}`;
+  return (h===1?'ساعة':h===2?'ساعتين':`${h} ساعات`)+(m?` و${m} د`:'');
+}
+// a timed span that never balloons to 24h when only a start time is set
+function mtSpan(c){
+  if(!c||!c.from) return null;
+  const s=parseHM(c.from); let e=c.to?parseHM(c.to):s+30; if(e<=s) e+=24*60;
+  return {start:s,end:e};
+}
+function hnCandidates(){
+  const ar=LANG==='ar', now=hnMinNow(), hr=Math.floor(now/60), out=[], done=dailyTrack.commitDone||{};
+  // 1) the schedule: what's on right now / starting soon
+  commitmentsForDate(new Date()).forEach(c=>{
+    const sp=mtSpan(c); if(!sp||done[commitKey(c)]) return;
+    if(sp.start<=now && now<sp.end) out.push({id:'c'+commitKey(c), s:100, ic:'🟢', title:(ar?'الحين: ':'Now: ')+c.label,
+      sub:c.to?(ar?`لين ${formatTime12h(minutesToHM(sp.end))}`:`until ${formatTime12h(minutesToHM(sp.end))}`):'', act:{k:'commit',ck:commitKey(c)}, btn:ar?'✓ خلصت':'✓ Done'});
+    else if(sp.start>now && sp.start-now<=60) out.push({id:'s'+commitKey(c), s:92-(sp.start-now)/6, ic:'⏰', title:(ar?`بعد ${hnIn(sp.start-now)}: `:`In ${hnIn(sp.start-now)}: `)+c.label,
+      sub:ar?'جهّز نفسك من الحين':'Get ready now', act:{k:'nav',to:'today'}, btn:ar?'📅 الجدول':'📅 Schedule'});
+  });
+  // 2) a prayer whose time is in and isn't ticked yet
+  const tm=window._todayPT, pids=prayerHabitIds();
+  if(tm&&pids.length){
+    const n=new Date();
+    pids.forEach(hid=>{
+      const tn=PRAYER_TIMING_KEY[hid]; if(!tn||(dailyTrack.habits||{})[hid]) return;
+      const st=ptToDate(tm[tn]), en=ptToDate(tm[PRAYER_WINDOW_END[tn]]); if(!st||!en) return;
+      if(tn==='Isha'&&en.getHours()<6) en.setDate(en.getDate()+1);
+      if(n<st||n>en) return;
+      const h=(P.habits||[]).find(x=>x.id===hid), nm=h?habitLabelText(h):tn, left=(en-n)/60000;
+      out.push({id:'p'+hid, s:left<45?99:95, ic:'🕌', title:ar?`صلاة ${nm}`:`${nm} prayer`,
+        sub:ar?`باقي على نهاية وقتها ${hnIn(left)}`:`${hnIn(left)} left in its time`, act:{k:'habit',hid}, btn:ar?'✓ صليت':'✓ Prayed'});
+    });
+  }
+  // 3) water behind the day's pace (8am → 10pm)
+  const wt=(P.foodSetup&&P.foodSetup.waterTarget)||3.5, w=+(dailyTrack.water||0);
+  if(w<wt){
+    const pace=Math.max(0,Math.min(1,(now-8*60)/(14*60))), behind=wt*pace-w;
+    if(behind>=0.5) out.push({id:'w', s:60+Math.min(25,behind*10), ic:'💧', title:ar?`ماييك متأخر ${behind.toFixed(1)} لتر`:`Water is ${behind.toFixed(1)}L behind`,
+      sub:ar?`${w} من ${wt} لتر — كوب الحين يفرق`:`${w} of ${wt}L — a glass now helps`, act:{k:'water'}, btn:ar?'+٠٫٢٥ لتر':'+0.25L'});
+  }
+  // 4) today's workout
+  if(P.workoutSetup&&!dailyTrack.workoutDone&&hr>=10){
+    let tk=null; try{ tk=workoutTypeForDate(new Date(),P.workoutSetup); }catch(e){}
+    if(tk&&tk!=='rest'){ let nm=''; try{ const d=adaptDay(tk); nm=d.icon+' '+d.name[LANG]; }catch(e){}
+      out.push({id:'wo', s:hr>=17?72:52, ic:'🏋️', title:ar?'تمرين اليوم ما خلص':'Today’s workout is still open', sub:nm, act:{k:'nav',to:'workout'}, btn:ar?'يلا نبدأ':'Let’s go'}); }
+  }
+  // 5) a meal that's overdue (slots spread 9am → 9pm)
+  if(P.foodSetup){
+    try{ const v=getTodayMenu(todayWeekdayIndex()), fl=dailyTrack.meals||[], n=v.meals.length;
+      for(let i=0;i<n;i++){ const at=9*60+(n>1?i*(12*60/(n-1)):0); if(fl[i]||at+60>now) continue;
+        const m=v.meals[i], lb=SLOT_LABELS_BY_KEY[m.slotKey]?SLOT_LABELS_BY_KEY[m.slotKey][LANG]:(ar?'وجبة':'Meal');
+        out.push({id:'m'+i, s:56, ic:'🍽️', title:ar?`${lb} ما تسجّلت`:`${lb} isn’t logged`, sub:ar?'كلت؟ علّمها عشان تنحسب':'Ate it? Tick it so it counts', act:{k:'nav',to:'food'}, btn:ar?'🍽️ الأكل':'🍽️ Food'}); break; }
+    }catch(e){}
+  }
+  // 6) morning weigh-in
+  if(P.foodSetup&&!dailyTrack.weightLoggedToday&&hr>=5&&hr<11) out.push({id:'kg', s:48, ic:'⚖️', title:ar?'وزن الصبح':'Morning weigh-in', sub:ar?'أدق وقت قبل الأكل':'Most accurate before eating', act:{k:'nav',to:'home-weight'}, btn:ar?'سجّل':'Log'});
+  // 7) evening: habits still open
+  const hs=(P.habits||[]).filter(h=>h.group!=='prayers'&&!(dailyTrack.habits||{})[h.id]);
+  if(hs.length&&hr>=19) out.push({id:'h', s:54+(hr>=21?10:0), ic:'✅', title:ar?`باقي ${hs.length} من عاداتك`:`${hs.length} habit${hs.length>1?'s':''} left`, sub:hs.slice(0,3).map(habitLabelText).join(' · '), act:{k:'nav',to:'habits'}, btn:ar?'خلّصها':'Finish'});
+  // 8) yesterday's missed tasks
+  if(_missed&&_missed.items.length) out.push({id:'mt', s:58, ic:'🔄', title:ar?(_missed.items.length===1?'فاتتك مهمة':_missed.items.length===2?'فاتتك مهمتين':`فاتتك ${_missed.items.length} مهام`):`${_missed.items.length} missed task${_missed.items.length>1?'s':''}`, sub:ar?'نرتب لها وقت جديد؟':'Find them a new time?', act:{k:'missed'}, btn:ar?'رتّبها':'Sort'});
+  // 9) late night
+  if(hr>=23||hr<5){ const tmr=new Date(); if(hr>=23) tmr.setDate(tmr.getDate()+1);
+    const first=commitmentsForDate(tmr).filter(c=>c.from).sort((a,b)=>parseHM(a.from)-parseHM(b.from))[0];
+    out.push({id:'zz', s:40, ic:'😴', title:ar?'وقت النوم':'Time to sleep', sub:first?(ar?`أول شي بكرة: ${first.label} ${formatTime12h(first.from)}`:`First tomorrow: ${first.label} ${formatTime12h(first.from)}`):(ar?'النوم الزين = بكرة أقوى':'Good sleep = a stronger tomorrow'), act:null}); }
+  // 10) free time
+  const nextC=commitmentsForDate(new Date()).map(c=>({c,sp:mtSpan(c)})).filter(x=>x.sp&&x.sp.start>now&&!done[commitKey(x.c)]).sort((a,b)=>a.sp.start-b.sp.start)[0];
+  out.push({id:'free', s:20, ic:nextC?'⏳':'🎉', title:nextC?(ar?`وقتك فاضي لين ${formatTime12h(nextC.c.from)}`:`You’re free until ${formatTime12h(nextC.c.from)}`):(ar?'ما عليك شي الحين':'Nothing due right now'),
+    sub:ar?'فضفض للذكاء وخله يرتب لك أفكارك':'Brain-dump and let the AI sort it', act:{k:'ai'}, btn:ar?'🧠 فضفض':'🧠 Dump'});
+  return out;
+}
+function renderHomeNow(){
+  const el=document.getElementById('homeNow'); if(!el) return;
+  if(!currentUser){ el.innerHTML=''; return; }
+  if(!window._todayPT&&prayerHabitIds().length&&!renderHomeNow._pt){ renderHomeNow._pt=1; fetchPrayerTimes(new Date()).then(tm=>{ if(tm){ window._todayPT=tm; renderHomeNow(); } }); }
+  const ar=LANG==='ar', list=hnCandidates().sort((a,b)=>b.s-a.s);
+  if(renderHomeNow._pick&&Date.now()-(renderHomeNow._pickAt||0)>120000) renderHomeNow._pick=null;
+  const pick=renderHomeNow._pick&&list.find(x=>x.id===renderHomeNow._pick);
+  const top=pick||list[0], more=list.filter(x=>x!==top).slice(0,2), all=[top,...more];
+  const clock=new Date().toLocaleTimeString(ar?'ar-EG':'en-GB',{hour:'numeric',minute:'2-digit'});
+  el.innerHTML=`<div class="dash-card hn-card"><div class="hn-head"><span>${ar?'⚡ شسوي الحين؟':'⚡ What now?'}</span><span class="hn-clock">${clock}</span></div>
+    <div class="hn-main"><span class="hn-ic">${top.ic}</span><div class="hn-txt"><b>${escapeHtml(top.title)}</b>${top.sub?`<small>${escapeHtml(top.sub)}</small>`:''}</div>${top.btn&&top.act?`<button type="button" class="hn-btn" data-hn="0">${escapeHtml(top.btn)}</button>`:''}</div>
+    ${more.length?`<div class="hn-more">${more.map((m,i)=>`<button type="button" class="hn-chip" data-hp="${i+1}">${m.ic} ${escapeHtml(m.title)}</button>`).join('')}</div>`:''}</div>`;
+  el.querySelectorAll('[data-hn]').forEach(b=>b.onclick=()=>hnDo(all[+b.dataset.hn].act));
+  el.querySelectorAll('[data-hp]').forEach(b=>b.onclick=()=>{ renderHomeNow._pick=all[+b.dataset.hp].id; renderHomeNow._pickAt=Date.now(); renderHomeNow(); });
+}
+async function hnDo(a){
+  if(!a) return; renderHomeNow._pick=null;
+  if(a.k==='commit'){ dailyTrack.commitDone={...(dailyTrack.commitDone||{}),[a.ck]:true}; playSfx('pop'); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
+  if(a.k==='water'){ await adjustWater(0.25); renderHomeNow(); return; }
+  if(a.k==='habit'){ const h=(P.habits||[]).find(x=>x.id===a.hid);
+    if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:prayerStatusNow(PRAYER_TIMING_KEY[h.id])}; } });
+    setTimeout(renderHomeNow,250); return; }
+  if(a.k==='ai'){ openAiChat(null,{dump:true}); return; }
+  if(a.k==='missed'){ const m=document.getElementById('homeMissed'); if(m) m.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(a.k==='nav') navTo(a.to);
+}
+setInterval(()=>{ try{ if(document.visibilityState==='visible'&&document.getElementById('panel-home').classList.contains('active')) renderHomeNow(); }catch(e){} },60000);
+
+/* ================= 🔄 MISSED TASKS → A NEW TIME =================
+   One-day tasks from the last 3 days that were never ticked get a suggested
+   new slot (the first free one, today → next 3 days). Nothing moves on its
+   own. A repeating commitment missed 3+ times in a week gets a "change its
+   time?" nudge. Days the app wasn't opened at all are never judged. */
+let _missed=null;
+function mtKey(iso,c){ return iso+'|'+commitKey(c); }
+async function computeMissed(){
+  const items=[], seen=P.missedSeen||{}, recur=new Map();
+  for(let i=1;i<=7;i++){
+    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    const iso=isoDateStr(d.getFullYear(),d.getMonth(),d.getDate()), cms=commitmentsForDate(d); if(!cms.length) continue;
+    const doc=await trackDocFor(d); if(!doc) continue;
+    const dn=doc.commitDone||{}, ticksThatDay=Object.keys(dn).length>0;
+    cms.forEach(c=>{
+      if(dn[commitKey(c)]) return;
+      if(c.fromDate&&c.fromDate===c.toDate){ if(i<=3&&!seen[mtKey(iso,c)]) items.push({c,iso,d}); }
+      else if(ticksThatDay) recur.set(c,(recur.get(c)||0)+1);
+    });
+  }
+  const repeat=[]; recur.forEach((n,c)=>{ if(n>=3&&!seen['r|'+commitKey(c)+'|'+weekKeySat(0)]) repeat.push({c,n}); });
+  return {items:items.slice(0,6), repeat:repeat.slice(0,1)};
+}
+function mtSuggest(c,list){
+  const sp=mtSpan(c), dur=sp?sp.end-sp.start:0, buf=scheduleBufferMinutes();
+  for(let i=0;i<4;i++){
+    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i);
+    const iso=isoDateStr(d.getFullYear(),d.getMonth(),d.getDate());
+    if(!sp) return {iso,d,from:'',to:''}; // an all-day task just goes to today
+    const busy=commitmentsForDate(d).filter(o=>o!==c).map(mtSpan).filter(Boolean).concat((list||[]).filter(x=>x.iso===iso).map(x=>x.span));
+    let lo=8*60; if(i===0) lo=Math.max(lo,Math.ceil((hnMinNow()+30)/15)*15);
+    const ok=s=>s>=lo&&s+dur<=23*60&&!busy.some(b=>s<b.end+buf&&b.start<s+dur+buf);
+    const mk=s=>({iso,d,from:minutesToHM(s),to:c.to?minutesToHM(s+dur):'',span:{start:s,end:s+dur}});
+    if(ok(sp.start)) return mk(sp.start);
+    for(let s=lo;s+dur<=23*60;s+=15) if(ok(s)) return mk(s);
+  }
+  return null;
+}
+function mtWhen(s){ const ar=LANG==='ar'; return aiDateLabel(s.iso)+' · '+(s.from?formatTime12h(s.from):(ar?'طول اليوم':'All day')); }
+function mtApply(c,s){ // in memory; caller persists
+  const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(c); if(i<0) return false;
+  all[i]={...c, fromDate:s.iso, toDate:s.iso, days:[(s.d.getDay()+1)%7], from:s.from, to:s.from?s.to:'', moved:(c.moved||0)+1};
+  return true;
+}
+async function mtPersist(){ P._commitments=((P.todoSetup&&P.todoSetup.commitments)||[]).map(x=>({...x,days:[...(x.days||[])]})); await persistCommitments(); }
+async function mtMarkSeen(key){
+  const now=Date.now(); P.missedSeen=Object.fromEntries(Object.entries(P.missedSeen||{}).filter(([,t])=>now-t<30*864e5)); P.missedSeen[key]=now;
+  await storageSet('profile',JSON.stringify(P));
+}
+async function renderHomeMissed(){
+  const el=document.getElementById('homeMissed'); if(!el) return;
+  if(!currentUser){ el.innerHTML=''; return; }
+  try{ _missed=await computeMissed(); }catch(e){ _missed={items:[],repeat:[]}; }
+  const ar=LANG==='ar', {items,repeat}=_missed;
+  if(!items.length&&!repeat.length){ el.innerHTML=''; renderHomeNow(); return; }
+  const planned=[]; items.forEach(it=>{ it.s=mtSuggest(it.c,planned); if(it.s&&it.s.span) planned.push(it.s); });
+  let html=`<div class="dash-card mt-card">`;
+  if(items.length){
+    html+=`<div class="dash-card-title">🔄 ${ar?(items.length===1?'فاتتك مهمة — نرتب لها وقت؟':items.length===2?'فاتتك مهمتين — نرتب لها وقت؟':`فاتتك ${items.length} مهام — نرتب لها وقت؟`):(items.length===1?'You missed a task — find it a new time?':`You missed ${items.length} tasks — find them new times?`)}</div>`;
+    html+=items.map((it,i)=>`<div class="mt-row" data-i="${i}"><div class="mt-l"><b>${escapeHtml(it.c.label)}</b><small>${ar?'كانت':'Was'}: ${escapeHtml(aiDateLabel(it.iso))}${it.c.from?' · '+formatTime12h(it.c.from):''}</small></div>
+      <div class="mt-acts">${it.s?`<button type="button" class="mt-go" data-mv="${i}">📅 ${escapeHtml(mtWhen(it.s))}</button>`:''}<button type="button" class="mt-sm" data-pk="${i}" aria-label="${ar?'وقت ثاني':'Other time'}">🕐</button><button type="button" class="mt-sm" data-did="${i}" aria-label="${ar?'سويتها':'Did it'}">✓</button><button type="button" class="mt-sm" data-drop="${i}" aria-label="${ar?'شيلها':'Drop it'}">🗑️</button></div>
+      <div class="mt-pick hidden"><input type="date" class="setup-input" value="${it.s?it.s.iso:''}"><input type="time" class="setup-input" value="${it.s?it.s.from:(it.c.from||'')}"><button type="button" class="mt-go" data-save="${i}">${ar?'انقلها':'Move'}</button></div></div>`).join('');
+    if(items.filter(it=>it.s).length>1) html+=`<button type="button" class="cta-btn mt-all" id="mtAll">✨ ${ar?'انقل الكل للأوقات المقترحة':'Move all to the suggested times'}</button>`;
+  }
+  if(repeat.length){ const r=repeat[0];
+    html+=`<div class="mt-rep">📌 ${ar?`«${escapeHtml(r.c.label)}» فاتك ${r.n} مرات هالأسبوع. يمكن وقته مو مناسب؟`:`“${escapeHtml(r.c.label)}” was missed ${r.n} times this week. Maybe the time doesn’t fit?`}
+      <div class="mt-acts"><button type="button" class="mt-go" data-nav="schedule-add">${ar?'غيّر وقته':'Change time'}</button><button type="button" class="mt-sm" id="mtRepNo">${ar?'لا، عادي':'It’s fine'}</button></div></div>`;
+  }
+  el.innerHTML=html+'</div>';
+  const done=async(msg)=>{ if(msg) showToast(msg,'success'); await renderHomeMissed(); };
+  el.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.mv]; b.disabled=true;
+    if(mtApply(it.c,it.s)){ await mtPersist(); playSfx('pop'); await done((ar?'📅 انتقلت: ':'📅 Moved: ')+mtWhen(it.s)); } });
+  el.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>b.closest('.mt-row').querySelector('.mt-pick').classList.toggle('hidden'));
+  el.querySelectorAll('[data-save]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.save], row=b.closest('.mt-row');
+    const iso=row.querySelector('input[type=date]').value, tm=row.querySelector('input[type=time]').value; if(!iso) return;
+    const [y,m,dd]=iso.split('-').map(Number), d=new Date(y,m-1,dd), sp=mtSpan(it.c), dur=sp?sp.end-sp.start:30;
+    const s={iso,d,from:tm||'',to:(tm&&it.c.to)?minutesToHM(parseHM(tm)+dur):''};
+    if(mtApply(it.c,s)){ await mtPersist(); playSfx('pop'); await done((ar?'📅 انتقلت: ':'📅 Moved: ')+mtWhen(s)); } });
+  el.querySelectorAll('[data-did]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.did];
+    const key=calDateKey(it.d.getFullYear(),it.d.getMonth(),it.d.getDate());
+    try{ const doc=(await trackDocFor(it.d))||{}; doc.commitDone={...(doc.commitDone||{}),[commitKey(it.c)]:true}; await storageSet(key,JSON.stringify(doc)); if(typeof pastDayDocCache==='object') pastDayDocCache[key]=doc; }catch(e){}
+    await mtMarkSeen(mtKey(it.iso,it.c)); playSfx('pop'); await done(ar?'👏 تمام، انحسبت':'👏 Nice, counted'); });
+  el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.drop];
+    const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(it.c); if(i>=0){ all.splice(i,1); await mtPersist(); }
+    await done(ar?'🗑️ انشالت':'🗑️ Dropped'); });
+  const allBtn=document.getElementById('mtAll'); if(allBtn) allBtn.onclick=async()=>{ allBtn.disabled=true; let n=0;
+    items.forEach(it=>{ if(it.s&&mtApply(it.c,it.s)) n++; }); if(n){ await mtPersist(); playSfx('success'); } await done(ar?`📅 انتقلت ${n} مهام`:`📅 Moved ${n} tasks`); };
+  const no=document.getElementById('mtRepNo'); if(no) no.onclick=async()=>{ await mtMarkSeen('r|'+commitKey(repeat[0].c)+'|'+weekKeySat(0)); await done(); };
+  renderHomeNow();
+}
+
+/* ================= 🎁 MONTHLY WRAPPED =================
+   A story-style player (9:16 slides, tap to move, hold to pause) over the
+   month's real numbers, ending on a "title of the month" and a shareable
+   1080×1920 story image. Every number comes from the daily-track docs. */
+async function wrapMonthDocs(y,m){
+  const now=new Date(), last=(y===now.getFullYear()&&m===now.getMonth())?now.getDate():new Date(y,m+1,0).getDate();
+  if(new Date(y,m,1)>now) return [];
+  return Promise.all(Array.from({length:last},(_,i)=>trackDocFor(new Date(y,m,i+1))));
+}
+async function computeWrapped(y,m){
+  const docs=await wrapMonthDocs(y,m), tt=tallyDocs(docs), pids=prayerHabitIds();
+  const habits=(P.habits||[]).filter(h=>h.group!=='prayers'), hc={};
+  let waterL=0, prayerTicks=0, commits=0, active=0;
+  docs.forEach(d=>{ if(!d) return; active++; waterL+=+(d.water||0); const hb=d.habits||{};
+    pids.forEach(id=>{ if(hb[id]) prayerTicks++; }); habits.forEach(h=>{ if(hb[h.id]) hc[h.id]=(hc[h.id]||0)+1; });
+    commits+=Object.values(d.commitDone||{}).filter(Boolean).length; });
+  const topH=habits.map(h=>({h,n:hc[h.id]||0})).sort((a,b)=>b.n-a.n)[0];
+  const pd=await wrapMonthDocs(m?y:y-1,m?m-1:11), pt=tallyDocs(pd);
+  let prevWater=0, prevActive=0; pd.forEach(d=>{ if(d){ prevActive++; prevWater+=+(d.water||0); } });
+  const fish=[]; try{ const raw=await storageGet('collections:animals:fish'), data=raw?JSON.parse(raw):{};
+    Object.entries(data).forEach(([sid,rec])=>{ const n=(rec&&rec.catches||[]).filter(c=>{ const d=new Date(c.date); return d.getFullYear()===y&&d.getMonth()===m; }).length;
+      if(n){ const sp=collSpeciesInfo('fish',sid); fish.push({sid,n,name:sp?(LANG==='ar'?sp.nameAr:(sp.nameEn||sp.nameAr)):sid,rarity:(sp&&sp.rarity)||'common',icon:(sp&&sp.icon)||'🐟'}); } }); }catch(e){}
+  fish.sort((a,b)=>RARITY_ORDER.indexOf(b.rarity)-RARITY_ORDER.indexOf(a.rarity));
+  // a week counts toward the month its Saturday falls in (simple and never double-counted)
+  const xp=Object.entries(P.weekXp||{}).reduce((a,[k,v])=>{ const mm=/^w(\d{4})-(\d{2})-/.exec(k); return a+((mm&&+mm[1]===y&&+mm[2]-1===m)?(+v||0):0); },0);
+  const wl=(weightLog||[]).filter(e=>e.isoDate&&e.isoDate.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).sort((a,b)=>a.isoDate<b.isoDate?-1:1);
+  const st=P.streaks||{}, best=Math.max(0,...Object.values(st).map(s=>(s&&s.longest)||0));
+  return {y,m,days:docs.length,active,...tt,waterL:+waterL.toFixed(1),prayerTicks,commits,topHabit:topH&&topH.n?{name:habitLabelText(topH.h),n:topH.n}:null,
+    fish,xp,best,weightDelta:wl.length>=2?wl[wl.length-1].kg-wl[0].kg:null,prev:{workouts:pt.workouts,waterL:+prevWater.toFixed(1),active:prevActive,prayers:pt.prayers}};
+}
+function wrapPersona(r){
+  const ar=LANG==='ar', top=r.fish[0], c=[];
+  if(top&&(top.rarity==='legendary'||top.rarity==='mythic')) c.push([2,'🐋',ar?'صياد الأساطير':'Legend Hunter']);
+  c.push([r.workouts/12,'🏋️',ar?'وحش الجيم':'Gym Beast']);
+  c.push([r.prayers/20,'🕌',ar?'المحافظ':'The Steadfast']);
+  c.push([r.water/15,'💧',ar?'ملك الترطيب':'Hydration King']);
+  c.push([r.fish.length/5,'🎣',ar?'صياد البحر':'Sea Hunter']);
+  c.push([r.habitChecks/60,'✅',ar?'سيد العادات':'Habit Master']);
+  c.push([r.perfect/5,'🌟',ar?'صاحب الأيام المثالية':'Perfect-Day Maker']);
+  c.push([r.active/20,'📅',ar?'الملتزم':'The Committed']);
+  c.sort((a,b)=>b[0]-a[0]);
+  return c[0][0]>=1?{ic:c[0][1],name:c[0][2]}:{ic:'🌱',name:ar?'البداية القوية':'Strong Start'};
+}
+function wrapSlides(r){
+  const ar=LANG==='ar', mn=new Date(r.y,r.m,1).toLocaleDateString(ar?'ar-EG':'en-GB',{month:'long'}), S=[];
+  const cmp=(a,b,unit)=>{ if(!b&&!a) return ''; const d=+(a-b).toFixed(1); if(!b) return ar?'أول مرة نشوفها عندك 🔥':'A first for you 🔥';
+    return d>0?(ar?`أكثر من الشهر اللي فات بـ ${d}${unit||''} ⬆️`:`${d}${unit||''} more than last month ⬆️`):d<0?(ar?`أقل من الشهر اللي فات بـ ${-d}${unit||''}`:`${-d}${unit||''} less than last month`):(ar?'نفس الشهر اللي فات':'Same as last month'); };
+  const name=String((P.publicProfile&&(P.publicProfile.displayName||P.publicProfile.username))||'');
+  S.push({bg:'linear-gradient(160deg,#1b1150,#3b1a6e 55%,#0c5d79)', ic:'🎬', big:ar?`شهرك ${mn}`:`Your ${mn}`, lbl:name?(ar?`يا ${name}`:`${name}`):'', sub:ar?'خلنا نشوف شنو سويت 👀':'Let’s see what you did 👀'});
+  S.push({bg:'linear-gradient(160deg,#0f3d2e,#1f7a55)', ic:'📅', num:r.active, lbl:ar?`يوم فتحت فيه مخططك من ${r.days}`:`days you showed up, of ${r.days}`, sub:cmp(r.active,r.prev.active)});
+  if(P.workoutSetup||r.workouts) S.push({bg:'linear-gradient(160deg,#4a0d0d,#b3361f)', ic:'💪', num:r.workouts, lbl:ar?'تمرين خلّصته':'workouts done', sub:cmp(r.workouts,r.prev.workouts)});
+  if(r.waterL) S.push({bg:'linear-gradient(160deg,#06324f,#1679a8)', ic:'💧', num:r.waterL, dec:1, lbl:ar?'لتر ماي شربته':'liters of water', sub:(ar?`وصلت هدفك ${r.water} يوم · `:`Hit your goal ${r.water} days · `)+cmp(r.waterL,r.prev.waterL,ar?' لتر':'L')});
+  if(prayerHabitIds().length) S.push({bg:'linear-gradient(160deg,#2b2410,#8a6d1f)', ic:'🕌', num:r.prayers, lbl:ar?'يوم صليت فيه كل الصلوات':'days with every prayer', sub:ar?`${r.prayerTicks} صلاة علّمتها بالمجموع`:`${r.prayerTicks} prayers ticked in total`});
+  if(r.topHabit) S.push({bg:'linear-gradient(160deg,#123a1a,#3f8f3a)', ic:'✅', num:r.topHabit.n, lbl:ar?`مرة «${r.topHabit.name}» — عادتك الأقوى`:`times “${r.topHabit.name}” — your strongest habit`, sub:ar?`${r.habitChecks} علامة عادات بالشهر كله`:`${r.habitChecks} habit ticks all month`});
+  if(r.commits) S.push({bg:'linear-gradient(160deg,#2d1b4e,#6a3fb5)', ic:'📌', num:r.commits, lbl:ar?'التزام خلّصته من جدولك':'schedule items done', sub:r.perfect?(ar?`و${r.perfect} يوم مثالي 🌟`:`and ${r.perfect} perfect days 🌟`):''});
+  if(r.best) S.push({bg:'linear-gradient(160deg,#4a1a05,#e0702a)', ic:'🔥', num:r.best, lbl:ar?'يوم — أطول سلسلة عندك':'days — your longest streak', sub:ar?'لا توقفها 💪':'Keep it alive 💪'});
+  if(r.fish.length){ const f=r.fish[0]; S.push({bg:'linear-gradient(160deg,#03263a,#0a6d8a 60%,#11a3a3)', ic:f.icon, num:r.fish.length, lbl:ar?'نوع سمك صدته':'fish species caught', sub:ar?`أندرها: ${f.name} (${{common:'شائع',uncommon:'غير شائع',epic:'ملحمي',mythic:'أسطوري',legendary:'خرافي'}[f.rarity]||f.rarity})`:`Rarest: ${f.name} (${f.rarity})`}); }
+  if(r.xp) S.push({bg:'linear-gradient(160deg,#1a1a40,#4b4bd1)', ic:'⭐', num:r.xp, lbl:ar?'XP جمعتها':'XP earned', sub:r.weightDelta!=null?(ar?`⚖️ وزنك ${r.weightDelta>0?'+':''}${r.weightDelta.toFixed(1)} كجم`:`⚖️ Weight ${r.weightDelta>0?'+':''}${r.weightDelta.toFixed(1)} kg`):''});
+  const p=wrapPersona(r); S.push({bg:'linear-gradient(160deg,#1b1150,#7b2f8f 50%,#e0702a)', ic:p.ic, big:p.name, lbl:ar?'لقبك هالشهر':'Your title this month', sub:'', final:true, persona:p});
+  return S;
+}
+async function drawWrapStory(r){
+  const ar=LANG==='ar', p=wrapPersona(r); try{ await document.fonts.ready; }catch(e){}
+  const W=1080,H=1920,c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  const gr=g.createLinearGradient(0,0,W,H); gr.addColorStop(0,'#1b1150'); gr.addColorStop(.5,'#7b2f8f'); gr.addColorStop(1,'#e0702a'); g.fillStyle=gr; g.fillRect(0,0,W,H);
+  const rnd=seededRandom(hashSeed('wrap'+r.y+'-'+r.m)); for(let i=0;i<110;i++){ g.fillStyle=`rgba(255,255,255,${rnd()*.6})`; g.beginPath(); g.arc(rnd()*W,rnd()*H*.45,rnd()*2.4,0,7); g.fill(); }
+  const mn=new Date(r.y,r.m,1).toLocaleDateString(ar?'ar-EG':'en-GB',{month:'long',year:'numeric'});
+  g.direction=ar?'rtl':'ltr'; g.textAlign='center'; g.fillStyle='#fff';
+  g.font='700 54px Cairo, sans-serif'; g.fillText(ar?`شهري · ${mn}`:`My ${mn}`,W/2,190);
+  g.font='170px sans-serif'; g.fillText(p.ic,W/2,430);
+  g.font='800 92px Cairo, sans-serif'; g.fillText(p.name,W/2,560);
+  g.font='500 40px Tajawal, Cairo, sans-serif'; g.fillStyle='rgba(255,255,255,.8)'; g.fillText(ar?'لقبي هالشهر':'My title this month',W/2,625);
+  const pool=[['📅',r.active,ar?'يوم التزام':'days active'],['💪',r.workouts,ar?'تمرين':'workouts'],['💧',r.waterL,ar?'لتر ماي':'L of water'],
+    ['🕌',prayerHabitIds().length?r.prayers:0,ar?'يوم كل الصلوات':'all-prayer days'],['✅',r.habitChecks,ar?'علامة عادات':'habit ticks'],['🔥',r.best,ar?'أطول سلسلة':'best streak'],
+    ['🎣',r.fish.length,ar?'نوع سمك':'fish species'],['📌',r.commits,ar?'التزام خلّصته':'tasks done'],['🌟',r.perfect,ar?'يوم مثالي':'perfect days'],['⭐',r.xp,'XP']];
+  const tiles=pool.filter(t=>t[1]>0).concat(pool.filter(t=>!(t[1]>0))).slice(0,6);
+  const cw=440,ch=250,gx=70,gy=720,gap=60;
+  tiles.forEach(([ic,v,l],i)=>{ const col=i%2,row=Math.floor(i/2),x=gx+col*(cw+gap),y=gy+row*(ch+40);
+    g.fillStyle='rgba(255,255,255,.14)'; roundRect(g,x,y,cw,ch,36); g.fill(); g.textAlign='center'; g.fillStyle='#fff';
+    g.font='70px sans-serif'; g.fillText(ic,x+cw/2,y+90); g.font='800 80px Cairo, sans-serif'; g.fillText(String(v),x+cw/2,y+178);
+    g.font='500 34px Tajawal, Cairo, sans-serif'; g.fillStyle='rgba(255,255,255,.85)'; g.fillText(l,x+cw/2,y+226); });
+  if(r.fish.length){ g.font='600 40px Cairo, sans-serif'; g.fillStyle='#fff'; g.fillText((ar?'أندر صيدة: ':'Rarest catch: ')+r.fish[0].icon+' '+r.fish[0].name,W/2,1700); }
+  g.font='600 34px Cairo, sans-serif'; g.fillStyle='rgba(255,255,255,.7)'; g.fillText('🗓️ مخططي · My Planner',W/2,1820);
+  return c;
+}
+let _wrap=null;
+async function openWrapped(y,m){
+  const ar=LANG==='ar';
+  let v=document.getElementById('wrapView');
+  if(!v){ v=document.createElement('div'); v.id='wrapView'; v.className='wrap-view'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true'); document.body.appendChild(v); }
+  v.innerHTML=`<div class="wrap-stage"><div class="wrap-slide"><div class="wrap-ic">⏳</div><div class="wrap-lbl">${ar?'نجهز ملخصك…':'Preparing your recap…'}</div></div></div>`;
+  v.classList.add('open'); document.body.classList.add('ai-open');
+  const r=await computeWrapped(y,m), S=wrapSlides(r);
+  _wrap={r,S,i:0,t:null,paused:false,t0:0,left:5200};
+  v.innerHTML=`<div class="wrap-stage" dir="${ar?'rtl':'ltr'}"><div class="wrap-bars">${S.map(()=>'<i><b></b></i>').join('')}</div>
+    <button type="button" class="wrap-x" aria-label="${ar?'إغلاق':'Close'}">✕</button><div class="wrap-slide" id="wrapSlide"></div></div>`;
+  v.querySelector('.wrap-x').onclick=closeWrapped;
+  const st=v.querySelector('.wrap-stage');
+  let downAt=0;
+  st.onpointerdown=e=>{ if(e.target.closest('button')) return; downAt=Date.now(); wrapPause(true); };
+  st.onpointerup=e=>{ if(e.target.closest('button')) return; wrapPause(false); if(Date.now()-downAt>350) return;
+    const rect=st.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width, back=ar?x>0.7:x<0.3; wrapGo(_wrap.i+(back?-1:1)); };
+  v.onkeydown=e=>{ if(e.key==='Escape') closeWrapped(); if(e.key==='ArrowRight') wrapGo(_wrap.i+(ar?-1:1)); if(e.key==='ArrowLeft') wrapGo(_wrap.i+(ar?1:-1)); };
+  v.tabIndex=-1; v.focus();
+  wrapGo(0);
+}
+function closeWrapped(){ const v=document.getElementById('wrapView'); if(v){ v.classList.remove('open'); v.innerHTML=''; } if(_wrap) clearTimeout(_wrap.t); _wrap=null; if(!document.getElementById('aiSheet')||!document.getElementById('aiSheet').classList.contains('open')) document.body.classList.remove('ai-open'); }
+function wrapPause(on){ if(!_wrap) return; const W=_wrap, bar=document.querySelectorAll('#wrapView .wrap-bars i')[W.i];
+  if(on&&!W.paused){ W.paused=true; clearTimeout(W.t); W.left-=Date.now()-W.t0; if(bar) bar.classList.add('paused'); }
+  else if(!on&&W.paused){ W.paused=false; if(bar) bar.classList.remove('paused'); if(!W.S[W.i].final){ W.t0=Date.now(); W.t=setTimeout(()=>wrapGo(W.i+1),Math.max(300,W.left)); } } }
+function wrapGo(i){
+  const W=_wrap; if(!W) return; if(i<0) i=0; if(i>=W.S.length){ return; }
+  clearTimeout(W.t); W.i=i; W.paused=false; W.left=5200; W.t0=Date.now();
+  const s=W.S[i], ar=LANG==='ar', box=document.getElementById('wrapSlide'); if(!box) return;
+  document.querySelectorAll('#wrapView .wrap-bars i').forEach((b,k)=>{ b.className=k<i?'done':k===i?'on':''; });
+  box.parentElement.style.background=s.bg;
+  box.innerHTML=`<div class="wrap-ic">${s.ic}</div>${s.num!=null?`<div class="wrap-num" data-to="${s.num}" data-dec="${s.dec||0}">0</div>`:''}${s.big?`<div class="wrap-big">${escapeHtml(s.big)}</div>`:''}
+    ${s.lbl?`<div class="wrap-lbl">${escapeHtml(s.lbl)}</div>`:''}${s.sub?`<div class="wrap-sub">${escapeHtml(s.sub)}</div>`:''}
+    ${s.final?`<div class="wrap-share"><img id="wrapImg" alt=""><div class="wrap-btns"><button type="button" class="wrap-btn" id="wrapShare">📤 ${ar?'شاركها ستوري':'Share to story'}</button><button type="button" class="wrap-btn ghost" id="wrapSave">⬇️ ${ar?'احفظ':'Save'}</button><button type="button" class="wrap-btn ghost" id="wrapAgain">↺ ${ar?'من البداية':'Replay'}</button></div></div>`:''}`;
+  const n=box.querySelector('.wrap-num'); if(n){ const to=+n.dataset.to, dec=+n.dataset.dec, t0=performance.now();
+    const step=t=>{ if(!document.body.contains(n)) return; const k=Math.min(1,(t-t0)/900), e=1-Math.pow(1-k,3); n.textContent=(to*e).toFixed(dec); if(k<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step); }
+  if(s.final){
+    (async()=>{ const cv=await drawWrapStory(W.r), url=cv.toDataURL('image/png'), img=document.getElementById('wrapImg'); if(img) img.src=url;
+      const fname=`my-planner-wrapped-${W.r.y}-${W.r.m+1}.png`;
+      const save=()=>{ const a=document.createElement('a'); a.href=url; a.download=fname; a.click(); };
+      const sv=document.getElementById('wrapSave'); if(sv) sv.onclick=save;
+      const sh=document.getElementById('wrapShare'); if(sh) sh.onclick=async()=>{ try{ const blob=await new Promise(res=>cv.toBlob(res,'image/png')), file=new File([blob],fname,{type:'image/png'});
+        if(navigator.canShare&&navigator.canShare({files:[file]})) await navigator.share({files:[file],title:'My Planner'}); else save(); }catch(e){} };
+      const ag=document.getElementById('wrapAgain'); if(ag) ag.onclick=()=>wrapGo(0);
+    })();
+    playSfx('fanfare');
+  } else W.t=setTimeout(()=>wrapGo(i+1),W.left);
 }
 
 
@@ -12599,6 +12993,7 @@ function refreshHome(){
   renderRamadanCard();
   renderHomeCheers();
   renderHomePushTip();
+  renderHomeNow(); renderHomeMissed();
   setTimeout(maybeShowGuide,2500);
   renderHomeAquarium();
   renderWeeklyCard();
@@ -12756,6 +13151,7 @@ async function renderHomeTodoProgress(){
   titleEl.textContent=t('home_todo_title');
   const subEl=document.getElementById('homeTodoSub'); if(subEl) subEl.innerHTML=escapeHtml(t('home_todo_sub'))+((P.streakShields||0)>0?`<span class="shield-pill" title="${LANG==='ar'?'دروع السلاسل':'Streak shields'}">🛡️ ${P.streakShields}</span>`:'');
   renderHomeChest();
+  try{ renderHomeNow(); }catch(e){}
   updateAquariumClarity();
   PushService.reportDay();
   const {done,total}=await computeHomeTodoProgress();
