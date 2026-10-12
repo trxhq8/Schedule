@@ -1287,6 +1287,13 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .ag-tools{ display:flex; justify-content:flex-end; }
   .ag-clear{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:8px 14px; min-height:38px; font-weight:700; font-size:.78rem; cursor:pointer; }
   .ag-clear.warn{ border-color:var(--err); color:var(--err); }
+  .cm-editbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; margin-bottom:10px; border-radius:12px; background:var(--bg); border:1px dashed var(--accent); font-size:.85rem; }
+  .cm-editbar b{ overflow-wrap:anywhere; }
+  .cm-editbar button{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 14px; min-height:36px; font-weight:700; cursor:pointer; flex-shrink:0; }
+  .cm-edit{ background:none; border:none; cursor:pointer; font-size:.95rem; min-width:36px; min-height:36px; }
+  .cm-shake{ animation:cmShake .4s ease; }
+  @keyframes cmShake{ 20%,60%{ transform:translateX(-6px); } 40%,80%{ transform:translateX(6px); } }
+  .toast-undo{ margin-inline-start:10px; border:none; background:#fff; color:#111; border-radius:8px; padding:5px 12px; font-weight:800; font-size:12px; cursor:pointer; }
   .cal-more{ display:block; width:100%; margin-top:8px; border:1px dashed var(--line); background:transparent; color:var(--ink-soft); border-radius:12px; padding:10px; min-height:42px; font-weight:700; font-size:.82rem; cursor:pointer; }
   .agenda-edit{ width:100%; border:1px solid var(--accent); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.83rem; margin-top:6px; background:var(--bg); color:var(--ink); }
   /* calendar */
@@ -3087,7 +3094,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.63.1';
+const APP_VERSION='v1.63.2';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5073,6 +5080,9 @@ function hnCandidates(){
     else if(sp.start>now && sp.start-now<=60) out.push({id:'s'+commitKey(c), s:92-(sp.start-now)/6, ic:'⏰', title:(ar?`بعد ${hnIn(sp.start-now)}: `:`In ${hnIn(sp.start-now)}: `)+c.label,
       sub:ar?'جهّز نفسك من الحين':'Get ready now', act:{k:'nav',to:'today'}, btn:ar?'📅 الجدول':'📅 Schedule'});
   });
+  { const yd=new Date(); yd.setDate(yd.getDate()-1);
+    commitmentsForDate(yd).forEach(c=>{ if(!c.from||!c.to) return; const a=parseHM(c.from), b=parseHM(c.to);
+      if(b<=a&&now<b) out.push({id:'y'+commitKey(c), s:100, ic:'🟢', title:(ar?'الحين: ':'Now: ')+c.label, sub:ar?`لين ${formatTime12h(c.to)}`:`until ${formatTime12h(c.to)}`, act:{k:'nav',to:'today'}, btn:ar?'📅 الجدول':'📅 Schedule'}); }); }
   // 2) a prayer whose time is in and isn't ticked yet
   const tm=window._todayPT, pids=prayerHabitIds();
   if(tm&&pids.length){
@@ -8042,9 +8052,15 @@ function renderCommitList(){
       <div class="cm-main"><div class="cm-title">${c.pinned?'📌 ':''}${escapeHtml(c.label)}</div>
         <div class="cm-meta">🔁 ${escapeHtml(commitDaysText(c))}${range?` · 📅 ${range}`:''}</div>
         <div class="cm-tags">${others.length?`<span class="cm-tag bad">⚠️ ${ar?'يتعارض مع':'Clashes with'} ${others.map(o=>escapeHtml(o.label)).join(ar?'، ':', ')}</span>`:''}${c.hard===false?`<span class="cm-tag">🔓 ${ar?'مرن':'Flexible'}</span>`:''}${st==='upcoming'?`<span class="cm-tag up">⏳ ${ar?'ما بدأ':'Not started'}</span>`:''}</div></div>
-      <div class="cm-act"><button type="button" class="cm-pin" title="${ar?'ثبّت فوق':'Pin to top'}">${c.pinned?'📌':'📍'}</button><button type="button" class="cm-del" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`;
+      <div class="cm-act"><button type="button" class="cm-edit" aria-label="${ar?'عدّل':'Edit'}">✏️</button><button type="button" class="cm-pin" title="${ar?'ثبّت فوق':'Pin to top'}">${c.pinned?'📌':'📍'}</button><button type="button" class="cm-del" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`;
     row.querySelector('.cm-pin').onclick=()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); };
-    row.querySelector('.cm-del').onclick=()=>{ P._commitments.splice(i,1); renderCommitList(); persistCommitments(); };
+    row.querySelector('.cm-edit').onclick=()=>startCommitEdit(i);
+    row.querySelector('.cm-del').onclick=()=>{
+      const removed=P._commitments[i]; P._commitments.splice(i,1);
+      if(_cmEditIdx===i) resetCommitForm(); else if(_cmEditIdx!=null&&_cmEditIdx>i) _cmEditIdx--;
+      renderCommitList(); persistCommitments();
+      showUndo((ar?'انحذف: ':'Deleted: ')+removed.label,()=>{ P._commitments.splice(Math.min(i,P._commitments.length),0,removed); renderCommitList(); persistCommitments(); });
+    };
     box.appendChild(row);
   });
   const ce=document.getElementById('cmClearEnded');
@@ -8053,6 +8069,7 @@ function renderCommitList(){
 /* two commitments with date ranges that never meet can't clash */
 function commitDatesOverlap(a,b){ return (a.fromDate||'0000')<=(b.toDate||'9999') && (b.fromDate||'0000')<=(a.toDate||'9999'); }
 function resetCommitForm(){
+  _cmEditIdx=null; setCommitEditBar(null);
   document.getElementById('commitLabel').value='';
   document.getElementById('commitAllDayToggle').checked=false;
   document.getElementById('commitHardToggle').checked=true;
@@ -8066,9 +8083,44 @@ function resetCommitForm(){
 /* the ONLY path that adds a commitment to the draft list — always checks
    for real conflicts first and never saves silently over one. `opts.forceKeep`
    is set only after the user explicitly chose "keep both anyway". */
+let _cmEditIdx=null;
+function commitFormError(msg,focusId){
+  showToast(msg,'error');
+  const el=document.getElementById(focusId); if(!el) return;
+  el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.remove('cm-shake'); void el.offsetWidth; el.classList.add('cm-shake');
+  if(el.tagName==='INPUT') el.focus({preventScroll:true});
+}
+function setCommitEditBar(label){
+  const card=document.getElementById('todoSetupCard'), btn=document.getElementById('commitAddBtn'); if(!card||!btn) return;
+  let bar=document.getElementById('commitEditBar'); const ar=LANG==='ar';
+  if(label==null){ if(bar) bar.remove(); btn.textContent=t('add_commit'); return; }
+  if(!bar){ bar=document.createElement('div'); bar.id='commitEditBar'; bar.className='cm-editbar'; card.insertBefore(bar,document.getElementById('commitLabel')); }
+  bar.innerHTML=`<span>✏️ ${ar?'تعدّل':'Editing'}: <b>${escapeHtml(label)}</b></span><button type="button">${ar?'إلغاء':'Cancel'}</button>`;
+  bar.querySelector('button').onclick=()=>{ resetCommitForm(); };
+  btn.textContent=ar?'💾 احفظ التعديل':'💾 Save changes';
+}
+function startCommitEdit(i){
+  const c=(P._commitments||[])[i]; if(!c) return; _cmEditIdx=i;
+  document.getElementById('commitLabel').value=c.label;
+  document.getElementById('commitHardToggle').checked=c.hard!==false;
+  const allDay=!c.from; document.getElementById('commitAllDayToggle').checked=allDay;
+  document.getElementById('commitTimeRow').classList.toggle('hidden',allDay);
+  if(allDay){ document.getElementById('commitFrom').value=''; document.getElementById('commitTo').value=''; }
+  else { buildTimePicker('commitFromPicker','commitFrom',c.from); buildTimePicker('commitToPicker','commitTo',c.to||minutesToHM(parseHM(c.from)+60)); }
+  document.getElementById('commitFromDate').value=c.fromDate||''; document.getElementById('commitToDate').value=c.toDate||'';
+  P._commitDays=[...(c.days||[])]; buildCommitDaysGrid();
+  setCommitEditBar(c.label);
+  document.getElementById('todoSetupCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function showUndo(msg,fn){
+  showToast(msg); const el=document.getElementById('toastBanner'); if(!el) return;
+  const b=document.createElement('button'); b.type='button'; b.className='toast-undo'; b.textContent=LANG==='ar'?'↺ تراجع':'↺ Undo';
+  b.onclick=()=>{ try{ fn(); }finally{ el.remove(); } };
+  el.appendChild(b); clearTimeout(showToast._t); showToast._t=setTimeout(()=>{ if(el.parentNode) el.remove(); },6000);
+}
 function attemptAddCommitment(candidate, opts){
   opts=opts||{};
-  const conflicts=findConflictsFor(candidate, P._commitments||[]);
+  const conflicts=findConflictsFor(candidate, (P._commitments||[]).filter((c,i)=>i!==_cmEditIdx));
   const overlaps=conflicts.filter(c=>c.kind==='overlap');
   const bufferIssues=conflicts.filter(c=>c.kind==='buffer');
   if((overlaps.length||bufferIssues.length) && !opts.forceKeep){
@@ -8083,11 +8135,14 @@ function attemptAddCommitment(candidate, opts){
   finalizeAddCommitment(candidate);
 }
 function finalizeAddCommitment(candidate){
-  P._commitments=[...(P._commitments||[]),candidate];
+  const editing=_cmEditIdx!=null&&(P._commitments||[])[_cmEditIdx];
+  if(editing){ const arr=[...P._commitments]; arr[_cmEditIdx]=candidate; P._commitments=arr; }
+  else P._commitments=[...(P._commitments||[]),candidate];
   resetCommitForm();
+  if(editing){ renderCommitList(); persistCommitments(); showToast((LANG==='ar'?'💾 تعدّل: ':'💾 Updated: ')+candidate.label,'success'); return; }
   renderCommitList();
   persistCommitments();
-  try{ showToast((LANG==='ar'?'✅ انضاف: ':'✅ Added: ')+candidate.label,'success'); document.getElementById('commitLabel').focus(); }catch(e){}
+  try{ showToast((LANG==='ar'?'انضاف: ':'Added: ')+candidate.label,'success'); document.getElementById('commitLabel').focus(); }catch(e){}
 }
 /* Previously "Add" only touched the draft P._commitments — it visibly
    appeared as a chip, which looked saved, but nothing was written to
@@ -8100,7 +8155,7 @@ function finalizeAddCommitment(candidate){
 async function persistCommitments(){
   P.todoSetup={commitments:P._commitments||[]};
   await storageSet('profile',JSON.stringify(P));
-  renderCalendar();
+  renderTodoSection();
   refreshHome();
 }
 /* Bulk import — one line per commitment: "label | YYYY-MM-DD" for a
@@ -8151,7 +8206,7 @@ function showConflictModal(candidate, overlaps, bufferIssues, handlers){
   let html=`<div class="dash-empty" style="margin-bottom:10px;">${t('conflict_body')}</div>`;
   overlaps.forEach((cf,idx)=>{
     html+=`<div class="challenge-card">
-      <div style="font-weight:700;margin-bottom:8px;">📌 ${escapeHtml(candidate.label)} (${formatCommitRange(candidate)})<br>📌 ${escapeHtml(cf.other.label)} (${formatCommitRange(cf.other)})</div>
+      <div style="font-weight:700;margin-bottom:8px;">🕐 ${escapeHtml(candidate.label)} (${formatCommitRange(candidate)})<br>🕐 ${escapeHtml(cf.other.label)} (${formatCommitRange(cf.other)})</div>
       <div id="conflictActions_${idx}" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>`;
   });
@@ -8198,10 +8253,19 @@ document.getElementById('commitAddBtn').addEventListener('click',()=>{
   const fromDate=document.getElementById('commitFromDate').value||null;
   const toDate=document.getElementById('commitToDate').value||null;
   const hard=document.getElementById('commitHardToggle').checked;
-  const days=P._commitDays||[];
-  if(!label||!days.length) return;
+  let days=P._commitDays||[];
+  const ar=LANG==='ar';
+  if(!label){ commitFormError(ar?'اكتب اسم الالتزام أول ✍️':'Give it a name first ✍️','commitLabel'); return; }
+  if(fromDate&&toDate&&toDate<fromDate){ commitFormError(ar?'تاريخ النهاية قبل تاريخ البداية':'The end date is before the start date','commitToDate'); return; }
+  const isoD=iso=>{ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); };
+  if(fromDate&&fromDate===toDate){ days=[(isoD(fromDate).getDay()+1)%7]; } // a single date: its own weekday, whatever was ticked
+  else if(!days.length&&(fromDate||toDate)){ days=[0,1,2,3,4,5,6]; }      // a date range with no days ticked: every day in it
+  if(!days.length){ commitFormError(ar?'اختار الأيام اللي يتكرر فيها 👇':'Pick the days it repeats on 👇','commitDaysGrid'); return; }
+  if(fromDate&&toDate){ const a=isoD(fromDate), b=isoD(toDate); let hit=false; for(let d=new Date(a); d<=b&&!hit; d.setDate(d.getDate()+1)) hit=days.includes((d.getDay()+1)%7);
+    if(!hit){ commitFormError(ar?'الأيام اللي اخترتها ما تجي بين التاريخين':'None of the picked days fall between those dates','commitDaysGrid'); return; } }
   if(from&&to&&from===to){ showToast(LANG==='ar'?'وقت البداية والنهاية نفس الشي':'Start and end time are the same','error'); return; }
-  attemptAddCommitment({label,from,to,days,fromDate,toDate,pinned:false,hard});
+  const was=_cmEditIdx!=null?(P._commitments||[])[_cmEditIdx]:null;
+  attemptAddCommitment({...(was&&was.src?{src:was.src}:{}),label,from,to,days,fromDate,toDate,pinned:was?!!was.pinned:false,hard});
 });
 function prefillTodoSetup(){
   const s=P.todoSetup||{};
@@ -8210,7 +8274,7 @@ function prefillTodoSetup(){
   // treating them as movable-by-default would risk auto-suggesting a move
   // for something the user actually meant as fixed.
   P._commitments=(s.commitments||[]).map(c=>({hard:true,...c,days:[...c.days]}));
-  P._commitDays=[];
+  P._commitDays=[]; _cmEditIdx=null; setCommitEditBar(null);
   document.getElementById('commitLabel').value='';
   document.getElementById('commitAllDayToggle').checked=false;
   document.getElementById('commitHardToggle').checked=true;
@@ -12889,6 +12953,8 @@ async function openCalendarDay(y,m,d){
     const sa=commitTimeSpan(a), sb=commitTimeSpan(b);
     return (sa?sa.start:-1)-(sb?sb.start:-1);
   });
+  const prevDay=new Date(y,m,d-1);
+  commitments.prevWrap=commitmentsForDate(prevDay).filter(c=>c.from&&c.to&&parseHM(c.to)<=parseHM(c.from));
   const dateKey=calDateKey(y,m,d);
   const isTodayCal=dateKey===dailyTrackKey;
   let dayTrack={agenda:{}};
@@ -12931,8 +12997,9 @@ function calAutoLabelForSlot(slot,commitments){
     if(!c.from||!c.to) return false; // all-day commitment has no specific hour — it's a day-level reminder (shown separately above), never injected into an hourly slot
     const c0=parseHM(c.from),c1=parseHM(c.to);
     if(c1>c0) return s0<c1 && c0<s1;
-    return (c0<s1) || (s0<c1);
+    return c0<s1; // overnight: only tonight's part — the hours after midnight show on the next day
   });
+  (commitments.prevWrap||[]).forEach(c=>{ if(s0<parseHM(c.to)&&!hits.includes(c)) hits.push(c); });
   return hits.length ? hits.map(c=>c.label).join(' + ') : '';
 }
 // a note that's only dots/dashes (the old way of blanking an hour) counts as cleared
