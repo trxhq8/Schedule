@@ -1273,6 +1273,21 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .agenda-slot .time{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:0.82rem; }
   .agenda-slot .note{ font-size:0.83rem; color:var(--ink); margin-top:4px; }
   .agenda-slot .note.empty{ color:var(--ink-soft); opacity:0.6; font-style:italic; }
+  .ag-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:36px; }
+  .ag-ctrls{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .ag-sw{ position:relative; width:46px; height:28px; border-radius:999px; border:none; background:var(--line); cursor:pointer; padding:0; transition:background .2s; flex-shrink:0; }
+  .ag-sw::after{ content:''; position:absolute; top:4px; inset-inline-start:4px; width:20px; height:20px; border-radius:50%; background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,.25); transition:inset-inline-start .2s; }
+  .ag-sw[aria-checked="true"]{ background:var(--accent); }
+  .ag-sw[aria-checked="true"]::after{ inset-inline-start:22px; }
+  .ag-del{ width:36px; height:36px; border-radius:10px; border:1px solid var(--line); background:var(--bg); cursor:pointer; font-size:.9rem; flex-shrink:0; }
+  .ag-undo{ border:1px dashed var(--line); background:transparent; color:var(--ink-soft); border-radius:10px; padding:6px 10px; min-height:34px; font-size:.75rem; cursor:pointer; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .agenda-slot.off .note{ text-decoration:line-through; opacity:.45; }
+  .agenda-slot.off .ag-tag{ text-decoration:none; display:inline-block; }
+  .ag-tag{ font-size:.68rem; font-weight:800; color:var(--err); margin-inline-start:6px; }
+  .ag-tools{ display:flex; justify-content:flex-end; }
+  .ag-clear{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:8px 14px; min-height:38px; font-weight:700; font-size:.78rem; cursor:pointer; }
+  .ag-clear.warn{ border-color:var(--err); color:var(--err); }
+  .cal-more{ display:block; width:100%; margin-top:8px; border:1px dashed var(--line); background:transparent; color:var(--ink-soft); border-radius:12px; padding:10px; min-height:42px; font-weight:700; font-size:.82rem; cursor:pointer; }
   .agenda-edit{ width:100%; border:1px solid var(--accent); border-radius:10px; padding:8px 10px; font-family:var(--font-body); font-size:0.83rem; margin-top:6px; background:var(--bg); color:var(--ink); }
   /* calendar */
   .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
@@ -3072,7 +3087,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.63.0';
+const APP_VERSION='v1.63.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -12880,23 +12895,24 @@ async function openCalendarDay(y,m,d){
   if(isTodayCal){ dailyTrack.agenda=dailyTrack.agenda||{}; dayTrack=dailyTrack; }
   else try{ const v=await storageGet(dateKey); if(v) dayTrack={agenda:{},...JSON.parse(v)}; }catch(e){}
   let html='';
-  if(commitments.length){
-    html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'📌 عندك':'📌 You have'}</div>`;
-    // each commitment shown ONCE with its own real time range (this is what
-    // was missing before — several genuinely different time blocks with the
-    // same label, e.g. several class periods, used to render as identical-
-    // looking rows with no time at all, which read as duplicated spam).
+  const ar=LANG==='ar', pinned=commitments.filter(c=>c.pinned), others=commitments.filter(c=>!c.pinned);
+  const off=dayTrack.agendaOff||{};
+  const noteList=Object.entries(dayTrack.agenda||{}).filter(([slot,note])=>!agendaBlank(note)&&!off[slot]).sort((a,b)=>slotRange(a[0])[0]-slotRange(b[0])[0]);
+  if(!commitments.length&&!noteList.length){
+    html+=`<div class="total-kcal" style="font-size:1rem;">${ar?'✅ يوم فاضي، ما عندك التزامات':'✅ Free day, no commitments'}</div>`;
+  } else {
     const dayConflicts=findAllScheduleConflicts(commitments).filter(cf=>cf.kind==='overlap');
     const conflicted=new Set(); dayConflicts.forEach(cf=>{ conflicted.add(cf.a); conflicted.add(cf.b); });
-    commitments.forEach(c=>{
-      const badge=conflicted.has(c)?`<span style="color:var(--err);font-weight:700;">${t('conflict_badge')} </span>`:'';
-      html+=`<div class="meal"><div class="content">${badge}📌 ${escapeHtml(c.label)} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
-    });
-  } else {
-    html+=`<div class="total-kcal" style="font-size:1rem;">${LANG==='ar'?'✅ يوم فاضي، ما عندك التزامات':'✅ Free day, no commitments'}</div>`;
+    const row=(c)=>`<div class="meal"><div class="content">${conflicted.has(c)?`<span style="color:var(--err);font-weight:700;">${t('conflict_badge')} </span>`:''}${c.pinned?'📌 ':''}${escapeHtml(c.label)} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
+    html+=`<div class="total-kcal" style="font-size:1rem;">${pinned.length?(ar?'📌 المثبّت':'📌 Pinned'):(ar?'ما عندك شي مثبّت هاليوم':'Nothing pinned this day')}</div>`;
+    html+=pinned.map(row).join('');
+    const rest=others.length+noteList.length;
+    if(rest){
+      html+=`<button type="button" class="cal-more" id="calMoreBtn" aria-expanded="false">${ar?`عرض الكل (${rest})`:`Show all (${rest})`} ▾</button><div id="calMoreList" class="hidden">`+
+        others.map(row).join('')+
+        noteList.map(([slot,note])=>`<div class="meal"><div class="content">🕐 ${escapeHtml(note)} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatSlot12h(slot)})</span></div></div>`).join('')+`</div>`;
+    }
   }
-  const noteEntries=Object.entries(dayTrack.agenda||{});
-  noteEntries.forEach(([slot,note])=>{ html+=`<div class="meal"><div class="content">📌 ${escapeHtml(note)}</div></div>`; });
   html+=`<button class="setup-btn" id="calDetailBtn" style="margin-top:14px;">${LANG==='ar'?'🕐 عرض بالتفصيل (بالساعة)':'🕐 Show hour-by-hour detail'}</button>`;
   html+=`<div id="calDetailArea" class="agenda-list" style="margin-top:14px;"></div>`;
   document.getElementById('cardBody').innerHTML=html;
@@ -12905,6 +12921,9 @@ async function openCalendarDay(y,m,d){
     document.getElementById('calDetailBtn').classList.add('hidden');
     renderCalDetail(dateKey,commitments,dayTrack);
   });
+  const mb=document.getElementById('calMoreBtn');
+  if(mb) mb.onclick=()=>{ const l=document.getElementById('calMoreList'), open=l.classList.toggle('hidden')===false;
+    mb.setAttribute('aria-expanded',String(open)); mb.textContent=(open?(ar?'إخفاء':'Hide'):(ar?`عرض الكل (${l.children.length})`:`Show all (${l.children.length})`))+(open?' ▴':' ▾'); };
 }
 function calAutoLabelForSlot(slot,commitments){
   const [s0,s1]=slotRange(slot);
@@ -12916,35 +12935,75 @@ function calAutoLabelForSlot(slot,commitments){
   });
   return hits.length ? hits.map(c=>c.label).join(' + ') : '';
 }
+// a note that's only dots/dashes (the old way of blanking an hour) counts as cleared
+function agendaBlank(v){ return v==null||/^[\s.\-–—_·،,]*$/.test(String(v)); }
+async function saveCalDay(dateKey,dayTrack){ if(dateKey===dailyTrackKey) await saveDailyTrack(); else await storageSet(dateKey,JSON.stringify(dayTrack)); }
+function calSlotState(slot,auto,dayTrack){
+  const custom=dayTrack.agenda[slot], hasCustom=custom!==undefined&&custom!==null;
+  const cleared=hasCustom&&agendaBlank(custom);
+  const note=hasCustom?(cleared?'':custom):auto;
+  return {note, cleared, off:!!(dayTrack.agendaOff||{})[slot], fromAuto:!hasCustom&&!!auto};
+}
+function paintCalSlot(el,slot,auto,dateKey,dayTrack){
+  const ar=LANG==='ar', st=calSlotState(slot,auto,dayTrack);
+  el.className='agenda-slot'+(st.off?' off':'')+(st.note?'':' is-empty');
+  el.innerHTML=`<div class="ag-head"><div class="time">${formatSlot12h(slot)}</div><div class="ag-ctrls">`+
+    (st.note?`<button type="button" class="ag-sw" role="switch" aria-checked="${!st.off}" aria-label="${ar?'شغّال / ملغي':'On / cancelled'}"></button><button type="button" class="ag-del" aria-label="${ar?'امسح':'Remove'}">🗑️</button>`
+      :(st.cleared&&auto?`<button type="button" class="ag-undo">↺ ${escapeHtml(auto)}</button>`:''))+
+    `</div></div><div class="note${st.note?'':' empty'}">${st.note?escapeHtml(st.note):t('no_note')}${st.off?` <span class="ag-tag">${ar?'ملغي':'cancelled'}</span>`:''}</div>`;
+  const sw=el.querySelector('.ag-sw'), del=el.querySelector('.ag-del'), undo=el.querySelector('.ag-undo');
+  if(sw) sw.onclick=async e=>{ e.stopPropagation(); dayTrack.agendaOff={...(dayTrack.agendaOff||{})};
+    if(dayTrack.agendaOff[slot]) delete dayTrack.agendaOff[slot]; else dayTrack.agendaOff[slot]=true;
+    paintCalSlot(el,slot,auto,dateKey,dayTrack); await saveCalDay(dateKey,dayTrack); };
+  if(del) del.onclick=async e=>{ e.stopPropagation();
+    if(auto) dayTrack.agenda[slot]=''; else delete dayTrack.agenda[slot];
+    if(dayTrack.agendaOff) delete dayTrack.agendaOff[slot];
+    paintCalSlot(el,slot,auto,dateKey,dayTrack); playSfx&&playSfx('uncheck'); await saveCalDay(dateKey,dayTrack); };
+  if(undo) undo.onclick=async e=>{ e.stopPropagation(); delete dayTrack.agenda[slot]; paintCalSlot(el,slot,auto,dateKey,dayTrack); await saveCalDay(dateKey,dayTrack); };
+}
 function renderCalDetail(dateKey,commitments,dayTrack){
   const area=document.getElementById('calDetailArea'); area.innerHTML='';
   dayTrack.agenda=dayTrack.agenda||{};
+  const ar=LANG==='ar';
+  const tools=document.createElement('div'); tools.className='ag-tools';
+  tools.innerHTML=`<button type="button" class="ag-clear">🧹 ${ar?'فضّي كل الساعات':'Clear every hour'}</button>`;
+  area.appendChild(tools);
+  const slots=[];
   AGENDA_SLOTS.forEach(slot=>{
-    const el=document.createElement('div'); el.className='agenda-slot';
+    const el=document.createElement('div');
     const auto=calAutoLabelForSlot(slot,commitments);
-    const custom=dayTrack.agenda[slot];
-    const note=(custom!==undefined&&custom!==null&&custom!=='') ? custom : auto;
-    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note?escapeHtml(note):t('no_note')}</div>`;
-    el.addEventListener('click',()=>openCalSlotEdit(el,slot,auto,dateKey,dayTrack));
-    area.appendChild(el);
+    paintCalSlot(el,slot,auto,dateKey,dayTrack);
+    el.addEventListener('click',e=>{ if(e.target.closest('button')) return; openCalSlotEdit(el,slot,auto,dateKey,dayTrack); });
+    area.appendChild(el); slots.push([el,slot,auto]);
   });
+  const clr=tools.querySelector('.ag-clear');
+  clr.onclick=async()=>{
+    if(!clr.dataset.sure){ clr.dataset.sure='1'; clr.textContent=ar?'متأكد؟ اضغط مرة ثانية':'Sure? Tap again'; clr.classList.add('warn'); setTimeout(()=>{ if(clr.isConnected){ delete clr.dataset.sure; clr.textContent='🧹 '+(ar?'فضّي كل الساعات':'Clear every hour'); clr.classList.remove('warn'); } },3500); return; }
+    slots.forEach(([el,slot,auto])=>{ if(auto) dayTrack.agenda[slot]=''; else delete dayTrack.agenda[slot]; });
+    dayTrack.agendaOff={};
+    slots.forEach(([el,slot,auto])=>paintCalSlot(el,slot,auto,dateKey,dayTrack));
+    delete clr.dataset.sure; clr.textContent='🧹 '+(ar?'فضّي كل الساعات':'Clear every hour'); clr.classList.remove('warn');
+    await saveCalDay(dateKey,dayTrack); showToast(ar?'تفضّت الساعات ✨':'All hours cleared ✨');
+  };
 }
 function openCalSlotEdit(el,slot,auto,dateKey,dayTrack){
   if(el.querySelector('.agenda-edit')) return;
-  const current=(dayTrack.agenda[slot]!==undefined) ? dayTrack.agenda[slot] : auto;
-  el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><input class="agenda-edit" value="${escapeHtml(current)}" placeholder="${LANG==='ar'?'شنو عندك بهالوقت؟':"What's on?"}">`;
+  const st=calSlotState(slot,auto,dayTrack);
+  el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><input class="agenda-edit" value="${escapeHtml(st.note)}" placeholder="${LANG==='ar'?'شنو عندك بهالوقت؟':"What's on?"}">`;
   const input=el.querySelector('.agenda-edit');
   input.focus();
+  let done=false;
   async function commit(){
+    if(done) return; done=true;
     const val=input.value.trim();
-    if(val && val!==auto) dayTrack.agenda[slot]=val;
-    else delete dayTrack.agenda[slot];
-    if(isTodayCal) await saveDailyTrack(); else await storageSet(dateKey,JSON.stringify(dayTrack));
-    const note=(dayTrack.agenda[slot]!==undefined) ? dayTrack.agenda[slot] : auto;
-    el.innerHTML=`<div class="time">${formatSlot12h(slot)}</div><div class="note${note?'':' empty'}">${note?escapeHtml(note):t('no_note')}</div>`;
+    if(!val||agendaBlank(val)){ if(auto) dayTrack.agenda[slot]=''; else delete dayTrack.agenda[slot]; } // emptying the box clears the hour, even a commitment's hour
+    else if(val===auto) delete dayTrack.agenda[slot];
+    else dayTrack.agenda[slot]=val;
+    paintCalSlot(el,slot,auto,dateKey,dayTrack);
+    await saveCalDay(dateKey,dayTrack);
   }
   input.addEventListener('blur',commit);
-  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); input.blur(); } });
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); input.blur(); } if(e.key==='Escape'){ done=true; paintCalSlot(el,slot,auto,dateKey,dayTrack); } });
 }
 function slotRange(slot){ const [a,b]=slot.split('-'); return [parseHM(a),parseHM(b)]; }
 
@@ -13083,14 +13142,14 @@ function isSameCalendarDate(a,b){ return a.getFullYear()===b.getFullYear()&&a.ge
    merges both, exactly the same two sources openCalendarDay() already
    shows together for its own day-detail popup. */
 async function getAgendaForDate(dateObj){
-  let agenda;
-  if(isSameCalendarDate(dateObj,new Date())){ agenda=dailyTrack.agenda||{}; }
+  let agenda, off={};
+  if(isSameCalendarDate(dateObj,new Date())){ agenda=dailyTrack.agenda||{}; off=dailyTrack.agendaOff||{}; }
   else{
     const key=calDateKey(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate());
-    try{ const v=await storageGet(key); agenda=v?(JSON.parse(v).agenda||{}):{}; }catch(e){ agenda={}; }
+    try{ const v=await storageGet(key), doc=v?JSON.parse(v):{}; agenda=doc.agenda||{}; off=doc.agendaOff||{}; }catch(e){ agenda={}; }
   }
   return Object.entries(agenda)
-    .filter(([slot,note])=>note!=null&&note!=='')
+    .filter(([slot,note])=>!agendaBlank(note)&&!off[slot])
     .map(([slot,note])=>({time:slotRange(slot)[0],label:note,timeLabel:formatTime12h(slot.split('-')[0])}));
 }
 async function getScheduleItemsForDate(dateObj){
