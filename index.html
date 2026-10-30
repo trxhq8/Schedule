@@ -1001,6 +1001,25 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .yesterday-catchup-block{ margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); }
   .habit-yesterday-list{ margin-top:6px; padding-top:6px; border-top:1px dashed var(--line); }
   .habit-yesterday-label{ font-size:0.7rem; color:var(--ink-soft); margin-bottom:4px; }
+  .habit-yesterday-toggle.warn{ color:#d97706; }
+  .cu-days{ display:flex; gap:6px; overflow-x:auto; padding:2px 0 8px; scrollbar-width:none; width:0; min-width:100%; }
+  .cu-days::-webkit-scrollbar{ display:none; }
+  .cu-day{ flex:0 0 auto; min-width:50px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); border-radius:12px; padding:6px 6px 5px; font:inherit; font-size:0.7rem; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
+  .cu-day.on{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--card)); }
+  .cu-day i{ width:7px; height:7px; border-radius:50%; background:var(--line); }
+  .cu-day.miss i{ background:#ef4444; } .cu-day.part i{ background:#f59e0b; } .cu-day.full i{ background:var(--accent); }
+  .cu-legend{ font-size:0.66rem; color:var(--ink-soft); margin:-4px 0 6px; }
+  .habit-row.done.late .habit-box{ background:#f59e0b; border-color:#f59e0b; }
+  .prayer-tip{ font-size:0.68rem; color:var(--ink-soft); text-align:center; margin-top:6px; }
+  .habit-order-tip{ font-size:0.76rem; color:var(--ink-soft); margin:-2px 0 6px; }
+  .habit-order-row{ display:flex; align-items:center; gap:6px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .habit-order-row:last-child{ border-bottom:none; }
+  .ho-num{ width:18px; color:var(--ink-soft); font-size:0.74rem; text-align:center; flex-shrink:0; }
+  .ho-name{ flex:1; font-size:0.85rem; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ho-btn{ width:32px; height:32px; flex-shrink:0; border-radius:9px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); font:inherit; font-size:0.78rem; cursor:pointer; padding:0; }
+  .ho-btn:disabled{ opacity:.3; cursor:default; }
+  #habitsCard.ordering .habit-add-row, #habitsCard.ordering .habit-yesterday-toggle, #habitsCard.ordering .habit-yesterday-list{ display:none; }
+  .habits-order-link{ margin-inline-start:auto; }
 
   /* ---- profile / XP / achievements / challenges / social (demo) ---- */
   .xp-bar-track{ width:100%; height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:8px; }
@@ -1974,7 +1993,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="dash-card" id="dashCommitCard"></div>
       <div id="homeHabitsSlot">
       <div class="dash-card" id="habitsCard">
-        <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
+        <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-order-link hidden" id="habitsOrderBtn"></button><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
         <div class="habits-hint" data-i18n="habits_hint"></div>
         <div id="dashHabitsList"></div>
         <div class="habit-yesterday-toggle hidden" id="habitYesterdayToggle"></div>
@@ -3094,7 +3113,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.63.2';
+const APP_VERSION='v1.64.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5155,7 +5174,7 @@ async function hnDo(a){
   if(a.k==='commit'){ dailyTrack.commitDone={...(dailyTrack.commitDone||{}),[a.ck]:true}; playSfx('pop'); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
   if(a.k==='water'){ await adjustWater(0.25); renderHomeNow(); return; }
   if(a.k==='habit'){ const h=(P.habits||[]).find(x=>x.id===a.hid);
-    if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:prayerStatusNow(PRAYER_TIMING_KEY[h.id])}; } });
+    if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:'ontime'}; } });
     setTimeout(renderHomeNow,250); return; }
   if(a.k==='ai'){ openAiChat(null,{dump:true}); return; }
   if(a.k==='missed'){ const m=document.getElementById('homeMissed'); if(m) m.scrollIntoView({behavior:'smooth',block:'center'}); return; }
@@ -5434,12 +5453,6 @@ async function fetchPrayerTimes(dateObj){
 }
 function ptToDate(hm,base){ const [h,m]=String(hm||'').split(':').map(Number); if(isNaN(h)) return null; const d=new Date(base||new Date()); d.setHours(h,m,0,0); return d; }
 function fmtHM(hm){ return hm?formatTime12h(hm):'—'; }
-function prayerStatusNow(timingName){
-  const tm=window._todayPT; if(!tm) return 'ontime';
-  const end=ptToDate(tm[PRAYER_WINDOW_END[timingName]]); if(!end) return 'ontime';
-  if(timingName==='Isha' && end.getHours()<6) end.setDate(end.getDate()+1); // midnight after isha
-  return new Date()<=end?'ontime':'late';
-}
 async function decoratePrayerTimes(){
   if(!prayerHabitIds().length) return;
   const tm=await fetchPrayerTimes(new Date()); window._todayPT=tm;
@@ -5482,6 +5495,9 @@ async function checkQadaForYesterday(){
   let doc={}; try{ const v=await storageGet(yesterdayTrackKey()); doc=v?JSON.parse(v):{}; }catch(e){ return; }
   const missed=pids.filter(id=>!(doc.habits&&doc.habits[id]));
   if(missed.length){ P.qada=P.qada||{}; missed.forEach(id=>P.qada[id]=(P.qada[id]||0)+1);
+    // remembered per day, so ticking it later in the catch-up takes it back off
+    P._qadaAuto=P._qadaAuto||{}; P._qadaAuto[yesterdayTrackKey()]=Object.fromEntries(missed.map(id=>[id,1]));
+    const ks=Object.keys(P._qadaAuto); if(ks.length>14) ks.slice(0,ks.length-14).forEach(k=>delete P._qadaAuto[k]);
     showToast(LANG==='ar'?`🕋 انضافت ${missed.length} لقائمة القضاء`:`🕋 ${missed.length} added to your qada list`); }
   await storageSet('profile',JSON.stringify(P));
 }
@@ -13713,6 +13729,11 @@ function renderHabits(){
     list.innerHTML=`<div class="dash-empty">${LANG==='ar'?'ضيف عادة تبي تتابعها':'Add a habit to start tracking it'}</div>`;
     return;
   }
+  const ob=document.getElementById('habitsOrderBtn');
+  if(ob){ ob.classList.toggle('hidden',habitBlocks().length<2&&!_habitOrderMode); ob.textContent=_habitOrderMode?(LANG==='ar'?'✓ تم':'✓ Done'):(LANG==='ar'?'↕️ ترتيب':'↕️ Order');
+    ob.onclick=()=>{ _habitOrderMode=!_habitOrderMode; renderHabits(); }; }
+  const card=document.getElementById('habitsCard'); if(card) card.classList.toggle('ordering',_habitOrderMode);
+  if(_habitOrderMode){ renderHabitOrder(list); return; }
   list.innerHTML='';
   const seenGroups=new Set();
   habits.forEach(h=>{
@@ -13724,15 +13745,23 @@ function renderHabits(){
       box.innerHTML=`<div class="habit-group-head"><span class="habit-group-name">${gname.icon} ${ar?gname.ar:gname.en}</span><span class="habit-streak" id="habitGroupStreak_${h.group}"></span><button type="button" class="habit-remove">✕</button></div>
         ${isPr?`<div class="prayer-meta"><span class="pt-next" id="prayerNext">…</span><button type="button" id="qadaBtn">🕋 ${ar?'القضاء':'Qada'} <span class="num">${qt}</span></button><button type="button" id="ptBtn" aria-label="prayer times settings">⚙️ ${escapeHtml(prayerCfg().city)}</button></div>`:''}
         <div class="habit-pills">${members.map(m=>{ const d=!!(dailyTrack.habits&&dailyTrack.habits[m.id]); const late=d&&((dailyTrack.prayerStatus||{})[m.id]==='late'); return `<button type="button" class="habit-pill${d?' done':''}${late?' late':''}" data-hid="${m.id}"><span class="ck">${d?(late?'⏱':'✓'):''}</span>${escapeHtml(habitLabelText(m))}${isPr?'<small class="pill-time"></small>':''}</button>`; }).join('')}</div>`;
-      if(isPr){ setTimeout(decoratePrayerTimes,0); }
+      if(isPr){ box.insertAdjacentHTML('beforeend',`<div class="prayer-tip">${ar?'ضغطة = صليت ✓ · ضغطة ثانية = متأخرة ⏱ · الثالثة تلغي':'Tap = prayed ✓ · tap again = late ⏱ · third tap clears'}</div>`); setTimeout(decoratePrayerTimes,0); }
       box.querySelectorAll('.habit-pill').forEach(btn=>btn.addEventListener('click',()=>{
         const m=members.find(x=>x.id===btn.dataset.hid);
-        toggleHabitToday(m,done=>{
-          let late=false;
-          if(m.group==='prayers'){ dailyTrack.prayerStatus=dailyTrack.prayerStatus||{};
-            if(done){ dailyTrack.prayerStatus[m.id]=prayerStatusNow(PRAYER_TIMING_KEY[m.id]); late=dailyTrack.prayerStatus[m.id]==='late'; } else delete dailyTrack.prayerStatus[m.id]; }
-          btn.classList.toggle('done',done); btn.classList.toggle('late',late); btn.querySelector('.ck').textContent=done?(late?'⏱':'✓'):'';
-        });
+        const paintPill=(done,late)=>{ btn.classList.toggle('done',done); btn.classList.toggle('late',late); btn.querySelector('.ck').textContent=done?(late?'⏱':'✓'):''; };
+        if(m.group==='prayers'){
+          // late is never guessed from the clock (a forgotten tap isn't a late
+          // prayer): tap 1 = prayed ✓, tap 2 = prayed late ⏱, tap 3 = clear
+          dailyTrack.prayerStatus=dailyTrack.prayerStatus||{};
+          if(dailyTrack.habits&&dailyTrack.habits[m.id]&&dailyTrack.prayerStatus[m.id]!=='late'){
+            dailyTrack.prayerStatus[m.id]='late'; paintPill(true,true); playSfx&&playSfx('tap');
+            showToast(LANG==='ar'?`⏱ ${habitLabelText(m)} — متأخرة`:`⏱ ${habitLabelText(m)} — late`);
+            saveDailyTrack(); return;
+          }
+          toggleHabitToday(m,done=>{ if(done) dailyTrack.prayerStatus[m.id]='ontime'; else delete dailyTrack.prayerStatus[m.id]; paintPill(done,false); });
+          return;
+        }
+        toggleHabitToday(m,done=>paintPill(done,false));
       }));
       const qb=box.querySelector('#qadaBtn'); if(qb) qb.onclick=e=>{ e.stopPropagation(); openQada(); };
       const pb=box.querySelector('#ptBtn'); if(pb) pb.onclick=e=>{ e.stopPropagation(); openPrayerSettings(); };
@@ -13785,6 +13814,35 @@ function renderHabits(){
     if(changed){ await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); }
   });
   renderHabitsYesterdayToggle();
+}
+/* ---- habit order: P.habits order is the order on screen, so moving a
+   habit just reorders that array. A group (the prayers) moves as one block. */
+let _habitOrderMode=false;
+function habitBlocks(){
+  const hs=P.habits||[], seen=new Set(), out=[];
+  hs.forEach(h=>{ if(h.group){ if(seen.has(h.group)) return; seen.add(h.group); out.push(hs.filter(x=>x.group===h.group)); } else out.push([h]); });
+  return out;
+}
+async function moveHabitBlock(i,to){
+  const b=habitBlocks(); if(i<0||i>=b.length) return;
+  to=Math.max(0,Math.min(b.length-1,to)); if(to===i) return;
+  const [blk]=b.splice(i,1); b.splice(to,0,blk);
+  P.habits=b.flat(); playSfx&&playSfx('pop');
+  await storageSet('profile',JSON.stringify(P));
+  renderHabits();
+}
+function renderHabitOrder(list){
+  const blocks=habitBlocks(), ar=LANG==='ar', last=blocks.length-1;
+  list.innerHTML=`<div class="habit-order-tip">${ar?'الأهم فوق، واللي تسويها آخر اليوم نزّلها تحت':'Most important on top, end-of-day ones at the bottom'}</div>`+blocks.map((b,i)=>{
+    const g=b[0].group, gn=g&&(HABIT_GROUP_NAMES[g]||{icon:'✅',ar:g,en:g});
+    const name=g?`${gn.icon} ${escapeHtml(ar?gn.ar:gn.en)}`:escapeHtml(habitLabelText(b[0]));
+    return `<div class="habit-order-row"><span class="ho-num num">${i+1}</span><span class="ho-name">${name}</span>`+
+      `<button type="button" class="ho-btn" data-mv="${i}" data-to="0" ${i===0?'disabled':''} aria-label="${ar?'لأول القائمة':'to top'}">⤒</button>`+
+      `<button type="button" class="ho-btn" data-mv="${i}" data-to="${i-1}" ${i===0?'disabled':''} aria-label="${ar?'فوق':'up'}">▲</button>`+
+      `<button type="button" class="ho-btn" data-mv="${i}" data-to="${i+1}" ${i===last?'disabled':''} aria-label="${ar?'تحت':'down'}">▼</button>`+
+      `<button type="button" class="ho-btn" data-mv="${i}" data-to="${last}" ${i===last?'disabled':''} aria-label="${ar?'لآخر القائمة':'to bottom'}">⤓</button></div>`;
+  }).join('');
+  list.querySelectorAll('[data-mv]').forEach(btn=>btn.onclick=()=>moveHabitBlock(+btn.dataset.mv,+btn.dataset.to));
 }
 /* ---- yesterday catch-up: lets a person who forgot to open the app mark a
    habit done for YESTERDAY only (not any earlier day), so a real completion
@@ -14042,38 +14100,117 @@ async function saveWeightForYesterday(val){
   dailyTrack.yesterdayWeightLogged=true;
   await saveDailyTrack();
 }
+/* catch-up reaches back CATCHUP_DAYS days (never before the account
+   existed). Yesterday goes through the shared doc the other catch-up sections
+   use; older days are kept in pastDayDocCache, so the streak walk sees an
+   edit straight away. A day is "missed" when none of the habits is ticked —
+   the forgot-to-open-the-app day, not a day with one habit skipped. */
+const CATCHUP_DAYS=7;
+let _cuBack=1, _cuMemo=null;
+function pastDayDate(back){ const d=new Date(); d.setDate(d.getDate()-back); return d; }
+function pastDayKey(back){ const d=pastDayDate(back); return `daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function catchUpBackLimit(){
+  try{
+    const c=currentUser&&currentUser.metadata&&currentUser.metadata.creationTime; if(!c) return CATCHUP_DAYS;
+    const a=new Date(c); a.setHours(0,0,0,0); const n=new Date(); n.setHours(0,0,0,0);
+    return Math.max(0,Math.min(CATCHUP_DAYS,Math.round((n-a)/864e5)));
+  }catch(e){ return CATCHUP_DAYS; }
+}
+async function loadPastDay(back,fresh){
+  if(back===1) return await loadYesterdayTrack();
+  const key=pastDayKey(back);
+  if(!fresh&&pastDayDocCache[key]) return pastDayDocCache[key];
+  let doc=null; try{ const v=await storageGet(key); if(v) doc=JSON.parse(v); }catch(e){}
+  if(!doc){
+    if(navigator.onLine===false||Date.now()<_netSlowUntil) return null; // unsure — don't write a blank copy over it
+    doc={habits:{},xpAwarded:{habits:{}}};
+  }
+  pastDayDocCache[key]=doc;
+  return doc;
+}
+function catchUpDayState(doc){
+  const hs=P.habits||[]; if(!doc||!hs.length) return '';
+  const n=hs.filter(h=>doc.habits&&doc.habits[h.id]).length;
+  return n===0?'miss':n<hs.length?'part':'full';
+}
+async function catchUpMissedDays(){
+  const today=dateKeyOf(new Date()), lim=catchUpBackLimit(), sig=(P.habits||[]).map(h=>h.id).join(',');
+  if(_cuMemo&&_cuMemo.today===today&&_cuMemo.sig===sig) return _cuMemo.p;
+  // only days newer than one that was logged count, so someone who just
+  // started tracking habits isn't told they "missed" the week before
+  const p=(async()=>{ const st=[]; let oldest=0; for(let b=1;b<=lim;b++){ st[b]=catchUpDayState(await loadPastDay(b)); if(st[b]==='part'||st[b]==='full') oldest=b; }
+    const out=[]; for(let b=1;b<oldest;b++) if(st[b]==='miss') out.push(b); return out; })();
+  _cuMemo={today,sig,p};
+  return p;
+}
 function renderHabitsYesterdayToggle(){
-  if(!yesterdayCatchUpAllowed()){ const _el=document.getElementById('habitYesterdayToggle'); if(_el) _el.classList.add('hidden'); return; }
   const toggle=document.getElementById('habitYesterdayToggle');
   if(!toggle) return;
-  const habits=P.habits||[];
-  if(!habits.length){ toggle.classList.add('hidden'); return; }
+  if(catchUpBackLimit()<1||!(P.habits||[]).length){ toggle.classList.add('hidden'); return; }
   toggle.classList.remove('hidden');
-  toggle.textContent = t('habit_yesterday_toggle').replace('{date}', yesterdayDateLabel());
+  const ar=LANG==='ar';
+  const paint=missed=>{
+    const n=missed.length;
+    toggle.classList.toggle('warn',n>0);
+    toggle.textContent=!n?(ar?'📅 نسيت تسجّل يوم قبل؟ عوّضه':'📅 Forgot to log an earlier day? Catch up')
+      :ar?(n===1?'📅 فيه يوم ما سجّلت فيه شي — عوّضه':n===2?'📅 يومين ما سجّلت فيهم شي — عوّضهم':`📅 ${n} أيام ما سجّلت فيها شي — عوّضها`)
+      :`📅 ${n} day${n>1?'s':''} with nothing logged — catch up`;
+  };
+  if(!toggle.textContent) paint([]);
+  catchUpMissedDays().then(paint).catch(()=>{});
   toggle.onclick = async ()=>{
     const box=document.getElementById('dashHabitsYesterdayList');
     const willShow = box.classList.contains('hidden');
     box.classList.toggle('hidden');
-    if(willShow) await renderHabitsYesterdayList();
+    if(willShow){
+      // open on the most recent forgotten day, re-read from the server
+      const missed=await catchUpMissedDays().catch(()=>[]);
+      _cuBack=missed.length?missed[0]:1;
+      for(let b=2;b<=catchUpBackLimit();b++) delete pastDayDocCache[pastDayKey(b)];
+      _cuMemo=null;
+      await renderHabitsYesterdayList();
+    }
   };
 }
 async function renderHabitsYesterdayList(){
   const box=document.getElementById('dashHabitsYesterdayList'); if(!box) return;
-  const habits=P.habits||[];
-  const yKey=yesterdayTrackKey();
-  const yDoc=await loadYesterdayTrack();
-  box.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>`;
+  const habits=P.habits||[], ar=LANG==='ar', lim=catchUpBackLimit();
+  if(_cuBack<1||_cuBack>lim) _cuBack=1;
+  const docs=[]; for(let b=1;b<=lim;b++) docs[b]=await loadPastDay(b);
+  const back=_cuBack, yKey=pastDayKey(back), yDoc=docs[back];
+  const loc=ar?'ar-EG':'en-US';
+  const dayLabel=b=>b===1?(ar?'أمس':'Yest.'):pastDayDate(b).toLocaleDateString(loc,{weekday:'short'});
+  const dateLabel=pastDayDate(back).toLocaleDateString(loc,{weekday:'long',month:'short',day:'numeric'});
+  let chips='';
+  for(let b=1;b<=lim;b++) chips+=`<button type="button" class="cu-day ${catchUpDayState(docs[b])}${b===back?' on':''}" data-b="${b}"><span>${dayLabel(b)}</span><span class="num">${pastDayDate(b).getDate()}</span><i></i></button>`;
+  box.innerHTML=`<div class="cu-days">${chips}</div><div class="cu-legend">${ar?'🔴 ما سجّلت شي · 🟠 ناقص · 🟢 كامل':'🔴 nothing logged · 🟠 partly · 🟢 all done'}</div>
+    <div class="habit-yesterday-label">${ar?'تعويض':'Catching up'} — ${escapeHtml(dateLabel)}</div>`;
+  box.querySelectorAll('.cu-day').forEach(c=>c.onclick=()=>{ _cuBack=+c.dataset.b; renderHabitsYesterdayList(); });
+  if(!yDoc){ box.insertAdjacentHTML('beforeend',`<div class="dash-empty">${ar?'ما قدرنا نحمّل هاليوم — جرّب لما يرجع النت':'Couldn’t load this day — try again when you’re online'}</div>`); return; }
   habits.forEach(h=>{
-    const done=!!(yDoc.habits&&yDoc.habits[h.id]);
+    const isPr=h.group==='prayers';
     const row=document.createElement('div');
-    row.className='habit-row'+(done?' done':'');
-    row.innerHTML=`<div class="habit-box">${done?'✓':''}</div><div class="habit-label">${escapeHtml(habitLabelText(h))}</div>`;
+    const paint=()=>{ const done=!!(yDoc.habits&&yDoc.habits[h.id]), late=done&&isPr&&(yDoc.prayerStatus||{})[h.id]==='late';
+      row.className='habit-row'+(done?' done':'')+(late?' late':''); row.querySelector('.habit-box').textContent=done?(late?'⏱':'✓'):''; };
+    row.innerHTML=`<div class="habit-box"></div><div class="habit-label">${escapeHtml(habitLabelText(h))}</div>`;
+    paint();
     row.addEventListener('click', async ()=>{
       yDoc.habits=yDoc.habits||{};
-      const nowDone=!yDoc.habits[h.id];
+      const was=!!yDoc.habits[h.id];
+      if(isPr&&was&&(yDoc.prayerStatus||{})[h.id]!=='late'){ // same tap cycle as today: ✓ → ⏱ → clear
+        yDoc.prayerStatus={...(yDoc.prayerStatus||{}),[h.id]:'late'}; paint();
+        await storageSet(yKey, JSON.stringify(yDoc)); return;
+      }
+      const nowDone=!was;
       yDoc.habits[h.id]=nowDone;
-      row.classList.toggle('done',nowDone);
-      row.querySelector('.habit-box').textContent=nowDone?'✓':'';
+      if(isPr){ yDoc.prayerStatus=yDoc.prayerStatus||{}; if(nowDone) yDoc.prayerStatus[h.id]='ontime'; else delete yDoc.prayerStatus[h.id]; }
+      paint(); playSfx&&playSfx(nowDone?'check':'uncheck');
+      const qa=isPr&&(P._qadaAuto||{})[yKey];
+      if(qa&&(qa[h.id]===1&&nowDone||qa[h.id]===0&&!nowDone)){
+        P.qada=P.qada||{}; qa[h.id]=nowDone?0:1; P.qada[h.id]=Math.max(0,(P.qada[h.id]||0)+(nowDone?-1:1));
+        await storageSet('profile',JSON.stringify(P));
+        if(nowDone) showToast(LANG==='ar'?`🕋 ${habitLabelText(h)} انشالت من القضاء`:`🕋 ${habitLabelText(h)} taken off your qada`);
+      }
       yDoc.xpAwarded=yDoc.xpAwarded||{}; yDoc.xpAwarded.habits=yDoc.xpAwarded.habits||{};
       let justEarnedXp = nowDone && !yDoc.xpAwarded.habits[h.id];
       if(justEarnedXp) yDoc.xpAwarded.habits[h.id]=true;
@@ -14084,6 +14221,8 @@ async function renderHabitsYesterdayList(){
         await awardXP(XP_CONFIG.habit_complete);
         await notifyNewUnlocks();
       }
+      _cuMemo=null;
+      const chip=box.querySelector(`.cu-day[data-b="${back}"]`); if(chip) chip.className=`cu-day ${catchUpDayState(yDoc)} on`;
       renderHabits();
     });
     box.appendChild(row);
