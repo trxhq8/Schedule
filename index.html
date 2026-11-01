@@ -1142,6 +1142,25 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .cm-tag.bad{ background:rgba(229,72,77,.12); color:#d13b40; }
   .cm-tag.up{ background:rgba(255,183,3,.15); color:#9a6a00; }
   .cm-act{ display:flex; flex-direction:column; justify-content:center; gap:4px; }
+  .cmj-row{ display:flex; gap:8px; margin-top:8px; }
+  .cmj-row .setup-btn{ flex:1; margin:0; background:var(--card); color:var(--heading); border:1px solid var(--line); font-size:.82rem; padding:10px 6px; }
+  .cmj-gap{ font-size:.8rem; color:var(--ink); display:flex; align-items:center; gap:8px; margin-top:10px; }
+  .cmj-gap input{ width:18px; height:18px; flex-shrink:0; }
+  .cmj-card textarea{ width:100%; min-height:150px; font-family:ui-monospace,Consolas,monospace; font-size:.74rem; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); box-sizing:border-box; direction:ltr; text-align:left; }
+  .cmj-btns{ display:flex; gap:8px; margin-top:8px; }
+  .cmj-btns .setup-btn{ flex:1; margin:0; }
+  .cmj-fatal{ color:var(--err); font-size:.82rem; margin-top:8px; }
+  .cmj-sum{ font-size:.84rem; font-weight:700; margin:10px 0 6px; }
+  .cmj-sum.bad{ color:var(--err); }
+  .cmj-conf{ font-size:.76rem; background:color-mix(in srgb,#f59e0b 12%,var(--card)); border:1px solid color-mix(in srgb,#f59e0b 45%,transparent); border-radius:10px; padding:8px 10px; margin-bottom:8px; }
+  .cmj-conf div{ margin-top:3px; }
+  .cmj-table{ width:100%; border-collapse:collapse; font-size:.78rem; }
+  .cmj-table td{ border-top:1px solid var(--line); padding:7px 4px; vertical-align:top; }
+  .cmj-table td.n{ color:var(--ink-soft); width:22px; } .cmj-table td.k{ width:22px; }
+  .cmj-table small{ display:block; color:var(--ink-soft); margin-top:2px; }
+  .cmj-table tr.err td{ background:color-mix(in srgb,var(--err) 9%,transparent); }
+  .cmj-table .e{ color:var(--err); font-weight:700; }
+  .cmj-table .chg{ direction:ltr; unicode-bidi:plaintext; }
   .cm-act button{ width:30px; height:30px; border-radius:50%; border:none; background:rgba(127,127,127,.1); color:var(--heading); cursor:pointer; font-size:.8rem; }
   .cm-sep{ display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:.78rem; font-weight:700; color:var(--ink-soft); }
   .cm-sep button{ border:none; background:none; color:#d13b40; font:inherit; font-size:.74rem; cursor:pointer; text-decoration:underline; }
@@ -2125,6 +2144,23 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
           <div class="val-msg" id="bulkImportError" style="color:var(--err);margin-top:6px;"></div>
           <button class="setup-btn" id="bulkImportBtn" type="button" data-i18n="bulk_import_btn" style="margin-top:8px;"></button>
         </div>
+        <div class="cmj-row">
+          <button class="setup-btn" id="cmJsonImportToggle" type="button" data-testid="cm-import-json" aria-label="Import JSON">📥 Import JSON</button>
+          <button class="setup-btn" id="cmJsonExportBtn" type="button" data-testid="cm-export-json" aria-label="Export JSON">📤 Export JSON</button>
+        </div>
+        <div class="hidden cmj-card" id="cmJsonCard" style="margin-top:10px;">
+          <p class="sub" id="cmJsonHint" style="margin-bottom:6px;"></p>
+          <textarea id="cmJsonText" data-testid="cm-json-input" aria-label="Commitments JSON" spellcheck="false" placeholder='[{"name":"…","fixed":true,"from":"07:30","to":"08:00","days":["Sun","Mon"],"fromDate":null,"toDate":null}]'></textarea>
+          <div class="cmj-btns">
+            <button class="setup-btn" id="cmJsonPreviewBtn" type="button" data-testid="cm-json-preview" aria-label="Preview">👀 Preview</button>
+          </div>
+          <div id="cmJsonPreview" data-testid="cm-json-preview-result"></div>
+        </div>
+        <div class="hidden cmj-card" id="cmJsonOutCard" style="margin-top:10px;">
+          <p class="sub" id="cmJsonOutHint" style="margin-bottom:6px;"></p>
+          <textarea id="cmJsonOut" data-testid="cm-export-output" aria-label="Exported commitments JSON" readonly spellcheck="false"></textarea>
+        </div>
+        <label class="cmj-gap"><input type="checkbox" id="cmGapWarnOff" data-testid="cm-gap-setting" aria-label="Don't warn about gaps under 10 minutes"> <span id="cmGapWarnLabel"></span></label>
 
         <button class="setup-btn" id="todoSetupSave" data-i18n="save" style="margin-top:14px;"></button>
       </div>
@@ -3113,7 +3149,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.64.0';
+const APP_VERSION='v1.65.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8054,7 +8090,7 @@ function renderCommitList(){
   outer.querySelector('.cm-head').onclick=()=>{ _cmOpen=!_cmOpen; if(_cmOpen&&!_cmFilter) _cmFilter='all'; renderCommitList(); };
   outer.querySelectorAll('[data-cmf]').forEach(b=>b.onclick=()=>{ const f=b.dataset.cmf; if(_cmOpen&&_cmFilter===f&&f!=='all'){ _cmFilter='all'; } else { _cmFilter=f; _cmOpen=true; } renderCommitList(); });
   if(!_cmOpen) return;
-  const box=document.getElementById('cmItems');
+  const box=document.getElementById('cmItems'), cmIdOf=cmIds(list);
   const pass=({c,st})=>{ const f=_cmFilter; if(f==='today') return st==='active'&&c.days.includes(wd); if(f==='clash') return withMap.has(c); if(f==='upcoming') return st==='upcoming'; if(f==='ended') return st==='ended'; if(f&&f[0]==='d') return c.days.includes(+f.slice(1)); return true; };
   const shown=sorted.filter(pass);
   if(!shown.length) box.innerHTML=`<p class="cm-empty">${ar?'ما في شي هني':'Nothing here'}</p>`;
@@ -8068,7 +8104,8 @@ function renderCommitList(){
       <div class="cm-main"><div class="cm-title">${c.pinned?'📌 ':''}${escapeHtml(c.label)}</div>
         <div class="cm-meta">🔁 ${escapeHtml(commitDaysText(c))}${range?` · 📅 ${range}`:''}</div>
         <div class="cm-tags">${others.length?`<span class="cm-tag bad">⚠️ ${ar?'يتعارض مع':'Clashes with'} ${others.map(o=>escapeHtml(o.label)).join(ar?'، ':', ')}</span>`:''}${c.hard===false?`<span class="cm-tag">🔓 ${ar?'مرن':'Flexible'}</span>`:''}${st==='upcoming'?`<span class="cm-tag up">⏳ ${ar?'ما بدأ':'Not started'}</span>`:''}</div></div>
-      <div class="cm-act"><button type="button" class="cm-edit" aria-label="${ar?'عدّل':'Edit'}">✏️</button><button type="button" class="cm-pin" title="${ar?'ثبّت فوق':'Pin to top'}">${c.pinned?'📌':'📍'}</button><button type="button" class="cm-del" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`;
+      <div class="cm-act"><button type="button" class="cm-edit" data-testid="cm-edit" data-cm-id="${cmIdOf[i]}" aria-label="${ar?'عدّل':'Edit'}">✏️</button><button type="button" class="cm-pin" title="${ar?'ثبّت فوق':'Pin to top'}">${c.pinned?'📌':'📍'}</button><button type="button" class="cm-del" data-testid="cm-delete" data-cm-id="${cmIdOf[i]}" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`;
+    row.dataset.cmId=cmIdOf[i];
     row.querySelector('.cm-pin').onclick=()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); };
     row.querySelector('.cm-edit').onclick=()=>startCommitEdit(i);
     row.querySelector('.cm-del').onclick=()=>{
@@ -8138,7 +8175,7 @@ function attemptAddCommitment(candidate, opts){
   opts=opts||{};
   const conflicts=findConflictsFor(candidate, (P._commitments||[]).filter((c,i)=>i!==_cmEditIdx));
   const overlaps=conflicts.filter(c=>c.kind==='overlap');
-  const bufferIssues=conflicts.filter(c=>c.kind==='buffer');
+  const bufferIssues=cmGapWarnOff()?[]:conflicts.filter(c=>c.kind==='buffer');
   if((overlaps.length||bufferIssues.length) && !opts.forceKeep){
     showConflictModal(candidate, overlaps, bufferIssues, {
       onKeepBoth:()=>finalizeAddCommitment(candidate),
@@ -8210,6 +8247,179 @@ document.getElementById('bulkImportBtn').addEventListener('click',()=>{
   persistCommitments();
   document.getElementById('bulkImportText').value='';
   showToast(t('bulk_import_success').replace('{n}',toAdd.length));
+});
+/* ---- JSON import/export: a whole batch of commitments in one step (made
+   for an assistant filling in the schedule). The saved data format doesn't
+   change: ids aren't stored, they're a hash of each commitment's content, so
+   an id keeps matching as long as that item hasn't changed since the export.
+   If it was edited in between, its id is unknown and nothing is saved. */
+const CM_DAY_KEYS=['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
+const CM_DAY_ALIASES={sat:0,saturday:0,sun:1,sunday:1,mon:2,monday:2,tue:3,tuesday:3,wed:4,wednesday:4,thu:5,thursday:5,fri:6,friday:6};
+const CM_FIELDS=['id','name','fixed','pinned','from','to','allDay','overnight','days','fromDate','toDate','delete'];
+function cmGapWarnOff(){ return P.cmGapWarnOff!==false; } // default ON
+function cmHash(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(36); }
+function cmIds(list){
+  const seen={};
+  return (list||[]).map(c=>{
+    const base='c'+cmHash(JSON.stringify([c.label,c.from||null,c.to||null,[...(c.days||[])].sort((a,b)=>a-b),c.fromDate||null,c.toDate||null,c.hard!==false,!!c.pinned]));
+    seen[base]=(seen[base]||0)+1; return seen[base]>1?base+'-'+seen[base]:base;
+  });
+}
+function cmIsOvernight(c){ return !!(c&&c.from&&c.to&&parseHM(c.to)<parseHM(c.from)); }
+function cmToJson(c,id){
+  const o={id,name:c.label,fixed:c.hard!==false,pinned:!!c.pinned};
+  if(!c.from&&!c.to) o.allDay=true; else { o.from=c.from||null; o.to=c.to||null; if(cmIsOvernight(c)) o.overnight=true; }
+  o.days=[...(c.days||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]);
+  o.fromDate=c.fromDate||null; o.toDate=c.toDate||null;
+  return o;
+}
+function cmExportText(){ const list=P._commitments||[], ids=cmIds(list); return '[\n'+list.map((c,i)=>' '+JSON.stringify(cmToJson(c,ids[i]))).join(',\n')+'\n]'; }
+function cmIsoOk(v){ if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false; const [y,m,d]=v.split('-').map(Number), dt=new Date(y,m-1,d); return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d; }
+function cmIsoWd(v){ const [y,m,d]=v.split('-').map(Number); return (new Date(y,m-1,d).getDay()+1)%7; }
+/* checks every row first and builds the whole new list; nothing is saved here */
+function cmPlanImport(text){
+  const ar=LANG==='ar', list=P._commitments||[], ids=cmIds(list), byId=new Map(ids.map((id,i)=>[id,i]));
+  let rows; try{ rows=JSON.parse(text); }catch(e){ return {fatal:(ar?'الـ JSON فيه خطأ: ':'Invalid JSON: ')+e.message}; }
+  if(!Array.isArray(rows)) return {fatal:ar?'لازم يكون مصفوفة [ … ]':'It must be an array [ … ]'};
+  if(!rows.length) return {fatal:ar?'المصفوفة فاضية':'The array is empty'};
+  const hm=/^([01]\d|2[0-3]):[0-5]\d$/, used=new Set(), items=[];
+  rows.forEach((r,n)=>{
+    const it={n:n+1,errs:[],notes:[]}; items.push(it);
+    const E=m=>it.errs.push(m);
+    if(!r||typeof r!=='object'||Array.isArray(r)){ E(ar?'كل عنصر لازم يكون { }':'Each item must be an object { }'); return; }
+    Object.keys(r).forEach(k=>{ if(!CM_FIELDS.includes(k)) E((ar?'حقل غير معروف: ':'Unknown field: ')+k); });
+    let base=null;
+    if(r.id!==undefined&&r.id!==null){
+      if(typeof r.id!=='string'||!byId.has(r.id)){ E((ar?'ما لقيت هالـ id: ':'No commitment has id ')+JSON.stringify(r.id)+(ar?' — سوّ تصدير جديد':' — export again')); return; }
+      if(used.has(r.id)){ E((ar?'الـ id مكرر: ':'id used twice: ')+r.id); return; }
+      used.add(r.id); it.idx=byId.get(r.id); base=list[it.idx]; it.before=base;
+    }
+    if(r.delete!==undefined&&typeof r.delete!=='boolean') E('"delete" must be true/false');
+    if(r.delete===true){ it.kind='delete'; if(!base) E(ar?'الحذف يحتاج "id"':'"delete" needs an "id"'); return; }
+    it.kind=base?'update':'create';
+    if(r.name!==undefined&&(typeof r.name!=='string'||!r.name.trim())) E(ar?'"name" لازم نص مو فاضي':'"name" must be non-empty text');
+    if(!base&&r.name===undefined) E(ar?'ناقص "name"':'Missing "name"');
+    ['fixed','pinned','allDay','overnight'].forEach(k=>{ if(r[k]!==undefined&&typeof r[k]!=='boolean') E(`"${k}" must be true/false`); });
+    ['from','to'].forEach(k=>{ if(r[k]!==undefined&&r[k]!==null&&!(typeof r[k]==='string'&&hm.test(r[k]))) E(`"${k}" ${ar?'لازم بصيغة HH:MM (24 ساعة)':'must be 24h "HH:MM"'}`); });
+    ['fromDate','toDate'].forEach(k=>{ if(r[k]!==undefined&&r[k]!==null&&!cmIsoOk(r[k])) E(`"${k}" ${ar?'لازم تاريخ حقيقي YYYY-MM-DD':'must be a real date "YYYY-MM-DD"'}`); });
+    let days;
+    if(r.days!==undefined){
+      if(!Array.isArray(r.days)) E('"days" must be an array');
+      else { days=[]; r.days.forEach(d=>{ const i=typeof d==='string'?CM_DAY_ALIASES[d.trim().toLowerCase()]:undefined; if(i===undefined) E((ar?'يوم غير معروف: ':'Unknown day: ')+JSON.stringify(d)); else if(!days.includes(i)) days.push(i); }); days.sort((a,b)=>a-b); }
+    }
+    if(it.errs.length) return;
+    // only the given fields change on an update
+    const c=base?{...base,days:[...(base.days||[])]}:{label:'',from:null,to:null,days:[],fromDate:null,toDate:null,pinned:false,hard:true};
+    if(r.name!==undefined) c.label=r.name.trim();
+    if(r.fixed!==undefined) c.hard=r.fixed;
+    if(r.pinned!==undefined) c.pinned=r.pinned;
+    if(r.fromDate!==undefined) c.fromDate=r.fromDate||null;
+    if(r.toDate!==undefined) c.toDate=r.toDate||null;
+    if(days) c.days=days;
+    if(r.allDay===true){ if(r.from||r.to) E(ar?'allDay ما يكون معه وقت':'allDay can\'t have times'); c.from=null; c.to=null; }
+    else {
+      if(r.from!==undefined) c.from=r.from||null;
+      if(r.to!==undefined) c.to=r.to||null;
+      if(r.allDay===false||!base||c.from||c.to){
+        if(!c.from||!c.to) E(ar?'يحتاج "from" و "to" (أو allDay:true)':'Needs both "from" and "to" (or allDay:true)');
+        else { const a=parseHM(c.from), b=parseHM(c.to), on=r.overnight!==undefined?r.overnight:cmIsOvernight(base);
+          if(a===b) E(ar?'"from" و "to" نفس الوقت':'"from" and "to" are the same');
+          else if(b<a&&!on) E(ar?'"from" لازم قبل "to" (أو overnight:true لو يعدّي نص الليل)':'"from" must be before "to" (or overnight:true if it runs past midnight)');
+          else if(b>a&&r.overnight===true) E(ar?'overnight:true بس لما "to" بعد نص الليل':'overnight:true is only for a "to" after midnight'); }
+      }
+    }
+    if(c.fromDate&&c.toDate&&c.toDate<c.fromDate) E(ar?'"toDate" قبل "fromDate"':'"toDate" is before "fromDate"');
+    else if(c.fromDate&&c.fromDate===c.toDate){ // one date: its own weekday, same as the form
+      const wd=cmIsoWd(c.fromDate);
+      if(c.days.join()!==String(wd)){ if(days&&days.length) it.notes.push((ar?'الأيام صارت ':'days set to ')+CM_DAY_KEYS[wd]+(ar?' (يوم التاريخ)':' (the date\'s weekday)')); c.days=[wd]; }
+    }
+    else if(!c.days.length&&(c.fromDate||c.toDate)) c.days=[0,1,2,3,4,5,6];
+    if(!it.errs.length){
+      if(!c.days.length) E(ar?'ناقص "days"':'Missing "days"');
+      else if(c.fromDate&&c.toDate){ const [y1,m1,d1]=c.fromDate.split('-').map(Number), [y2,m2,d2]=c.toDate.split('-').map(Number), b2=new Date(y2,m2-1,d2); let hit=false;
+        for(let d=new Date(y1,m1-1,d1); d<=b2&&!hit; d.setDate(d.getDate()+1)) hit=c.days.includes((d.getDay()+1)%7);
+        if(!hit) E(ar?'ولا يوم من "days" يجي بين التاريخين':'None of "days" falls between the two dates'); }
+    }
+    it.after=c;
+    if(base){
+      const show=(k,v)=>k==='days'?[...(v||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]).join(','):v==null?'—':String(v);
+      it.diff=[['label','name'],['from','from'],['to','to'],['days','days'],['fromDate','fromDate'],['toDate','toDate'],['hard','fixed'],['pinned','pinned']]
+        .map(([k,lbl])=>[lbl,show(k,k==='hard'?base.hard!==false:k==='pinned'?!!base.pinned:base[k]),show(k,k==='hard'?c.hard!==false:k==='pinned'?!!c.pinned:c[k])]).filter(x=>x[1]!==x[2]);
+      if(!it.diff.length) it.kind='same';
+    }
+  });
+  if(items.some(it=>it.errs.length)) return {items,ok:false};
+  const upd=new Map(), del=new Set(), touched=new Set();
+  items.forEach(it=>{ if(it.kind==='update'){ upd.set(it.idx,it.after); touched.add(it.after); } else if(it.kind==='delete') del.add(it.idx); });
+  const next=list.map((c,i)=>upd.has(i)?upd.get(i):c).filter((c,i)=>!del.has(i));
+  items.forEach(it=>{ if(it.kind==='create'){ next.push(it.after); touched.add(it.after); } });
+  const conflicts=findAllScheduleConflicts(next.filter(c=>commitStatus(c)!=='ended'))
+    .filter(cf=>(touched.has(cf.a)||touched.has(cf.b))&&(cf.kind==='overlap'||!cmGapWarnOff()));
+  return {items,ok:true,next,conflicts,sig:JSON.stringify(list),changes:items.filter(it=>it.kind!=='same').length};
+}
+let _cmPlan=null;
+function cmRenderPreview(){
+  const box=document.getElementById('cmJsonPreview'), ar=LANG==='ar', plan=_cmPlan; if(!box) return;
+  if(!plan){ box.innerHTML=''; return; }
+  if(plan.fatal){ box.innerHTML=`<div class="cmj-fatal" data-testid="cm-json-error">⚠️ ${escapeHtml(plan.fatal)}</div>`; return; }
+  const cnt=k=>plan.items.filter(it=>it.kind===k).length, bad=plan.items.filter(it=>it.errs.length).length;
+  const icon={create:'➕',update:'✏️',delete:'🗑️',same:'＝'};
+  const desc=c=>`${escapeHtml(formatCommitRange(c))} · ${escapeHtml(commitDaysText(c))}${c.fromDate||c.toDate?` · 📅 ${escapeHtml(c.fromDate||'…')} → ${escapeHtml(c.toDate||'…')}`:''}${c.hard===false?(ar?' · مرن':' · flexible'):''}`;
+  let h=plan.ok
+    ?`<div class="cmj-sum" data-testid="cm-json-summary">➕ ${cnt('create')} ${ar?'جديد':'new'} · ✏️ ${cnt('update')} ${ar?'تعديل':'changed'} · 🗑️ ${cnt('delete')} ${ar?'حذف':'deleted'}${cnt('same')?` · ＝ ${cnt('same')} ${ar?'بدون تغيير':'unchanged'}`:''}</div>`
+    :`<div class="cmj-sum bad" data-testid="cm-json-summary">⚠️ ${bad} ${ar?'سطر فيه خطأ — ما راح ينحفظ أي شي لين تصلحها':(bad>1?'rows have':'row has')+' errors — nothing will be saved until they\'re fixed'}</div>`;
+  if(plan.ok&&plan.conflicts.length){
+    h+=`<div class="cmj-conf" data-testid="cm-json-conflicts"><b>⚠️ ${ar?'تعارضات':'Conflicts'} (${plan.conflicts.length})</b>${plan.conflicts.map(cf=>`<div>🕐 ${escapeHtml(cf.a.label)} (${escapeHtml(formatCommitRange(cf.a))}) ↔ ${escapeHtml(cf.b.label)} (${escapeHtml(formatCommitRange(cf.b))}) · ${escapeHtml(cf.sharedDays.map(d=>DAY_NAMES[LANG][d]).join(ar?'، ':', '))}${cf.kind==='buffer'?` · ${cf.gap} ${ar?'د بس بينهم':'min gap'}`:''}</div>`).join('')}</div>`;
+  }
+  h+=`<table class="cmj-table" data-testid="cm-json-table">`+plan.items.map(it=>{
+    const c=it.after||it.before;
+    let body=c?`<b>${escapeHtml(c.label)}</b><small>${desc(c)}</small>`:'';
+    if(it.kind==='update'&&it.diff) body+=it.diff.map(([k,a,b])=>`<small class="chg">${escapeHtml(k)}: ${escapeHtml(a)} → ${escapeHtml(b)}</small>`).join('');
+    body+=it.notes.map(x=>`<small>ℹ️ ${escapeHtml(x)}</small>`).join('')+it.errs.map(x=>`<small class="e">⚠️ ${escapeHtml(x)}</small>`).join('');
+    return `<tr class="${it.errs.length?'err':it.kind}" data-row="${it.n}"><td class="n num">${it.n}</td><td class="k">${it.errs.length?'⚠️':icon[it.kind]||''}</td><td>${body}</td></tr>`;
+  }).join('')+`</table>`;
+  if(plan.ok) h+=plan.changes?`<div class="cmj-btns"><button class="setup-btn" id="cmJsonApplyBtn" type="button" data-testid="cm-json-apply" aria-label="Apply all">✅ ${ar?`طبّق الكل (${plan.changes})`:`Apply all (${plan.changes})`}</button></div>`
+    :`<div class="cmj-sum">${ar?'ما في شي يتغيّر':'Nothing to change'}</div>`;
+  box.innerHTML=h;
+  const ab=document.getElementById('cmJsonApplyBtn'); if(ab) ab.onclick=cmApplyPlan;
+}
+async function cmApplyPlan(){
+  const plan=_cmPlan, ar=LANG==='ar'; if(!plan||!plan.ok) return;
+  if(JSON.stringify(P._commitments||[])!==plan.sig){ showToast(ar?'القائمة تغيّرت — اضغط Preview مرة ثانية':'The list changed — press Preview again','error'); return; }
+  const prev=P._commitments||[];
+  P._commitments=plan.next; _cmPlan=null;
+  if(_cmEditIdx!=null) resetCommitForm();
+  // the whole list lives in the one profile doc, so this is a single atomic write
+  await persistCommitments(); renderCommitList();
+  document.getElementById('cmJsonText').value=''; cmRenderPreview();
+  showUndo((ar?'✅ انحفظت التغييرات: ':'✅ Saved changes: ')+plan.changes,()=>{ P._commitments=prev; renderCommitList(); persistCommitments(); });
+}
+function cmJsonInit(){
+  const ar=LANG==='ar';
+  document.getElementById('cmJsonHint').textContent=ar
+    ?'مصفوفة JSON: بدون id = إضافة · مع id = تعديل الحقول اللي تكتبها بس · "delete":true = حذف. الوقت 24 ساعة HH:MM، و allDay:true بدون وقت. الأيام: Sat Sun Mon Tue Wed Thu Fri. "fixed" = ثابت (مو مرن).'
+    :'A JSON array: no id = add · with id = update only the fields given · "delete":true = remove. Times are 24h "HH:MM"; allDay:true has no times. Days: Sat Sun Mon Tue Wed Thu Fri. "fixed" = can\'t be moved.';
+  document.getElementById('cmJsonOutHint').textContent=ar?'📋 انتسخ — كل التزام مع الـ id حقه:':'📋 Copied — every commitment with its id:';
+  document.getElementById('cmGapWarnLabel').textContent=ar?'لا تنبّهني على فراغ أقل من 10 دقايق (التعارض الحقيقي ينبّه دايماً)':'Don\'t warn about gaps under 10 minutes (real overlaps still warn)';
+  document.getElementById('cmGapWarnOff').checked=cmGapWarnOff();
+}
+document.getElementById('cmJsonImportToggle').addEventListener('click',()=>{
+  cmJsonInit(); document.getElementById('cmJsonCard').classList.toggle('hidden');
+});
+document.getElementById('cmJsonPreviewBtn').addEventListener('click',()=>{
+  _cmPlan=cmPlanImport(document.getElementById('cmJsonText').value); cmRenderPreview();
+});
+document.getElementById('cmJsonText').addEventListener('input',()=>{ if(_cmPlan){ _cmPlan=null; cmRenderPreview(); } }); // a stale preview can't be applied
+document.getElementById('cmJsonExportBtn').addEventListener('click',()=>{
+  cmJsonInit();
+  const txt=cmExportText(), out=document.getElementById('cmJsonOut'), ar=LANG==='ar';
+  out.value=txt; document.getElementById('cmJsonOutCard').classList.remove('hidden');
+  const hint=document.getElementById('cmJsonOutHint');
+  try{ navigator.clipboard.writeText(txt).then(()=>showToast(ar?'📋 انتسخ':'📋 Copied'),()=>{ hint.textContent=ar?'انسخه من هني 👇':'Copy it from here 👇'; out.select(); }); }
+  catch(e){ hint.textContent=ar?'انسخه من هني 👇':'Copy it from here 👇'; out.select(); }
+});
+document.getElementById('cmGapWarnOff').addEventListener('change',async e=>{
+  P.cmGapWarnOff=e.target.checked; await storageSet('profile',JSON.stringify(P));
 });
 /* reused for every conflict prompt in the app (new commitment vs existing,
    and the retroactive "⚠️ Conflict" badge in renderCommitList) — shows every
@@ -8290,7 +8500,7 @@ function prefillTodoSetup(){
   // treating them as movable-by-default would risk auto-suggesting a move
   // for something the user actually meant as fixed.
   P._commitments=(s.commitments||[]).map(c=>({hard:true,...c,days:[...c.days]}));
-  P._commitDays=[]; _cmEditIdx=null; setCommitEditBar(null);
+  P._commitDays=[]; _cmEditIdx=null; setCommitEditBar(null); cmJsonInit();
   document.getElementById('commitLabel').value='';
   document.getElementById('commitAllDayToggle').checked=false;
   document.getElementById('commitHardToggle').checked=true;
