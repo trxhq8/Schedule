@@ -1778,6 +1778,32 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .wrap-btn{ border:none; background:#fff; color:#2a1550; font-weight:800; border-radius:999px; padding:10px 18px; min-height:44px; cursor:pointer; font-family:var(--font-head); }
   .wrap-btn.ghost{ background:rgba(255,255,255,.18); color:#fff; }
   @media (prefers-reduced-motion:reduce){ .wrap-ic,.wrap-num,.wrap-big,.wrap-lbl,.wrap-sub,.hn-ic{ animation:none; } }
+  /* collapsible sections */
+  .cc-head{ cursor:pointer; -webkit-user-select:none; user-select:none; display:flex; align-items:center; gap:6px; }
+  .cc-head .cc-sum{ margin-inline-end:auto; font-family:var(--font-body); font-size:.72rem; font-weight:700; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; unicode-bidi:plaintext; }
+  .cc-head .cc-sum:empty{ width:0; }
+  .cc-arrow{ display:inline-block; flex-shrink:0; font-size:.85rem; color:var(--ink-soft); transition:transform .2s; padding:0 2px; }
+  .cc-head[aria-expanded="false"] > .cc-arrow{ transform:rotate(-90deg); }
+  html[dir="rtl"] .cc-head[aria-expanded="false"] > .cc-arrow{ transform:rotate(90deg); }
+  #panel-home .cc-hide:not(.cta-btn), #panel-food .cc-hide:not(.cta-btn){ display:none!important; } /* a "set it up" button stays, folded or not */
+  #panel-home .cc-closed .cc-head, #panel-food .cc-closed .cc-head{ margin-bottom:0!important; }
+  #panel-habits .cc-arrow, #panel-habits .cc-sum{ display:none; } #panel-habits .cc-head{ cursor:default; }
+  [data-cc]{ scroll-margin-top:calc(var(--cc-top,58px) + 56px); }
+  .cc-bar{ position:sticky; top:var(--cc-top,58px); z-index:30; display:flex; gap:6px; overflow-x:auto; padding:8px 2px; margin:0 -2px 8px; background:var(--bg); scrollbar-width:none; }
+  .cc-bar::-webkit-scrollbar{ display:none; }
+  .cc-jump{ flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 11px; font-family:var(--font-body); font-weight:700; font-size:.74rem; cursor:pointer; white-space:nowrap; }
+  .cc-jump:active{ transform:scale(.96); }
+  @keyframes ccFlash{ 0%{ box-shadow:0 0 0 3px var(--accent); } 100%{ box-shadow:0 0 0 0 transparent; } }
+  .cc-flash{ animation:ccFlash 1.2s ease; }
+  /* supplements by name */
+  .supp-ed-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .supp-ed-row .setup-input{ flex:1; margin:0; min-width:0; }
+  .supp-ed-del, .supp-ed-add{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; width:34px; height:34px; flex-shrink:0; cursor:pointer; }
+  /* commitments anchored to a prayer */
+  .cm-pr-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .cm-pr-row label{ display:block; font-size:.75rem; color:var(--ink-soft); }
+  .cm-pr-row .setup-input{ margin:0; width:100%; box-sizing:border-box; }
+  .cm-pr-prev{ grid-column:1/-1; font-size:.78rem; color:var(--ink-soft); }
 </style>
 </head>
 <body>
@@ -1974,6 +2000,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="hijri-line" id="hijriLine"></div>
     </div>
 
+    <nav class="cc-bar hidden" id="ccBar" data-testid="cc-bar" aria-label="Jump to section"></nav>
+
     <!-- Home always shows TODAY. Browsing other dates lives in Schedule —
          a Home date picker changed only the schedule rows while food/water/
          habits/workout stayed on today, which read as "tomorrow's calories".
@@ -2043,7 +2071,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         <div class="yesterday-catchup-block hidden" id="workoutYesterdayToggle"></div>
       </div>
 
-      <div class="dash-card">
+      <div class="dash-card" id="dashWaterCard">
         <div class="dash-card-title dash-title-row"><span id="dashWaterTitle"></span><button type="button" class="dash-link" id="dashWaterLink" data-nav="food"></button></div>
         <div class="dash-water-row">
           <div class="water-count" id="dashWaterCount" style="font-size:1rem;"></div>
@@ -2054,8 +2082,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         </div>
       </div>
 
+      <div class="dash-card hidden" id="dashSuppCard"></div>
       <div class="dash-row-mini">
-        <div class="dash-mini" data-goto="food" id="dashSuppMini" role="button" tabindex="0"></div>
+        <div class="dash-mini hidden" data-goto="food" id="dashSuppMini" role="button" tabindex="0"></div>
         <div class="dash-mini hidden" data-goto="today" id="dashCommitMini"></div>
       </div>
 
@@ -2122,6 +2151,16 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         <label style="font-size:0.85rem;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <input type="checkbox" id="commitAllDayToggle" style="width:18px;height:18px;"> <span data-i18n="all_day_label"></span>
         </label>
+        <label style="font-size:0.85rem;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <input type="checkbox" id="commitPrayerToggle" data-testid="cm-prayer-toggle" style="width:18px;height:18px;"> <span id="commitPrayerToggleLbl"></span>
+        </label>
+        <div class="cm-pr-row hidden" id="commitPrayerRow">
+          <div><label id="cmPrDirLbl" for="commitPrayerDir"></label><select class="setup-input" id="commitPrayerDir" data-testid="cm-prayer-dir"></select></div>
+          <div><label id="cmPrSelLbl" for="commitPrayerSel"></label><select class="setup-input" id="commitPrayerSel" data-testid="cm-prayer-name"></select></div>
+          <div><label id="cmPrOffLbl" for="commitPrayerOff"></label><input type="number" class="setup-input" id="commitPrayerOff" data-testid="cm-prayer-offset" min="0" max="240" step="5" value="5" inputmode="numeric"></div>
+          <div><label id="cmPrDurLbl" for="commitPrayerDur"></label><input type="number" class="setup-input" id="commitPrayerDur" data-testid="cm-prayer-duration" min="5" max="720" step="5" value="60" inputmode="numeric"></div>
+          <div class="cm-pr-prev" id="commitPrayerPreview" data-testid="cm-prayer-preview"></div>
+        </div>
         <div class="setup-row" id="commitTimeRow">
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="from_label"></label><div class="time-picker" id="commitFromPicker"></div></div>
           <div><label style="font-size:0.75rem;color:var(--ink-soft);" data-i18n="to_label"></label><div class="time-picker" id="commitToPicker"></div></div>
@@ -2304,7 +2343,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="supp-row" id="supChipsRow"></div>
       <div class="habit-yesterday-toggle hidden" id="suppYesterdayToggle"></div>
       <div class="habit-yesterday-list hidden" id="suppYesterdayList"></div>
-      <div class="water-card">
+      <div class="water-card" id="foodWaterCard">
         <h3 id="waterTitle"></h3>
         <div class="water-cups" id="waterCups"></div>
         <div class="water-controls">
@@ -2314,7 +2353,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         </div>
         <div class="yesterday-catchup-block hidden" id="waterYesterdayRow"></div>
       </div>
-      <div class="log-card">
+      <div class="log-card" id="foodWeightCard">
         <h3 data-i18n="weight_log_title"></h3>
         <button type="button" class="setup-btn" id="weightChartBox" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">📈 <span data-i18n="chart_btn"></span></button>
         <div class="log-form">
@@ -3149,7 +3188,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.65.0';
+const APP_VERSION='v1.66.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5213,7 +5252,7 @@ async function hnDo(a){
     if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:'ontime'}; } });
     setTimeout(renderHomeNow,250); return; }
   if(a.k==='ai'){ openAiChat(null,{dump:true}); return; }
-  if(a.k==='missed'){ const m=document.getElementById('homeMissed'); if(m) m.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(a.k==='missed'){ ccJump('missed'); return; }
   if(a.k==='nav') navTo(a.to);
 }
 setInterval(()=>{ try{ if(document.visibilityState==='visible'&&document.getElementById('panel-home').classList.contains('active')) renderHomeNow(); }catch(e){} },60000);
@@ -5235,7 +5274,7 @@ async function computeMissed(){
     cms.forEach(c=>{
       if(dn[commitKey(c)]) return;
       if(c.fromDate&&c.fromDate===c.toDate){ if(i<=3&&!seen[mtKey(iso,c)]) items.push({c,iso,d}); }
-      else if(ticksThatDay) recur.set(c,(recur.get(c)||0)+1);
+      else if(ticksThatDay){ const k=c._src||c; recur.set(k,(recur.get(k)||0)+1); }
     });
   }
   const repeat=[]; recur.forEach((n,c)=>{ if(n>=3&&!seen['r|'+commitKey(c)+'|'+weekKeySat(0)]) repeat.push({c,n}); });
@@ -5247,7 +5286,7 @@ function mtSuggest(c,list){
     const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i);
     const iso=isoDateStr(d.getFullYear(),d.getMonth(),d.getDate());
     if(!sp) return {iso,d,from:'',to:''}; // an all-day task just goes to today
-    const busy=commitmentsForDate(d).filter(o=>o!==c).map(mtSpan).filter(Boolean).concat((list||[]).filter(x=>x.iso===iso).map(x=>x.span));
+    const busy=commitmentsForDate(d).filter(o=>(o._src||o)!==(c._src||c)).map(mtSpan).filter(Boolean).concat((list||[]).filter(x=>x.iso===iso).map(x=>x.span));
     let lo=8*60; if(i===0) lo=Math.max(lo,Math.ceil((hnMinNow()+30)/15)*15);
     const ok=s=>s>=lo&&s+dur<=23*60&&!busy.some(b=>s<b.end+buf&&b.start<s+dur+buf);
     const mk=s=>({iso,d,from:minutesToHM(s),to:c.to?minutesToHM(s+dur):'',span:{start:s,end:s+dur}});
@@ -5258,11 +5297,11 @@ function mtSuggest(c,list){
 }
 function mtWhen(s){ const ar=LANG==='ar'; return aiDateLabel(s.iso)+' · '+(s.from?formatTime12h(s.from):(ar?'طول اليوم':'All day')); }
 function mtApply(c,s){ // in memory; caller persists
-  const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(c); if(i<0) return false;
-  all[i]={...c, fromDate:s.iso, toDate:s.iso, days:[(s.d.getDay()+1)%7], from:s.from, to:s.from?s.to:'', moved:(c.moved||0)+1};
+  const base=c._src||c, all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(base); if(i<0) return false;
+  all[i]={...base, prayerAt:undefined, fromDate:s.iso, toDate:s.iso, days:[(s.d.getDay()+1)%7], from:s.from, to:s.from?s.to:'', moved:(c.moved||0)+1};
   return true;
 }
-async function mtPersist(){ P._commitments=((P.todoSetup&&P.todoSetup.commitments)||[]).map(x=>({...x,days:[...(x.days||[])]})); await persistCommitments(); }
+async function mtPersist(){ P._commitments=((P.todoSetup&&P.todoSetup.commitments)||[]).map(x=>{ const o={...x,days:[...(x.days||[])]}; if(!o.prayerAt) delete o.prayerAt; return o; }); await persistCommitments(); }
 async function mtMarkSeen(key){
   const now=Date.now(); P.missedSeen=Object.fromEntries(Object.entries(P.missedSeen||{}).filter(([,t])=>now-t<30*864e5)); P.missedSeen[key]=now;
   await storageSet('profile',JSON.stringify(P));
@@ -5301,7 +5340,7 @@ async function renderHomeMissed(){
     try{ const doc=(await trackDocFor(it.d))||{}; doc.commitDone={...(doc.commitDone||{}),[commitKey(it.c)]:true}; await storageSet(key,JSON.stringify(doc)); if(typeof pastDayDocCache==='object') pastDayDocCache[key]=doc; }catch(e){}
     await mtMarkSeen(mtKey(it.iso,it.c)); playSfx('pop'); await done(ar?'👏 تمام، انحسبت':'👏 Nice, counted'); });
   el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.drop];
-    const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(it.c); if(i>=0){ all.splice(i,1); await mtPersist(); }
+    const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(it.c._src||it.c); if(i>=0){ all.splice(i,1); await mtPersist(); }
     await done(ar?'🗑️ انشالت':'🗑️ Dropped'); });
   const allBtn=document.getElementById('mtAll'); if(allBtn) allBtn.onclick=async()=>{ allBtn.disabled=true; let n=0;
     items.forEach(it=>{ if(it.s&&mtApply(it.c,it.s)) n++; }); if(n){ await mtPersist(); playSfx('success'); } await done(ar?`📅 انتقلت ${n} مهام`:`📅 Moved ${n} tasks`); };
@@ -5474,9 +5513,46 @@ function prayerCfg(){
   return {city:d[0],country:d[1],method:d[2],auto:true};
 }
 let _ptMem={};
+function ptKeyFor(dateObj){ const c=prayerCfg(); return `pt:${c.city}|${c.country}|${c.method}|${String(dateObj.getDate()).padStart(2,'0')}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${dateObj.getFullYear()}`; }
+// what's already loaded for that day (no network) — null if it was never fetched
+function ptCached(dateObj){ const k=ptKeyFor(dateObj); if(_ptMem[k]) return _ptMem[k]; try{ const v=localStorage.getItem(k); if(v) return (_ptMem[k]=JSON.parse(v)); }catch(e){} return null; }
+/* ---- commitments tied to a prayer: c.prayerAt={prayer,offset,durationMin}.
+   from/to stay saved as plain "HH:MM" (the times on the day it was saved), so
+   anything reading the old format still works; each day the real times are
+   worked out here from that day's prayer times. */
+const CM_PRAYERS=['fajr','sunrise','dhuhr','asr','maghrib','isha'];
+const CM_PRAYER_TM={fajr:'Fajr',sunrise:'Sunrise',dhuhr:'Dhuhr',asr:'Asr',maghrib:'Maghrib',isha:'Isha'};
+const CM_PRAYER_ALIASES={fajr:'fajr',sunrise:'sunrise',shuruq:'sunrise',dhuhr:'dhuhr',zuhr:'dhuhr',duhr:'dhuhr',asr:'asr',maghrib:'maghrib',isha:'isha','الفجر':'fajr','الشروق':'sunrise','الظهر':'dhuhr','العصر':'asr','المغرب':'maghrib','العشاء':'isha'};
+const CM_PRAYER_NAMES={ar:{fajr:'الفجر',sunrise:'الشروق',dhuhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء'},en:{fajr:'Fajr',sunrise:'Sunrise',dhuhr:'Dhuhr',asr:'Asr',maghrib:'Maghrib',isha:'Isha'}};
+function cmPrayerTimes(pa,tm){
+  const at=tm&&tm[CM_PRAYER_TM[pa&&pa.prayer]]; if(!at||!/^\d\d:\d\d$/.test(at)) return null;
+  const st=parseHM(at)+(pa.offset||0);
+  return {from:minutesToHM(st),to:minutesToHM(st+(pa.durationMin||60))};
+}
+function cmPrayerText(pa){
+  const ar=LANG==='ar', nm=CM_PRAYER_NAMES[ar?'ar':'en'][pa.prayer]||pa.prayer, off=pa.offset||0, a=Math.abs(off), dur=pa.durationMin||60;
+  if(ar) return `🕌 ${off?(off>0?'بعد':'قبل')+' '+nm+' بـ '+a+' د':'مع '+nm} · ${dur} د`;
+  return `🕌 ${off?a+' min '+(off>0?'after':'before')+' '+nm:'At '+nm} · ${dur} min`;
+}
+const _cmResMemo=new WeakMap(), _cmPtAsked=new Set();
+function cmResolve(c,dateObj){
+  if(!c||!c.prayerAt) return c;
+  const tm=ptCached(dateObj), r=tm&&cmPrayerTimes(c.prayerAt,tm);
+  if(!tm){ const k=ptKeyFor(dateObj); if(!_cmPtAsked.has(k)){ _cmPtAsked.add(k); fetchPrayerTimes(new Date(dateObj)).then(t=>{ if(t) cmPtRefresh(); }); } }
+  const iso=isoDateStr(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate()), sig=r?r.from+r.to:'';
+  let m=_cmResMemo.get(c); if(!m){ m=new Map(); _cmResMemo.set(c,m); }
+  let o=m.get(iso); if(o&&o._sig===sig) return o; // same object all day, so lookups by identity keep working
+  o={...c,...(r||{})}; Object.defineProperty(o,'_src',{value:c}); Object.defineProperty(o,'_sig',{value:sig});
+  m.set(iso,o); return o;
+}
+function cmPtRefresh(){
+  clearTimeout(cmPtRefresh._t);
+  cmPtRefresh._t=setTimeout(()=>{ try{ renderHomeDateDependent(); }catch(e){} try{ renderDashCommitCard(); }catch(e){} try{ renderHomeNow(); }catch(e){}
+    try{ if(document.getElementById('panel-today').classList.contains('active')) renderTodoSection(); }catch(e){} },80);
+}
 async function fetchPrayerTimes(dateObj){
   const c=prayerCfg(), dd=`${String(dateObj.getDate()).padStart(2,'0')}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${dateObj.getFullYear()}`;
-  const key=`pt:${c.city}|${c.country}|${c.method}|${dd}`;
+  const key=ptKeyFor(dateObj);
   if(_ptMem[key]) return _ptMem[key];
   try{ const v=localStorage.getItem(key); if(v){ _ptMem[key]=JSON.parse(v); return _ptMem[key]; } }catch(e){}
   try{
@@ -8041,6 +8117,44 @@ document.getElementById('commitAllDayToggle').addEventListener('change',(e)=>{
     initCommitTimePickers();
   }
 });
+function cmPrayerOn(){ const e=document.getElementById('commitPrayerToggle'); return !!(e&&e.checked); }
+function cmPrayerFormInit(){
+  const ar=LANG==='ar', $=id=>document.getElementById(id); if(!$('commitPrayerRow')) return;
+  $('commitPrayerToggleLbl').textContent=ar?'🕌 مربوط بوقت صلاة (يتغيّر كل يوم مع الأذان)':'🕌 Tied to a prayer time (moves with the adhan each day)';
+  $('cmPrDirLbl').textContent=ar?'قبل / بعد':'Before / after'; $('cmPrSelLbl').textContent=ar?'الصلاة':'Prayer';
+  $('cmPrOffLbl').textContent=ar?'كم دقيقة':'Minutes'; $('cmPrDurLbl').textContent=ar?'المدة (دقايق)':'Duration (min)';
+  const dir=$('commitPrayerDir'), sel=$('commitPrayerSel'), dv=dir.value||'after', sv=sel.value||'maghrib';
+  dir.innerHTML=`<option value="after">${ar?'بعد':'After'}</option><option value="before">${ar?'قبل':'Before'}</option>`; dir.value=dv;
+  sel.innerHTML=CM_PRAYERS.map(p=>`<option value="${p}">${CM_PRAYER_NAMES[ar?'ar':'en'][p]}</option>`).join(''); sel.value=sv;
+}
+function cmPrayerFormVal(){
+  const $=id=>document.getElementById(id);
+  const off=Math.max(0,Math.min(240,Math.round(+$('commitPrayerOff').value||0))), dur=Math.max(5,Math.min(720,Math.round(+$('commitPrayerDur').value||60)));
+  return {prayer:$('commitPrayerSel').value||'maghrib', offset:$('commitPrayerDir').value==='before'?-off:off, durationMin:dur};
+}
+function cmPrayerFormSet(pa){
+  const $=id=>document.getElementById(id); if(!$('commitPrayerRow')) return;
+  cmPrayerFormInit();
+  $('commitPrayerToggle').checked=!!pa;
+  if(pa){ $('commitPrayerSel').value=pa.prayer; $('commitPrayerDir').value=(pa.offset||0)<0?'before':'after'; $('commitPrayerOff').value=Math.abs(pa.offset||0); $('commitPrayerDur').value=pa.durationMin||60;
+    $('commitAllDayToggle').checked=false; }
+  $('commitPrayerRow').classList.toggle('hidden',!pa);
+  $('commitTimeRow').classList.toggle('hidden',!!pa||$('commitAllDayToggle').checked);
+  cmPrayerPreview();
+}
+async function cmPrayerPreview(){
+  const el=document.getElementById('commitPrayerPreview'), ar=LANG==='ar'; if(!el) return;
+  if(!cmPrayerOn()){ el.textContent=''; return; }
+  const tm=await fetchPrayerTimes(new Date()), r=tm&&cmPrayerTimes(cmPrayerFormVal(),tm);
+  el.textContent=r?(ar?`اليوم: ${formatTime12h(r.from)} – ${formatTime12h(r.to)} · وكل يوم يتحسب من وقت الصلاة`:`Today: ${formatTime12h(r.from)} – ${formatTime12h(r.to)} · worked out from the prayer time each day`)
+    :(ar?'ما قدرنا نجيب المواقيت — تأكد من النت':'Couldn’t load prayer times — check your connection');
+}
+document.getElementById('commitPrayerToggle').addEventListener('change',e=>{
+  if(e.target.checked){ document.getElementById('commitAllDayToggle').checked=false; cmPrayerFormSet(cmPrayerFormVal()); }
+  else { cmPrayerFormSet(null); if(!document.getElementById('commitFrom').value) initCommitTimePickers(); }
+});
+document.getElementById('commitAllDayToggle').addEventListener('change',e=>{ if(e.target.checked&&cmPrayerOn()){ document.getElementById('commitPrayerToggle').checked=false; document.getElementById('commitPrayerRow').classList.add('hidden'); } });
+['commitPrayerDir','commitPrayerSel','commitPrayerOff','commitPrayerDur'].forEach(id=>document.getElementById(id).addEventListener('input',cmPrayerPreview));
 function buildCommitDaysGrid(){
   const grid=document.getElementById('commitDaysGrid'); grid.innerHTML='';
   const sel=P._commitDays||[];
@@ -8099,11 +8213,11 @@ function renderCommitList(){
     if(st==='ended'&&!endedHead&&_cmFilter==='all'){ endedHead=true; box.insertAdjacentHTML('beforeend',`<div class="cm-sep"><span>✓ ${ar?'التزامات خلصت':'Finished'}</span><button type="button" id="cmClearEnded">${ar?'امسحها كلها':'Clear them'}</button></div>`); }
     const others=withMap.get(c)||[];
     const range=c.fromDate&&c.toDate?`${commitDateText(c.fromDate)} – ${commitDateText(c.toDate)}`:c.fromDate?((st==='upcoming'?(ar?'يبدأ ':'Starts '):(ar?'من ':'From '))+commitDateText(c.fromDate)):c.toDate?((ar?'لين ':'Until ')+commitDateText(c.toDate)):'';
-    const row=document.createElement('div'); row.className='cm-row cm-'+st+(others.length?' cm-conf':'');
-    row.innerHTML=`<div class="cm-time">${c.from?`<b>${formatTime12h(c.from)}</b>${c.to?`<small>${formatTime12h(c.to)}</small>`:''}`:`<b>${ar?'طول اليوم':'All day'}</b>`}</div>
+    const row=document.createElement('div'); row.className='cm-row cm-'+st+(others.length?' cm-conf':''); const cr=cmResolve(c,now);
+    row.innerHTML=`<div class="cm-time">${cr.from?`<b>${formatTime12h(cr.from)}</b>${cr.to?`<small>${formatTime12h(cr.to)}</small>`:''}`:`<b>${ar?'طول اليوم':'All day'}</b>`}</div>
       <div class="cm-main"><div class="cm-title">${c.pinned?'📌 ':''}${escapeHtml(c.label)}</div>
         <div class="cm-meta">🔁 ${escapeHtml(commitDaysText(c))}${range?` · 📅 ${range}`:''}</div>
-        <div class="cm-tags">${others.length?`<span class="cm-tag bad">⚠️ ${ar?'يتعارض مع':'Clashes with'} ${others.map(o=>escapeHtml(o.label)).join(ar?'، ':', ')}</span>`:''}${c.hard===false?`<span class="cm-tag">🔓 ${ar?'مرن':'Flexible'}</span>`:''}${st==='upcoming'?`<span class="cm-tag up">⏳ ${ar?'ما بدأ':'Not started'}</span>`:''}</div></div>
+        <div class="cm-tags">${c.prayerAt?`<span class="cm-tag">${escapeHtml(cmPrayerText(c.prayerAt))}</span>`:''}${others.length?`<span class="cm-tag bad">⚠️ ${ar?'يتعارض مع':'Clashes with'} ${others.map(o=>escapeHtml(o.label)).join(ar?'، ':', ')}</span>`:''}${c.hard===false?`<span class="cm-tag">🔓 ${ar?'مرن':'Flexible'}</span>`:''}${st==='upcoming'?`<span class="cm-tag up">⏳ ${ar?'ما بدأ':'Not started'}</span>`:''}</div></div>
       <div class="cm-act"><button type="button" class="cm-edit" data-testid="cm-edit" data-cm-id="${cmIdOf[i]}" aria-label="${ar?'عدّل':'Edit'}">✏️</button><button type="button" class="cm-pin" title="${ar?'ثبّت فوق':'Pin to top'}">${c.pinned?'📌':'📍'}</button><button type="button" class="cm-del" data-testid="cm-delete" data-cm-id="${cmIdOf[i]}" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`;
     row.dataset.cmId=cmIdOf[i];
     row.querySelector('.cm-pin').onclick=()=>{ c.pinned=!c.pinned; renderCommitList(); persistCommitments(); };
@@ -8132,6 +8246,7 @@ function resetCommitForm(){
   document.getElementById('commitToDate').value='';
   P._commitDays=[];
   buildCommitDaysGrid();
+  cmPrayerFormSet(null);
 }
 /* the ONLY path that adds a commitment to the draft list — always checks
    for real conflicts first and never saves silently over one. `opts.forceKeep`
@@ -8162,6 +8277,7 @@ function startCommitEdit(i){
   else { buildTimePicker('commitFromPicker','commitFrom',c.from); buildTimePicker('commitToPicker','commitTo',c.to||minutesToHM(parseHM(c.from)+60)); }
   document.getElementById('commitFromDate').value=c.fromDate||''; document.getElementById('commitToDate').value=c.toDate||'';
   P._commitDays=[...(c.days||[])]; buildCommitDaysGrid();
+  cmPrayerFormSet(c.prayerAt||null);
   setCommitEditBar(c.label);
   document.getElementById('todoSetupCard').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -8179,7 +8295,7 @@ function attemptAddCommitment(candidate, opts){
   if((overlaps.length||bufferIssues.length) && !opts.forceKeep){
     showConflictModal(candidate, overlaps, bufferIssues, {
       onKeepBoth:()=>finalizeAddCommitment(candidate),
-      onMoveCandidate:(newFrom,newTo)=>{ candidate.from=newFrom; candidate.to=newTo; attemptAddCommitment(candidate); },
+      onMoveCandidate:(newFrom,newTo)=>{ candidate.from=newFrom; candidate.to=newTo; delete candidate.prayerAt; attemptAddCommitment(candidate); },
       onMoveOther:()=>finalizeAddCommitment(candidate),
       onCancel:()=>{}
     });
@@ -8255,20 +8371,23 @@ document.getElementById('bulkImportBtn').addEventListener('click',()=>{
    If it was edited in between, its id is unknown and nothing is saved. */
 const CM_DAY_KEYS=['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
 const CM_DAY_ALIASES={sat:0,saturday:0,sun:1,sunday:1,mon:2,monday:2,tue:3,tuesday:3,wed:4,wednesday:4,thu:5,thursday:5,fri:6,friday:6};
-const CM_FIELDS=['id','name','fixed','pinned','from','to','allDay','overnight','days','fromDate','toDate','delete'];
+const CM_FIELDS=['id','name','fixed','pinned','from','to','durationMin','allDay','overnight','days','fromDate','toDate','delete'];
 function cmGapWarnOff(){ return P.cmGapWarnOff!==false; } // default ON
 function cmHash(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(36); }
 function cmIds(list){
   const seen={};
   return (list||[]).map(c=>{
-    const base='c'+cmHash(JSON.stringify([c.label,c.from||null,c.to||null,[...(c.days||[])].sort((a,b)=>a-b),c.fromDate||null,c.toDate||null,c.hard!==false,!!c.pinned]));
+    const k=[c.label,c.from||null,c.to||null,[...(c.days||[])].sort((a,b)=>a-b),c.fromDate||null,c.toDate||null,c.hard!==false,!!c.pinned];
+    if(c.prayerAt) k.push([c.prayerAt.prayer,c.prayerAt.offset||0,c.prayerAt.durationMin||60]);
+    const base='c'+cmHash(JSON.stringify(k));
     seen[base]=(seen[base]||0)+1; return seen[base]>1?base+'-'+seen[base]:base;
   });
 }
 function cmIsOvernight(c){ return !!(c&&c.from&&c.to&&parseHM(c.to)<parseHM(c.from)); }
 function cmToJson(c,id){
   const o={id,name:c.label,fixed:c.hard!==false,pinned:!!c.pinned};
-  if(!c.from&&!c.to) o.allDay=true; else { o.from=c.from||null; o.to=c.to||null; if(cmIsOvernight(c)) o.overnight=true; }
+  if(c.prayerAt){ o.from={prayer:c.prayerAt.prayer,offset:c.prayerAt.offset||0}; o.durationMin=c.prayerAt.durationMin||60; }
+  else if(!c.from&&!c.to) o.allDay=true; else { o.from=c.from||null; o.to=c.to||null; if(cmIsOvernight(c)) o.overnight=true; }
   o.days=[...(c.days||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]);
   o.fromDate=c.fromDate||null; o.toDate=c.toDate||null;
   return o;
@@ -8300,7 +8419,16 @@ function cmPlanImport(text){
     if(r.name!==undefined&&(typeof r.name!=='string'||!r.name.trim())) E(ar?'"name" لازم نص مو فاضي':'"name" must be non-empty text');
     if(!base&&r.name===undefined) E(ar?'ناقص "name"':'Missing "name"');
     ['fixed','pinned','allDay','overnight'].forEach(k=>{ if(r[k]!==undefined&&typeof r[k]!=='boolean') E(`"${k}" must be true/false`); });
-    ['from','to'].forEach(k=>{ if(r[k]!==undefined&&r[k]!==null&&!(typeof r[k]==='string'&&hm.test(r[k]))) E(`"${k}" ${ar?'لازم بصيغة HH:MM (24 ساعة)':'must be 24h "HH:MM"'}`); });
+    const pr=r.from&&typeof r.from==='object'&&!Array.isArray(r.from)?r.from:null;
+    if(pr){
+      Object.keys(pr).forEach(k=>{ if(k!=='prayer'&&k!=='offset') E((ar?'حقل غير معروف داخل "from": ':'Unknown field inside "from": ')+k); });
+      if(!CM_PRAYER_ALIASES[String(pr.prayer||'').trim().toLowerCase()]) E(ar?'"from.prayer" لازم وحدة من: fajr sunrise dhuhr asr maghrib isha':'"from.prayer" must be one of: fajr sunrise dhuhr asr maghrib isha');
+      if(pr.offset!==undefined&&!(Number.isInteger(pr.offset)&&Math.abs(pr.offset)<=240)) E(ar?'"from.offset" لازم دقايق (رقم صحيح) بين -240 و 240':'"from.offset" must be whole minutes between -240 and 240');
+      if(r.to!==undefined&&r.to!==null) E(ar?'مع وقت صلاة استخدم "durationMin" بدل "to"':'With a prayer "from", use "durationMin" instead of "to"');
+      if(r.overnight!==undefined) E(ar?'"overnight" ما يُستخدم مع وقت صلاة':'"overnight" isn\'t used with a prayer "from"');
+    }
+    ['from','to'].forEach(k=>{ if(k==='from'&&pr) return; if(r[k]!==undefined&&r[k]!==null&&!(typeof r[k]==='string'&&hm.test(r[k]))) E(`"${k}" ${ar?'لازم بصيغة HH:MM (24 ساعة)':'must be 24h "HH:MM"'}${k==='from'?(ar?' أو {"prayer":"maghrib","offset":5}':' or {"prayer":"maghrib","offset":5}'):''}`); });
+    if(r.durationMin!==undefined&&!(Number.isInteger(r.durationMin)&&r.durationMin>=1&&r.durationMin<=720)) E(ar?'"durationMin" لازم دقايق (رقم صحيح) بين 1 و 720':'"durationMin" must be whole minutes between 1 and 720');
     ['fromDate','toDate'].forEach(k=>{ if(r[k]!==undefined&&r[k]!==null&&!cmIsoOk(r[k])) E(`"${k}" ${ar?'لازم تاريخ حقيقي YYYY-MM-DD':'must be a real date "YYYY-MM-DD"'}`); });
     let days;
     if(r.days!==undefined){
@@ -8316,13 +8444,31 @@ function cmPlanImport(text){
     if(r.fromDate!==undefined) c.fromDate=r.fromDate||null;
     if(r.toDate!==undefined) c.toDate=r.toDate||null;
     if(days) c.days=days;
-    if(r.allDay===true){ if(r.from||r.to) E(ar?'allDay ما يكون معه وقت':'allDay can\'t have times'); c.from=null; c.to=null; }
+    const keepPr=!pr&&!!c.prayerAt&&r.from===undefined&&r.allDay!==true;
+    if(r.allDay===true){ if(r.from||r.to||r.durationMin!==undefined) E(ar?'allDay ما يكون معه وقت':'allDay can\'t have times'); c.from=null; c.to=null; delete c.prayerAt; }
+    else if(pr||keepPr){
+      if(keepPr&&r.to!==undefined) E(ar?'هذا مربوط بالصلاة: غيّر "durationMin"، أو حط "from" بوقت HH:MM عشان تفكّه':'This one follows a prayer: change "durationMin", or give "from" as "HH:MM" to unlink it');
+      else if(pr||r.durationMin!==undefined){
+        const dur=r.durationMin!==undefined?r.durationMin:(c.prayerAt&&c.prayerAt.durationMin);
+        if(!dur) E(ar?'مع وقت صلاة لازم "durationMin"':'A prayer "from" needs "durationMin"');
+        else if(!it.errs.length){
+          c.prayerAt=pr?{prayer:CM_PRAYER_ALIASES[String(pr.prayer).trim().toLowerCase()],offset:pr.offset||0,durationMin:dur}:{...c.prayerAt,durationMin:dur};
+          const t=cmPrayerTimes(c.prayerAt,ptCached(new Date()));
+          if(!t) E(ar?'ما قدرنا نجيب مواقيت الصلاة لليوم — جرّب وفيه نت':'Couldn’t load today’s prayer times — try again online'); else { c.from=t.from; c.to=t.to; }
+        }
+      }
+    }
     else {
-      if(r.from!==undefined) c.from=r.from||null;
+      if(r.from!==undefined){ c.from=r.from||null; delete c.prayerAt; }
       if(r.to!==undefined) c.to=r.to||null;
+      if(r.durationMin!==undefined){
+        if(r.to!==undefined&&r.to!==null) E(ar?'استخدم "to" أو "durationMin" — مو الاثنين':'Use "to" or "durationMin", not both');
+        else if(!c.from) E(ar?'"durationMin" يحتاج "from"':'"durationMin" needs a "from"');
+        else c.to=minutesToHM(parseHM(c.from)+r.durationMin);
+      }
       if(r.allDay===false||!base||c.from||c.to){
         if(!c.from||!c.to) E(ar?'يحتاج "from" و "to" (أو allDay:true)':'Needs both "from" and "to" (or allDay:true)');
-        else { const a=parseHM(c.from), b=parseHM(c.to), on=r.overnight!==undefined?r.overnight:cmIsOvernight(base);
+        else { const a=parseHM(c.from), b=parseHM(c.to), on=r.overnight!==undefined?r.overnight:(r.durationMin!==undefined||cmIsOvernight(base));
           if(a===b) E(ar?'"from" و "to" نفس الوقت':'"from" and "to" are the same');
           else if(b<a&&!on) E(ar?'"from" لازم قبل "to" (أو overnight:true لو يعدّي نص الليل)':'"from" must be before "to" (or overnight:true if it runs past midnight)');
           else if(b>a&&r.overnight===true) E(ar?'overnight:true بس لما "to" بعد نص الليل':'overnight:true is only for a "to" after midnight'); }
@@ -8342,8 +8488,8 @@ function cmPlanImport(text){
     }
     it.after=c;
     if(base){
-      const show=(k,v)=>k==='days'?[...(v||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]).join(','):v==null?'—':String(v);
-      it.diff=[['label','name'],['from','from'],['to','to'],['days','days'],['fromDate','fromDate'],['toDate','toDate'],['hard','fixed'],['pinned','pinned']]
+      const show=(k,v)=>k==='days'?[...(v||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]).join(','):k==='prayerAt'?(v?`${v.prayer}${(v.offset||0)<0?'':'+'}${v.offset||0} · ${v.durationMin}min`:'—'):v==null?'—':String(v);
+      it.diff=[['label','name'],['prayerAt','prayer'],['from','from'],['to','to'],['days','days'],['fromDate','fromDate'],['toDate','toDate'],['hard','fixed'],['pinned','pinned']]
         .map(([k,lbl])=>[lbl,show(k,k==='hard'?base.hard!==false:k==='pinned'?!!base.pinned:base[k]),show(k,k==='hard'?c.hard!==false:k==='pinned'?!!c.pinned:c[k])]).filter(x=>x[1]!==x[2]);
       if(!it.diff.length) it.kind='same';
     }
@@ -8364,7 +8510,7 @@ function cmRenderPreview(){
   if(plan.fatal){ box.innerHTML=`<div class="cmj-fatal" data-testid="cm-json-error">⚠️ ${escapeHtml(plan.fatal)}</div>`; return; }
   const cnt=k=>plan.items.filter(it=>it.kind===k).length, bad=plan.items.filter(it=>it.errs.length).length;
   const icon={create:'➕',update:'✏️',delete:'🗑️',same:'＝'};
-  const desc=c=>`${escapeHtml(formatCommitRange(c))} · ${escapeHtml(commitDaysText(c))}${c.fromDate||c.toDate?` · 📅 ${escapeHtml(c.fromDate||'…')} → ${escapeHtml(c.toDate||'…')}`:''}${c.hard===false?(ar?' · مرن':' · flexible'):''}`;
+  const desc=c=>`${escapeHtml(formatCommitRange(c))}${c.prayerAt?' · '+escapeHtml(cmPrayerText(c.prayerAt)):''} · ${escapeHtml(commitDaysText(c))}${c.fromDate||c.toDate?` · 📅 ${escapeHtml(c.fromDate||'…')} → ${escapeHtml(c.toDate||'…')}`:''}${c.hard===false?(ar?' · مرن':' · flexible'):''}`;
   let h=plan.ok
     ?`<div class="cmj-sum" data-testid="cm-json-summary">➕ ${cnt('create')} ${ar?'جديد':'new'} · ✏️ ${cnt('update')} ${ar?'تعديل':'changed'} · 🗑️ ${cnt('delete')} ${ar?'حذف':'deleted'}${cnt('same')?` · ＝ ${cnt('same')} ${ar?'بدون تغيير':'unchanged'}`:''}</div>`
     :`<div class="cmj-sum bad" data-testid="cm-json-summary">⚠️ ${bad} ${ar?'سطر فيه خطأ — ما راح ينحفظ أي شي لين تصلحها':(bad>1?'rows have':'row has')+' errors — nothing will be saved until they\'re fixed'}</div>`;
@@ -8397,8 +8543,9 @@ async function cmApplyPlan(){
 function cmJsonInit(){
   const ar=LANG==='ar';
   document.getElementById('cmJsonHint').textContent=ar
-    ?'مصفوفة JSON: بدون id = إضافة · مع id = تعديل الحقول اللي تكتبها بس · "delete":true = حذف. الوقت 24 ساعة HH:MM، و allDay:true بدون وقت. الأيام: Sat Sun Mon Tue Wed Thu Fri. "fixed" = ثابت (مو مرن).'
-    :'A JSON array: no id = add · with id = update only the fields given · "delete":true = remove. Times are 24h "HH:MM"; allDay:true has no times. Days: Sat Sun Mon Tue Wed Thu Fri. "fixed" = can\'t be moved.';
+    ?'مصفوفة JSON: بدون id = إضافة · مع id = تعديل الحقول اللي تكتبها بس · "delete":true = حذف. الوقت 24 ساعة HH:MM، و allDay:true بدون وقت. الأيام: Sat Sun Mon Tue Wed Thu Fri. "fixed" = ثابت (مو مرن). مربوط بالصلاة: "from":{"prayer":"maghrib","offset":5},"durationMin":70 (offset بالسالب = قبل الصلاة).'
+    :'A JSON array: no id = add · with id = update only the fields given · "delete":true = remove. Times are 24h "HH:MM"; allDay:true has no times. Days: Sat Sun Mon Tue Wed Thu Fri. "fixed" = can\'t be moved. Tied to a prayer: "from":{"prayer":"maghrib","offset":5},"durationMin":70 (a negative offset = before the prayer).';
+  cmPrayerFormInit();
   document.getElementById('cmJsonOutHint').textContent=ar?'📋 انتسخ — كل التزام مع الـ id حقه:':'📋 Copied — every commitment with its id:';
   document.getElementById('cmGapWarnLabel').textContent=ar?'لا تنبّهني على فراغ أقل من 10 دقايق (التعارض الحقيقي ينبّه دايماً)':'Don\'t warn about gaps under 10 minutes (real overlaps still warn)';
   document.getElementById('cmGapWarnOff').checked=cmGapWarnOff();
@@ -8406,8 +8553,10 @@ function cmJsonInit(){
 document.getElementById('cmJsonImportToggle').addEventListener('click',()=>{
   cmJsonInit(); document.getElementById('cmJsonCard').classList.toggle('hidden');
 });
-document.getElementById('cmJsonPreviewBtn').addEventListener('click',()=>{
-  _cmPlan=cmPlanImport(document.getElementById('cmJsonText').value); cmRenderPreview();
+document.getElementById('cmJsonPreviewBtn').addEventListener('click',async()=>{
+  const txt=document.getElementById('cmJsonText').value;
+  if(/"prayer"/.test(txt)||(P._commitments||[]).some(c=>c.prayerAt)) await fetchPrayerTimes(new Date()); // prayer-tied rows need today's times
+  _cmPlan=cmPlanImport(txt); cmRenderPreview();
 });
 document.getElementById('cmJsonText').addEventListener('input',()=>{ if(_cmPlan){ _cmPlan=null; cmRenderPreview(); } }); // a stale preview can't be applied
 document.getElementById('cmJsonExportBtn').addEventListener('click',()=>{
@@ -8472,10 +8621,10 @@ function showConflictModal(candidate, overlaps, bufferIssues, handlers){
   document.getElementById('conflictKeepBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); handlers.onKeepBoth(); });
   document.getElementById('conflictCancelBtn').addEventListener('click',()=>{ overlay.classList.remove('open'); if(handlers.onCancel) handlers.onCancel(); });
 }
-document.getElementById('commitAddBtn').addEventListener('click',()=>{
+document.getElementById('commitAddBtn').addEventListener('click',async()=>{
   const label=document.getElementById('commitLabel').value.trim();
-  const from=document.getElementById('commitFrom').value||null;
-  const to=document.getElementById('commitTo').value||null;
+  let from=document.getElementById('commitFrom').value||null;
+  let to=document.getElementById('commitTo').value||null;
   const fromDate=document.getElementById('commitFromDate').value||null;
   const toDate=document.getElementById('commitToDate').value||null;
   const hard=document.getElementById('commitHardToggle').checked;
@@ -8490,8 +8639,12 @@ document.getElementById('commitAddBtn').addEventListener('click',()=>{
   if(fromDate&&toDate){ const a=isoD(fromDate), b=isoD(toDate); let hit=false; for(let d=new Date(a); d<=b&&!hit; d.setDate(d.getDate()+1)) hit=days.includes((d.getDay()+1)%7);
     if(!hit){ commitFormError(ar?'الأيام اللي اخترتها ما تجي بين التاريخين':'None of the picked days fall between those dates','commitDaysGrid'); return; } }
   if(from&&to&&from===to){ showToast(LANG==='ar'?'وقت البداية والنهاية نفس الشي':'Start and end time are the same','error'); return; }
+  let prayerAt=null;
+  if(cmPrayerOn()){ prayerAt=cmPrayerFormVal(); const tm=await fetchPrayerTimes(new Date()), r=tm&&cmPrayerTimes(prayerAt,tm);
+    if(!r){ commitFormError(ar?'ما قدرنا نجيب مواقيت الصلاة — تأكد من النت':'Couldn’t load prayer times — check your connection','commitPrayerRow'); return; }
+    from=r.from; to=r.to; }
   const was=_cmEditIdx!=null?(P._commitments||[])[_cmEditIdx]:null;
-  attemptAddCommitment({...(was&&was.src?{src:was.src}:{}),label,from,to,days,fromDate,toDate,pinned:was?!!was.pinned:false,hard});
+  attemptAddCommitment({...(was&&was.src?{src:was.src}:{}),label,from,to,days,fromDate,toDate,pinned:was?!!was.pinned:false,hard,...(prayerAt?{prayerAt}:{})});
 });
 function prefillTodoSetup(){
   const s=P.todoSetup||{};
@@ -8648,8 +8801,9 @@ function commitmentsForDate(dateObj){
     if(c.fromDate && dateStr<c.fromDate) return false;
     if(c.toDate && dateStr>c.toDate) return false;
     return true;
-  }).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  }).map(c=>cmResolve(c,dateObj)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
 }
+
 function commitmentsForToday(){ return commitmentsForDate(new Date()); }
 function renderTodoSection(){
   renderCalendar();
@@ -13382,9 +13536,99 @@ function refreshHome(){
   renderHomeCheers();
   renderHomePushTip();
   renderHomeNow(); renderHomeMissed();
+  try{ ccInit(); ccRenderBar(); }catch(e){}
   setTimeout(maybeShowGuide,2500);
   renderHomeAquarium();
   renderWeeklyCard();
+}
+/* ================= COLLAPSIBLE SECTIONS =================
+   Every Home card (and the Nutrition cards) folds to its title + a short
+   summary. The fold works on top of each card's own render: a watcher marks
+   everything beside the title as hidden whenever the card re-draws, so no
+   renderer had to change. Open/closed is remembered per device. */
+const CC_DEFS=[
+  {id:'now',el:'homeNow',head:'.hn-head',ic:'⚡',ar:'الحين',en:'Now',open:true,sum:()=>{ const b=document.querySelector('#homeNow .hn-txt b'); return b?b.textContent:''; }},
+  {id:'missed',el:'homeMissed',head:'.mt-card > .dash-card-title',ic:'🔄',ar:'الفايتة',en:'Missed'},
+  {id:'plan',el:'homeSchedulePreview',head:':scope > .dash-title-row',ic:'🗓️',ar:'الخطة',en:'Plan',sum:()=>{ const r=document.querySelectorAll('#homeSchedulePreview .home-todo-schedule-row'); return r.length?(LANG==='ar'?`${r.length} اليوم`:`${r.length} today`):''; }},
+  {id:'health',el:'homeTodoCard',head:':scope > .dash-card-title',ic:'❤️',ar:'الصحة',en:'Health',open:true},
+  {id:'commits',el:'dashCommitCard',head:':scope > .dash-card-title',ic:'📅',ar:'الالتزامات',en:'Commitments'},
+  {id:'habits',el:'habitsCard',head:':scope > .dash-card-title',ic:'✅',ar:'العادات',en:'Habits'},
+  {id:'water',el:'dashWaterCard',head:':scope > .dash-card-title',ic:'💧',ar:'الماي',en:'Water',sum:()=>(document.getElementById('dashWaterCount')||{}).textContent||''},
+  {id:'workout',el:'dashWorkoutCard',head:':scope > .dash-card-title',ic:'💪',ar:'التمرين',en:'Workout',sum:()=>{ const r=document.getElementById('dashWorkoutRow'); if(!r||r.classList.contains('hidden')) return ''; return document.getElementById('dashWorkoutName').textContent+(dailyTrack.workoutDone?' ✓':''); }},
+  {id:'supps',el:'dashSuppCard',head:':scope > .dash-card-title',ic:'💊',ar:'المكملات',en:'Supplements'},
+  {id:'calories',el:'dashCalCard',head:':scope > .dash-card-title',ic:'🔥',ar:'السعرات',en:'Calories',sum:()=>{ const r=document.getElementById('dashCalRow'); if(!r||r.classList.contains('hidden')) return ''; return `${document.getElementById('dashCalRemaining').textContent} ${LANG==='ar'?'باقي':'left'}`; }},
+  {id:'weight',el:'homeWeightTask',head:':scope > .dash-card-title',ic:'⚖️',ar:'الوزن',en:'Weight'},
+  {id:'challenges',el:'homeChallengesPreview',head:':scope > .home-preview-title',ic:'🏆',ar:'التحديات',en:'Challenges'},
+  {id:'collection',el:'homeCollectionPreview',head:':scope > .home-preview-title'},
+  {id:'aquarium',el:'homeAquarium',head:':scope > .dash-title-row'},
+  {id:'f-meals',el:'todaySquareCard',head:':scope > .today-square-head',open:true},
+  {id:'f-water',el:'foodWaterCard',head:':scope > h3',sum:()=>(document.getElementById('waterCount')||{}).textContent||''},
+  {id:'f-weight',el:'foodWeightCard',head:':scope > h3'},
+];
+const CC_BY=Object.fromEntries(CC_DEFS.map(d=>[d.id,d]));
+let _ccState=null, _ccMO=null;
+function ccState(){ if(!_ccState){ try{ _ccState=JSON.parse(localStorage.getItem('ccState')||'{}')||{}; }catch(e){ _ccState={}; } } return _ccState; }
+function ccIsOpen(d){ const st=ccState(); return d.id in st?!!st[d.id]:!!d.open; }
+function ccSet(id,open){ ccState()[id]=open; try{ localStorage.setItem('ccState',JSON.stringify(_ccState)); }catch(e){} }
+function ccHead(d,el){ try{ return el.querySelector(d.head); }catch(e){ return null; } }
+function ccDecorate(d){
+  const el=d&&document.getElementById(d.el); if(!el) return;
+  if(!el.dataset.cc){ el.dataset.cc=d.id; el.setAttribute('data-testid','cc-card-'+d.id); }
+  const head=ccHead(d,el), closed=!!head&&!el.closest('#panel-habits')&&!ccIsOpen(d);
+  el.classList.toggle('cc-closed',closed);
+  if(!head) return;
+  if(!head.classList.contains('cc-head')){ head.classList.add('cc-head'); head.setAttribute('role','button'); head.tabIndex=0; head.setAttribute('data-testid','cc-toggle-'+d.id); }
+  if(head.getAttribute('aria-expanded')!==String(!closed)) head.setAttribute('aria-expanded',String(!closed));
+  let sum=head.querySelector(':scope > .cc-sum'), arr=head.querySelector(':scope > .cc-arrow');
+  if(!sum){ sum=document.createElement('span'); sum.className='cc-sum'; const f=head.firstElementChild; if(f&&f!==arr) f.after(sum); else head.appendChild(sum); }
+  if(!arr){ arr=document.createElement('span'); arr.className='cc-arrow'; arr.setAttribute('aria-hidden','true'); arr.textContent='▾'; head.appendChild(arr); }
+  let txt=''; if(closed&&d.sum){ try{ txt=String(d.sum()||''); }catch(e){} }
+  if(sum.textContent!==txt) sum.textContent=txt;
+  // fold everything beside the title, on each level up to the card
+  for(let n=head; n&&n!==el; n=n.parentElement){ const p=n.parentElement; if(!p) break; for(const sib of p.children) if(sib!==n&&sib.classList.contains('cc-hide')!==closed) sib.classList.toggle('cc-hide',closed); }
+}
+function ccInit(){
+  if(_ccMO) return;
+  _ccMO=new MutationObserver(recs=>{
+    const ids=new Set();
+    recs.forEach(r=>{ for(let n=r.target.nodeType===1?r.target:r.target.parentElement; n; n=n.parentElement) if(n.dataset&&n.dataset.cc) ids.add(n.dataset.cc); });
+    ids.forEach(id=>ccDecorate(CC_BY[id])); ccBarSoon();
+  });
+  CC_DEFS.forEach(d=>{ const el=document.getElementById(d.el); if(!el) return; ccDecorate(d); _ccMO.observe(el,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class']}); });
+  document.addEventListener('click',e=>{
+    const h=e.target.closest&&e.target.closest('.cc-head'); if(!h) return;
+    const ia=e.target.closest('button,a,input,select,textarea,label,[data-nav]'); if(ia&&ia!==h&&h.contains(ia)) return; // the title's own links keep working
+    const card=h.closest('[data-cc]'); if(!card||card.closest('#panel-habits')) return;
+    e.stopPropagation(); e.preventDefault(); ccToggle(card.dataset.cc);
+  },true);
+  document.addEventListener('keydown',e=>{
+    if((e.key!=='Enter'&&e.key!==' ')||!e.target.classList||!e.target.classList.contains('cc-head')) return;
+    const card=e.target.closest('[data-cc]'); if(!card||card.closest('#panel-habits')) return;
+    e.preventDefault(); ccToggle(card.dataset.cc);
+  });
+  window.addEventListener('resize',()=>{ ccRenderBar._nh=0; ccRenderBar(); });
+  document.getElementById('ccBar').addEventListener('click',e=>{ const b=e.target.closest('[data-cj]'); if(b) ccJump(b.dataset.cj); });
+  ccRenderBar();
+}
+function ccToggle(id){ const d=CC_BY[id]; if(!d) return; ccSet(id,!ccIsOpen(d)); ccDecorate(d); ccBarSoon(); }
+function ccJump(id){
+  const d=CC_BY[id], el=d&&document.getElementById(d.el); if(!el) return;
+  for(let n=el; n; n=n.parentElement){ const cid=n.dataset&&n.dataset.cc; if(cid&&!ccIsOpen(CC_BY[cid])){ ccSet(cid,true); ccDecorate(CC_BY[cid]); } }
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+  el.classList.remove('cc-flash'); void el.offsetWidth; el.classList.add('cc-flash'); setTimeout(()=>el.classList.remove('cc-flash'),1300);
+}
+function ccBarSoon(){ if(ccBarSoon._r) return; ccBarSoon._r=requestAnimationFrame(()=>{ ccBarSoon._r=0; ccRenderBar(); }); }
+function ccRenderBar(){
+  const bar=document.getElementById('ccBar'); if(!bar) return; const ar=LANG==='ar';
+  const nav=document.getElementById('mainNav'), nh=nav&&nav.offsetHeight; if(nh&&ccRenderBar._nh!==nh){ ccRenderBar._nh=nh; document.documentElement.style.setProperty('--cc-top',nh+'px'); }
+  const items=CC_DEFS.filter(d=>d.ic).filter(d=>{ const el=document.getElementById(d.el);
+    if(!el||!el.closest('#panel-home')||el.style.display==='none'||!ccHead(d,el)) return false;
+    for(let n=el; n&&n.id!=='panel-home'; n=n.parentElement) if(n.classList.contains('hidden')) return false;
+    return true; });
+  const sig=LANG+'|'+items.map(d=>d.id).join();
+  if(bar.dataset.sig===sig) return; bar.dataset.sig=sig;
+  bar.classList.toggle('hidden',items.length<3);
+  bar.innerHTML=items.map(d=>`<button type="button" class="cc-jump" data-cj="${d.id}" data-testid="cc-jump-${d.id}" aria-label="${escapeHtml((ar?'روح لـ ':'Go to ')+(ar?d.ar:d.en))}">${d.ic} ${escapeHtml(ar?d.ar:d.en)}</button>`).join('');
 }
 function homeDateLabel(dateObj){
   const today=new Date();
@@ -13689,7 +13933,7 @@ document.getElementById('profileBar').addEventListener('click',()=>{ showPanel('
    and show an explicit "not set up" message when the underlying data
    doesn't exist yet. */
 /* ---- Home To-Do: today's commitments + schedule notes, each one tickable ---- */
-function commitKey(c){ return 'c:'+(c.label||'')+'|'+(c.from||''); }
+function commitKey(c){ return 'c:'+(c.label||'')+'|'+((c._src||c).from||''); }
 async function todayCommitItems(){
   const ar=LANG==='ar', d=new Date();
   const cm=commitmentsForDate(d).map(c=>({k:commitKey(c), label:c.label, time:c.from?commitTimeSpan(c).start:-1, timeLabel:c.from?(formatTime12h(c.from)+(c.to?' – '+formatTime12h(c.to):'')):(ar?'طول اليوم':'All day'), commit:true}));
@@ -13781,12 +14025,9 @@ function renderDailySummary(){
   dwc.textContent=`${w.toFixed(2)} / ${waterTarget} L`;
   const wl=document.getElementById('dashWaterLink'); if(wl) wl.textContent=P.foodSetup?t('link_open_diet'):t('link_water_goal');
 
-  // ---- supplements mini badge ----
-  const supList=(P.foodSetup&&P.foodSetup.supOtherList)||[];
-  document.getElementById('dashSuppMini').classList.toggle('hidden',!supList.length);
-  document.getElementById('dashSuppMini').innerHTML=supList.length
-    ? `${t('dash_supp_mini')}<span class="n">${supList.filter((s,i)=>dailyTrack.supplements['other'+i]).length}/${supList.length}</span>`
-    : `${t('dash_supp_mini')}<span class="n">–</span>`;
+  // ---- supplements, each by name (the old "Supplements 0/5" badge stays hidden) ----
+  document.getElementById('dashSuppMini').classList.add('hidden');
+  renderDashSuppCard();
 
   // ---- commitments mini badge ----
   const commits=commitmentsForToday();
@@ -13927,6 +14168,52 @@ function toggleHabitToday(h,paint){
     await notifyNewUnlocks();
     renderHabits();
   })();
+}
+/* ---- 💊 supplements on Home: tick each one by its name; names are saved in
+   the profile (P.foodSetup.supOtherList — the same list the Nutrition setup
+   edits) and today's ticks keep their usual keys ('other'+index). */
+let _suppEdit=null;
+function renderDashSuppCard(){
+  const el=document.getElementById('dashSuppCard'); if(!el) return;
+  const ar=LANG==='ar', fs=P.foodSetup, list=(fs&&fs.supOtherList)||[];
+  if(!fs){ el.classList.add('hidden'); el.innerHTML=''; _suppEdit=null; return; }
+  el.classList.remove('hidden');
+  const sd=dailyTrack.supplements||{}, n=list.filter((s,i)=>sd['other'+i]).length;
+  let h=`<div class="dash-card-title dash-title-row"><span>💊 ${ar?'المكملات':'Supplements'}${list.length?`<span class="habit-count num">${n}/${list.length}</span>`:''}</span><button type="button" class="dash-link" id="suppEditBtn" data-testid="supp-edit" aria-label="${ar?'عدّل الأسماء':'Edit names'}">${_suppEdit?(ar?'إلغاء':'Cancel'):(ar?'✏️ الأسماء':'✏️ Names')}</button></div>`;
+  if(_suppEdit){
+    h+=_suppEdit.map((s,i)=>`<div class="supp-ed-row"><span aria-hidden="true">${escapeHtml(s.emoji||'💊')}</span><input type="text" class="setup-input" data-si="${i}" value="${escapeHtml(s.text||'')}" maxlength="40" data-testid="supp-name-input" aria-label="${ar?'اسم المكمل':'Supplement name'}"><button type="button" class="supp-ed-del" data-sdel="${i}" data-testid="supp-delete" aria-label="${ar?'احذف':'Delete'}">✕</button></div>`).join('')
+      +`<div class="supp-ed-row"><span aria-hidden="true">➕</span><input type="text" class="setup-input" id="suppAddInp" placeholder="${ar?'مكمل جديد…':'New supplement…'}" maxlength="40" data-testid="supp-add-input" aria-label="${ar?'مكمل جديد':'New supplement'}"><button type="button" class="supp-ed-add" id="suppAddBtn" data-testid="supp-add" aria-label="${ar?'أضف':'Add'}">➕</button></div>`
+      +`<button type="button" class="setup-btn" id="suppSaveBtn" data-testid="supp-save" style="margin-top:6px;">💾 ${ar?'احفظ الأسماء':'Save names'}</button>`;
+  } else if(!list.length){
+    h+=`<div class="dash-empty">${ar?'ضيف مكملاتك بأسمائها (بروتين، كرياتين…) عشان تعلّم عليها كل يوم':'Add your supplements by name (protein, creatine…) to tick them off daily'}</div>`;
+  } else {
+    h+=list.map((s,i)=>{ const d=!!sd['other'+i]; return `<div class="habit-row supp-row${d?' done':''}" data-sk="${i}" role="button" tabindex="0" data-testid="supp-row" aria-pressed="${d}"><div class="habit-box">${d?'✓':''}</div><div class="habit-label">${escapeHtml(s.emoji||'💊')} ${escapeHtml(s.text||'')}</div></div>`; }).join('');
+  }
+  el.innerHTML=h;
+  document.getElementById('suppEditBtn').onclick=()=>{ _suppEdit=_suppEdit?null:list.map((s,i)=>({...s,_o:i})); if(_suppEdit&&!_suppEdit.length) _suppEdit=[]; renderDashSuppCard(); const f=el.querySelector('input'); if(f) f.focus(); };
+  el.querySelectorAll('[data-sk]').forEach(r=>{ const go=async()=>{
+    const k='other'+r.dataset.sk; dailyTrack.supplements={...(dailyTrack.supplements||{})};
+    if(dailyTrack.supplements[k]) delete dailyTrack.supplements[k]; else { dailyTrack.supplements[k]=true; playSfx('check'); }
+    renderDashSuppCard(); await saveDailyTrack(); try{ renderSupChips(); }catch(e){} try{ renderHomeTodoProgress(); }catch(e){} };
+    r.onclick=go; r.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } }; });
+  if(!_suppEdit) return;
+  const sync=()=>el.querySelectorAll('[data-si]').forEach(inp=>{ _suppEdit[+inp.dataset.si].text=inp.value; });
+  el.querySelectorAll('[data-sdel]').forEach(b=>b.onclick=()=>{ sync(); _suppEdit.splice(+b.dataset.sdel,1); renderDashSuppCard(); });
+  const add=()=>{ sync(); const inp=document.getElementById('suppAddInp'), v=inp.value.trim(); if(!v) return; _suppEdit.push({text:v,emoji:'💊'}); renderDashSuppCard(); const n2=document.getElementById('suppAddInp'); if(n2) n2.focus(); };
+  document.getElementById('suppAddBtn').onclick=add;
+  document.getElementById('suppAddInp').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } };
+  document.getElementById('suppSaveBtn').onclick=async()=>{
+    sync(); const pending=document.getElementById('suppAddInp').value.trim(); if(pending) _suppEdit.push({text:pending,emoji:'💊'});
+    const kept=_suppEdit.filter(s=>String(s.text||'').trim());
+    // today's ticks follow each supplement to its new place in the list
+    const old=dailyTrack.supplements||{}, ticks={}; Object.keys(old).forEach(k=>{ if(!/^other\d+$/.test(k)) ticks[k]=old[k]; });
+    kept.forEach((s,j)=>{ if(s._o!=null&&old['other'+s._o]) ticks['other'+j]=true; });
+    P.foodSetup.supOtherList=kept.map(s=>{ const o={...s,text:String(s.text).trim()}; delete o._o; return o; });
+    dailyTrack.supplements=ticks; _suppEdit=null;
+    await storageSet('profile',JSON.stringify(P)); await saveDailyTrack();
+    renderDashSuppCard(); try{ renderSupChips(); }catch(e){} try{ renderHomeTodoProgress(); }catch(e){}
+    showToast(ar?'💊 انحفظت الأسماء':'💊 Names saved','success');
+  };
 }
 function renderHabits(){
   if(P.firstRun&&P.firstRun.active) renderFirstRunCard(); // ticks the "first habit" step the moment it's checked
