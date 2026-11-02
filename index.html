@@ -169,7 +169,7 @@
   .home-date-picker button{ background:var(--card); border:1px solid var(--line); border-radius:50%; width:30px; height:30px; font-size:1.1rem; line-height:1; cursor:pointer; color:var(--heading); }
   .home-date-picker span{ font-family:var(--font-head); font-weight:700; font-size:0.88rem; color:var(--heading); min-width:130px; text-align:center; }
   .home-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:20px; }
-  #homeSchedulePreview{ order:-2; } #homeTodoCard{ order:-1; } /* phones: today's plan, then today's health, then highlights */
+  #homeSchedulePreview{ display:none!important; } #homeTodoCard{ order:-1; } /* phones: today's plan, then today's health, then highlights */
   @media(min-width:860px){
     .home-grid{ grid-template-columns:1.1fr 1.7fr 1fr; grid-template-rows:auto auto 1fr; align-items:start; gap:14px; }
     #homeSchedulePreview{ order:0; grid-column:1; grid-row:1; }
@@ -177,7 +177,7 @@
     #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 4; }
     #homeChallengesPreview{ grid-column:3; grid-row:1; }
     #homeCollectionPreview{ grid-column:3; grid-row:2; }
-    #homeAquarium{ grid-column:1; grid-row:2; }
+    #homeAquarium{ grid-column:1; grid-row:1; }
   }
   .home-todo-wrap{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow); }
   .home-todo-wrap #dashboardSummary{ margin-top:14px; }
@@ -2022,7 +2022,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div id="homePushTip"></div>
     <div class="home-grid" id="homeGrid">
     <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
-    <div class="dash-card home-section" id="homeSchedulePreview"></div>
+    <div class="dash-card home-section hidden" id="homeSchedulePreview"></div>
     <div class="hidden" id="homeDietTrainingPreview"></div>
     <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges" role="button" tabindex="0"></div>
     <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections" role="button" tabindex="0"></div>
@@ -3188,7 +3188,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.66.0';
+const APP_VERSION='v1.66.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -13549,7 +13549,8 @@ function refreshHome(){
 const CC_DEFS=[
   {id:'now',el:'homeNow',head:'.hn-head',ic:'⚡',ar:'الحين',en:'Now',open:true,sum:()=>{ const b=document.querySelector('#homeNow .hn-txt b'); return b?b.textContent:''; }},
   {id:'missed',el:'homeMissed',head:'.mt-card > .dash-card-title',ic:'🔄',ar:'الفايتة',en:'Missed'},
-  {id:'plan',el:'homeSchedulePreview',head:':scope > .dash-title-row',ic:'🗓️',ar:'الخطة',en:'Plan',sum:()=>{ const r=document.querySelectorAll('#homeSchedulePreview .home-todo-schedule-row'); return r.length?(LANG==='ar'?`${r.length} اليوم`:`${r.length} today`):''; }},
+  /* 'plan' card removed from Home (v1.66.1): today's schedule shows in the commitments card under the checklist */
+  //{id:'plan',el:'homeSchedulePreview',head:':scope > .dash-title-row',ic:'🗓️',ar:'الخطة',en:'Plan',sum:()=>{ const r=document.querySelectorAll('#homeSchedulePreview .home-todo-schedule-row'); return r.length?(LANG==='ar'?`${r.length} اليوم`:`${r.length} today`):''; }},
   {id:'health',el:'homeTodoCard',head:':scope > .dash-card-title',ic:'❤️',ar:'الصحة',en:'Health',open:true},
   {id:'commits',el:'dashCommitCard',head:':scope > .dash-card-title',ic:'📅',ar:'الالتزامات',en:'Commitments'},
   {id:'habits',el:'habitsCard',head:':scope > .dash-card-title',ic:'✅',ar:'العادات',en:'Habits'},
