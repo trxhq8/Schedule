@@ -169,12 +169,14 @@
   .home-date-picker button{ background:var(--card); border:1px solid var(--line); border-radius:50%; width:30px; height:30px; font-size:1.1rem; line-height:1; cursor:pointer; color:var(--heading); }
   .home-date-picker span{ font-family:var(--font-head); font-weight:700; font-size:0.88rem; color:var(--heading); min-width:130px; text-align:center; }
   .home-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:20px; }
-  #homeSchedulePreview{ display:none!important; } #homeTodoCard{ order:-1; } /* phones: today's plan, then today's health, then highlights */
+  #homeSchedulePreview, #homeCollectionPreview, #homeAquarium{ display:none!important; }
+  #homeTodoCard{ order:-2; } #dashCommitCard{ order:-1; } /* phones: today's health, its commitments, then challenges */
   @media(min-width:860px){
     .home-grid{ grid-template-columns:1.1fr 1.7fr 1fr; grid-template-rows:auto auto 1fr; align-items:start; gap:14px; }
     #homeSchedulePreview{ order:0; grid-column:1; grid-row:1; }
     #homeDietTrainingPreview{ grid-column:1; grid-row:2; }
     #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 4; }
+    #dashCommitCard{ order:0; grid-column:1; grid-row:1; }
     #homeChallengesPreview{ grid-column:3; grid-row:1; }
     #homeCollectionPreview{ grid-column:3; grid-row:2; }
     #homeAquarium{ grid-column:1; grid-row:1; }
@@ -182,6 +184,12 @@
   .home-todo-wrap{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow); }
   .home-todo-wrap #dashboardSummary{ margin-top:14px; }
   .home-todo-wrap .dash-card{ box-shadow:none; }
+  /* inside the Health card each block is a plain section with a divider, not a card in a card */
+  .home-todo-wrap #dashboardSummary{ gap:0; }
+  .home-todo-wrap #dashboardSummary .dash-card, .home-todo-wrap > .dash-card{ background:transparent; border:none; border-top:1px solid var(--line); border-radius:0; padding:14px 2px; }
+  .home-todo-wrap #dashboardSummary > .dash-card:first-child, .home-todo-wrap #homeHabitsSlot:first-child > .dash-card{ border-top:none; }
+  /* related things together: habits, training, then food (calories, water, supplements), weight last */
+  #homeHabitsSlot{ order:1; } #dashWorkoutCard{ order:2; } #dashCalCard{ order:3; } #dashWaterCard{ order:4; } #dashSuppCard{ order:5; } #dashboardSummary .dash-row-mini{ order:6; }
   .home-todo-bar{ height:8px; border-radius:999px; background:var(--bg); border:1px solid var(--line); overflow:hidden; }
   .home-todo-bar-fill{ height:100%; background:var(--accent-deep); transition:width .3s ease; }
   .home-preview-card{ cursor:pointer; transition:transform .15s ease; }
@@ -1199,7 +1207,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .log-row .diff.up{ color:var(--diff-up); } .log-row .diff.down{ color:var(--diff-down); }
   .log-empty{ text-align:center; color:var(--ink-soft); font-size:0.8rem; padding:10px 0; }
 
-  .today-square{ background:var(--card); border:2px solid var(--heading); border-radius:20px; padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
+  .today-square{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
   .today-square-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
   .today-square-day{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1.1rem; }
   .today-square-kcal{ font-family:var(--font-head); font-weight:700; color:var(--gold); font-size:0.85rem; }
@@ -2049,9 +2057,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="dash-card home-section hidden" id="homeSchedulePreview"></div>
     <div class="hidden" id="homeDietTrainingPreview"></div>
     <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges" role="button" tabindex="0"></div>
-    <div class="dash-card home-preview-card" id="homeCollectionPreview" data-goto="collections" role="button" tabindex="0"></div>
+    <div class="dash-card home-preview-card hidden" id="homeCollectionPreview" data-goto="collections" role="button" tabindex="0"></div>
     <div id="homeWeekly" class="home-weekly" style="display:none"></div>
-    <div class="dash-card" id="homeAquarium"></div>
+    <div class="dash-card hidden" id="homeAquarium"></div>
 
     <!-- TODAY'S HEALTH: only daily health actions (food, training, water,
          habits, weight) — every block names the section it comes from -->
@@ -2061,7 +2069,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="home-todo-bar"><div class="home-todo-bar-fill" id="homeTodoBarFill"></div></div>
       <div id="homeChest"></div>
     <div id="dashboardSummary">
-      <div class="dash-card" id="dashCommitCard"></div>
       <div id="homeHabitsSlot">
       <div class="dash-card" id="habitsCard">
         <div class="dash-card-title dash-title-row"><span id="dashHabitsTitle"></span><button type="button" class="dash-link habits-order-link hidden" id="habitsOrderBtn"></button><button type="button" class="dash-link habits-manage-link" data-nav="habits" data-i18n="link_manage_habits"></button></div>
@@ -2116,6 +2123,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="dash-card hidden" id="homeWeightTask"></div>
     <div id="homeTodoScheduleRows" class="hidden"></div>
     </div>
+    <div class="dash-card" id="dashCommitCard"></div>
     </div>
   </section>
 
@@ -3145,7 +3153,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic" aria-hidden="true">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="health"><span class="ic" aria-hidden="true">🩺</span><span data-i18n="bottom_nav_health"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="challenges"><span class="ic" aria-hidden="true">🎯</span><span data-i18n="bottom_nav_challenges"></span></button>
-  <button type="button" class="bottom-nav-item" data-goto="collections"><span class="ic" aria-hidden="true">🎣</span><span data-i18n="bottom_nav_collection"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="profile-hub"><span class="ic" aria-hidden="true">👤</span><span data-i18n="bottom_nav_profile"></span></button>
 </nav>
 
@@ -3224,7 +3231,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.67.0';
+const APP_VERSION='v1.68.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4826,8 +4833,8 @@ document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ sh
    is lit. Back goes to wherever the panel was opened FROM (returnTo) —
    e.g. Nutrition opened from Home backs to Home — falling back to the
    parent section when there's no history. */
-const ROOT_PANELS=['home','today','health','challenges','collections','profile-hub'];
-const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub',
+const ROOT_PANELS=['home','today','health','challenges','profile-hub'];
+const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
   food:'health', workout:'health', habits:'health' };
 const BACK_LABEL={ home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
   food:'back_nutrition', workout:'back_training', habits:'back_habits', progress:'back_progress', profile:'back_profile', social:'back_friends', store:'back_store', collections:'back_collection' };
@@ -4951,6 +4958,12 @@ function showPanel(name){
   if(name==='home') refreshHome();
 }
 document.querySelectorAll('#bottomNav .bottom-nav-item').forEach(b=>b.addEventListener('click',()=>{ showPanel(b.dataset.goto); enterSection(b.dataset.goto); }));
+/* iOS home-screen app: when the keyboard closes the bottom bar can stay lifted
+   mid-screen; a same-place scroll makes Safari lay the fixed bars out again */
+(()=>{ const relayout=()=>requestAnimationFrame(()=>window.scrollTo(window.scrollX,window.scrollY));
+  const typing=()=>{ const a=document.activeElement; return !!(a&&a.matches&&a.matches('input,textarea,select,[contenteditable="true"]')); };
+  document.addEventListener('focusout',()=>setTimeout(()=>{ if(!typing()) relayout(); },80));
+  const vv=window.visualViewport; if(vv){ let h=vv.height; vv.addEventListener('resize',()=>{ if(vv.height>h+60) relayout(); h=vv.height; }); } })();
 
 /* ================= HEALTH HUB =================
    Three destinations, each with a live one-line summary of today and an
@@ -6213,7 +6226,7 @@ function aqStartMotion(tank,tries){
     if(d){ const fl=d.animate([{transform:'scaleX(-1)',offset:0},{transform:'scaleX(-1)',offset:.499},{transform:'scaleX(1)',offset:.5},{transform:'scaleX(1)',offset:1}],{duration:dur*2,iterations:Infinity}); fl.currentTime=(Date.now()-COS_EPOCH+off)%(dur*2); }
   });
 }
-function renderHomeAquarium(){ renderAquarium(document.getElementById('homeAquarium'),false); }
+function renderHomeAquarium(){ const c=document.getElementById('collAquarium'); if(c&&currentPanelName==='collections') renderAquarium(c,true); } // the tank lives in Collections only (v1.68.0)
 async function updateAquariumClarity(){ const m=document.querySelector('#homeAquarium .aq-murk'); if(!m) return; const c=await tankClarity(); m.style.opacity=(0.4*(1-c)).toFixed(2); }
 
 /* ---- Store → 🐠 tab: tank themes + decorations ---- */
