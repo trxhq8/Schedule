@@ -1228,6 +1228,29 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .day-btn.special{ border-color:var(--gold); }
   .day-btn.rest{ opacity:0.65; }
   .day-btn.today{ outline:2px solid var(--heading); outline-offset:2px; }
+  /* loop split */
+  .day-btn.missed{ opacity:.45; } .day-btn.expected{ border-style:dashed; } .day-btn.done{ border-color:var(--accent-deep); } .day-btn.pre{ opacity:.3; }
+  .day-btn .lp-date{ font-size:.6rem; color:var(--ink-soft); } .day-btn .lp-mark{ font-style:normal; font-size:.65rem; color:var(--accent-deep); margin-inline-start:2px; }
+  .loop-ask{ border:2px solid var(--accent-deep); margin-bottom:12px; }
+  .loop-ask .la-q{ font-family:var(--font-head); font-weight:800; color:var(--heading); font-size:1rem; margin-bottom:4px; }
+  .loop-ask .la-sub{ font-size:.78rem; color:var(--ink-soft); margin-bottom:6px; line-height:1.6; }
+  .lp-chips{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px; }
+  .lp-chip{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:6px 11px; font:inherit; font-size:.82rem; cursor:pointer; }
+  .lp-chip.on{ background:var(--accent-deep); color:#fff; border-color:var(--accent-deep); }
+  .lp-actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .lp-actions .setup-btn{ flex:1 1 auto; margin:0; width:auto; }
+  .lp-ghost{ background:none; border:1px solid var(--line); border-radius:12px; padding:9px 12px; font:inherit; font-size:.82rem; color:var(--ink); cursor:pointer; }
+  .lp-extra{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .lp-link{ background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:4px 10px; font:inherit; font-size:.74rem; color:var(--ink); cursor:pointer; }
+  .lp-note{ font-size:.76rem; color:var(--ink-soft); width:100%; }
+  .lp-odd{ background:var(--bg); border:1px dashed var(--gold); border-radius:12px; padding:8px 10px; font-size:.78rem; width:100%; }
+  .lp-keep{ display:flex; gap:8px; align-items:center; font-size:.82rem; margin:0 0 12px; }
+  .lp-row{ display:flex; align-items:center; gap:6px; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:6px 10px; margin-bottom:6px; }
+  .lp-row .lp-n{ width:20px; color:var(--ink-soft); font-size:.75rem; } .lp-row .lp-l{ flex:1; font-size:.86rem; }
+  .lp-row button{ background:none; border:1px solid var(--line); border-radius:8px; width:30px; height:28px; cursor:pointer; color:var(--ink); }
+  .lp-row button:disabled{ opacity:.3; cursor:default; }
+  .loop-sub{ font-size:.78rem; color:var(--ink-soft); margin:-4px 0 8px; line-height:1.6; }
+  .lp-arrow{ opacity:.5; font-style:normal; }
   .day-btn.today::before{ content:attr(data-today-label); position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:var(--accent-deep); color:#fff; font-size:0.55rem; padding:1px 6px; border-radius:999px; }
 
   .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px; backdrop-filter:blur(2px); }
@@ -2012,6 +2035,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <button type="button" id="homeDateNext" aria-label="next day">›</button>
     </div>
 
+    <div id="homeLoopAsk" class="hidden"></div>
     <button type="button" class="setup-chip hidden" id="firstRunChip"></button>
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div id="homeNow"></div>
@@ -2408,6 +2432,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         <div class="ob-choice" data-split="bodypart"><span class="ic">🫀</span><span data-i18n="split_bodypart"></span></div>
         <div class="ob-choice" data-split="fullbody"><span class="ic">🧍</span><span data-i18n="split_fullbody"></span></div>
         <div class="ob-choice" data-split="custom"><span class="ic">🛠️</span><span data-i18n="split_custom"></span></div>
+        <div class="ob-choice" data-split="loop" data-testid="split-loop"><span class="ic">🔁</span><span data-i18n="split_loop"></span></div>
       </div>
       <div id="homeEquipSection">
       <h3 data-i18n="q_equip"></h3>
@@ -2450,6 +2475,16 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <h3 data-i18n="q_custom_schedule"></h3>
       <div id="customScheduleGrid"></div>
       </div>
+      <div id="loopSection" class="hidden" data-testid="loop-setup">
+      <h3 data-i18n="q_loop_order"></h3>
+      <div class="loop-sub" data-i18n="q_loop_order_sub"></div>
+      <div id="loopOrderList"></div>
+      <div class="ob-grid compact" id="loopAddGrid"></div>
+      <h3 data-i18n="q_loop_off"></h3>
+      <div class="ob-grid" id="loopOffGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+      <h3 data-i18n="q_loop_next"></h3>
+      <div class="ob-grid compact" id="loopNextGrid"></div>
+      </div>
       <div class="split-preview" id="splitPreview" style="font-size:0.78rem;color:var(--ink-soft);text-align:center;margin-bottom:12px;"></div>
       <div class="val-msg" id="restValMsg"></div>
       <button class="setup-btn" id="workoutSetupSave" disabled data-i18n="save"></button>
@@ -2458,6 +2493,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <!-- content -->
     <div id="workoutContent" class="hidden">
       <div class="back-row"><span></span><button class="edit-btn" id="editWorkoutBtn" data-i18n="edit_setup"></button></div>
+      <div id="workoutLoopAsk" class="hidden"></div>
       <div class="legend" id="workoutLegend"></div>
       <div class="grid" id="workoutGrid"></div>
     </div>
@@ -3188,7 +3224,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.66.1';
+const APP_VERSION='v1.67.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4217,7 +4253,7 @@ const I18N={
   ex_goal_muscle:'بناء عضل',ex_goal_lose:'حرق دهون',ex_goal_mobility:'مرونة',
   q_train_location:'📍 وين تتمرن؟',trainloc_gym:'جيم',trainloc_home:'بيت',trainloc_outdoor:'خارجي',trainloc_other:'مكان ثاني',
   q_split:'🧩 شلون تبي تقسم تمرينك؟',split_hint:'المكان (جيم/بيت) يحدد الأدوات بس — هذا يحدد شكل أسبوعك',
-  split_ppl:'دفع/سحب/رجل',split_upperlower:'علوي/سفلي',split_bodypart:'حسب العضلة',split_fullbody:'جسم كامل',split_custom:'مخصص',
+  split_ppl:'دفع/سحب/رجل',split_upperlower:'علوي/سفلي',split_bodypart:'حسب العضلة',split_fullbody:'جسم كامل',split_custom:'مخصص',split_loop:'لوب (يمشي على اللي سويته)',q_loop_order:'🔁 ترتيب اللوب',q_loop_order_sub:'رتّب أيامك بالترتيب اللي تمشي عليه — الدور ما يتحرك إلا لما تعلّم «تمرين اليوم ✓»',q_loop_off:'📅 أيام إجازة ثابتة (ما تحرّك اللوب)',q_loop_next:'▶️ تمرينك الجاي هو',
   q_custom_schedule:'🗓️ رتب أسبوعك بنفسك',split_custom_incomplete:'🚫 حدد نوع تمرين (أو راحة) لكل يوم قبل الحفظ',
   type_chest:'صدر',type_back:'ظهر',type_shoulders:'كتف',type_arms:'أذرع',type_upper:'علوي',type_lower:'سفلي',type_full:'جسم كامل',
   q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_barbell:'بار حديد (باربل)',eq_bench:'بنش',eq_kettlebell:'كيتل بيل',eq_dipbars:'متوازي ديبس',eq_mat:'مسطبة يوقا',eq_none:'ولا شي',
@@ -4378,7 +4414,7 @@ const I18N={
   ex_goal_muscle:'Build muscle',ex_goal_lose:'Fat loss',ex_goal_mobility:'Mobility',
   q_train_location:'📍 Where do you train?',trainloc_gym:'Gym',trainloc_home:'Home',trainloc_outdoor:'Outdoor',trainloc_other:'Other',
   q_split:'🧩 How do you want to split your training?',split_hint:'Location (gym/home) only decides equipment — this decides your weekly shape',
-  split_ppl:'Push/Pull/Legs',split_upperlower:'Upper/Lower',split_bodypart:'Body part',split_fullbody:'Full body',split_custom:'Custom',
+  split_ppl:'Push/Pull/Legs',split_upperlower:'Upper/Lower',split_bodypart:'Body part',split_fullbody:'Full body',split_custom:'Custom',split_loop:'Loop (follows what you did)',q_loop_order:'🔁 Loop order',q_loop_order_sub:'Put your days in the order you cycle through — the loop only moves on once you tick “Today’s workout ✓”',q_loop_off:'📅 Fixed days off (never move the loop)',q_loop_next:'▶️ Your next workout is',
   q_custom_schedule:'🗓️ Build your own week',split_custom_incomplete:'🚫 Assign a training type (or rest) to every day before saving',
   type_chest:'Chest',type_back:'Back',type_shoulders:'Shoulders',type_arms:'Arms',type_upper:'Upper',type_lower:'Lower',type_full:'Full body',
   q_equip:'🎒 What equipment do you have?',eq_db:'Dumbbells',eq_band:'Resistance band',eq_bar:'Pull-up bar',eq_barbell:'Barbell',eq_bench:'Bench',eq_kettlebell:'Kettlebell',eq_dipbars:'Dip bars',eq_mat:'Yoga mat',eq_none:'No equipment',
@@ -7547,7 +7583,8 @@ const TRAINING_SPLITS={
  upperlower:{days:['upper','lower']},
  bodypart:{days:['chest','back','shoulders','arms','legs']},
  fullbody:{days:['full']},
- custom:{days:null} // per-weekday assignment lives in P.workoutSetup.customSchedule instead
+ custom:{days:null}, // per-weekday assignment lives in P.workoutSetup.customSchedule instead
+ loop:{days:null}    // the order lives in P.workoutSetup.loop.order; the day comes from what was done
 };
 const ALL_TRAINING_DAY_TYPES=['push','pull','legs','chest','back','shoulders','arms','upper','lower','full'];
 /* custom weeks can hold a sport day, stored as 'sport:<key>' so each day
@@ -7562,7 +7599,7 @@ function sportOf(k){ return SPORTS[(String(k).split(':')[1])||'other']||SPORTS.o
 function dayTypeIcon(typeKey){ if(isSportType(typeKey)) return sportOf(typeKey).icon; return (workoutTypes[typeKey]||{}).icon || '💪'; }
 function dayTypeLabel(typeKey){ if(isSportType(typeKey)) return sportOf(typeKey)[LANG]; return typeKey==='rest' ? t('rest_day_name') : t('type_'+typeKey); }
 function currentSplitId(){ return (P.workoutSetup&&P.workoutSetup.splitId) || 'ppl'; }
-function currentSplitDays(){ return TRAINING_SPLITS[currentSplitId()].days || []; }
+function currentSplitDays(){ if(isLoopMode()) return [...new Set(P.workoutSetup.loop.order.filter(k=>k!=='rest'))]; return (TRAINING_SPLITS[currentSplitId()]||TRAINING_SPLITS.ppl).days || []; }
 
 /* ---- body-part / upper-lower / full-body pools (home = bodyweight, subject
    to the same equipment swap/upgrade tables as push/pull/legs; gym = full
@@ -9417,10 +9454,12 @@ function updateHomeEquipVisibility(){
    pool), never which days/muscle-groups the week rotates through. */
 wireSingle('#obSplitGrid',el=>{ P._splitId=el.dataset.split; onSplitChanged(); });
 function onSplitChanged(){
-  const isCustom=P._splitId==='custom';
-  document.getElementById('restDaysSection').classList.toggle('hidden',isCustom);
+  const isCustom=P._splitId==='custom', isLoop=P._splitId==='loop';
+  document.getElementById('restDaysSection').classList.toggle('hidden',isCustom||isLoop);
   document.getElementById('customScheduleSection').classList.toggle('hidden',!isCustom);
+  document.getElementById('loopSection').classList.toggle('hidden',!isLoop);
   if(isCustom) buildCustomScheduleGrid();
+  if(isLoop) buildLoopSetup();
   updateSplitPreview();
 }
 function buildCustomScheduleGrid(){
@@ -9489,6 +9528,7 @@ function prefillWorkoutSetup(){
   P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._trainLocation=trainLoc; P._splitId=splitId; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
   P._restDays=s.restDays||[];
   P._customSchedule={...(s.customSchedule||{})};
+  loopDraftInit(s);
   P._equipOtherList=(s.equipOtherList||[]).slice(); P._injuryOtherList=(s.injuryOtherList||[]).slice();
   renderEquipOtherChips(); renderInjuryOtherChips();
   updateHomeEquipVisibility();
@@ -9522,6 +9562,7 @@ function flashRestMsg(msg){ const el=document.getElementById('restValMsg'); el.t
    out, so rest days can sit anywhere in the week without shifting anything. */
 const WORKOUT_ROTATION_EPOCH=new Date(2024,0,1);
 function workoutTypeForDate(dateObj,ws){
+  if(ws&&ws.splitId==='loop') return isLoopWs(ws)?loopTypeForDate(ws,dateObj):'rest';
   const weekdayIdx=(dateObj.getDay()+1)%7;
   if(ws.splitId==='custom') return (ws.customSchedule&&ws.customSchedule[weekdayIdx])||'rest';
   const restDays=ws.restDays||[];
@@ -9552,6 +9593,361 @@ function datesForCurrentWeek(){
 function generateWeekPattern(ws){
   return datesForCurrentWeek().map(d=>workoutTypeForDate(d,ws));
 }
+/* ================= LOOP SPLIT =================
+   'loop' follows what was actually done, not the calendar: today's type is
+   the step after the last day ticked done. Nothing is stored as a counter or
+   a "next" pointer — the position is worked out on every render from the day
+   records (workoutDone + workoutType) on/after loop.start, so a late tick, an
+   untick, a second device or an offline save all settle by themselves.
+   Fixed off-weekdays are skipped entirely; a 'rest' step is over when its day
+   ends; a sport day or a "keep my next" day counts as activity but doesn't
+   move the loop. */
+const LOOP_LOOKBACK=60;
+const LOOP_ADDABLE=['chest','back','shoulders','arms','legs','push','pull','upper','lower','full','rest'];
+function isLoopWs(ws){ return !!(ws&&ws.splitId==='loop'&&ws.loop&&Array.isArray(ws.loop.order)&&ws.loop.order.length&&ws.loop.start&&ws.loop.start.date); }
+function isLoopMode(){ return isLoopWs(P.workoutSetup); }
+function loopIcon(k){ return k==='rest'?'😴':dayTypeIcon(k); }
+function loopTag(k){ return `${loopIcon(k)} ${dayTypeLabel(k)}`; }
+function dayOnly(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function isoOfDate(d){ return isoDateStr(d.getFullYear(),d.getMonth(),d.getDate()); }
+function dateOfIso(s){ const p=String(s).split('-').map(Number); return new Date(p[0],(p[1]||1)-1,p[2]||1); }
+function trackKeyOfDate(d){ return 'daily-track:'+dateKeyOf(d); }
+function loopOff(ws,d){ return (ws.loop.offDays||[]).includes((d.getDay()+1)%7); }
+function loopStartDate(ws){ return dateOfIso(ws.loop.start.date); }
+function loopPickTypes(ws){ return [...new Set(ws.loop.order.filter(k=>k!=='rest'))]; }
+function loopTrainingDaysPerWeek(ws){ const o=ws.loop.order; return Math.round((7-(ws.loop.offDays||[]).length)*o.filter(k=>k!=='rest').length/o.length); }
+/* day records the loop reads: today = dailyTrack, yesterday = the shared
+   catch-up doc, older days = loaded once per day (undefined = not loaded yet) */
+let _loopRecs={}, _loopLoaded='', _loopLoading=null;
+function loopRec(d){
+  const k=trackKeyOfDate(d);
+  if(k===dailyTrackKey) return dailyTrack;
+  try{ if(_yShared&&_yShared.key===k) return _yShared.doc; }catch(e){}
+  if(k in _loopRecs) return _loopRecs[k];
+  try{ if(pastDayDocCache[k]) return pastDayDocCache[k]; }catch(e){}
+  return undefined;
+}
+/* the type a day record moves the loop with, or null */
+function loopMoveType(ws,rec,expected){
+  if(!rec||!rec.workoutDone||rec.workoutLoopKeep) return null;
+  const tp=rec.workoutType;
+  if(!tp) return expected==='rest'?null:expected; // ticked on an older app copy (no type saved): counts as the step that was due
+  if(isSportType(tp)||!ws.loop.order.includes(tp)) return null;
+  return tp;
+}
+/* next step after doing `type`, searched from the current position so a loop
+   with the same type twice (push,pull,legs,push,pull,legs,rest) still works */
+function loopStepAfter(order,idx,type){ const n=order.length; for(let k=0;k<n;k++){ const j=(idx+k)%n; if(order[j]===type) return (j+1)%n; } return idx; }
+/* index of the step due on `target`, worked out only from the days before it.
+   Days from today on (not done yet) are assumed done as planned — that's the
+   projection the week grid shows. */
+function loopIdxOn(ws,target){
+  const order=ws.loop.order, n=order.length, t=dayOnly(target), today=dayOnly(new Date());
+  const floor=new Date(today); floor.setDate(floor.getDate()-LOOP_LOOKBACK);
+  const d=new Date(Math.max(loopStartDate(ws).getTime(),floor.getTime())); // older days are never read: the latest done day decides anyway
+  let idx=Math.max(0,order.indexOf(ws.loop.start.next));
+  for(;d<t;d.setDate(d.getDate()+1)){
+    if(loopOff(ws,d)) continue;
+    const rec=loopRec(d), isT=d.getTime()===today.getTime(), done=!!(rec&&rec.workoutDone);
+    let mv=loopMoveType(ws,rec,order[idx]);
+    if(!mv&&isT&&!done&&dailyTrack.workoutPick&&!dailyTrack.workoutLoopKeep&&order.includes(dailyTrack.workoutPick)) mv=dailyTrack.workoutPick;
+    if(mv){ idx=loopStepAfter(order,idx,mv); continue; }
+    if(order[idx]==='rest'||(d>=today&&!done)) idx=(idx+1)%n; // a rest step ends with its day
+  }
+  return idx;
+}
+function loopExpected(ws,d){ return loopOff(ws,d)?'rest':ws.loop.order[loopIdxOn(ws,d)]; }
+function loopTypeForDate(ws,dateObj){
+  if(ws===P.workoutSetup) loopEnsureLoaded();
+  const d=dayOnly(dateObj);
+  if(d<loopStartDate(ws)||loopOff(ws,d)) return 'rest'; // before the loop started: never guessed
+  const rec=loopRec(d);
+  if(rec&&rec.workoutDone&&rec.workoutType) return rec.workoutType; // what was actually done
+  if(d.getTime()===dayOnly(new Date()).getTime()&&dailyTrack.workoutPick) return dailyTrack.workoutPick;
+  return loopExpected(ws,d);
+}
+function loopSig(ws){ return dateKeyOf(new Date())+'|'+ws.loop.start.date; }
+function loopEnsureLoaded(){
+  const ws=P.workoutSetup; if(!isLoopWs(ws)) return null;
+  const sig=loopSig(ws);
+  if(_loopLoaded===sig) return null;
+  if(_loopLoading&&_loopLoading.sig===sig) return _loopLoading.p;
+  const p=(async()=>{
+    const st=loopStartDate(ws), jobs=[];
+    for(let b=1;b<=LOOP_LOOKBACK;b++){ const d=dayOnly(pastDayDate(b)); if(d<st) break; const k=trackKeyOfDate(d);
+      jobs.push(storageGet(k).then(v=>{ if(v) _loopRecs[k]=JSON.parse(v); else if(!(k in _loopRecs)) _loopRecs[k]=null; },()=>{})); }
+    await Promise.all(jobs);
+    _loopLoaded=sig; _loopLoading=null; loopRerender();
+  })().catch(()=>{ _loopLoading=null; });
+  _loopLoading={sig,p}; return p;
+}
+let _loopRrT=null;
+function loopRerender(){
+  clearTimeout(_loopRrT);
+  _loopRrT=setTimeout(()=>{
+    try{ if(document.getElementById('panel-home').classList.contains('active')){ renderDailySummary(); renderHomeNow(); } }catch(e){}
+    try{ renderLoopAsk(); }catch(e){}
+    try{ const act=document.querySelector('section.panel.active'); if(act&&act.id==='panel-workout') renderWorkoutSection(); }catch(e){}
+  },60);
+}
+/* past days (last 7, on/after loop.start) that still have no answer — oldest first */
+function loopUnansweredDays(){
+  const ws=P.workoutSetup; if(!isLoopWs(ws)||_loopLoaded!==loopSig(ws)||navigator.onLine===false) return [];
+  const out=[], st=loopStartDate(ws), lim=Math.min(CATCHUP_DAYS,catchUpBackLimit());
+  for(let b=lim;b>=1;b--){ const d=dayOnly(pastDayDate(b)); if(d<st||loopOff(ws,d)) continue;
+    const rec=loopRec(d); if(rec===undefined||(rec&&(rec.workoutDone||rec.workoutSkipped))) continue;
+    if(loopExpected(ws,d)==='rest') continue;
+    out.push(b); }
+  return out;
+}
+/* saves a past day: val = a type | 'no' | 'undo'. XP/streak once per day
+   (same server claim as the old yesterday row), then today recomputes */
+async function loopSetPastDay(b,val){
+  const ws=P.workoutSetup, ar=LANG==='ar', d=dayOnly(pastDayDate(b)), key=trackKeyOfDate(d);
+  const before=isLoopWs(ws)?loopTypeForDate(ws,new Date()):null;
+  const doc=b===1?await loadYesterdayTrack():await loadPastDay(b,true);
+  if(!doc){ showToast(ar?'ما قدرنا نحمّل هاليوم — جرّب لما يرجع النت':'Couldn’t load that day — try again when you’re online','error'); return false; }
+  if(val==='no'){ doc.workoutDone=false; delete doc.workoutType; doc.workoutSkipped=true; }
+  else if(val==='undo'){ doc.workoutDone=false; delete doc.workoutType; }
+  else { doc.workoutDone=true; doc.workoutType=val; delete doc.workoutSkipped; }
+  const earn=doc.workoutDone&&!doc.completionCounted; if(earn) doc.completionCounted=true;
+  _loopRecs[key]=doc;
+  await storageSet(key,JSON.stringify(doc));
+  if(earn&&await xpClaim('yw:'+key)){
+    migrateProgressionFields();
+    P.workoutCompletions=P.workoutCompletions||{push:0,pull:0,legs:0};
+    P.workoutCompletions[val]=(P.workoutCompletions[val]||0)+1;
+    const sk=updateNamedStreakForDate('workout',d); P.streakCount=sk.current; P.lastStreakDate=sk.lastDate;
+    await storageSet('profile',JSON.stringify(P));
+    await awardXP(XP_CONFIG.workout_complete); await notifyNewUnlocks(); renderStreakBadge();
+  }
+  if(isLoopWs(ws)){
+    const after=loopTypeForDate(ws,new Date());
+    if(after!==before&&!dailyTrack.workoutDone){
+      const wd=d.toLocaleDateString(ar?'ar-EG':'en-US',{weekday:'long'});
+      const when=b===1?(ar?'لأمس':'for yesterday'):(ar?'ليوم '+wd:'for '+wd);
+      showToast(val!=='no'&&val!=='undo'?(ar?`انحسب ${dayTypeLabel(val)} ${when}، اليوم: ${dayTypeLabel(after)}`:`${dayTypeLabel(val)} counted ${when} — today: ${dayTypeLabel(after)}`)
+        :(ar?`تمرين اليوم صار: ${dayTypeLabel(after)}`:`Today’s workout is now: ${dayTypeLabel(after)}`),'success');
+    }
+  }
+  loopRerender(); try{ renderWorkoutYesterdayToggle(); }catch(e){}
+  return true;
+}
+function loopChipsHtml(types,sel){ return `<div class="lp-chips">${types.map(k=>`<button type="button" class="lp-chip${k===sel?' on':''}" data-lt="${escapeHtml(k)}" data-testid="lp-chip-${escapeHtml(k)}">${loopTag(k)}</button>`).join('')}</div>`; }
+function loopWireChips(root,onPick){ root.querySelectorAll('[data-lt]').forEach(c=>c.onclick=()=>{ root.querySelectorAll('[data-lt]').forEach(x=>x.classList.toggle('on',x===c)); onPick(c.dataset.lt); }); }
+/* the morning question, on Home and on the Training page */
+function renderLoopAsk(){
+  const els=['homeLoopAsk','workoutLoopAsk'].map(id=>document.getElementById(id)).filter(Boolean);
+  const ws=P.workoutSetup, days=isLoopWs(ws)?loopUnansweredDays():[];
+  if(!days.length){ els.forEach(e=>{ e.innerHTML=''; e.classList.add('hidden'); }); return; }
+  const ar=LANG==='ar', b=days[0], d=dayOnly(pastDayDate(b)), exp=loopExpected(ws,d), types=[...loopPickTypes(ws),'sport:other'];
+  const when=d.toLocaleDateString(ar?'ar-EG':'en-US',{weekday:'long',day:'numeric',month:'short'});
+  const q=b===1?(ar?'أمس تمرنت؟':'Did you train yesterday?'):(ar?`يوم ${when} تمرنت؟`:`Did you train on ${when}?`);
+  els.forEach(el=>{
+    let sel=exp;
+    el.classList.remove('hidden');
+    el.innerHTML=`<div class="dash-card loop-ask" data-testid="loop-ask" data-back="${b}"><div class="la-q">🔁 ${q}${days.length>1?` <span class="num" style="font-size:.78rem;">(${ar?'باقي':'left'} ${days.length})</span>`:''}</div>
+      <div class="la-sub">${ar?`الدور كان على ${loopTag(exp)} — جاوب عشان يطلع تمرين اليوم صح`:`The loop expected ${loopTag(exp)} — answer so today’s workout is right`}</div>
+      ${loopChipsHtml(types,sel)}
+      <div class="lp-actions"><button type="button" class="setup-btn" data-la="yes" data-testid="loop-ask-yes">${ar?'إي، سويت':'Yes, I did'} <span class="la-sel">${loopTag(sel)}</span></button>
+      <button type="button" class="lp-ghost" data-la="no" data-testid="loop-ask-no">${ar?'لا، ما تمرنت':'No, I didn’t'}</button></div></div>`;
+    loopWireChips(el,k=>{ sel=k; el.querySelector('.la-sel').innerHTML=loopTag(k); });
+    el.querySelector('[data-la="yes"]').onclick=async e=>{ e.currentTarget.disabled=true; await loopSetPastDay(b,sel); };
+    el.querySelector('[data-la="no"]').onclick=async e=>{ e.currentTarget.disabled=true; await loopSetPastDay(b,'no'); };
+  });
+}
+/* «شنو تمرنت ذاك اليوم؟» — default = what the loop expected for THAT date */
+function loopPastDaySheet(b){
+  const ws=P.workoutSetup; if(!isLoopWs(ws)) return;
+  const ar=LANG==='ar', d=dayOnly(pastDayDate(b)), rec=loopRec(d)||{}, pre=d<loopStartDate(ws);
+  const first=loopPickTypes(ws)[0], exp=pre?first:loopExpected(ws,d);
+  let sel=(rec.workoutDone&&rec.workoutType)?rec.workoutType:(exp==='rest'?first:exp);
+  const types=[...loopPickTypes(ws),'sport:other']; if(!types.includes(sel)) types.unshift(sel);
+  const when=b===1?(ar?'أمس':'Yesterday'):d.toLocaleDateString(ar?'ar-EG':'en-US',{weekday:'long',day:'numeric',month:'short'});
+  openGuideSheet(`<h3>🔁 ${ar?'شنو تمرنت ذاك اليوم؟':'What did you train that day?'}</h3>
+    <p class="sub">${escapeHtml(when)}${pre||exp==='rest'?'':` · ${ar?'الدور كان على':'the loop expected'} ${loopTag(exp)}`}</p>
+    ${loopChipsHtml(types,sel)}
+    <div class="lp-actions"><button type="button" class="setup-btn" id="lpSave" data-testid="loop-past-save">✓ ${ar?'تمرنت':'I trained'}</button>
+    <button type="button" class="lp-ghost" id="lpNo" data-testid="loop-past-no">${ar?'لا، ما تمرنت':'No, I didn’t'}</button>
+    ${rec.workoutDone?`<button type="button" class="lp-ghost" id="lpUndo" data-testid="loop-past-undo">${ar?'شيل التك':'Remove the tick'}</button>`:''}</div>`,
+  body=>{
+    loopWireChips(body,k=>{ sel=k; });
+    body.querySelector('#lpSave').onclick=async()=>{ closeGuideSheet(); await loopSetPastDay(b,sel); };
+    body.querySelector('#lpNo').onclick=async()=>{ closeGuideSheet(); await loopSetPastDay(b,'no'); };
+    const u=body.querySelector('#lpUndo'); if(u) u.onclick=async()=>{ closeGuideSheet(); await loopSetPastDay(b,'undo'); };
+  });
+}
+/* today's day was ticked as one type, but a late tick before it says another
+   was due — never changed by itself, just flagged with a one-tap fix */
+function loopOdd(ws){
+  const dt=dailyTrack; if(!dt.workoutDone||!dt.workoutType||dt.workoutPick||dt.workoutLoopKeep||isSportType(dt.workoutType)) return null;
+  const exp=loopExpected(ws,new Date()); if(exp==='rest'||exp===dt.workoutType) return null;
+  let prev=null;
+  for(let b=1;b<=CATCHUP_DAYS&&!prev;b++){ const d=dayOnly(pastDayDate(b)); if(d<loopStartDate(ws)) break; const r=loopRec(d); if(r&&r.workoutDone&&r.workoutType&&!isSportType(r.workoutType)) prev=r.workoutType; }
+  return {done:dt.workoutType,exp,twice:prev===dt.workoutType};
+}
+function loopTodayBarHtml(ws,typeKey){
+  const ar=LANG==='ar', dt=dailyTrack, now=new Date(), exp=loopExpected(ws,now);
+  let h='<div class="lp-extra" data-testid="loop-today-bar">';
+  if(!loopOff(ws,now)&&!(dt.workoutDone&&isSportType(dt.workoutType))) h+=`<button type="button" class="lp-link" data-lp="chg" data-testid="loop-change">🔁 ${ar?'غيّر تمرين اليوم':'Change today’s workout'}</button>`;
+  if(!dt.workoutDone) h+=`<button type="button" class="lp-link" data-lp="sport" data-testid="loop-sport">🏅 ${ar?'لعبت رياضة اليوم':'Played a sport today'}</button>`;
+  if(dt.workoutPick&&dt.workoutPick!==exp&&exp!=='rest') h+=`<div class="lp-note">${ar?`اخترت ${loopTag(dt.workoutPick)} بدل ${loopTag(exp)}`:`You picked ${loopTag(dt.workoutPick)} instead of ${loopTag(exp)}`}${dt.workoutLoopKeep?(ar?` · ${dayTypeLabel(exp)} يظل الجاي`:` · ${dayTypeLabel(exp)} stays next`):''}</div>`;
+  const tm=new Date(now); tm.setDate(tm.getDate()+1);
+  h+=`<div class="lp-note" data-testid="loop-tomorrow">⏭️ ${ar?'بكرة':'Tomorrow'}: ${loopTag(loopTypeForDate(ws,tm))}${dt.workoutDone||typeKey==='rest'?'':(ar?' (لو خلّصت اليوم)':' (if you finish today)')}</div>`;
+  const odd=loopOdd(ws);
+  if(odd) h+=`<div class="lp-odd" data-testid="loop-odd">${odd.twice?(ar?`سويت ${dayTypeLabel(odd.done)} يومين ورى بعض — عادي؟`:`${dayTypeLabel(odd.done)} two days in a row — is that right?`):(ar?`اليوم انحسب ${dayTypeLabel(odd.done)} بس الدور كان على ${dayTypeLabel(odd.exp)} — عادي؟`:`Today counted as ${dayTypeLabel(odd.done)} but the loop expected ${dayTypeLabel(odd.exp)} — is that right?`)}
+    <div class="lp-actions" style="margin-top:6px;"><button type="button" class="lp-link" data-lp="oddfix" data-testid="loop-odd-fix">${ar?`صحّحه: اليوم ${dayTypeLabel(odd.exp)}`:`Fix: today was ${dayTypeLabel(odd.exp)}`}</button><button type="button" class="lp-link" data-lp="oddok" data-testid="loop-odd-ok">${ar?'عادي، خلّه':'It’s right'}</button></div></div>`;
+  return h+'</div>';
+}
+function loopWireBar(root,after){
+  root.querySelectorAll('[data-lp]').forEach(b=>b.onclick=async e=>{
+    e.stopPropagation(); const k=b.dataset.lp, ws=P.workoutSetup;
+    if(k==='chg') loopChangeSheet(after);
+    else if(k==='sport') loopSportSheet(after);
+    else { const o=loopOdd(ws); if(!o) return; if(k==='oddfix') dailyTrack.workoutType=o.exp; else dailyTrack.workoutPick=o.done; await saveDailyTrack(); loopRerender(); if(after) after(); }
+  });
+}
+function loopChangeSheet(after){
+  const ws=P.workoutSetup, ar=LANG==='ar', now=new Date(), exp=loopExpected(ws,now);
+  let sel=loopTypeForDate(ws,now); if(sel==='rest'||isSportType(sel)) sel=loopPickTypes(ws)[0];
+  openGuideSheet(`<h3>🔁 ${ar?'غيّر تمرين اليوم':'Change today’s workout'}</h3>
+    <p class="sub">${exp==='rest'?(ar?'اليوم راحة باللوب — اختر لو بتتمرن':'The loop says rest today — pick one if you’ll train'):(ar?`الدور على ${loopTag(exp)} — اختر اللي بتسويه`:`The loop says ${loopTag(exp)} — pick what you’ll do`)}</p>
+    ${loopChipsHtml(loopPickTypes(ws),sel)}
+    <label class="lp-keep" id="lpKeepRow"><input type="checkbox" id="lpKeep" data-testid="loop-keep"${dailyTrack.workoutLoopKeep?' checked':''}><span></span></label>
+    <div class="lp-actions"><button type="button" class="setup-btn" id="lpChgSave" data-testid="loop-change-save">✓ ${ar?'تم':'Done'}</button></div>`,
+  body=>{
+    const row=body.querySelector('#lpKeepRow');
+    const sync=()=>{ row.style.display=(exp!=='rest'&&sel!==exp)?'':'none';
+      row.querySelector('span').textContent=ar?`خلّ ${dayTypeLabel(exp)} الجاي (لا تكمّل من ${dayTypeLabel(sel)})`:`Keep ${dayTypeLabel(exp)} next (don’t continue from ${dayTypeLabel(sel)})`; };
+    sync(); loopWireChips(body,k=>{ sel=k; sync(); });
+    body.querySelector('#lpChgSave').onclick=async()=>{
+      const keep=body.querySelector('#lpKeep').checked; closeGuideSheet();
+      if(sel===exp){ delete dailyTrack.workoutPick; delete dailyTrack.workoutLoopKeep; }
+      else { dailyTrack.workoutPick=sel; if(keep&&exp!=='rest') dailyTrack.workoutLoopKeep=true; else delete dailyTrack.workoutLoopKeep; }
+      if(dailyTrack.workoutDone&&!isSportType(dailyTrack.workoutType)) dailyTrack.workoutType=sel;
+      await saveDailyTrack(); try{ playSfx('pop'); }catch(e){}
+      showToast(ar?`تمرين اليوم: ${loopTag(sel)}`:`Today’s workout: ${loopTag(sel)}`,'success');
+      loopRerender(); if(after) after();
+    };
+  });
+}
+function loopSportSheet(after){
+  const ar=LANG==='ar';
+  openGuideSheet(`<h3>🏅 ${ar?'لعبت رياضة اليوم؟':'Played a sport today?'}</h3>
+    <p class="sub">${ar?'تنحسب نشاط (السلسلة والـXP) بس ما تحرّك اللوب — تمرينك الجاي يظل نفسه.':'Counts as activity (streak and XP) but doesn’t move the loop — your next workout stays the same.'}</p>
+    <div class="lp-chips">${Object.entries(SPORTS).map(([k,sp])=>`<button type="button" class="lp-chip" data-sp="${k}" data-testid="loop-sport-${k}">${sp.icon} ${sp[LANG]}</button>`).join('')}</div>`,
+  body=>{ body.querySelectorAll('[data-sp]').forEach(c=>c.onclick=async()=>{
+    closeGuideSheet(); const tk='sport:'+c.dataset.sp;
+    if(!dailyTrack.workoutDone) await toggleWorkoutDone(tk); else { dailyTrack.workoutType=tk; await saveDailyTrack(); }
+    if(dailyTrack.workoutDone&&dailyTrack.workoutType===tk) showToast(ar?`${sportOf(tk).icon} انحسبت ${sportOf(tk).ar} — اللوب ما تحرّك`:`${sportOf(tk).icon} ${sportOf(tk).en} logged — the loop stays put`,'success');
+    loopRerender(); if(after) after(); }); });
+}
+/* a tick between 00:00 and 03:00 probably belongs to the night before */
+function loopAskWhichDay(typeKey){
+  const ar=LANG==='ar';
+  return new Promise(res=>{
+    let fin=v=>{ fin=()=>{}; closeGuideSheet(); res(v); };
+    openGuideSheet(`<h3>🌙 ${ar?'هذا تمرين أمس ولا اليوم؟':'Is this yesterday’s workout or today’s?'}</h3>
+      <p class="sub">${ar?'الساعة بعد ١٢ بالليل — لو تمرنت قبل لا تنام، ينحسب لأمس.':'It’s past midnight — if you trained before sleeping, it counts for yesterday.'}</p>
+      <div class="lp-actions"><button type="button" class="setup-btn" id="lmY" data-testid="loop-mid-yesterday">🌙 ${ar?'أمس':'Yesterday'} · ${loopTag(typeKey)}</button><button type="button" class="lp-ghost" id="lmT" data-testid="loop-mid-today">☀️ ${ar?'اليوم':'Today'}</button></div>`,
+    body=>{ body.querySelector('#lmY').onclick=()=>fin('y'); body.querySelector('#lmT').onclick=()=>fin('t');
+      const bd=document.getElementById('guideSheet'); bd.onclick=e=>{ if(e.target===bd) fin('cancel'); }; });
+  });
+}
+/* undefined = go on with the normal tick; otherwise the tick was handled here */
+async function loopBeforeToggle(typeKey){
+  if(dailyTrack.workoutDone||new Date().getHours()>=3) return undefined;
+  const ws=P.workoutSetup, y=dayOnly(yesterdayDateObj());
+  if(y<loopStartDate(ws)||!yesterdayCatchUpAllowed()) return undefined;
+  const yr=loopRec(y); if(yr&&yr.workoutDone) return undefined;
+  const ans=await loopAskWhichDay(typeKey);
+  if(ans==='t') return undefined;
+  if(ans==='y') await loopSetPastDay(1,typeKey);
+  return dailyTrack.workoutDone;
+}
+/* Home › workout card extras in loop mode */
+function loopDecorateDashCard(typeKey){
+  const row=document.getElementById('dashWorkoutRow'); if(!row) return;
+  const ws=P.workoutSetup, toggle=document.getElementById('dashWorkoutToggle'), nameEl=document.getElementById('dashWorkoutName');
+  let box=document.getElementById('dashWorkoutLoop');
+  if(!isLoopWs(ws)){ if(box) box.remove(); toggle.classList.remove('hidden'); return; }
+  if(!box){ box=document.createElement('div'); box.id='dashWorkoutLoop'; row.insertAdjacentElement('afterend',box); }
+  const ar=LANG==='ar';
+  if(loopUnansweredDays().length){ nameEl.textContent=ar?'⬆️ جاوب عن أمس أول':'⬆️ Answer about yesterday first'; toggle.classList.add('hidden'); box.innerHTML=''; return; }
+  toggle.classList.remove('hidden');
+  if(typeKey==='rest'){
+    nameEl.textContent=loopOff(ws,new Date())?(ar?'😴 إجازة ثابتة اليوم':'😴 Fixed day off today'):(ar?'😴 يوم راحة باللوب':'😴 Loop rest day');
+    toggle.textContent=dailyTrack.restTaken?'✓':''; toggle.classList.toggle('done',!!dailyTrack.restTaken);
+    toggle.setAttribute('aria-label',ar?'أخذت راحة':'I rested');
+    toggle.onclick=async()=>{ if(dailyTrack.restTaken) delete dailyTrack.restTaken; else dailyTrack.restTaken=true; await saveDailyTrack(); loopRerender(); };
+  } else {
+    toggle.setAttribute('aria-label','done');
+    toggle.onclick=async()=>{ await toggleWorkoutDone(typeKey); loopRerender(); };
+  }
+  box.innerHTML=loopTodayBarHtml(ws,typeKey);
+  loopWireBar(box,null);
+}
+/* Training page: today in the middle, 3 real days before, 3 expected after */
+function loopLegendHtml(ws){
+  const ar=LANG==='ar', o=ws.loop.order;
+  return o.map((k,i)=>`<span>${loopTag(k)} <i class="lp-arrow">${i<o.length-1?(ar?'←':'→'):'↩'}</i></span>`).join('')
+    +((ws.loop.offDays||[]).length?`<span>📅 ${ar?'إجازة':'Off'}: ${ws.loop.offDays.map(i=>DAY_NAMES[LANG][i]).join(ar?'، ':', ')}</span>`:'');
+}
+function buildLoopWorkoutGrid(){
+  const grid=document.getElementById('workoutGrid'); grid.innerHTML='';
+  const ws=P.workoutSetup, today=dayOnly(new Date()), st=loopStartDate(ws), lim=catchUpBackLimit();
+  for(let off=-3;off<=3;off++){
+    const d=new Date(today); d.setDate(d.getDate()+off);
+    const name=DAY_NAMES[LANG][(d.getDay()+1)%7];
+    let typeKey=null, cls='', mark=false;
+    if(d<st&&off<0) cls=' pre';
+    else {
+      typeKey=loopTypeForDate(ws,d); const rec=loopRec(d);
+      if(off<0){ if(rec&&rec.workoutDone){ cls=' done'; mark=true; } else if(typeKey==='rest') cls=' rest'; else cls=' missed'; }
+      else if(off>0) cls=' expected'+(typeKey==='rest'?' rest':'');
+      else { cls=typeKey==='rest'?' rest':''; mark=!!dailyTrack.workoutDone; if(mark) cls+=' done'; }
+    }
+    const b=document.createElement('div');
+    b.className='day-btn'+cls+(off===0?' today':'');
+    b.dataset.todayLabel=t('today_label'); b.dataset.testid='loop-day'; b.dataset.off=off; b.dataset.type=typeKey||'';
+    b.innerHTML=`<div class="num">${name}</div><div class="preview">${typeKey?loopIcon(typeKey):'·'}${mark?'<i class="lp-mark">✓</i>':''}</div><div class="lp-date num">${d.getDate()}</div>`;
+    if(off===0) b.addEventListener('click',()=>openWorkoutDay(name,typeKey,true));
+    else if(off>0) b.addEventListener('click',()=>openWorkoutDay(name,typeKey,false));
+    else if(-off<=lim) b.addEventListener('click',()=>loopPastDaySheet(-off));
+    grid.appendChild(b);
+  }
+}
+/* setup form */
+function loopDraftInit(s){
+  const L=s&&s.loop;
+  P._loopOrder=(L&&Array.isArray(L.order)&&L.order.length)?L.order.slice():['chest','back','shoulders','arms','legs','rest'];
+  P._loopOff=L?(L.offDays||[]).slice():[6];
+  let nx=null; try{ if(isLoopWs(s)) nx=loopExpected(s,new Date()); }catch(e){}
+  P._loopNext=(nx&&P._loopOrder.includes(nx))?nx:(P._loopOrder.find(k=>k!=='rest')||P._loopOrder[0]);
+  P._loopNextTouched=false;
+}
+function loopOrderChanged(){ P._loopNextTouched=true; buildLoopSetup(); }
+function buildLoopSetup(){
+  if(!P._loopOrder) loopDraftInit(P.workoutSetup);
+  const ar=LANG==='ar', o=P._loopOrder;
+  const list=document.getElementById('loopOrderList');
+  list.innerHTML=o.map((k,i)=>`<div class="lp-row" data-testid="loop-row"><span class="lp-n num">${i+1}</span><span class="lp-l">${loopTag(k)}</span><button type="button" data-up="${i}" ${i===0?'disabled':''} aria-label="${ar?'فوق':'up'}">▲</button><button type="button" data-dn="${i}" ${i===o.length-1?'disabled':''} aria-label="${ar?'تحت':'down'}">▼</button><button type="button" data-rm="${i}" ${o.length<=1?'disabled':''} aria-label="${ar?'شيل':'remove'}">✕</button></div>`).join('');
+  const mv=(i,j)=>{ const a=P._loopOrder; [a[i],a[j]]=[a[j],a[i]]; loopOrderChanged(); };
+  list.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>mv(+b.dataset.up,+b.dataset.up-1));
+  list.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>mv(+b.dataset.dn,+b.dataset.dn+1));
+  list.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ P._loopOrder.splice(+b.dataset.rm,1); loopOrderChanged(); });
+  const add=document.getElementById('loopAddGrid');
+  add.innerHTML=LOOP_ADDABLE.map(k=>`<div class="ob-choice compact" data-ladd="${k}" data-testid="loop-add-${k}"><span class="ic">${loopIcon(k)}</span><span>+ ${dayTypeLabel(k)}</span></div>`).join('');
+  add.querySelectorAll('[data-ladd]').forEach(c=>c.onclick=()=>{ if(P._loopOrder.length>=14) return; P._loopOrder.push(c.dataset.ladd); loopOrderChanged(); });
+  const offG=document.getElementById('loopOffGrid');
+  offG.innerHTML=DAY_NAMES[LANG].map((n,i)=>`<div class="ob-choice${P._loopOff.includes(i)?' selected':''}" data-loff="${i}" data-testid="loop-off-${i}">${n}</div>`).join('');
+  offG.querySelectorAll('[data-loff]').forEach(c=>c.onclick=()=>{ const i=+c.dataset.loff, a=P._loopOff; if(a.includes(i)) P._loopOff=a.filter(x=>x!==i); else { if(a.length>=4) return; P._loopOff=[...a,i]; } buildLoopSetup(); });
+  const nxG=document.getElementById('loopNextGrid'), uniq=[...new Set(o)];
+  if(!uniq.includes(P._loopNext)) P._loopNext=uniq.find(k=>k!=='rest')||uniq[0];
+  nxG.innerHTML=uniq.map(k=>`<div class="ob-choice compact${k===P._loopNext?' selected':''}" data-lnext="${k}" data-testid="loop-next-${k}"><span class="ic">${loopIcon(k)}</span><span>${dayTypeLabel(k)}</span></div>`).join('');
+  nxG.querySelectorAll('[data-lnext]').forEach(c=>c.onclick=()=>{ P._loopNext=c.dataset.lnext; P._loopNextTouched=true; buildLoopSetup(); });
+  updateSplitPreview();
+}
 /* derives an effective restDays array from a custom weekly schedule, purely
    so downstream consumers that only know about restDays.length (activityFactor,
    the calorie/TDEE calc) keep working unchanged for custom splits too —
@@ -9563,6 +9959,17 @@ function restDaysFromCustomSchedule(schedule){
 function updateSplitPreview(){
   const prev=document.getElementById('splitPreview'); const btn=document.getElementById('workoutSetupSave');
   const splitId=P._splitId||'ppl';
+  if(splitId==='loop'){
+    const o=P._loopOrder||[], ar=LANG==='ar', ok=o.some(k=>k!=='rest');
+    btn.disabled=!ok;
+    if(!ok){ prev.textContent=ar?'🚫 حط تمرين واحد على الأقل باللوب':'🚫 Put at least one workout in the loop'; return; }
+    let idx=Math.max(0,o.indexOf(P._loopNext)); const out=[];
+    for(let i=0;i<7;i++){ const d=new Date(); d.setDate(d.getDate()+i); const wd=(d.getDay()+1)%7;
+      let k; if((P._loopOff||[]).includes(wd)) k='rest'; else { k=o[idx]; idx=(idx+1)%o.length; }
+      out.push(`<b>${i===0?(ar?'اليوم':'Today'):DAY_NAMES[LANG][wd]}</b>: ${loopTag(k)}`); }
+    prev.innerHTML=out.join(' &nbsp;•&nbsp; ')+`<div style="margin-top:4px;">${ar?'لو ما تمرنت يوم، نفس العضلة تنتظرك بكرة':'Skip a day and the same muscle waits for you tomorrow'}</div>`;
+    return;
+  }
   if(splitId==='custom'){
     const sched=P._customSchedule||{};
     const complete=Array.from({length:7},(_,i)=>sched[i]).every(Boolean);
@@ -9596,7 +10003,16 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
     if(!complete){ scrollToEl(document.getElementById('customScheduleSection')); return; }
   }
   const customSchedule=isCustom?{...P._customSchedule}:null;
-  const restDays=isCustom?restDaysFromCustomSchedule(customSchedule):(P._restDays||[]);
+  /* loop: start (date + next) only moves when the order or "next" was changed
+     here — re-saving the form for something else keeps the history counting */
+  const isLoop=splitId==='loop', prevLoop=(P.workoutSetup&&P.workoutSetup.loop)||null;
+  let loop=null;
+  if(isLoop){
+    const order=(P._loopOrder||[]).slice(), offDays=[...(P._loopOff||[])].sort((a,b)=>a-b);
+    const keepStart=prevLoop&&P.workoutSetup.splitId==='loop'&&prevLoop.start&&JSON.stringify(prevLoop.order)===JSON.stringify(order)&&!P._loopNextTouched;
+    loop={order,offDays,start:keepStart?prevLoop.start:{date:isoOfDate(new Date()),next:order.includes(P._loopNext)?P._loopNext:order.find(k=>k!=='rest')}};
+  }
+  const restDays=isCustom?restDaysFromCustomSchedule(customSchedule):isLoop?loop.offDays.slice():(P._restDays||[]);
   const injuryOtherList=P._injuryOtherList||[];
   const injuryAnalysis=injuryOtherList.map(text=>({text,...analyzeInjuryTextLocal(text)}));
   const previousFitnessLevel=P.workoutSetup ? P.workoutSetup.fitnessLevel : null;
@@ -9613,8 +10029,10 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
     noInjuries:document.querySelector('#obInjuryGrid [data-injury="none"]').classList.contains('selected'),
     injuryOtherList,
     injuryAnalysis,
-    restDays
+    restDays,
+    ...((loop||prevLoop)?{loop:loop||prevLoop}:{})
   };
+  if(isLoop){ _loopLoaded=''; P._loopNextTouched=false; }
   if(!P.exerciseLevel || previousFitnessLevel!==newFitnessLevel){
     P.exerciseLevel={}; P.workoutCounts={};
     ALL_TRAINING_DAY_TYPES.forEach(k=>{ P.exerciseLevel[k]=newFitnessLevel; P.workoutCounts[k]=1; });
@@ -9630,9 +10048,11 @@ function renderWorkoutSection(){
   if(!has){ prefillWorkoutSetup(); buildRestGrid(); return; }
   const lg=document.getElementById('workoutLegend');
   const ws=P.workoutSetup;
+  if(isLoopWs(ws)){ lg.innerHTML=loopLegendHtml(ws); buildLoopWorkoutGrid(); renderLoopAsk(); return; }
+  const wla=document.getElementById('workoutLoopAsk'); if(wla){ wla.innerHTML=''; wla.classList.add('hidden'); }
   const daysInLegend = ws.splitId==='custom'
     ? [...new Set(Object.values(ws.customSchedule||{}).filter(k=>k&&k!=='rest'))]
-    : (TRAINING_SPLITS[ws.splitId||'ppl']||TRAINING_SPLITS.ppl).days;
+    : (TRAINING_SPLITS[ws.splitId||'ppl']||TRAINING_SPLITS.ppl).days||[];
   lg.innerHTML=daysInLegend.map(k=>`<span>${dayTypeIcon(k)} ${dayTypeLabel(k)}</span>`).join('')+`<span>😴 ${t('rest_day_name')}</span>`;
   buildWorkoutGrid();
 }
@@ -9657,7 +10077,7 @@ const overlay=document.getElementById('overlay');
 function activityFactor(){
   const ws=P.workoutSetup;
   if(!ws || !ws.restDays) return 1.55; // no workout setup yet: moderate default
-  const trainingDays = 7 - ws.restDays.length;
+  const trainingDays = isLoopWs(ws) ? loopTrainingDaysPerWeek(ws) : 7 - ws.restDays.length; // loop: rest steps per cycle + fixed days off
   if(trainingDays<=4) return 1.46;   // 3-4 days/week: light-moderate
   if(trainingDays===5) return 1.55;  // 5 days/week: moderate
   if(trainingDays===6) return 1.725; // 6 days/week: very active
@@ -9701,7 +10121,10 @@ function openWorkoutDay(label,typeKey,isToday){
   document.getElementById('daySubtitle').textContent=day.name[LANG];
   let html='';
   if(isToday){
-    html+=`<div class="check-item${dailyTrack.workoutDone?' done':''}" id="workoutDoneToggle" style="margin-bottom:8px;"><div class="box">${dailyTrack.workoutDone?'✓':''}</div><div class="txt">${t('workout_today')}</div></div>`;
+    const lp=isLoopMode();
+    if(lp) html+=`<div style="margin-bottom:8px;">${loopTodayBarHtml(P.workoutSetup,typeKey)}</div>`;
+    if(lp&&typeKey==='rest') html+=`<div class="check-item${dailyTrack.restTaken?' done':''}" id="loopRestToggle" data-testid="loop-rest-taken" style="margin-bottom:8px;"><div class="box">${dailyTrack.restTaken?'✓':''}</div><div class="txt">${LANG==='ar'?'😴 أخذت راحة':'😴 I rested'}</div></div>`;
+    else html+=`<div class="check-item${dailyTrack.workoutDone?' done':''}" id="workoutDoneToggle" style="margin-bottom:8px;"><div class="box">${dailyTrack.workoutDone?'✓':''}</div><div class="txt">${t('workout_today')}</div></div>`;
     html+=`<div id="feedbackRow" style="margin-bottom:14px;"></div>`;
   }
   const base=workoutTypes[typeKey]||{};
@@ -9720,8 +10143,15 @@ function openWorkoutDay(label,typeKey,isToday){
   document.getElementById('cardBody').innerHTML=html;
   if(isToday){
     const toggle=document.getElementById('workoutDoneToggle');
-    toggle.addEventListener('click',async()=>{
+    if(isLoopMode()){
+      const reopen=()=>openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true);
+      loopWireBar(document.getElementById('cardBody'),reopen);
+      const rt=document.getElementById('loopRestToggle');
+      if(rt) rt.onclick=async()=>{ if(dailyTrack.restTaken) delete dailyTrack.restTaken; else dailyTrack.restTaken=true; await saveDailyTrack(); loopRerender(); reopen(); };
+    }
+    if(toggle) toggle.addEventListener('click',async()=>{
       await toggleWorkoutDone(typeKey);
+      if(isLoopMode()){ loopRerender(); openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true); return; }
       // full re-render: picks up the new workoutDone state for both the
       // toggle itself AND the exercise checklist below it (locking it, and
       // crossing out anything left unchecked, the moment the day is marked
@@ -9738,7 +10168,10 @@ function openWorkoutDay(label,typeKey,isToday){
    completion-count bookkeeping never has to be duplicated (and can't drift
    between the two entry points). Returns the new done state. */
 async function toggleWorkoutDone(typeKey){
+  const loop=isLoopMode();
+  if(loop){ const r=await loopBeforeToggle(typeKey); if(r!==undefined) return r; }
   dailyTrack.workoutDone=!dailyTrack.workoutDone;
+  if(loop){ if(dailyTrack.workoutDone) dailyTrack.workoutType=typeKey; else delete dailyTrack.workoutType; } // the day record is the loop's history
   await saveDailyTrack();
   if(dailyTrack.workoutDone){
     updateStreak();
@@ -10306,7 +10739,7 @@ function updateNamedStreakForDate(key,targetDate){
   const savedRest=Array.isArray(s.restDays)?s.restDays:currentRest;
   for(let i=0;i<7&&dateKeyOf(dayBefore)!==s.lastDate;i++){
     const wd=(dayBefore.getDay()+1)%7;
-    const restOk = key==='workout' && savedRest.includes(wd) && currentRest.includes(wd);
+    const restOk = key==='workout' && (isLoopMode() ? loopNeutralDay(dayBefore) : savedRest.includes(wd) && currentRest.includes(wd));
     if(!restOk && !frozenDay(dateKeyOf(dayBefore))) break; // a shielded day is neutral for every streak
     dayBefore.setDate(dayBefore.getDate()-1);
   }
@@ -10319,6 +10752,14 @@ function updateNamedStreakForDate(key,targetDate){
   return s;
 }
 function updateNamedStreak(key){ return updateNamedStreakForDate(key,new Date()); }
+/* loop: a fixed day off or a day whose step was 'rest' doesn't break the workout streak */
+function loopNeutralDay(d){
+  const ws=P.workoutSetup, dd=dayOnly(d);
+  if(loopOff(ws,dd)) return true;
+  if(dd<loopStartDate(ws)) return false;
+  const rec=loopRec(dd); if(rec&&rec.workoutDone) return false;
+  return loopExpected(ws,dd)==='rest';
+}
 /* starting again after a broken streak is rewarded, not punished (once a week) */
 function queueComeback(key){
   const wk=weekKeySat(0);
@@ -13535,7 +13976,7 @@ function refreshHome(){
   renderRamadanCard();
   renderHomeCheers();
   renderHomePushTip();
-  renderHomeNow(); renderHomeMissed();
+  renderHomeNow(); renderHomeMissed(); renderLoopAsk();
   try{ ccInit(); ccRenderBar(); }catch(e){}
   setTimeout(maybeShowGuide,2500);
   renderHomeAquarium();
@@ -14002,6 +14443,7 @@ function renderDailySummary(){
   wCard.classList.remove('hidden');
   if(!P.workoutSetup){
     wRow.classList.add('hidden'); wEmpty.classList.remove('hidden'); wEmpty.textContent=t('dash_workout_empty');
+    const wlb=document.getElementById('dashWorkoutLoop'); if(wlb) wlb.remove();
     const yt=document.getElementById('workoutYesterdayToggle'); if(yt) yt.classList.add('hidden');
   } else {
     wRow.classList.remove('hidden'); wEmpty.classList.add('hidden');
@@ -14017,6 +14459,7 @@ function renderDailySummary(){
       toggle.classList.toggle('done',done);
     };
     renderWorkoutYesterdayToggle();
+    loopDecorateDashCard(typeKey);
   }
 
   // ---- water (same dailyTrack.water state as the Food panel's water card) ----
@@ -14380,7 +14823,7 @@ function watchYesterdayTrack(key){
       let remote; try{ remote=JSON.parse(snap.data().value); }catch(e){ return; }
       const doc=_yShared.doc; if(JSON.stringify(remote)===JSON.stringify(doc)) return;
       Object.keys(doc).forEach(k=>delete doc[k]); Object.assign(doc,remote);
-      try{ renderWorkoutYesterdayToggle(); renderNutritionYesterdayToggle(); renderWaterYesterdayRow();
+      try{ if(isLoopMode()) loopRerender(); renderWorkoutYesterdayToggle(); renderNutritionYesterdayToggle(); renderWaterYesterdayRow();
         const hb=document.getElementById('dashHabitsYesterdayList'); if(hb&&!hb.classList.contains('hidden')) renderHabitsYesterdayList(); }catch(e){}
     },()=>{});
   }catch(e){}
@@ -14426,6 +14869,13 @@ async function renderWorkoutYesterdayToggle(){
   // would each read the same stale snapshot and the last save to land
   // would silently overwrite the others.
   const yDoc=await loadYesterdayTrack();
+  if(isLoopMode()){
+    const done=!!yDoc.workoutDone, tp=yDoc.workoutType;
+    toggle.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>
+      <div class="habit-row${done?' done':''}" id="workoutYesterdayRow" data-testid="loop-yesterday-row"><div class="habit-box">${done?'✓':''}</div><div class="habit-label">${t('workout_yesterday_item')}${done&&tp?` · ${loopTag(tp)}`:(yDoc.workoutSkipped?(LANG==='ar'?' · ما تمرنت':' · no workout'):'')}</div></div>`;
+    document.getElementById('workoutYesterdayRow').addEventListener('click',()=>loopPastDaySheet(1));
+    return;
+  }
   const paint=()=>{
     const done=!!yDoc.workoutDone;
     toggle.innerHTML=`<div class="habit-yesterday-label">${t('habit_yesterday_label').replace('{date}',yesterdayDateLabel())}</div>
