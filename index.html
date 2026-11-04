@@ -1753,7 +1753,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-mode-btn.active{ background:var(--accent-deep); color:#fff; border-color:var(--heading); }
 
   /* ⚡ what now */
-  .hn-card{ padding:14px 16px; border-inline-start:4px solid var(--accent); }
+  .hn-card{ padding:14px 16px 14px 20px; padding-inline:20px 16px; position:relative; }
+  .hn-card::before{ content:''; position:absolute; inset-block:16px; inset-inline-start:7px; width:4px; border-radius:4px; background:var(--accent); opacity:.85; }
   .hn-head{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-head); font-weight:800; font-size:.82rem; color:var(--ink-soft); margin-bottom:8px; }
   .hn-clock{ font-weight:700; font-size:.75rem; }
   .hn-main{ display:flex; align-items:center; gap:12px; }
@@ -1820,8 +1821,12 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   #panel-home .cc-closed .cc-head, #panel-food .cc-closed .cc-head{ margin-bottom:0!important; }
   #panel-habits .cc-arrow, #panel-habits .cc-sum{ display:none; } #panel-habits .cc-head{ cursor:default; }
   [data-cc]{ scroll-margin-top:calc(var(--cc-top,58px) + 56px); }
-  .cc-bar{ position:sticky; top:var(--cc-top,58px); z-index:30; display:flex; gap:6px; overflow-x:auto; padding:8px 2px; margin:0 -2px 8px; background:var(--bg); scrollbar-width:none; }
-  .cc-bar::-webkit-scrollbar{ display:none; }
+  .cc-bar{ position:sticky; top:calc(var(--cc-top,58px) + 6px); z-index:30; display:flex; align-items:center; gap:6px; padding:5px; margin:0 0 10px; border-radius:999px; border:1px solid var(--line); background:color-mix(in srgb, var(--card) 72%, transparent); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); transition:box-shadow .2s ease; }
+  .cc-bar.stuck{ box-shadow:var(--shadow); }
+  .cc-scroll{ flex:1; min-width:0; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; border-radius:999px; }
+  .cc-scroll::-webkit-scrollbar{ display:none; }
+  .cc-up{ flex:0 0 auto; width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--heading); font-size:1rem; line-height:1; cursor:pointer; display:none; align-items:center; justify-content:center; padding:0; }
+  .cc-bar.stuck .cc-up{ display:flex; animation:fadeUp .2s ease; }
   .cc-jump{ flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 11px; font-family:var(--font-body); font-weight:700; font-size:.74rem; cursor:pointer; white-space:nowrap; }
   .cc-jump:active{ transform:scale(.96); }
   @keyframes ccFlash{ 0%{ box-shadow:0 0 0 3px var(--accent); } 100%{ box-shadow:0 0 0 0 transparent; } }
@@ -3231,7 +3236,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.68.0';
+const APP_VERSION='v1.68.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -14062,8 +14067,15 @@ function ccInit(){
     e.preventDefault(); ccToggle(card.dataset.cc);
   });
   window.addEventListener('resize',()=>{ ccRenderBar._nh=0; ccRenderBar(); });
-  document.getElementById('ccBar').addEventListener('click',e=>{ const b=e.target.closest('[data-cj]'); if(b) ccJump(b.dataset.cj); });
+  document.getElementById('ccBar').addEventListener('click',e=>{ if(e.target.closest('.cc-up')){ window.scrollTo({top:0,behavior:'smooth'}); return; } const b=e.target.closest('[data-cj]'); if(b) ccJump(b.dataset.cj); });
+  window.addEventListener('scroll',ccStuckSync,{passive:true});
   ccRenderBar();
+}
+/* the bar is "stuck" once the page scrolled it to the top — that's when ⬆ shows */
+function ccStuckSync(){
+  const bar=document.getElementById('ccBar'); if(!bar||bar.classList.contains('hidden')||!bar.offsetParent) return;
+  const top=parseFloat(getComputedStyle(bar).top)||0, on=window.scrollY>40&&bar.getBoundingClientRect().top<=top+1;
+  if(bar.classList.contains('stuck')!==on) bar.classList.toggle('stuck',on);
 }
 function ccToggle(id){ const d=CC_BY[id]; if(!d) return; ccSet(id,!ccIsOpen(d)); ccDecorate(d); ccBarSoon(); }
 function ccJump(id){
@@ -14083,7 +14095,9 @@ function ccRenderBar(){
   const sig=LANG+'|'+items.map(d=>d.id).join();
   if(bar.dataset.sig===sig) return; bar.dataset.sig=sig;
   bar.classList.toggle('hidden',items.length<3);
-  bar.innerHTML=items.map(d=>`<button type="button" class="cc-jump" data-cj="${d.id}" data-testid="cc-jump-${d.id}" aria-label="${escapeHtml((ar?'روح لـ ':'Go to ')+(ar?d.ar:d.en))}">${d.ic} ${escapeHtml(ar?d.ar:d.en)}</button>`).join('');
+  bar.innerHTML='<div class="cc-scroll">'+items.map(d=>`<button type="button" class="cc-jump" data-cj="${d.id}" data-testid="cc-jump-${d.id}" aria-label="${escapeHtml((ar?'روح لـ ':'Go to ')+(ar?d.ar:d.en))}">${d.ic} ${escapeHtml(ar?d.ar:d.en)}</button>`).join('')+'</div>'
+    +`<button type="button" class="cc-up" data-testid="cc-up" aria-label="${ar?'فوق':'Back to top'}">⬆</button>`;
+  ccStuckSync();
 }
 function homeDateLabel(dateObj){
   const today=new Date();
