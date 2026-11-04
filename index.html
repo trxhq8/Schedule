@@ -1818,8 +1818,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .cc-arrow{ display:inline-block; flex-shrink:0; font-size:.85rem; color:var(--ink-soft); transition:transform .2s; padding:0 2px; }
   .cc-head[aria-expanded="false"] > .cc-arrow{ transform:rotate(-90deg); }
   html[dir="rtl"] .cc-head[aria-expanded="false"] > .cc-arrow{ transform:rotate(90deg); }
-  #panel-home .cc-hide:not(.cta-btn), #panel-food .cc-hide:not(.cta-btn){ display:none!important; } /* a "set it up" button stays, folded or not */
-  #panel-home .cc-closed .cc-head, #panel-food .cc-closed .cc-head{ margin-bottom:0!important; }
+  #panel-home .cc-hide:not(.cta-btn), #panel-food .cc-hide:not(.cta-btn), #panel-profile .cc-hide{ display:none!important; } /* a "set it up" button stays, folded or not */
+  #panel-home .cc-closed .cc-head, #panel-food .cc-closed .cc-head, #panel-profile .cc-closed .cc-head{ margin-bottom:0!important; }
   #panel-habits .cc-arrow, #panel-habits .cc-sum{ display:none; } #panel-habits .cc-head{ cursor:default; }
   [data-cc]{ scroll-margin-top:calc(var(--cc-top,58px) + 56px); }
   .cc-bar{ position:sticky; top:calc(var(--cc-top,58px) + 6px); z-index:30; display:flex; align-items:center; gap:6px; padding:5px; margin:0 0 10px; border-radius:999px; border:1px solid var(--line); background:color-mix(in srgb, var(--card) 72%, transparent); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); transition:box-shadow .2s ease; }
@@ -1890,6 +1890,37 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .cos-tag{ font-size:.7rem !important; }
   .coll-cat-card .soon-tag, .sea-note, .aq-level{ font-size:.72rem !important; }
   #profileTitleChip, #profileCoinsChip{ font-size:.76rem !important; }
+  /* ===== v1.70 ===== */
+  /* touch tablets (iPad) keep the phone's bottom bar, in thumb reach */
+  body.tab-touch #bottomNav{ position:fixed; left:0; right:0; bottom:0; z-index:45; display:flex; justify-content:center; gap:clamp(12px,4vw,40px); background:color-mix(in srgb, var(--card) 92%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border-top:1px solid var(--line); padding:8px 4px calc(8px + env(safe-area-inset-bottom)); }
+  body.tab-touch #bottomNav.gated{ display:none !important; }
+  body.tab-touch.has-bottom-nav{ padding-bottom:calc(72px + env(safe-area-inset-bottom)); }
+  body.tab-touch.has-bottom-nav section.panel.active{ padding-bottom:120px; }
+  body.tab-touch.has-bottom-nav #toastBanner{ bottom:calc(80px + env(safe-area-inset-bottom)) !important; }
+  body.tab-touch .quick-fab.ai-fab{ bottom:calc(env(safe-area-inset-bottom,0px) + 142px); }
+  /* saved / saving / waiting-for-internet */
+  .sync-dot{ display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:600; color:var(--ink-soft); }
+  .sync-dot i{ width:8px; height:8px; border-radius:50%; background:#3fb27f; flex:none; transition:background .3s; }
+  .sync-dot[data-st="busy"] i{ background:var(--ink-soft); animation:syncPulse 1s ease-in-out infinite; }
+  .sync-dot[data-st="wait"] i{ background:#e0a030; }
+  .sync-dot b{ font-weight:600; max-width:0; overflow:hidden; white-space:nowrap; transition:max-width .35s ease; }
+  .sync-dot.show b, .sync-dot[data-st="wait"] b{ max-width:170px; }
+  @keyframes syncPulse{ 50%{ opacity:.35; } }
+  @media (prefers-reduced-motion:reduce){ .sync-dot[data-st="busy"] i{ animation:none; } }
+  /* Store: the not-for-sale list folds to one line */
+  details.cos-rewards-banner > summary{ cursor:pointer; list-style:none; display:flex; align-items:center; gap:6px; }
+  details.cos-rewards-banner > summary::-webkit-details-marker{ display:none; }
+  details.cos-rewards-banner > summary::after{ content:'▾'; margin-inline-start:auto; transition:transform .2s; }
+  details.cos-rewards-banner[open] > summary::after{ transform:rotate(180deg); }
+  details.cos-rewards-banner .cos-rw-list{ margin-top:8px; }
+  /* Profile: one edit button */
+  #profileAvatarEditBtn, #profileEditUsernameBtn{ display:none !important; }
+  .profile-edit-btn{ margin-top:8px; border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:inherit; border-radius:999px; padding:6px 14px; font:inherit; font-size:.8rem; font-weight:700; cursor:pointer; }
+  .pe-opts{ display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+  /* keyboard shortcuts list */
+  .kb-list{ display:grid; grid-template-columns:auto 1fr; gap:8px 14px; align-items:center; font-size:.9rem; }
+  .kb-list kbd{ font-family:var(--font-head); font-weight:800; font-size:.8rem; padding:3px 9px; border-radius:7px; border:1px solid var(--line); background:var(--bg); text-align:center; }
+
 
   .cc-jump{ flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 11px; font-family:var(--font-body); font-weight:700; font-size:.74rem; cursor:pointer; white-space:nowrap; }
   .cc-jump:active{ transform:scale(.96); }
@@ -2056,6 +2087,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <div class="topnav-inner">
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="brand" id="brandLabel">🗓️</div>
+      <span class="sync-dot" id="syncDot" data-st="ok" data-testid="sync-dot" role="status" aria-live="polite"><i></i><b></b></span>
       <button class="icon-btn hidden" id="demoResetBtn" title="Demo reset" style="font-size:0.65rem;width:auto;padding:0 10px;color:#c0392b;border-color:#c0392b;">DEMO</button>
     </div>
     <div class="nav-actions">
@@ -3060,22 +3092,23 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
           <div class="xp-bar-track"><div class="xp-bar-fill" id="profileXpFill"></div></div>
           <div id="profileXpLabel" style="font-size:0.75rem;margin-top:4px;"></div>
           <div class="cos-chip" id="profileCoinsChip" style="margin-top:8px;cursor:pointer;"></div>
+          <button type="button" class="profile-edit-btn" id="profileEditBtn" data-testid="profile-edit"></button>
         </div>
       </div>
       <div class="setup-card wardrobe" id="profileWardrobe"></div>
-      <div class="setup-card">
+      <div class="setup-card" id="profileStreaksCard">
         <h3 id="profileStreaksTitle"></h3>
         <div class="dash-row-mini" id="profileStreaksRow" style="flex-wrap:wrap;"></div>
       </div>
-      <div class="setup-card">
+      <div class="setup-card" id="profileStatsCard">
         <h3 id="profileStatsTitle"></h3>
         <div id="profileStatsGrid" class="profile-stats-grid"></div>
       </div>
-      <div class="setup-card">
+      <div class="setup-card" id="profileTitlesCard">
         <h3 id="profileTitlesTitle"></h3>
         <div id="profileTitlesList" class="dash-empty"></div>
       </div>
-      <div class="setup-card">
+      <div class="setup-card" id="profileAchievementsCard">
         <h3 id="profileAchievementsTitle"></h3>
         <div id="profileAchievementsList"></div>
       </div>
@@ -3305,7 +3338,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.69.0';
+const APP_VERSION='v1.70.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3341,6 +3374,20 @@ async function storageGet(key){
   try{ const v=localStorage.getItem('planner_'+key); if(v!==null) return v; }catch(e){}
   return _mem[key]!==undefined?_mem[key]:null;
 }
+/* the little dot by the logo: green = saved to your account, grey pulse =
+   saving, amber = no internet (kept on this device, syncs by itself) */
+let _syncPending=0, _syncHideT=0;
+function syncTrack(pr){ _syncPending++; syncDot(); pr.catch(()=>{}).finally(()=>{ _syncPending=Math.max(0,_syncPending-1); syncDot(); }); }
+function syncDot(){
+  const el=document.getElementById('syncDot'); if(!el) return; const ar=LANG==='ar';
+  const st=!navigator.onLine?'wait':(_syncPending>0?'busy':'ok');
+  el.dataset.st=st;
+  const txt=st==='wait'?(ar?'ينتظر النت — محفوظ بجهازك':'Offline — kept on this device'):st==='busy'?(ar?'يحفظ…':'Saving…'):(ar?'محفوظ ✓':'Saved ✓');
+  el.querySelector('b').textContent=txt; el.title=txt;
+  el.classList.add('show'); clearTimeout(_syncHideT);
+  if(st==='ok') _syncHideT=setTimeout(()=>el.classList.remove('show'),1800);
+}
+window.addEventListener('online',syncDot); window.addEventListener('offline',syncDot);
 async function storageSet(key,value){
   _mem[key]=value;
   try{ localStorage.setItem('planner_'+key,value); }catch(e){}
@@ -3360,7 +3407,7 @@ async function storageSet(key,value){
     // promise only resolves once the SERVER acknowledges it. Awaiting it
     // froze every save (checkmarks, XP, toasts) for as long as the user was
     // offline. Durability is identical either way; only the UI wait changes.
-    try{ fsDataRef(key).set({value},{merge:true}).catch(()=>{}); }catch(e){}
+    try{ syncTrack(fsDataRef(key).set({value},{merge:true})); }catch(e){}
     return;
   }
   try{ if(window.storage&&window.storage.set){ await window.storage.set(key,value,false); return; } }catch(e){}
@@ -4980,12 +5027,16 @@ document.querySelectorAll('.back-btn').forEach(b=>{
 /* phones: fixed bottom bar; desktop: the same element as tabs in the top bar */
 function placeMainNav(){
   const nav=document.getElementById('bottomNav'), top=document.getElementById('mainNav'); if(!nav||!top) return;
-  const desktop=window.matchMedia('(min-width:760px)').matches;
+  const wide=window.matchMedia('(min-width:760px)').matches;
+  const tablet=wide&&window.matchMedia('(pointer:coarse) and (max-width:1199px)').matches; // touch tablet: keep the bar at the bottom
+  document.body.classList.toggle('tab-touch',tablet);
+  const desktop=wide&&!tablet;
   if(desktop && nav.parentElement!==top) top.appendChild(nav);
   else if(!desktop && nav.parentElement!==document.body) document.body.appendChild(nav);
 }
 placeMainNav();
 window.matchMedia('(min-width:760px)').addEventListener('change',placeMainNav);
+window.matchMedia('(pointer:coarse) and (max-width:1199px)').addEventListener('change',placeMainNav);
 /* the habits card is ONE node: on Home for quick check-off, moved into the
    Habits page when that opens (ids never duplicated, renderHabits untouched) */
 function placeHabitsCard(name){
@@ -5063,6 +5114,23 @@ function showPanel(name){
   if(name==='home') refreshHome();
 }
 document.querySelectorAll('#bottomNav .bottom-nav-item').forEach(b=>b.addEventListener('click',()=>{ showPanel(b.dataset.goto); enterSection(b.dataset.goto); }));
+/* computers: 1–5 tabs · W +0.25 L water · N "what now" · ? the list */
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||e.repeat) return;
+  const a=document.activeElement; if(a&&a.matches&&a.matches('input,textarea,select,[contenteditable="true"]')) return;
+  if(document.querySelector('.overlay.open, #settingsOverlay.open, .sheet-backdrop:not(.hidden)')) return;
+  if(!window.matchMedia('(pointer:fine)').matches) return;
+  const nav=[...document.querySelectorAll('#bottomNav .bottom-nav-item')], k=e.key.toLowerCase();
+  if(/^[1-5]$/.test(k)&&nav[+k-1]){ e.preventDefault(); nav[+k-1].click(); return; }
+  if(k==='w'){ e.preventDefault(); const b=document.getElementById('dashWaterPlus'); if(b){ b.click(); showToast(LANG==='ar'?'💧 +٠٫٢٥ لتر':'💧 +0.25 L'); } return; }
+  if(k==='n'){ e.preventDefault(); showPanel('home'); enterSection('home'); setTimeout(()=>ccJump('now'),80); return; }
+  if(e.key==='?'){ e.preventDefault(); const ar=LANG==='ar';
+    openGuideSheet(`<h3 style="margin:0 0 10px;">⌨️ ${ar?'اختصارات الكيبورد':'Keyboard shortcuts'}</h3><div class="kb-list">
+      <kbd>1–5</kbd><span>${ar?'الرئيسية · الجدول · الصحة · التحديات · حسابي':'Home · Schedule · Health · Challenges · You'}</span>
+      <kbd>W</kbd><span>${ar?'+٠٫٢٥ لتر ماي':'+0.25 L water'}</span>
+      <kbd>N</kbd><span>${ar?'شسوي الحين؟':'What now?'}</span>
+      <kbd>?</kbd><span>${ar?'هذي القائمة':'This list'}</span></div>`); }
+});
 /* iOS home-screen app: when the keyboard closes the bottom bar can stay lifted
    mid-screen; a same-place scroll makes Safari lay the fixed bars out again */
 (()=>{ const relayout=()=>requestAnimationFrame(()=>window.scrollTo(window.scrollX,window.scrollY));
@@ -11489,6 +11557,7 @@ async function checkAndAwardLevelRewards(stats){
 
 /* ================= PROFILE PANEL (real) ================= */
 async function renderProfileSection(){
+  const peb=document.getElementById('profileEditBtn'); if(peb) peb.textContent=LANG==='ar'?'✏️ عدّل الملف':'✏️ Edit profile';
   const gateCard=document.getElementById('profileUsernameGateCard');
   const statsContent=document.getElementById('profileStatsContent');
   if(usernameSoftGateActive()){
@@ -11631,6 +11700,15 @@ document.getElementById('profileAvatarFileInput').addEventListener('change',asyn
   finally{ e.target.value=''; }
 });
 document.getElementById('profileEditUsernameBtn').addEventListener('click',openUsernameEditModal);
+/* one ✏️ for the profile: photo or username */
+document.getElementById('profileEditBtn').addEventListener('click',()=>{
+  const ar=LANG==='ar';
+  openGuideSheet(`<h3 style="margin:0 0 4px;">${ar?'✏️ عدّل ملفك':'✏️ Edit your profile'}</h3><div class="pe-opts">
+    <button type="button" class="setup-btn" id="peAvatar" data-testid="profile-edit-photo">📷 ${ar?'غيّر الصورة':'Change photo'}</button>
+    <button type="button" class="setup-btn" id="peName" data-testid="profile-edit-name" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">@ ${ar?'غيّر اسم المستخدم':'Change username'}</button></div>`,
+    sh=>{ sh.querySelector('#peAvatar').onclick=()=>{ closeGuideSheet(); document.getElementById('profileAvatarEditBtn').click(); };
+          sh.querySelector('#peName').onclick=()=>{ closeGuideSheet(); openUsernameEditModal(); }; });
+});
 function openUsernameEditModal(){
   const current=(P.publicProfile&&P.publicProfile.username)||'';
   document.getElementById('dayTitle').textContent=t('edit_username_title');
@@ -12857,7 +12935,8 @@ async function renderStoreSection(){
   const rewards=items.filter(c=>c.exclusiveNote);
   if(rewards.length){
     const seenNote=new Set(), uniq=rewards.filter(r=>{ if(seenNote.has(r.exclusiveNote)) return false; seenNote.add(r.exclusiveNote); return true; });
-    content.insertAdjacentHTML('beforeend',`<div class="cos-rewards-banner">🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b><br>${uniq.map(r=>`${/^legendfish:/.test(r.exclusiveNote)?'🎁':escapeHtml(ar?r.nameAr:r.nameEn)+':'} ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?' ✅':''}`).join('<br>')}</div>`);
+    const got=uniq.filter(r=>P.inventory[r.id]).length;
+    content.insertAdjacentHTML('beforeend',`<details class="cos-rewards-banner" data-testid="store-rewards"><summary>🏆 <b>${ar?'جوائز ما تنشرى':'Rewards you can’t buy'}</b> <span class="num">(${got}/${uniq.length})</span></summary><div class="cos-rw-list">${uniq.map(r=>`${/^legendfish:/.test(r.exclusiveNote)?'🎁':escapeHtml(ar?r.nameAr:r.nameEn)+':'} ${exclusiveUnlockInfo(r).text}${P.inventory[r.id]?' ✅':''}`).join('<br>')}</div></details>`);
   }
   const byPrice=(x,y)=>(x.price==null?1e9:x.price)-(y.price==null?1e9:y.price);
   RARITY_ORDER_LIST.forEach(rar=>{
@@ -14091,6 +14170,13 @@ function renderFirstRunCard(){
       chip.onclick=()=>{ P.firstRun.dismissed=false; renderFirstRunCard(); renderNavXpChip(); storageSet('profile',JSON.stringify(P)); }; }
     return;
   }
+  if(doneCount>=2&&chip){
+    const left=steps.filter(s=>!s.done);
+    card.classList.add('hidden'); chip.classList.remove('hidden');
+    chip.innerHTML=`🧭 ${ar?'باقي':'Left'}: ${left.map(s=>`${s.icon} ${ar?s.ar:s.en}`).join(' · ')} · <span class="num">${doneCount}/${steps.length}</span> ${ar?'‹':'›'}`;
+    chip.onclick=()=>navTo(left[0].go);
+    return;
+  }
   if(chip) chip.classList.add('hidden');
   card.innerHTML=`<div class="fr-head"><div>
       <h3>${ar?'👋 ابدأ من هنا':'👋 Start here'}</h3>
@@ -14155,6 +14241,10 @@ const CC_DEFS=[
   {id:'collection',el:'homeCollectionPreview',head:':scope > .home-preview-title'},
   {id:'aquarium',el:'homeAquarium',head:':scope > .dash-title-row'},
   {id:'f-meals',el:'todaySquareCard',head:':scope > .today-square-head',open:true},
+  {id:'p-streaks',el:'profileStreaksCard',head:':scope > h3',open:true},
+  {id:'p-stats',el:'profileStatsCard',head:':scope > h3'},
+  {id:'p-titles',el:'profileTitlesCard',head:':scope > h3'},
+  {id:'p-ach',el:'profileAchievementsCard',head:':scope > h3'},
   {id:'f-water',el:'foodWaterCard',head:':scope > h3',sum:()=>(document.getElementById('waterCount')||{}).textContent||''},
   {id:'f-weight',el:'foodWeightCard',head:':scope > h3'},
 ];
