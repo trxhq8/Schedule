@@ -860,18 +860,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .aqs-card .aq-mini{ border-radius:12px 12px 0 0; }
   .aqs-locked{ margin-top:6px; padding:8px; border-radius:10px; text-align:center; font-size:.72rem; font-weight:700; color:var(--ink-soft); background:rgba(127,127,127,.1); }
   .aqs-rar{ border-color:var(--rc) !important; color:var(--rc); }
-  /* AI photo source */
-  .ai-src{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .ai-src-btn{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:20px 10px; border-radius:18px; border:1.5px solid rgba(127,127,127,.25); background:var(--card); color:var(--heading); cursor:pointer; font:inherit; }
-  .ai-src-btn span{ font-size:2.1rem; line-height:1; }
-  .ai-src-btn small{ color:var(--ink-soft); font-size:.72rem; }
-  /* weekly report */
-  .home-weekly{ margin-bottom:12px; }
-  .wk-card{ width:100%; display:flex; align-items:center; gap:12px; padding:14px; border-radius:18px; border:none; cursor:pointer; font:inherit; text-align:start; color:#fff; background:linear-gradient(135deg,#4c6350,#7c9473); box-shadow:0 6px 18px rgba(60,90,60,.25); }
-  .wk-ic{ font-size:1.8rem; }
-  .wk-body{ flex:1; display:flex; flex-direction:column; gap:3px; min-width:0; }
-  .wk-body small{ opacity:.92; font-size:.74rem; line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
-  .wk-go{ font-weight:800; font-size:.8rem; background:rgba(255,255,255,.2); border-radius:999px; padding:5px 10px; white-space:nowrap; }
 
   .edit-lbl{ display:block; font-size:.8rem; font-weight:800; color:var(--heading); margin:4px 0 6px; }
   .edit-row{ display:flex; gap:8px; align-items:center; }
@@ -886,25 +874,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .net-banner{ position:fixed; z-index:70; left:50%; top:calc(env(safe-area-inset-top,0px) + 8px); transform:translate(-50%,-140%); max-width:min(92vw,520px); padding:9px 14px; border-radius:14px; font-size:.78rem; line-height:1.5; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,.18); transition:transform .35s ease; pointer-events:none; }
   .net-banner.on{ transform:translate(-50%,0); }
   .net-banner.mini{ padding:5px 12px; font-size:.72rem; opacity:.92; }
+  body.ai-open{ overflow:hidden; }
   .net-banner.off{ background:#2b2f36; color:#fff; } .net-banner.sync{ background:#ffb703; color:#3a2600; } .net-banner.ok{ background:#1f9d55; color:#fff; }
 
-  .ai-mode{ display:flex; align-items:center; gap:8px; margin:0 14px 8px; padding:8px 12px; border-radius:12px; background:rgba(111,91,216,.12); color:var(--heading); font-size:.78rem; }
-  .ai-mode.hidden{ display:none; } .ai-mode span{ flex:1; }
-  .ai-mode button{ border:none; background:none; color:var(--ink-soft); font-size:.9rem; cursor:pointer; }
-  .ai-mic{ width:46px; height:46px; flex:none; border-radius:50%; border:1px solid var(--line); background:var(--card); font-size:1.15rem; cursor:pointer; }
-  .ai-mic.hidden{ display:none; } .ai-mic.rec{ background:#e5484d; border-color:#e5484d; animation:aiDot 1s ease-in-out infinite; }
-  [dir="rtl"] .ai-bar .ai-mic{ transform:none; }
-  .ai-sugs button.wide{ grid-column:1/-1; background:linear-gradient(135deg,rgba(111,91,216,.14),rgba(76,99,80,.12)); }
-  .ai-msg.plan{ max-width:96% !important; }
-  .ai-plan{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
-  .ai-task{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:var(--card); border:1px solid var(--line); cursor:pointer; }
-  .ai-task input{ width:18px; height:18px; flex:none; }
-  .ai-task .tt{ flex:none; font-size:.7rem; font-weight:700; color:var(--ink-soft); min-width:70px; }
-  .ai-task b{ flex:1; font-size:.84rem; font-weight:700; }
-  .ai-plan-add{ margin-top:4px; padding:10px; border:none; border-radius:12px; background:var(--accent-deep,#111); color:#fff; font:inherit; font-weight:800; font-size:.84rem; cursor:pointer; }
-  .ai-plan-done{ margin-top:4px; font-size:.8rem; font-weight:800; color:#1f9d55; }
-  .wk-text{ line-height:1.85; font-size:.92rem; color:var(--heading); }
-  .wk-rep .cos-btn{ width:100%; margin-top:10px; }
   /* aquarium v3: free placement, preview, play */
   .aq-flip{ display:block; }
   .aq-dbub{ position:absolute; bottom:72% !important; pointer-events:none; }
@@ -1405,64 +1377,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-cat-card .soon-tag{ position:absolute; top:10px; inset-inline-end:10px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); font-size:0.6rem; font-family:var(--font-head); font-weight:700; padding:2px 8px; border-radius:999px; }
 
   .coll-cat-title{ text-align:center; color:var(--heading); font-size:1.1rem; margin:10px 0 14px; }
-  /* ===== AI assistant + photo ID ===== */
-  .ai-chat{ display:flex; flex-direction:column; gap:10px; }
-  .ai-msgs{ max-height:52vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px; }
-  .ai-msg{ max-width:88%; padding:9px 12px; border-radius:16px; font-size:.86rem; line-height:1.65; white-space:normal; word-wrap:break-word; }
-  .ai-msg.me{ align-self:flex-end; background:var(--accent-deep,#111); color:#fff; border-end-end-radius:4px; }
-  .ai-msg.bot{ align-self:flex-start; background:var(--bg); border:1px solid var(--line); border-end-start-radius:4px; }
-  .ai-msg.thinking{ opacity:.65; font-style:italic; }
-  .ai-chips{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
-  .ai-chips button{ flex:none; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:7px 12px; font:inherit; font-size:.76rem; font-weight:700; cursor:pointer; }
-  .ai-input{ display:flex; gap:8px; align-items:flex-end; }
-  .ai-input textarea{ flex:1; resize:none; border:1px solid var(--line); border-radius:14px; padding:10px 12px; font:inherit; font-size:.88rem; background:var(--card); color:var(--ink); max-height:120px; }
-  .ai-input button{ width:44px; height:44px; border-radius:50%; border:none; background:var(--accent-deep,#111); color:#fff; font-size:1.1rem; cursor:pointer; flex:none; }
-  .ai-input button:disabled{ opacity:.5; }
-  .ai-note{ font-size:.68rem; color:var(--ink-soft); margin:0; }
-  .ai-clear{ background:none; border:none; color:var(--ink-soft); text-decoration:underline; font:inherit; font-size:.68rem; cursor:pointer; padding:0; }
-  .ai-photo-btn{ width:100%; margin-bottom:10px; padding:12px; border-radius:14px; border:1.5px dashed #2f9bc4; background:linear-gradient(135deg,#e7f6fc,#d3eef8); color:#0f3a4d; font:inherit; font-weight:800; font-size:.86rem; cursor:pointer; }
-  .ai-photo-btn small{ font-weight:600; opacity:.7; }
-  .ai-fish-photo{ width:100%; max-height:240px; object-fit:cover; border-radius:16px; margin-bottom:10px; }
-  /* assistant sheet */
-  body.ai-open{ overflow:hidden; }
-  .ai-sheet{ position:fixed; inset:0; z-index:80; background:rgba(10,20,15,.45); display:none; align-items:flex-end; justify-content:center; }
-  .ai-sheet.open{ display:flex; animation:sheetFade .2s ease; }
-  .ai-panel{ width:100%; max-width:560px; height:100%; height:100dvh; background:var(--bg); display:flex; flex-direction:column; overflow:hidden; }
-  @media(min-width:700px){ .ai-sheet{ align-items:center; } .ai-panel{ height:min(760px,90vh); border-radius:24px; box-shadow:0 24px 60px rgba(0,0,0,.3); } }
-  .ai-head{ display:flex; align-items:center; gap:10px; padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px; border-bottom:1px solid var(--line); background:var(--card); }
-  .ai-x{ width:40px; height:40px; flex:none; border-radius:50%; border:none; background:rgba(127,127,127,.14); color:var(--heading); font-size:1rem; cursor:pointer; }
-  .ai-ttl{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:1px; }
-  .ai-ttl b{ font-size:1rem; color:var(--heading); }
-  .ai-ttl small{ font-size:.72rem; color:var(--ink-soft); }
-  .ai-new{ flex:none; border:none; background:none; color:var(--ink-soft); font:inherit; font-size:.74rem; text-decoration:underline; cursor:pointer; padding:6px 2px; }
-  .ai-msgs2{ flex:1; overflow-y:auto; padding:16px 14px; display:flex; flex-direction:column; gap:10px; overscroll-behavior:contain; scrollbar-width:none; }
-  .ai-msgs2::-webkit-scrollbar{ width:0; height:0; }
-  .ai-msgs2 .ai-msg{ max-width:86%; font-size:.92rem; line-height:1.75; }
-  .ai-msg.err{ border-color:rgba(229,72,77,.35); }
-  .ai-retry{ margin-top:6px; border:1px solid var(--line); background:var(--card); color:var(--heading); border-radius:999px; padding:6px 12px; font:inherit; font-size:.76rem; font-weight:700; cursor:pointer; }
-  .ai-welcome{ margin:auto 0; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:10px 18px; }
-  .ai-welcome b{ font-size:1.05rem; color:var(--heading); }
-  .ai-welcome small{ font-size:.82rem; color:var(--ink-soft); line-height:1.6; max-width:320px; }
-  .ai-av{ width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; background:linear-gradient(135deg,#ece4ff,#dff1e3); margin-bottom:4px; }
-  .ai-typing{ display:flex; gap:4px; align-items:center; padding:12px 14px !important; }
-  .ai-typing span{ width:7px; height:7px; border-radius:50%; background:var(--ink-soft); animation:aiDot 1.1s ease-in-out infinite; }
-  .ai-typing span:nth-child(2){ animation-delay:.18s; } .ai-typing span:nth-child(3){ animation-delay:.36s; }
-  @keyframes aiDot{ 0%,80%,100%{ opacity:.25; transform:translateY(0); } 40%{ opacity:1; transform:translateY(-3px); } }
-  .ai-sugs{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 14px 10px; }
-  .ai-sugs.hidden{ display:none; }
-  .ai-sugs button{ display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--card); color:var(--heading); border-radius:14px; padding:10px 12px; font:inherit; font-size:.8rem; font-weight:700; text-align:start; line-height:1.35; cursor:pointer; }
-  .ai-sugs button span{ font-size:1.1rem; flex:none; }
-  .ai-bar{ display:flex; gap:8px; align-items:flex-end; padding:10px 14px; border-top:1px solid var(--line); background:var(--card); }
-  .ai-bar textarea{ flex:1; resize:none; border:1px solid var(--line); border-radius:22px; padding:11px 16px; font:inherit; font-size:16px; line-height:1.4; background:var(--bg); color:var(--ink); max-height:120px; }
-  .ai-bar button{ width:46px; height:46px; flex:none; border-radius:50%; border:none; background:var(--accent-deep,#111); color:#fff; font-size:1.1rem; cursor:pointer; }
-  .ai-bar button:disabled{ opacity:.45; }
-  [dir="rtl"] .ai-bar button{ transform:scaleX(-1); }
-  .ai-foot{ margin:0; padding:0 14px calc(env(safe-area-inset-bottom,0px) + 8px); font-size:.66rem; color:var(--ink-soft); text-align:center; background:var(--card); }
-  /* 🧠 button above the + */
-  .quick-fab.ai-fab{ width:46px; height:46px; font-size:1.35rem; bottom:calc(env(safe-area-inset-bottom,0px) + 142px); inset-inline-end:20px; background:linear-gradient(135deg,#6f5bd8,#4c6350); }
-  @media(min-width:900px){ .quick-fab.ai-fab{ bottom:90px; inset-inline-end:28px; } }
-  .ai-conf{ font-weight:800; font-size:.8rem; color:#2e8b57; margin-inline-start:6px; }
-  .ai-why{ font-size:.74rem; color:var(--ink-soft); margin:-2px 6px 8px; }
   /* ===== quick log + sea card + catch history ===== */
   .quick-fab{ position:fixed; z-index:46; inset-inline-end:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 78px); width:54px; height:54px; border-radius:50%; border:none; background:var(--accent-deep,#111); color:#fff; font-size:1.8rem; line-height:1; box-shadow:0 8px 22px rgba(0,0,0,.28); cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .quick-fab:active{ transform:scale(.94); }
@@ -1897,7 +1811,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   body.tab-touch.has-bottom-nav{ padding-bottom:calc(72px + env(safe-area-inset-bottom)); }
   body.tab-touch.has-bottom-nav section.panel.active{ padding-bottom:120px; }
   body.tab-touch.has-bottom-nav #toastBanner{ bottom:calc(80px + env(safe-area-inset-bottom)) !important; }
-  body.tab-touch .quick-fab.ai-fab{ bottom:calc(env(safe-area-inset-bottom,0px) + 142px); }
   /* saved / saving / waiting-for-internet */
   .sync-dot{ display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:600; color:var(--ink-soft); }
   .sync-dot i{ width:8px; height:8px; border-radius:50%; background:#3fb27f; flex:none; transition:background .3s; }
@@ -2159,7 +2072,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="hidden" id="homeDietTrainingPreview"></div>
     <div class="dash-card home-preview-card" id="homeChallengesPreview" data-goto="challenges" role="button" tabindex="0"></div>
     <div class="dash-card home-preview-card hidden" id="homeCollectionPreview" data-goto="collections" role="button" tabindex="0"></div>
-    <div id="homeWeekly" class="home-weekly" style="display:none"></div>
     <div class="dash-card hidden" id="homeAquarium"></div>
 
     <!-- TODAY'S HEALTH: only daily health actions (food, training, water,
@@ -3254,7 +3166,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
 <!-- ============ BOTTOM NAV (mobile app-shell navigation) ============ -->
 <button type="button" id="quickLogFab" class="quick-fab hidden" aria-label="سجّل بسرعة / Quick log">＋</button>
-<button type="button" id="aiFab" class="quick-fab ai-fab hidden" aria-label="مساعد مخططي / Assistant">🧠</button>
 <nav id="bottomNav" class="hidden" aria-label="Main">
   <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic" aria-hidden="true">🏠</span><span data-i18n="bottom_nav_home"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic" aria-hidden="true">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
@@ -3338,7 +3249,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.70.0';
+const APP_VERSION='v1.71.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3667,254 +3578,13 @@ function handleLaunchShortcut(){
   if(go==='catch'){ showPanel('collections'); enterSection('collections'); openCatchFinder(); }
   else if(go==='water'){ adjustWater(0.25); showToast(LANG==='ar'?'💧 انضاف كوب ماي':'💧 Added a glass of water'); }
   else if(go==='quick'){ openQuickLog(); }
-  else if(go==='ai'){ openAiChat(); }
   else if(['today','habits','collections','home','health'].includes(go)) navTo(go);
 }
 
 
-/* ================= AI (Gemini through Firebase AI Logic) =================
-   No API key lives in this page: requests go through Firebase AI Logic,
-   and App Check (reCAPTCHA v3) proves they come from this site, so the
-   project's free Gemini quota can't be used from anywhere else. The
-   modular Firebase SDK is loaded only the first time an AI feature is
-   used, as a separate named app, so it never slows down the app launch.
-   Until AI_CFG.siteKey is filled in (after the owner turns AI Logic + App
-   Check on in the Firebase console) every AI button explains that it's
-   coming soon instead of failing. */
-const AI_CFG={ siteKey:'6Ld3stwtAAAAAMQjfGYbB8tZN278YkoiXA09UIqf', models:['gemini-3.8-flash','gemini-flash-latest','gemini-flash-lite-latest'], sdk:'12.19.0', dailyCap:40 };
-let _aiLib=null;
-function aiReady(){ return !!AI_CFG.siteKey; }
-async function aiLib(){
-  if(!aiReady()) throw new Error('ai-off');
-  if(_aiLib) return _aiLib;
-  const base='https://www.gstatic.com/firebasejs/'+AI_CFG.sdk+'/';
-  const [A,G,C]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js'),import(base+'firebase-app-check.js')]);
-  const app=A.initializeApp(firebaseConfig,'planner-ai');
-  C.initializeAppCheck(app,{provider:new C.ReCaptchaEnterpriseProvider(AI_CFG.siteKey),isTokenAutoRefreshEnabled:true});
-  _aiLib={ai:G.getAI(app,{backend:new G.GoogleAIBackend()}), getGenerativeModel:G.getGenerativeModel};
-  return _aiLib;
-}
-function aiUseToday(){ try{ const u=JSON.parse(localStorage.getItem('aiUse')||'{}'); return u.d===dateKeyOf(new Date())?(u.n||0):0; }catch(e){ return 0; } }
-function aiCountUse(){ try{ localStorage.setItem('aiUse',JSON.stringify({d:dateKeyOf(new Date()),n:aiUseToday()+1})); }catch(e){} }
-/* one call; tries the newest model first and falls back if it isn't available */
-async function aiGenerate(systemInstruction, request, generationConfig){
-  if(aiUseToday()>=AI_CFG.dailyCap) throw new Error('ai-cap');
-  const L=await aiLib(); let last;
-  for(const m of AI_CFG.models){
-    try{ const model=L.getGenerativeModel(L.ai,{model:m, systemInstruction, ...(generationConfig?{generationConfig}:{})});
-      const r=await model.generateContent(request); aiCountUse(); return r.response.text(); }
-    catch(e){ last=e; if(!/not.?found|404|unsupported|not supported|invalid model|429|quota|exhaust|rate|overload|unavailable|50[03]/i.test(String(e&&(e.message||e)))) break; }
-  }
-  throw last;
-}
-function aiErrText(e){
-  const m=String(e&&(e.message||e.code||e)), ar=LANG==='ar';
-  if(m==='ai-off') return ar?'🧠 المساعد الذكي قريب — ليلحين ما تفعّل':'🧠 The AI assistant is coming soon — not switched on yet';
-  if(m==='ai-cap') return ar?`وصلت حد اليوم (${AI_CFG.dailyCap} سؤال) — يرجع بكرة 🌙`:`You’ve reached today’s limit (${AI_CFG.dailyCap}) — back tomorrow 🌙`;
-  if(/quota|429|exhaust|rate/i.test(m)) return ar?'المساعد مشغول الحين — جرّب بعد دقيقة':'The assistant is busy — try again in a minute';
-  if(/app.?check|recaptcha|permission|403|unauth/i.test(m)) return ar?'ما قدرنا نتحقق من الجهاز — حدّث الصفحة وجرّب':'Couldn’t verify this device — refresh and try again';
-  if(/network|fetch|offline|unavailable/i.test(m)) return ar?'الاتصال ضعيف — جرّب لما يرجع النت':'Weak connection — try again when you’re back online';
-  if(/safety|blocked/i.test(m)) return ar?'ما أقدر أجاوب على هذا':'I can’t help with that one';
-  return ar?'صار خطأ مع المساعد — جرّب مرة ثانية':'Something went wrong — please try again';
-}
-/* what the assistant knows about your day (nothing leaves the app except this summary) */
-async function aiDayContext(){
-  const c={}; const put=(k,f)=>{ try{ const v=f(); if(v!==undefined&&v!==null&&v!=='') c[k]=v; }catch(e){} };
-  put('date',()=>new Date().toLocaleDateString(LANG==='ar'?'ar-KW':'en-GB',{weekday:'long',day:'numeric',month:'long'}));
-  put('time',()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
-  put('name',()=>{ const p=P.publicProfile||{}; return p.displayName||p.username; });
-  put('level',()=>levelFromXP(P.xp||0));
-  put('waterLitersToday',()=>`${dailyTrack.water||0} of ${(P.foodSetup&&P.foodSetup.waterTarget)||3.5}`);
-  put('workoutDoneToday',()=>!!dailyTrack.workoutDone);
-  put('dailyCalorieTarget',()=>calorieTarget());
-  put('goal',()=>P.foodSetup&&P.foodSetup.goal);
-  put('latestWeightKg',()=>weightLog.length?weightLog[weightLog.length-1].kg:null);
-  put('prayersDoneToday',()=>prayerHabitIds().filter(id=>dailyTrack.habits&&dailyTrack.habits[id]).length+' of 5');
-  put('otherHabitsDoneToday',()=>{ const hs=(P.habits||[]).filter(h=>h.group!=='prayers'); return hs.filter(h=>dailyTrack.habits&&dailyTrack.habits[h.id]).length+' of '+hs.length; });
-  put('streaks',()=>P.streaks?Object.fromEntries(Object.entries(P.streaks).map(([k,v])=>[k,(v&&v.current)||0])):null);
-  put('xpThisWeek',()=>(P.weekXp||{})[weekKeySat(0)]||0);
-  try{ const pr=await computeHomeTodoProgress(); c.todayChecklist=pr.done+' of '+pr.total; }catch(e){}
-  try{ const st=await computeCollectionStats(); c.fishSpeciesCollected=st.perCategory.fish.collected; c.fishCaughtTotal=st.catchSums.fish; }catch(e){}
-  return c;
-}
-const AI_SYS_AR=`أنت «مساعد مخططي»، مساعد ذكي داخل تطبيق «مخططي» (جدول، أكل، تمارين، صلوات، عادات، وحداق السمك بالكويت).
-- تكلّم باللهجة الكويتية الخفيفة، وإذا كتب المستخدم بالإنجليزي رد بالإنجليزي.
-- ردودك قصيرة وعملية (من ٣ إلى ٧ أسطر)، واستخدم بيانات يومه المرفقة لما تفيد.
-- لا تشخّص أمراض ولا تعطي جرعات أدوية؛ بالأمور الصحية الجدية انصحه يراجع مختص.
-- احترم الدين والعادات، ولا تستهزئ بالعبادات.
-- لا تستخدم كلمة «لسه» أبداً — قل «ليلحين».
-- لا تخترع أرقام أو حقائق؛ إذا ما تعرف قل ما أعرف.
-- لا تبدأ ردك بتحية ولا باسم المستخدم؛ ادخل بالموضوع على طول. ولا تخترع أسماء أبداً — استخدم الاسم بس إذا موجود بالبيانات (name).
-- إذا طلب خطة، خلها نقاط قصيرة مرتبة بالأيام أو بالأوقات، وتناسب بياناته (التزاماته، تقريره الأسبوعي إذا موجود).`;
-let _aiChat=[];
-function aiRender(t){ return escapeHtml(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^[\-•]\s?/gm,'• ').replace(/\n/g,'<br>'); }
-/* The assistant lives in its own full-screen sheet (not the shared #overlay),
-   so a reward popup or any other modal can never replace or close the chat
-   while a reply is on its way — only the ✕ / backdrop / Esc close it. */
-function aiSheetEl(){
-  let s=document.getElementById('aiSheet'); if(s) return s;
-  s=document.createElement('div'); s.id='aiSheet'; s.className='ai-sheet'; s.setAttribute('role','dialog'); s.setAttribute('aria-modal','true');
-  s.innerHTML=`<div class="ai-panel"><header class="ai-head"><button type="button" class="ai-x" id="aiClose">✕</button><div class="ai-ttl"><b id="aiTitle"></b><small id="aiSub"></small></div><button type="button" class="ai-new" id="aiNew"></button></header>
-    <div class="ai-msgs2" id="aiMsgs"></div><div class="ai-sugs" id="aiSugs"></div>
-    <div class="ai-mode hidden" id="aiMode"><span>🗂️ <b id="aiModeT"></b></span><button type="button" id="aiModeX" aria-label="close">✕</button></div>
-    <div class="ai-bar"><button type="button" id="aiMic" class="ai-mic hidden" aria-label="mic">🎤</button><textarea id="aiIn" rows="1" maxlength="1200"></textarea><button type="button" id="aiSend">➤</button></div><p class="ai-foot" id="aiFoot"></p></div>`;
-  document.body.appendChild(s);
-  s.addEventListener('click',e=>{ if(e.target===s) closeAiChat(); });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&s.classList.contains('open')) closeAiChat(); });
-  return s;
-}
-function closeAiChat(){ const s=document.getElementById('aiSheet'); if(s) s.classList.remove('open'); document.body.classList.remove('ai-open'); }
-function aiFromOverlay(q){ overlay.classList.remove('open'); openAiChat(q); }
-let _aiBusy=false;
-/* brain-dump: the AI splits a messy note into dated tasks you can add to the schedule */
+/* "today / tomorrow / Sat 8 Nov" for a yyyy-mm-dd */
 function aiDateLabel(iso){ const ar=LANG==='ar', d0=new Date(); d0.setHours(0,0,0,0); const [y,m,d]=iso.split('-').map(Number), dt=new Date(y,m-1,d), diff=Math.round((dt-d0)/864e5);
   if(diff===0) return ar?'اليوم':'Today'; if(diff===1) return ar?'بكرة':'Tomorrow'; return dt.toLocaleDateString(ar?'ar-KW':'en-GB',{weekday:'short',day:'numeric',month:'short'}); }
-function aiAddPlan(tasks){
-  const cur=((P.todoSetup&&P.todoSetup.commitments)||[]).map(c=>({...c,days:[...(c.days||[])]}));
-  const add=tasks.filter(t=>t.on).map(t=>{ const [y,m,d]=t.date.split('-').map(Number), dt=new Date(y,m-1,d);
-    return {label:t.title, days:[(dt.getDay()+1)%7], from:t.start||'', to:t.start?(t.end||''):'', fromDate:t.date, toDate:t.date, hard:false, src:'ai'}; });
-  if(!add.length) return 0;
-  P._commitments=[...cur,...add]; persistCommitments(); return add.length;
-}
-function openAiChat(starter,opts){
-  const ar=LANG==='ar', s=aiSheetEl();
-  if(!_aiBusy){ try{ _aiChat=JSON.parse(localStorage.getItem('aiChat')||'[]').slice(-16); }catch(e){ _aiChat=[]; } }
-  const left=()=>Math.max(0,AI_CFG.dailyCap-aiUseToday());
-  const sub=()=>{ document.getElementById('aiSub').textContent=aiReady()?(ar?`${left()} سؤال باقي اليوم`:`${left()} questions left today`):(ar?'قريباً':'Coming soon'); };
-  document.getElementById('aiTitle').textContent=ar?'🧠 مساعد مخططي':'🧠 Planner assistant';
-  document.getElementById('aiClose').setAttribute('aria-label',ar?'إغلاق':'Close');
-  document.getElementById('aiNew').textContent=ar?'محادثة جديدة':'New chat';
-  document.getElementById('aiFoot').textContent=ar?'يشوف ملخص يومك بس، وممكن يغلط — تأكد من الأمور المهمة.':'It only sees a summary of your day and can make mistakes.';
-  const inp=document.getElementById('aiIn'); inp.placeholder=ar?'اكتب سؤالك…':'Ask anything…';
-  document.getElementById('aiSend').setAttribute('aria-label',ar?'إرسال':'Send');
-  sub();
-  const SUGS=ar?[['🎯','شنو أسوي الحين؟'],['🍳','شنو أطبخ من: '],['📊','لخّص أسبوعي'],['🎣','نصيحة للحداق اليوم']]:[['🎯','What should I do now?'],['🍳','What can I cook with: '],['📊','Sum up my week'],['🎣','A fishing tip for today']];
-  SUGS.unshift(['🗂️',ar?'فضفض وأنا أرتّب جدولك':'Brain-dump → my plan','__dump__']);
-  const msgs=document.getElementById('aiMsgs'), sugs=document.getElementById('aiSugs');
-  let dump=false;
-  const setDump=on=>{ dump=on;
-    inp.placeholder=on?(ar?'اكتب أو تكلّم بكل اللي ببالك… مثال: بكرة اختبار ٨ الصبح، الخميس جيم بالليل، لازم أشتري أغراض':'Type or say everything on your mind… e.g. exam tomorrow 8am, gym Thursday night, buy groceries'):(ar?'اكتب سؤالك…':'Ask anything…');
-    document.getElementById('aiModeT').textContent=ar?'وضع الترتيب — اكتب كل اللي براسك وأنا أحوّله لمهام':'Planning mode — dump everything, I’ll turn it into tasks';
-    document.getElementById('aiMode').classList.toggle('hidden',!on); if(on){ sugs.classList.add('hidden'); inp.focus(); } };
-  document.getElementById('aiModeX').onclick=()=>{ setDump(false); draw(); };
-  const draw=(typing)=>{
-    if(!_aiChat.length&&!typing){
-      msgs.innerHTML=`<div class="ai-welcome"><div class="ai-av">🧠</div><b>${ar?'هلا! أنا مساعدك':'Hi! I’m your assistant'}</b><small>${ar?'اسألني عن جدولك، أكلك، تمرينك، عاداتك أو الحداق — أشوف ملخص يومك وأساعدك.':'Ask about your schedule, food, training, habits or fishing — I see a summary of your day.'}</small></div>`;
-    } else {
-      msgs.innerHTML=_aiChat.map((m,i)=>`<div class="ai-msg ${m.role==='user'?'me':'bot'}${m.err?' err':''}${m.tasks?' plan':''}">${aiRender(m.text)}${m.tasks?`<div class="ai-plan">${m.tasks.map((t,k)=>`<label class="ai-task"><input type="checkbox" data-mi="${i}" data-tk="${k}" ${t.on?'checked':''} ${m.added?'disabled':''}><span class="tt">${escapeHtml(aiDateLabel(t.date))}${t.start?' · '+formatTime12h(t.start):''}</span><b>${escapeHtml(t.title)}</b></label>`).join('')}${m.added?`<div class="ai-plan-done">✅ ${ar?'انضافت لجدولك':'Added to your schedule'}</div>`:(m.tasks.length?`<button type="button" class="ai-plan-add" data-add="${i}">➕ ${ar?'أضف المختار لجدولي':'Add selected to my schedule'}</button>`:'')}</div>`:''}${m.err&&i===_aiChat.length-1?`<br><button type="button" class="ai-retry" data-retry="1">🔁 ${ar?'جرّب مرة ثانية':'Try again'}</button>`:''}</div>`).join('')+(typing?`<div class="ai-msg bot ai-typing" aria-label="${ar?'يكتب':'typing'}"><span></span><span></span><span></span></div>`:'');
-    }
-    msgs.scrollTop=msgs.scrollHeight;
-    sugs.innerHTML=SUGS.map(([e,q,special])=>`<button type="button" class="${special?'wide':''}" data-q="${escapeHtml(special||q)}"><span>${e}</span>${escapeHtml(q.replace(/[:：]\s*$/,'…'))}</button>`).join('');
-    sugs.classList.toggle('hidden',!!(inp.value.trim()||typing||dump));
-    msgs.querySelectorAll('[data-tk]').forEach(cb=>cb.onchange=()=>{ const m=_aiChat[+cb.dataset.mi]; if(m&&m.tasks){ m.tasks[+cb.dataset.tk].on=cb.checked; try{ localStorage.setItem('aiChat',JSON.stringify(_aiChat.filter(x=>!x.err).slice(-16))); }catch(e){} } });
-    msgs.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ const m=_aiChat[+b.dataset.add]; if(!m||m.added) return; const n=aiAddPlan(m.tasks); if(!n){ showToast(ar?'اختار مهمة وحدة على الأقل':'Pick at least one task'); return; } m.added=true; try{ localStorage.setItem('aiChat',JSON.stringify(_aiChat.filter(x=>!x.err).slice(-16))); }catch(e){} playSfx('success'); showToast(ar?`✅ انضاف ${n} لجدولك`:`✅ Added ${n} to your schedule`,'success'); draw(); });
-    sugs.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{ const q=b.dataset.q; if(q==='__dump__'){ setDump(true); return; } if(/[:：]\s*$/.test(q)){ inp.value=q; inp.focus(); inp.setSelectionRange(q.length,q.length); grow(); sugs.classList.add('hidden'); } else send(q); });
-    const rb=msgs.querySelector('[data-retry]'); if(rb) rb.onclick=()=>{ const lastQ=[..._aiChat].reverse().find(m=>m.role==='user'); _aiChat=_aiChat.filter(m=>!m.err); if(lastQ){ _aiChat.splice(_aiChat.lastIndexOf(lastQ),1); send(lastQ.text); } };
-  };
-  const grow=()=>{ inp.style.height='auto'; inp.style.height=Math.min(120,inp.scrollHeight)+'px'; };
-  const dumpSend=async q=>{
-    _aiBusy=true; document.getElementById('aiSend').disabled=true;
-    _aiChat.push({role:'user',text:q}); inp.value=''; grow(); draw(true);
-    try{
-      const now=new Date(), iso=d=>isoDateStr(d.getFullYear(),d.getMonth(),d.getDate()), wn=d=>d.toLocaleDateString('en-GB',{weekday:'long'});
-      const next=[...Array(8)].map((_,k)=>{ const d=new Date(now); d.setDate(d.getDate()+k); return `${iso(d)}=${wn(d)}`; }).join(', ');
-      const sys=`You turn a messy brain-dump into a clean plan. Today is ${iso(now)} (${wn(now)}), the time now is ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}. Upcoming dates: ${next}. Reply with JSON only: {"reply":"one short friendly line in ${ar?'Kuwaiti Arabic':'English'}","tasks":[{"title":"short title in the user's language, starting with one fitting emoji","date":"YYYY-MM-DD","start":"HH:MM or null","end":"HH:MM or null"}]}. Rules: one task per thing mentioned; resolve relative days (بكرة/tomorrow, weekday names = the next such day, اليوم/today, no day = today); 24-hour times; only set a time when it is said or clearly implied (الصبح≈09:00, الظهر≈13:00, العصر≈16:00, المغرب≈18:00, الليل≈21:00); if a start is set but no end, end = start + 1 hour; never invent things that were not mentioned; at most 12 tasks; never use the word لسه.`;
-      const raw=await aiGenerate(sys,q,{responseMimeType:'application/json'});
-      const j=JSON.parse(String(raw).replace(/^```(json)?|```$/g,'').trim());
-      const ok=t=>/^\d{2}:\d{2}$/.test(t||'');
-      const tasks=(j.tasks||[]).filter(t=>t&&t.title&&/^\d{4}-\d{2}-\d{2}$/.test(t.date||'')).slice(0,12).map(t=>({title:String(t.title).slice(0,60), date:t.date, start:ok(t.start)?t.start:null, end:ok(t.end)?t.end:null, on:true}));
-      _aiChat.push({role:'model',text:String(j.reply||'').trim()||(ar?'رتبتها لك 👇 اختار اللي تبيه':'Here’s your plan 👇 pick what you want'),tasks});
-    }catch(e){ _aiChat.push({role:'model',text:'⚠️ '+aiErrText(e),err:true}); }
-    try{ localStorage.setItem('aiChat',JSON.stringify(_aiChat.filter(m=>!m.err).slice(-16))); }catch(e){}
-    _aiBusy=false; document.getElementById('aiSend').disabled=false; draw(); sub();
-  };
-  const send=async q=>{
-    q=String(q||'').trim(); if(!q||_aiBusy) return;
-    if(!aiReady()){ _aiChat.push({role:'user',text:q},{role:'model',text:aiErrText(new Error('ai-off')),err:true}); draw(); return; }
-    if(dump) return dumpSend(q);
-    _aiBusy=true; document.getElementById('aiSend').disabled=true;
-    _aiChat.push({role:'user',text:q}); inp.value=''; grow(); draw(true);
-    try{
-      const ctx=await aiDayContext();
-      if(P.aiWeekly&&P.aiWeekly.text&&P.aiWeekly.id===wkId()) ctx.weeklyReport=String(P.aiWeekly.text).slice(0,1200);
-      const hist=_aiChat.filter(m=>!m.err).slice(-10);
-      const contents=hist.map((m,i)=>({role:m.role==='user'?'user':'model', parts:[{text:(i===hist.length-1&&m.role==='user')?`[بيانات يومي من التطبيق: ${JSON.stringify(ctx)}]\n\n${m.text}`:m.text}]}));
-      const reply=await aiGenerate(AI_SYS_AR,{contents});
-      _aiChat.push({role:'model',text:String(reply||'').trim()||'…'});
-    }catch(e){ _aiChat.push({role:'model',text:'⚠️ '+aiErrText(e),err:true}); }
-    try{ localStorage.setItem('aiChat',JSON.stringify(_aiChat.filter(m=>!m.err).slice(-16))); }catch(e){}
-    _aiBusy=false; document.getElementById('aiSend').disabled=false; draw(); sub();
-  };
-  document.getElementById('aiSend').onclick=()=>send(inp.value);
-  inp.onkeydown=e=>{ if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); send(inp.value); } };
-  inp.oninput=()=>{ grow(); sugs.classList.toggle('hidden',!!inp.value.trim()||dump); };
-  // 🎤 speak instead of typing (where the browser supports it)
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition, mic=document.getElementById('aiMic');
-  if(SR&&mic){ mic.classList.remove('hidden'); let rec=null;
-    mic.onclick=()=>{ if(rec){ try{ rec.stop(); }catch(e){} return; }
-      rec=new SR(); rec.lang=ar?'ar-KW':'en-US'; rec.interimResults=true; rec.continuous=false;
-      const base=inp.value?inp.value.trim()+' ':''; mic.classList.add('rec');
-      rec.onresult=e=>{ let t=''; for(const r of e.results) t+=r[0].transcript; inp.value=base+t; grow(); sugs.classList.add('hidden'); };
-      const end=()=>{ rec=null; mic.classList.remove('rec'); }; rec.onend=end; rec.onerror=end;
-      try{ rec.start(); }catch(e){ end(); } }; }
-  document.getElementById('aiClose').onclick=closeAiChat;
-  document.getElementById('aiNew').onclick=()=>{ if(_aiBusy) return; _aiChat=[]; try{ localStorage.removeItem('aiChat'); }catch(e){} draw(); };
-  setDump(!!(opts&&opts.dump)); draw();
-  s.classList.add('open'); document.body.classList.add('ai-open');
-  if(starter) send(starter);
-}
-/* 📷 photo → which fish is it? matched against the collection */
-async function aiIdentifyFishFromFile(file){
-  const ar=LANG==='ar';
-  document.getElementById('dayTitle').textContent=ar?'📷 وش هالسمكة؟':'📷 Which fish is this?';
-  document.getElementById('daySubtitle').textContent='';
-  document.getElementById('cardBody').innerHTML=`<div class="ai-fishid"><div class="dash-empty">${ar?'… قاعد أشوف الصورة':'… looking at your photo'}</div></div>`;
-  overlay.classList.add('open');
-  const box=document.querySelector('.ai-fishid');
-  let dataUrl; try{ dataUrl=await collCompressImage(file); }catch(e){ box.innerHTML=`<div class="dash-empty">${escapeHtml(e.message)}</div>`; return; }
-  box.insertAdjacentHTML('afterbegin',`<img class="ai-fish-photo" src="${dataUrl}" alt="">`);
-  const favs=SPECIES_DB.fish.filter(x=>x.kw&&x.sci).map(x=>`- ${x.nameAr} = ${x.sci} (${x.nameEn}): ${x.tipEn||x.descEn||''}`).join(String.fromCharCode(10));
-  const sys='You are an expert ichthyologist for Kuwait and the Arabian Gulf. You identify fish (and crabs) from photos taken by Kuwaiti fishermen (on the boat, on the deck, in hand, at the market, or underwater). Reply with JSON only.';
-  const ask=`Identify the animal in this photo.
-Step 1 — look carefully and note: body shape and depth, head profile, mouth and lips, eye size, colour and any stripes/spots/bars, dorsal fin (spiny/soft, length), tail shape.
-Step 2 — compare these features against this list of common Kuwait fish FIRST (Kuwaiti name = scientific name: key ID features):
-${favs}
-Only pick a species outside this list if the features clearly do not fit any of them.
-Return exactly: {"isFish":true|false,"features":"short notes from step 1","candidates":[{"sci":"Genus species","kuwaitiName":"Arabic local name or empty","englishName":"","confidence":0.0-1.0,"why":"one short reason in ${ar?'Arabic (Kuwaiti dialect)':'English'}"}]} — up to 3 candidates, most likely first.`;
-  let res;
-  try{
-    const txt=await aiGenerate(sys,{contents:[{role:'user',parts:[{text:ask},{inlineData:{mimeType:dataUrl.slice(5,dataUrl.indexOf(';')),data:dataUrl.split(',')[1]}}]}]},{responseMimeType:'application/json'});
-    res=JSON.parse(String(txt).replace(/^```(json)?|```$/g,'').trim());
-  }catch(e){ box.querySelector('.dash-empty').textContent=aiErrText(e); return; }
-  const L=collSpeciesList('fish'), found=[];
-  (res.candidates||[]).slice(0,3).forEach(cd=>{
-    const sci=String(cd.sci||'').toLowerCase().trim(), kn=normAr(cd.kuwaitiName||''), en=String(cd.englishName||'').toLowerCase();
-    let sp=L.find(x=>x.sci&&x.sci.toLowerCase()===sci)
-      ||(kn&&L.find(x=>[x.nameAr,...(x.altNames||[])].some(n=>normAr(n)===kn)))
-      ||(sci&&L.find(x=>x.sci&&x.sci.toLowerCase().split(' ')[0]===sci.split(' ')[0]&&x.kw))
-      ||(en&&L.find(x=>String(x.nameEn||x.descEn||'').toLowerCase()===en));
-    if(sp&&!found.some(f=>f.sp.id===sp.id)) found.push({sp,cd});
-  });
-  const empty=box.querySelector('.dash-empty'); if(empty) empty.remove();
-  if(res.isFish===false){ box.insertAdjacentHTML('beforeend',`<p class="dash-empty">${ar?'ما شفت سمكة واضحة بالصورة — جرّب صورة أوضح للجنب كامل':'I couldn’t see a clear fish — try a clearer side-on photo'}</p>`); }
-  else if(!found.length){ box.insertAdjacentHTML('beforeend',`<p class="dash-empty">${ar?'ما لقيتها بمقتنياتك — جرّب البحث بالشكل':'I couldn’t match it to your collection — try finding it by shape'}</p>`); }
-  else box.insertAdjacentHTML('beforeend',`<div class="fd-sec">${ar?'أقرب احتمالات — اختار الصح':'Most likely — pick the right one'}</div><div class="fd-list">${found.map(({sp,cd})=>finderItem(sp).replace('</button>',`<span class="ai-conf">${Math.round((+cd.confidence||0)*100)}%</span></button>`)+(cd.why?`<div class="ai-why">💡 ${escapeHtml(String(cd.why).slice(0,140))}</div>`:'')).join('')}</div>`);
-  box.insertAdjacentHTML('beforeend',`<p class="ai-note">${ar?'الذكاء ممكن يغلط — قارن بالصورة المرجعية قبل لا تسجّل.':'AI can be wrong — compare with the reference photo before logging.'}</p><button type="button" class="setup-btn" id="aiFishShape" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">🔎 ${ar?'دوّرها بنفسي':'Find it myself'}</button>`);
-  box.querySelectorAll('[data-pick]').forEach(b=>b.onclick=async()=>{ await collLoadCategory('fish'); collCurrentCat='fish'; confirmFinderPick(b.dataset.pick); });
-  document.getElementById('aiFishShape').onclick=()=>openCatchFinder();
-}
-function aiPickFishPhoto(){
-  if(!aiReady()){ showToast(aiErrText(new Error('ai-off'))); return; }
-  const ar=LANG==='ar';
-  const pick=cam=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; if(cam) inp.setAttribute('capture','environment');
-    inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(f) aiIdentifyFishFromFile(f); }; inp.click(); };
-  document.getElementById('dayTitle').textContent=ar?'📷 وش هالسمكة؟':'📷 Which fish is this?';
-  document.getElementById('daySubtitle').textContent='';
-  document.getElementById('cardBody').innerHTML=`<div class="ai-src"><button type="button" class="ai-src-btn" id="aiSrcCam"><span>📸</span><b>${ar?'صوّر الحين':'Take a photo'}</b><small>${ar?'افتح الكاميرا':'Open the camera'}</small></button><button type="button" class="ai-src-btn" id="aiSrcLib"><span>🖼️</span><b>${ar?'من الصور':'From your photos'}</b><small>${ar?'اختار صورة من جهازك':'Pick one from your phone'}</small></button></div><p class="ai-note">${ar?'💡 أحسن صورة: السمكة كاملة من الجنب وبإضاءة زينة.':'💡 Best photo: the whole fish, side-on, in good light.'}</p>`;
-  overlay.classList.add('open');
-  document.getElementById('aiSrcCam').onclick=()=>pick(true);
-  document.getElementById('aiSrcLib').onclick=()=>pick(false);
-}
 
 /* ================= QUICK LOG ("+") =================
    One button on every screen for the things people log most — each one
@@ -3928,10 +3598,6 @@ function openQuickLog(){
     ['workout','🏋️',ar?'تمرين اليوم':'Today’s workout',ar?'افتح التمرين':'Open your workout'],
     ['weight','⚖️',ar?'وزني':'My weight',ar?'سجّل وزن اليوم':'Log today’s weight'],
     ['task','📅',ar?'موعد أو مهمة':'Event or task',ar?'أضف للجدول':'Add to your schedule'],
-    ['ai','🧠',ar?'مساعد مخططي':'Assistant',ar?'اسأل الذكاء الاصطناعي':'Ask the AI'],
-    ['fishphoto','📷',ar?'صوّر سمكتك':'Photo ID',ar?'الذكاء يعرف نوعها':'AI names the fish'],
-    ['weekly','📊',ar?'تقرير الأسبوع':'Weekly report',ar?'الذكاء يلخّص أسبوعك':'AI sums up your week'],
-    ['dump','🗂️',ar?'فضفض وأرتّب لك':'Brain-dump',ar?'تكتب أو تتكلم، ويصير جدول':'Type or talk, get a plan'],
   ];
   document.getElementById('dayTitle').textContent=ar?'➕ سجّل بسرعة':'➕ Quick log';
   document.getElementById('daySubtitle').textContent='';
@@ -3945,20 +3611,14 @@ function openQuickLog(){
     else if(k==='workout') navTo('workout');
     else if(k==='weight') navTo('home-weight');
     else if(k==='task') navTo('schedule-add');
-    else if(k==='ai') openAiChat();
-    else if(k==='fishphoto') aiPickFishPhoto();
-    else if(k==='weekly') openWeeklyReport();
-    else if(k==='dump') openAiChat(null,{dump:true});
   });
 }
 document.getElementById('quickLogFab').addEventListener('click',()=>{ playSfx('pop'); openQuickLog(); });
-document.getElementById('aiFab').addEventListener('click',()=>{ playSfx('pop'); openAiChat(); });
 /* shown whenever the main nav is (signed in, past the username gate) */
 function syncQuickFab(){
   const nav=document.getElementById('bottomNav'), fab=document.getElementById('quickLogFab'); if(!nav||!fab) return;
   const show=!nav.classList.contains('hidden') && !(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed) && !usernameHardGateActive();
   fab.classList.toggle('hidden',!show);
-  const af=document.getElementById('aiFab'); if(af) af.classList.toggle('hidden',!show||!aiReady());
 }
 new MutationObserver(syncQuickFab).observe(document.getElementById('bottomNav'),{attributes:true,attributeFilter:['class']});
 setInterval(syncQuickFab,2000);
@@ -5448,7 +5108,7 @@ function hnCandidates(){
   // 10) free time
   const nextC=commitmentsForDate(new Date()).map(c=>({c,sp:mtSpan(c)})).filter(x=>x.sp&&x.sp.start>now&&!done[commitKey(x.c)]).sort((a,b)=>a.sp.start-b.sp.start)[0];
   out.push({id:'free', s:20, ic:nextC?'⏳':'🎉', title:nextC?(ar?`وقتك فاضي لين ${formatTime12h(nextC.c.from)}`:`You’re free until ${formatTime12h(nextC.c.from)}`):(ar?'ما عليك شي الحين':'Nothing due right now'),
-    sub:ar?'فضفض للذكاء وخله يرتب لك أفكارك':'Brain-dump and let the AI sort it', act:{k:'ai'}, btn:ar?'🧠 فضفض':'🧠 Dump'});
+    sub:ar?'استغله بشي يفيدك أو يريحك':'Use it for something useful or restful'});
   return out;
 }
 function renderHomeNow(){
@@ -5473,7 +5133,6 @@ async function hnDo(a){
   if(a.k==='habit'){ const h=(P.habits||[]).find(x=>x.id===a.hid);
     if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:'ontime'}; } });
     setTimeout(renderHomeNow,250); return; }
-  if(a.k==='ai'){ openAiChat(null,{dump:true}); return; }
   if(a.k==='missed'){ ccJump('missed'); return; }
   if(a.k==='nav') navTo(a.to);
 }
@@ -6537,67 +6196,6 @@ async function openAqArrange(focusId){
   draw(); overlay.classList.add('open');
 }
 
-/* ================= WEEKLY AI REPORT =================
-   Every Friday (and Saturday) a card on Home: one AI request writes a short
-   report of the last 7 days, saved on the profile so it isn't re-generated. */
-function wkLastFriday(){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+2)%7)); return d; }
-function wkId(){ const d=wkLastFriday(); return isoDateStr(d.getFullYear(),d.getMonth(),d.getDate()); }
-async function wkData(){
-  const end=wkLastFriday(), from=new Date(end); from.setDate(from.getDate()-6);
-  const pids=prayerHabitIds(), hs=(P.habits||[]).filter(h=>h.group!=='prayers'), days=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date(end); d.setDate(d.getDate()-i); let t=null;
-    try{ const v=await storageGet(`daily-track:${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`); if(v) t=JSON.parse(v); }catch(e){}
-    const hb=(t&&t.habits)||{};
-    days.push({day:d.toLocaleDateString('en-GB',{weekday:'short'}), opened:!!t, waterL:t?(+t.water||0):0, workout:!!(t&&t.workoutDone), prayers:pids.filter(id=>hb[id]).length, habits:hs.filter(h=>hb[h.id]).length, meals:t&&Array.isArray(t.meals)?t.meals.filter(Boolean).length:0});
-  }
-  const out={days, totals:{daysOpened:days.filter(d=>d.opened).length, workouts:days.filter(d=>d.workout).length, prayersOnRecord:days.reduce((a,d)=>a+d.prayers,0)+' of 35', otherHabitsDone:days.reduce((a,d)=>a+d.habits,0)+' of '+hs.length*7, avgWaterL:+(days.reduce((a,d)=>a+d.waterL,0)/7).toFixed(2), waterTargetL:(P.foodSetup&&P.foodSetup.waterTarget)||3.5}};
-  try{ const fi=isoDateStr(from.getFullYear(),from.getMonth(),from.getDate()), ti=isoDateStr(end.getFullYear(),end.getMonth(),end.getDate());
-    const w=weightLog.filter(x=>x.iso>=fi&&x.iso<=ti); if(w.length>=1) out.weightKg={first:w[0].kg,last:w[w.length-1].kg}; }catch(e){}
-  try{ const raw=await storageGet('collections:animals:fish'), data=raw?JSON.parse(raw):{}, fromIso=from.toISOString(), endIso=new Date(end.getTime()+864e5).toISOString(), caught=[];
-    Object.entries(data).forEach(([sid,rec])=>(rec&&rec.catches||[]).forEach(c=>{ if(c.date>=fromIso&&c.date<endIso){ const sp=collSpeciesInfo('fish',sid); caught.push(sp?(LANG==='ar'?sp.nameAr:(sp.nameEn||sp.nameAr)):sid); } }));
-    if(caught.length) out.fishCaughtThisWeek=caught; }catch(e){}
-  try{ out.xpThisWeek=(P.weekXp||{})['w'+isoDateStr(from.getFullYear(),from.getMonth(),from.getDate())]||0; out.streaks=P.streaks?Object.fromEntries(Object.entries(P.streaks).map(([k,v])=>[k,(v&&v.current)||0])):undefined; }catch(e){}
-  return out;
-}
-async function wkGenerate(){
-  const id=wkId(); if(P.aiWeekly&&P.aiWeekly.id===id&&P.aiWeekly.text) return P.aiWeekly.text;
-  const ar=LANG==='ar', data=await wkData();
-  const ask=(ar?'اكتب تقريري الأسبوعي من هالبيانات (آخر ٧ أيام لين الجمعة):\n':'Write my weekly report from this data (the last 7 days up to Friday):\n')+JSON.stringify(data)+
-    (ar?'\n\nالشكل بالضبط:\n🏆 **أحسن شي سويته** — سطر أو سطرين\n📊 **أرقامك** — ٣ إلى ٥ نقاط قصيرة بالأرقام\n🎯 **الأسبوع الياي** — ٣ أهداف صغيرة وواضحة\n🎣 **الحداق** — سطر واحد إذا فيه صيد\nخلك مشجّع وصادق، ولا تخترع أي رقم مو موجود بالبيانات. الأيام اللي ما انفتح فيها التطبيق لا تحسبها تقصير أكيد.'
-      :'\n\nExact format:\n🏆 **Best thing you did** — 1-2 lines\n📊 **Your numbers** — 3-5 short bullets with numbers\n🎯 **Next week** — 3 small, clear goals\n🎣 **Fishing** — one line if there were catches\nBe encouraging and honest; never invent a number that is not in the data. Days the app was not opened are not necessarily missed days.');
-  const text=String(await aiGenerate(AI_SYS_AR,ask)||'').trim();
-  if(!text) throw new Error('empty');
-  P.aiWeekly={id,text,at:new Date().toISOString()}; storageSet('profile',JSON.stringify(P));
-  return text;
-}
-async function openWeeklyReport(){
-  const ar=LANG==='ar', d=wkLastFriday(), from=new Date(d); from.setDate(from.getDate()-6);
-  const fmt=x=>x.toLocaleDateString(ar?'ar-KW':'en-GB',{day:'numeric',month:'short'});
-  document.getElementById('dayTitle').textContent=ar?'📊 تقريرك الأسبوعي':'📊 Your weekly report';
-  document.getElementById('daySubtitle').textContent=`${fmt(from)} – ${fmt(d)}`;
-  document.getElementById('cardBody').innerHTML=`<div class="wk-rep"><div class="dash-empty">${ar?'… قاعد أكتب تقريرك':'… writing your report'}</div></div>`;
-  overlay.classList.add('open');
-  const box=document.querySelector('.wk-rep');
-  if(!aiReady()){ box.innerHTML=`<div class="dash-empty">${aiErrText(new Error('ai-off'))}</div>`; return; }
-  try{
-    const txt=await wkGenerate();
-    box.innerHTML=`<div class="wk-text">${aiRender(txt)}</div><p class="ai-note">${ar?'كتبه مساعد مخططي من بياناتك — ممكن يغلط.':'Written by the assistant from your data — it can make mistakes.'}</p><button type="button" class="setup-btn" id="wkAsk" style="margin-top:12px;background:var(--card);color:var(--heading);border:1px solid var(--heading);">🧠 ${ar?'سوّ لي خطة للأسبوع الياي':'Make me a plan for next week'}</button>`;
-    document.getElementById('wkAsk').onclick=()=>aiFromOverlay(ar?'عطني خطة بسيطة للأسبوع الياي بناءً على تقريري الأسبوعي':'Give me a simple plan for next week based on my weekly report');
-    renderWeeklyCard();
-  }catch(e){ box.innerHTML=`<div class="dash-empty">${aiErrText(e)}</div>`; }
-}
-function renderWeeklyCard(){
-  const box=document.getElementById('homeWeekly'); if(!box) return;
-  const g=new Date().getDay(), ar=LANG==='ar';
-  if(!(g===5||g===6)||!aiReady()||!currentUser){ box.innerHTML=''; box.style.display='none'; return; }
-  box.style.display='';
-  const done=P.aiWeekly&&P.aiWeekly.id===wkId()&&P.aiWeekly.text;
-  const first=done?String(P.aiWeekly.text).split('\n').filter(l=>l.trim()).slice(0,2).join('\n'):'';
-  box.innerHTML=`<button type="button" class="wk-card"><span class="wk-ic">📊</span><span class="wk-body"><b>${ar?'تقريرك الأسبوعي':'Your weekly report'}</b><small>${done?aiRender(first):(ar?'جاهز! شوف شنو سويت هالأسبوع وشنو تحسّن':'Ready! See how your week went and what to improve')}</small></span><span class="wk-go">${done?(ar?'اقرأ':'Read'):(ar?'افتح':'Open')} ›</span></button>`;
-  box.querySelector('.wk-card').onclick=()=>{ playSfx('pop'); openWeeklyReport(); };
-}
-
 /* ================= RAMADAN =================
    Appears by itself: a countdown from 20 Sha'ban, the Ramadan card for the
    whole month (fasting, taraweeh, a 30-juz khatma, iftar/suhoor times from
@@ -7007,7 +6605,6 @@ function drawCatchFinder(){
   const gulf=L.filter(sp=>sp.group==='gulf_market');
   const unknown=(P.unknownCatches||[]).length;
   document.getElementById('cardBody').innerHTML=`
-    <button type="button" class="ai-photo-btn" id="fdAiPhoto">📷 ${ar?'صوّرها وخلّ الذكاء الاصطناعي يعرفها':'Snap it — let AI name the fish'}${aiReady()?'':` <small>${ar?'(قريباً)':'(soon)'}</small>`}</button>
     <input class="setup-input fd-search" id="fdQ" placeholder="${ar?'🔎 اكتب أي اسم تعرفه: هامور، زبيدي، grouper…':'🔎 Type any name you know: hamour, grouper, Epinephelus…'}" value="${escapeHtml(_finder.q)}">
     ${q.length>=2?`<div class="fd-sec">${ar?`النتائج (${results.length})`:`Results (${results.length})`}</div><div class="fd-list">${results.slice(0,40).map(finderItem).join('')||`<div class="fd-empty">${ar?'ما لقينا — جرّب الشكل تحت 👇':'Nothing found — try the shape below 👇'}</div>`}</div>`:''}
     ${q.length<2&&!_finder.shape?`<div class="fd-sec">${ar?'🎣 أسماك الخليج المشهورة':'🎣 Popular Gulf fish'}</div><div class="fd-grid">${gulf.map(sp=>`<button type="button" data-pick="${sp.id}">${sp.img?`<img class="fd-gph" loading="lazy" src="${collImgUrl(sp,120)}" alt="" onerror="this.remove()">`:fishArtHtml(sp,30)}${escapeHtml(sp.nameAr)}${ar?'':`<small style="font-weight:400">${escapeHtml(sp.nameEn)}</small>`}</button>`).join('')}</div>`:''}
@@ -7023,7 +6620,6 @@ function drawCatchFinder(){
   const g=document.getElementById('fdGulf'); if(g) g.onchange=()=>{ _finder.gulf=g.checked; drawCatchFinder(); };
   document.querySelectorAll('#cardBody [data-pick]').forEach(b=>b.onclick=()=>confirmFinderPick(b.dataset.pick));
   document.getElementById('fdUnknown').onclick=saveUnknownCatch;
-  const aiB=document.getElementById('fdAiPhoto'); if(aiB) aiB.onclick=aiPickFishPhoto;
 }
 function confirmFinderPick(sid){
   const sp=collSpeciesInfo('fish',sid), ar=LANG==='ar', tier=RARITY_TIERS[sp.rarity], n=collCatchCount(collRecord(sid)), grp=collGroupConfig('fish',sp.group);
@@ -14217,7 +13813,7 @@ function refreshHome(){
   try{ ccInit(); ccRenderBar(); }catch(e){}
   setTimeout(maybeShowGuide,2500);
   renderHomeAquarium();
-  renderWeeklyCard();
+  
 }
 /* ================= COLLAPSIBLE SECTIONS =================
    Every Home card (and the Nutrition cards) folds to its title + a short
@@ -14851,6 +14447,7 @@ function noteHabitCheck(justEarned){
     showToast(LANG==='ar'?'🌟 يوم مثالي — خلصت كل عاداتك!':'🌟 Perfect day — every habit done!'); playSfx&&playSfx('fanfare'); }
   return changed;
 }
+function afterPaint(fn){ requestAnimationFrame(()=>setTimeout(fn,0)); }
 function toggleHabitToday(h,paint){
   dailyTrack.habits=dailyTrack.habits||{};
   const nowDone=!dailyTrack.habits[h.id];
@@ -14860,14 +14457,14 @@ function toggleHabitToday(h,paint){
   dailyTrack.xpAwarded=dailyTrack.xpAwarded||{}; dailyTrack.xpAwarded.habits=dailyTrack.xpAwarded.habits||{};
   const justEarnedXp = nowDone && !dailyTrack.xpAwarded.habits[h.id];
   if(justEarnedXp) dailyTrack.xpAwarded.habits[h.id]=true;
-  const countersChanged=noteHabitCheck(justEarnedXp);
-  (async()=>{
+  afterPaint(async()=>{
+    const countersChanged=noteHabitCheck(justEarnedXp);
     await saveDailyTrack();
     if(countersChanged) await storageSet('profile',JSON.stringify(P));
     if(justEarnedXp){ await awardXP(XP_CONFIG.habit_complete); await saveDailyTrack(); }
     await notifyNewUnlocks();
     renderHabits();
-  })();
+  });
 }
 /* ---- 💊 supplements on Home: tick each one by its name; names are saved in
    the profile (P.foodSetup.supOtherList — the same list the Nutrition setup
@@ -14894,7 +14491,7 @@ function renderDashSuppCard(){
   el.querySelectorAll('[data-sk]').forEach(r=>{ const go=async()=>{
     const k='other'+r.dataset.sk; dailyTrack.supplements={...(dailyTrack.supplements||{})};
     if(dailyTrack.supplements[k]) delete dailyTrack.supplements[k]; else { dailyTrack.supplements[k]=true; playSfx('check'); }
-    renderDashSuppCard(); await saveDailyTrack(); try{ renderSupChips(); }catch(e){} try{ renderHomeTodoProgress(); }catch(e){} };
+    renderDashSuppCard(); afterPaint(async()=>{ await saveDailyTrack(); try{ renderSupChips(); }catch(e){} try{ renderHomeTodoProgress(); }catch(e){} }); };
     r.onclick=go; r.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } }; });
   if(!_suppEdit) return;
   const sync=()=>el.querySelectorAll('[data-si]').forEach(inp=>{ _suppEdit[+inp.dataset.si].text=inp.value; });
@@ -14952,8 +14549,7 @@ function renderHabits(){
           dailyTrack.prayerStatus=dailyTrack.prayerStatus||{};
           if(dailyTrack.habits&&dailyTrack.habits[m.id]&&dailyTrack.prayerStatus[m.id]!=='late'){
             dailyTrack.prayerStatus[m.id]='late'; paintPill(true,true); playSfx&&playSfx('tap');
-            showToast(LANG==='ar'?`⏱ ${habitLabelText(m)} — متأخرة`:`⏱ ${habitLabelText(m)} — late`);
-            saveDailyTrack(); return;
+            afterPaint(()=>{ showToast(LANG==='ar'?`⏱ ${habitLabelText(m)} — متأخرة`:`⏱ ${habitLabelText(m)} — late`); saveDailyTrack(); }); return;
           }
           toggleHabitToday(m,done=>{ if(done) dailyTrack.prayerStatus[m.id]='ontime'; else delete dailyTrack.prayerStatus[m.id]; paintPill(done,false); });
           return;
