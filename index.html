@@ -171,13 +171,13 @@
   .home-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:20px; }
   #homeSchedulePreview, #homeCollectionPreview, #homeAquarium{ display:none!important; }
   #homeTodoCard{ order:-2; } #dashCommitCard{ order:-1; } /* phones: today's health, its commitments, then challenges */
-  @media(min-width:860px){
-    .home-grid{ grid-template-columns:1.1fr 1.7fr 1fr; grid-template-rows:auto auto 1fr; align-items:start; gap:14px; }
+  @media(min-width:1100px){ /* two columns only once the page is wide (1120); narrower it stays one column */
+    .home-grid{ grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); grid-template-rows:auto auto 1fr; align-items:start; gap:14px; }
     #homeSchedulePreview{ order:0; grid-column:1; grid-row:1; }
     #homeDietTrainingPreview{ grid-column:1; grid-row:2; }
-    #homeTodoCard{ order:0; grid-column:2; grid-row:1 / 4; }
-    #dashCommitCard{ order:0; grid-column:1; grid-row:1; }
-    #homeChallengesPreview{ grid-column:3; grid-row:1; }
+    #homeTodoCard{ order:0; grid-column:1; grid-row:1 / 4; }
+    #dashCommitCard{ order:0; grid-column:2; grid-row:1; }
+    #homeChallengesPreview{ grid-column:2; grid-row:2; }
     #homeCollectionPreview{ grid-column:3; grid-row:2; }
     #homeAquarium{ grid-column:1; grid-row:1; }
   }
@@ -1174,10 +1174,11 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .cm-sep button{ border:none; background:none; color:#d13b40; font:inherit; font-size:.74rem; cursor:pointer; text-decoration:underline; }
   .cm-empty{ font-size:.8rem; color:var(--ink-soft); }
   /* today's commitments (Home To-Do) */
-  .cmt-row{ width:100%; display:flex; align-items:center; gap:10px; padding:9px 4px; border:none; border-bottom:1px solid rgba(127,127,127,.15); background:none; color:var(--heading); font:inherit; text-align:start; cursor:pointer; }
+  .cmt-row{ width:100%; box-sizing:border-box; display:flex; align-items:center; gap:10px; padding:9px 4px; border:none; border-bottom:1px solid rgba(127,127,127,.15); background:none; color:var(--heading); font:inherit; text-align:start; cursor:pointer; }
   .cmt-row:last-child{ border-bottom:none; }
-  .cmt-t{ flex:0 0 auto; min-width:64px; font-size:.74rem; font-weight:700; color:var(--ink-soft); }
-  .cmt-l{ flex:1; font-size:.88rem; font-weight:600; }
+  .cmt-t{ flex:0 0 76px; min-width:0; font-size:.74rem; font-weight:700; color:var(--ink-soft); line-height:1.35; } /* a "from - to" range wraps to two lines instead of squeezing the label */
+  .cmt-l{ flex:1; min-width:0; font-size:.88rem; font-weight:600; overflow-wrap:anywhere; }
+  .cmt-row .dash-toggle{ flex:none; }
   .cmt-row.done .cmt-l{ text-decoration:line-through; opacity:.55; }
   .cmt-count{ font-size:.78rem; color:var(--ink-soft); margin-inline-start:6px; }
   .cmt-empty{ display:flex; flex-direction:column; gap:4px; font-size:.85rem; color:var(--heading); margin:6px 0 10px; }
@@ -1827,6 +1828,69 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .cc-scroll::-webkit-scrollbar{ display:none; }
   .cc-up{ flex:0 0 auto; width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--heading); font-size:1rem; line-height:1; cursor:pointer; display:none; align-items:center; justify-content:center; padding:0; }
   .cc-bar.stuck .cc-up{ display:flex; animation:fadeUp .2s ease; }
+  /* ===== v1.69: review fixes ===== */
+  /* computers: a wider page (was 760 everywhere) */
+  @media(min-width:1100px){
+    .wrap, .topnav-inner, .profile-bar, #mainNav #bottomNav{ max-width:1120px; }
+    /* reading pages stay a comfortable width */
+    #panel-habits, #panel-challenges, #panel-profile, #panel-progress, #panel-social, #panel-health, #panel-profile-hub{ max-width:860px; margin-inline:auto; }
+    /* Nutrition: meals beside water / supplements / weight */
+    #foodContent:not(.hidden){ display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); column-gap:24px; align-items:start; }
+    #foodContent > *{ grid-column:2; }
+    #foodContent > #exercisePromptBanner{ grid-column:1 / -1; }
+    #foodContent > #todaySquareCard{ grid-column:1; grid-row:span 8; }
+    /* Training: today's workout beside the week */
+    #workoutContent:not(.hidden){ display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); column-gap:24px; align-items:start; }
+    #workoutContent > *{ grid-column:1 / -1; }
+    #workoutContent > #workoutToday{ grid-column:1; grid-row:span 3; }
+    #workoutContent > #workoutLegend, #workoutContent > #workoutGrid{ grid-column:2; }
+    /* Schedule: your day beside the month */
+    #todoContent{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); column-gap:24px; align-items:start; }
+    #todoContent > *{ grid-column:2; }
+    #todoContent > #schToday{ grid-column:1; grid-row:1 / span 6; }
+  }
+  /* Training › today's workout, right on the page */
+  .wt-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); margin-bottom:16px; }
+  .wt-card:empty{ display:none; }
+  .wt-head{ display:flex; flex-direction:column; gap:2px; margin-bottom:12px; }
+  .wt-eye{ font-size:.78rem; font-weight:700; color:var(--ink-soft); }
+  .wt-name{ font-family:var(--font-head); font-size:1.25rem; color:var(--heading); }
+  .wt-card.flash{ animation:ccFlash 1.2s ease; }
+  /* Schedule › your day first */
+  .sch-today{ margin-bottom:14px; }
+  .sch-date{ font-family:var(--font-body); font-weight:600; color:var(--ink-soft); font-size:.78rem; margin-inline-start:6px; }
+  .sch-list{ display:flex; flex-direction:column; }
+  .sch-row{ display:flex; align-items:center; gap:10px; padding:9px 2px; border-top:1px solid var(--line); cursor:pointer; font-size:.88rem; }
+  .sch-row:first-child{ border-top:none; }
+  .sch-row .t{ min-width:74px; font-weight:700; color:var(--heading); font-size:.8rem; }
+  .sch-row .l{ flex:1; min-width:0; overflow-wrap:anywhere; }
+  .sch-row.past{ opacity:.5; }
+  .sch-row.next{ font-weight:700; }
+  .sch-next{ font-size:.7rem; font-weight:800; color:var(--card); background:var(--accent); border-radius:999px; padding:2px 8px; white-space:nowrap; }
+  #dailyRoutineToggleCard{ display:flex; align-items:center; gap:10px; padding:12px 16px; text-align:start; border-radius:14px; }
+  #dailyRoutineToggleCard .ic{ font-size:1.2rem; margin:0; display:inline; }
+  #dailyRoutineToggleCard .ttl{ font-size:.88rem; }
+  /* Health: three tabs instead of a page of links */
+  .hs-tabs{ display:flex; gap:6px; padding:4px; margin:0 0 14px; border-radius:16px; background:color-mix(in srgb, var(--card) 70%, transparent); border:1px solid var(--line); }
+  .hs-tab{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:1px; padding:8px 4px; border:none; border-radius:12px; background:none; color:var(--ink-soft); font-family:var(--font-head); font-weight:700; font-size:.84rem; cursor:pointer; }
+  .hs-tab small{ font-family:var(--font-body); font-weight:600; font-size:.72rem; color:var(--ink-soft); }
+  .hs-tab.on{ background:var(--card); color:var(--heading); box-shadow:var(--shadow); }
+  .hs-l{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  #panel-food > .panel-head, #panel-workout > .panel-head, #panel-habits > .panel-head{ display:none; }
+  .back-btn.hs-hide{ visibility:hidden; }
+  .back-row:has(> .back-btn.hs-hide):has(> span:empty:last-child){ display:none; } /* nothing left in the row */
+  /* supplements: a real tick circle, like the meals */
+  .supp-check-mark{ display:block; width:24px; height:24px; margin:0 auto 6px; border-radius:50%; border:2px solid var(--line); font-size:0; position:relative; }
+  .supp-check-mark.on{ background:var(--gold); border-color:var(--gold); }
+  .supp-check-mark.on::after{ content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:800; color:#fff; }
+  /* readable minimum: no label under ~11px */
+  .day-btn .lp-date{ font-size:.72rem !important; }
+  .habit-pill small.pill-time{ font-size:.7rem !important; }
+  .cal-dayname{ font-size:.72rem !important; }
+  .cos-tag{ font-size:.7rem !important; }
+  .coll-cat-card .soon-tag, .sea-note, .aq-level{ font-size:.72rem !important; }
+  #profileTitleChip, #profileCoinsChip{ font-size:.76rem !important; }
+
   .cc-jump{ flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 11px; font-family:var(--font-body); font-weight:700; font-size:.74rem; cursor:pointer; white-space:nowrap; }
   .cc-jump:active{ transform:scale(.96); }
   @keyframes ccFlash{ 0%{ box-shadow:0 0 0 3px var(--accent); } 100%{ box-shadow:0 0 0 0 transparent; } }
@@ -2145,6 +2209,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
        here when this page opens, so there is only ever one habits UI. -->
   <section class="panel" id="panel-habits">
     <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><span></span></div>
+    <nav class="hs-tabs" aria-label="Health"></nav>
     <div class="panel-head"><h2 data-i18n="habits_title"></h2><p class="panel-sub" data-i18n="habits_sub"></p></div>
     <div id="habitsPanelSlot"></div>
     <div class="dash-card" id="habitSuggestCard" style="margin-top:14px;"><div class="dash-card-title" data-i18n="habit_suggest_title"></div><div class="habit-suggest" id="habitSuggestions"></div></div>
@@ -2173,6 +2238,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 
     <!-- content (always visible, even before any setup) -->
     <div id="todoContent">
+      <div class="dash-card sch-today" id="schToday" data-testid="sch-today"></div>
       <div class="home-card" id="dailyRoutineToggleCard" style="margin-bottom:16px;cursor:pointer;">
         <span class="ic">🗓️</span><div class="ttl" data-i18n="daily_routine_title"></div>
       </div>
@@ -2254,6 +2320,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <!-- FOOD -->
   <section class="panel" id="panel-food">
     <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><button class="edit-btn" id="editFoodBtn" data-i18n="edit_setup"></button></div>
+    <nav class="hs-tabs" aria-label="Health"></nav>
     <div class="panel-head"><h2 data-i18n="nutrition_title"></h2><p class="panel-sub" data-i18n="nutrition_sub"></p></div>
 
     <!-- setup -->
@@ -2414,6 +2481,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
        or moved; it's the exact same panel, just two ways to reveal it. -->
   <section class="panel" id="panel-workout">
     <div class="back-row"><button class="back-btn" data-i18n="back_health"></button><span></span></div>
+    <nav class="hs-tabs" aria-label="Health"></nav>
     <div class="panel-head"><h2 data-i18n="training_title"></h2><p class="panel-sub" data-i18n="training_sub"></p></div>
     <!-- setup -->
     <div class="setup-card" id="workoutSetupCard">
@@ -2507,6 +2575,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div id="workoutContent" class="hidden">
       <div class="back-row"><span></span><button class="edit-btn" id="editWorkoutBtn" data-i18n="edit_setup"></button></div>
       <div id="workoutLoopAsk" class="hidden"></div>
+      <div class="wt-card" id="workoutToday" data-testid="workout-today"></div>
       <div class="legend" id="workoutLegend"></div>
       <div class="grid" id="workoutGrid"></div>
     </div>
@@ -3236,7 +3305,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.68.1';
+const APP_VERSION='v1.69.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4694,17 +4763,14 @@ function renderBackgroundSelector(){
   });
   root.appendChild(swatchGrid);
 
+  const missingRar=[];
   RARITY_ORDER_LIST.forEach(rar=>{
     const tierItems=COSMETICS_CATALOG.filter(c=>c.type==='background'&&c.rarity===rar);
     const owned=tierItems.filter(it=>P.inventory&&P.inventory[it.id]);
     const group=document.createElement('div'); group.className='cos-rarity-group';
     group.innerHTML=`<div class="cos-rarity-head"><span class="dot" style="background:var(--cos-${rar});"></span><h3 style="margin:0;font-size:0.9rem;">${t('cos_rarity_'+rar)}</h3></div>`;
-    if(!owned.length){
-      const locked=document.createElement('div'); locked.className='bg-locked-tier';
-      locked.innerHTML=`<span>${t('bg_locked_empty')}</span><button type="button" class="cos-btn primary" style="width:auto;padding:6px 14px;">${t('bg_goto_store')}</button>`;
-      locked.querySelector('button').addEventListener('click',()=>goToStoreRarity(rar));
-      group.appendChild(locked);
-    } else {
+    if(!owned.length){ missingRar.push(rar); return; } // nothing owned at this level: no empty box
+    {
       const grid=document.createElement('div'); grid.className='cos-grid';
       owned.forEach(it=>{
         const equipped=equippedBgId===it.id;
@@ -4726,6 +4792,12 @@ function renderBackgroundSelector(){
     }
     root.appendChild(group);
   });
+  if(missingRar.length){
+    const more=document.createElement('div'); more.className='bg-locked-tier'; more.dataset.testid='bg-more-store';
+    more.innerHTML=`<span>${LANG==='ar'?'🎨 خلفيات أكثر بالمتجر':'🎨 More backgrounds in the Store'}</span><button type="button" class="cos-btn primary" style="width:auto;padding:6px 14px;">${t('bg_goto_store')}</button>`;
+    more.querySelector('button').addEventListener('click',()=>goToStoreRarity(missingRar[0]));
+    root.appendChild(more);
+  }
 }
 /* Jumps straight to the Store, scrolled to the given rarity's background
    group — used by the empty/locked state above so "you own nothing here"
@@ -4839,6 +4911,30 @@ document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ sh
    e.g. Nutrition opened from Home backs to Home — falling back to the
    parent section when there's no history. */
 const ROOT_PANELS=['home','today','health','challenges','profile-hub'];
+/* Health = three tabs (Nutrition | Training | Habits); the Health button opens the last one used */
+const HEALTH_TABS=['food','workout','habits'];
+function healthLastTab(){ try{ const v=localStorage.getItem('healthTab'); if(HEALTH_TABS.includes(v)) return v; }catch(e){} return 'food'; }
+function hsSyncBack(name){
+  const b=document.querySelector('#panel-'+name+' > .back-row .back-btn'); if(!b) return;
+  const tg=backTargetFor(name); b.classList.toggle('hs-hide',tg==='health'||HEALTH_TABS.includes(tg));
+}
+function renderHealthTabs(){
+  const ar=LANG==='ar'; let n=null, tr=null; try{ n=todayNutritionSummary(); tr=todayTrainingSummary(); }catch(e){}
+  const hb=P.habits||[], hd=hb.filter(h=>dailyTrack.habits&&dailyTrack.habits[h.id]).length;
+  const tabs=[['food','🍽️',t('nutrition_title_plain'),n?`${n.consumed} / ${n.planned}`:''],
+    ['workout','💪',t('training_title_plain'),tr?(tr.rest?(ar?'راحة':'Rest'):(tr.done?'✓ '+tr.label:tr.label)):''],
+    ['habits','✅',t('habits_title_plain'),hb.length?`${hd} / ${hb.length}`:'']];
+  document.querySelectorAll('.hs-tabs').forEach(nav=>{ const cur=nav.closest('.panel').id.replace('panel-','');
+    nav.innerHTML=tabs.map(([k,ic,l,sub])=>`<button type="button" class="hs-tab${k===cur?' on':''}" data-hs="${k}" data-testid="hs-tab-${k}"${k===cur?' aria-current="page"':''}><span class="hs-l">${ic} ${escapeHtml(l)}</span>${sub?`<small class="num">${escapeHtml(String(sub))}</small>`:''}</button>`).join(''); });
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('.hs-tab'); if(!b) return;
+  const k=b.dataset.hs; if(k===currentPanelName) return;
+  const origin=returnTo[currentPanelName];
+  showPanel(k);
+  if(origin&&!HEALTH_TABS.includes(origin)) returnTo[k]=origin; else delete returnTo[k];
+  syncBackLabel(k); hsSyncBack(k); enterSection(k);
+});
 const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
   food:'health', workout:'health', habits:'health' };
 const BACK_LABEL={ home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
@@ -4936,18 +5032,22 @@ function showPanel(name){
   revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
   const opts=arguments[1]||{};
   if(name==='diettraining') name='health'; // old combined Diet+Training entry → the Health hub
+  if(name==='health'){ name=healthLastTab(); opts._hs=1; } // the Health tab opens its last sub-tab
   const gated=usernameHardGateActive();
   if(gated) name='social';
   // remember where a sub-page was opened from, so Back returns there
   if(!ROOT_PANELS.includes(name) && name!==currentPanelName && !opts.back && currentPanelName!==name){
     if(returnTo[currentPanelName]!==name) returnTo[name]=currentPanelName;
   }
+  if(opts._hs) delete returnTo[name];
   currentPanelName=name;
   document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
   document.body.classList.remove('dt-combined');
   document.getElementById('panel-'+name).classList.add('active');
   placeHabitsCard(name);
   syncBackLabel(name);
+  if(HEALTH_TABS.includes(name)){ try{ localStorage.setItem('healthTab',name); }catch(e){} renderHealthTabs(); hsSyncBack(name); }
+  if(name!=='workout'){ const wt=document.getElementById('workoutToday'); if(wt) wt.innerHTML=''; }
   window.scrollTo({top:0});
   // the tab of the section this page belongs to stays lit
   const navOwner=ROOT_PANELS.includes(name)?name:(PANEL_PARENT[name]||name);
@@ -8100,6 +8200,7 @@ function equipTip(typeKey){
 /* ================= SECTION ENTRY (setup vs content) ================= */
 function enterSection(name){
   if(usernameHardGateActive()) name='social';
+  if(name==='health'&&HEALTH_TABS.includes(currentPanelName)) name=currentPanelName; // Health opens a tab
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
   if(name==='workout') renderWorkoutSection();
@@ -9929,7 +10030,7 @@ function buildLoopWorkoutGrid(){
     b.className='day-btn'+cls+(off===0?' today':'');
     b.dataset.todayLabel=t('today_label'); b.dataset.testid='loop-day'; b.dataset.off=off; b.dataset.type=typeKey||'';
     b.innerHTML=`<div class="num">${name}</div><div class="preview">${typeKey?loopIcon(typeKey):'·'}${mark?'<i class="lp-mark">✓</i>':''}</div><div class="lp-date num">${d.getDate()}</div>`;
-    if(off===0) b.addEventListener('click',()=>openWorkoutDay(name,typeKey,true));
+    if(off===0) b.addEventListener('click',wtFocus);
     else if(off>0) b.addEventListener('click',()=>openWorkoutDay(name,typeKey,false));
     else if(-off<=lim) b.addEventListener('click',()=>loopPastDaySheet(-off));
     grid.appendChild(b);
@@ -10066,13 +10167,27 @@ function renderWorkoutSection(){
   if(!has){ prefillWorkoutSetup(); buildRestGrid(); return; }
   const lg=document.getElementById('workoutLegend');
   const ws=P.workoutSetup;
-  if(isLoopWs(ws)){ lg.innerHTML=loopLegendHtml(ws); buildLoopWorkoutGrid(); renderLoopAsk(); return; }
+  if(isLoopWs(ws)){ lg.innerHTML=loopLegendHtml(ws); buildLoopWorkoutGrid(); renderLoopAsk(); renderWorkoutToday(); return; }
   const wla=document.getElementById('workoutLoopAsk'); if(wla){ wla.innerHTML=''; wla.classList.add('hidden'); }
   const daysInLegend = ws.splitId==='custom'
     ? [...new Set(Object.values(ws.customSchedule||{}).filter(k=>k&&k!=='rest'))]
     : (TRAINING_SPLITS[ws.splitId||'ppl']||TRAINING_SPLITS.ppl).days||[];
   lg.innerHTML=daysInLegend.map(k=>`<span>${dayTypeIcon(k)} ${dayTypeLabel(k)}</span>`).join('')+`<span>😴 ${t('rest_day_name')}</span>`;
   buildWorkoutGrid();
+  renderWorkoutToday();
+}
+/* today's workout lives on the Training page itself (same renderer as the
+   day sheet, drawn inline); only while that page is open, so its ids never
+   meet the sheet's */
+function renderWorkoutToday(){
+  const host=document.getElementById('workoutToday'); if(!host) return;
+  if(!P.workoutSetup||currentPanelName!=='workout'){ host.innerHTML=''; return; }
+  openWorkoutDay(DAY_NAMES[LANG][todayWeekdayIndex()],workoutTypeForDate(new Date(),P.workoutSetup),true,host);
+}
+function wtFocus(){
+  const c=document.getElementById('workoutToday'); if(!c||!c.innerHTML) return;
+  c.scrollIntoView({behavior:'smooth',block:'start'});
+  c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
 }
 
 function buildWorkoutGrid(){
@@ -10085,7 +10200,7 @@ function buildWorkoutGrid(){
     b.className='day-btn'+(typeKey==='rest'?' rest':'')+(i===idx?' today':'');
     b.dataset.todayLabel=t('today_label');
     b.innerHTML=`<div class="num">${name}</div><div class="preview">${dayTypeIcon(typeKey)}</div>`;
-    b.addEventListener('click',()=>openWorkoutDay(name,typeKey,i===idx));
+    b.addEventListener('click',()=>i===idx?wtFocus():openWorkoutDay(name,typeKey,false));
     grid.appendChild(b);
   });
 }
@@ -10133,11 +10248,10 @@ function calorieTarget(){
   if(fs.goal==='maintain') return applyCalorieSafetyLimits(tdee, fs.sex); // keep weight: eat at maintenance
   return applyCalorieSafetyLimits(fs.goal==='lose' ? tdee-450 : tdee+450, fs.sex);
 }
-function openWorkoutDay(label,typeKey,isToday){
-  const day=adaptDay(typeKey);
-  document.getElementById('dayTitle').textContent=`${label} ${day.icon}`;
-  document.getElementById('daySubtitle').textContent=day.name[LANG];
-  let html='';
+function openWorkoutDay(label,typeKey,isToday,inline){
+  const day=adaptDay(typeKey), host=inline||document.getElementById('cardBody');
+  if(!inline){ document.getElementById('dayTitle').textContent=`${label} ${day.icon}`; document.getElementById('daySubtitle').textContent=day.name[LANG]; }
+  let html=inline?`<div class="wt-head"><span class="wt-eye">${LANG==='ar'?'تمرين اليوم':'Today’s workout'} · ${escapeHtml(label)}</span><b class="wt-name">${day.icon} ${escapeHtml(day.name[LANG])}</b></div>`:'';
   if(isToday){
     const lp=isLoopMode();
     if(lp) html+=`<div style="margin-bottom:8px;">${loopTodayBarHtml(P.workoutSetup,typeKey)}</div>`;
@@ -10158,28 +10272,28 @@ function openWorkoutDay(label,typeKey,isToday){
   day.warns.forEach(w=>html+=`<div class="warn-chip">${escapeHtml(w[LANG])}</div>`);
   const eqt=equipTip(typeKey);
   if(eqt) html+=`<div class="info-chip">${eqt[LANG]}</div>`;
-  document.getElementById('cardBody').innerHTML=html;
+  host.innerHTML=html;
   if(isToday){
-    const toggle=document.getElementById('workoutDoneToggle');
+    const toggle=host.querySelector('#workoutDoneToggle');
     if(isLoopMode()){
-      const reopen=()=>openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true);
-      loopWireBar(document.getElementById('cardBody'),reopen);
-      const rt=document.getElementById('loopRestToggle');
+      const reopen=inline?()=>renderWorkoutToday():()=>openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true);
+      loopWireBar(host,reopen);
+      const rt=host.querySelector('#loopRestToggle');
       if(rt) rt.onclick=async()=>{ if(dailyTrack.restTaken) delete dailyTrack.restTaken; else dailyTrack.restTaken=true; await saveDailyTrack(); loopRerender(); reopen(); };
     }
     if(toggle) toggle.addEventListener('click',async()=>{
       await toggleWorkoutDone(typeKey);
-      if(isLoopMode()){ loopRerender(); openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true); return; }
+      if(isLoopMode()){ loopRerender(); if(inline) renderWorkoutToday(); else openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true); return; }
       // full re-render: picks up the new workoutDone state for both the
       // toggle itself AND the exercise checklist below it (locking it, and
       // crossing out anything left unchecked, the moment the day is marked
       // done — see exerciseTableHtml()'s `locked` flag) — never patched
       // piecemeal, so the two can never fall out of sync with each other.
-      openWorkoutDay(label,typeKey,true);
+      if(inline) renderWorkoutSection(); else openWorkoutDay(label,typeKey,true);
     });
-    if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven && !isSportType(typeKey)) showFeedbackPrompt(typeKey); // difficulty feedback is for gym/home sessions, not sports
+    if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven && !isSportType(typeKey)) showFeedbackPrompt(typeKey,host); // difficulty feedback is for gym/home sessions, not sports
   }
-  overlay.classList.add('open');
+  if(!inline) overlay.classList.add('open');
 }
 /* single source of truth for "mark today's workout done" — used by both the
    full workout-day view and the compact home dashboard widget, so streak/
@@ -10233,8 +10347,8 @@ async function notifyNewUnlocks(){
     for(const c of newlyCompleted) await ActivityService.post('challenge',{name:LANG==='ar'?c.nameAr:c.nameEn});
   }
 }
-function showFeedbackPrompt(typeKey){
-  const row=document.getElementById('feedbackRow'); if(!row) return;
+function showFeedbackPrompt(typeKey,host){
+  const row=(host||document).querySelector('#feedbackRow'); if(!row) return;
   row.innerHTML=`<div class="log-card" style="margin-top:10px;"><h3 style="font-size:0.85rem;">${LANG==='ar'?'شلون كان التمرين؟':'How was the workout?'}</h3>
     <div style="display:flex;gap:8px;">
       <button class="ob-choice" data-fb="easy" style="flex:1;">😅 ${LANG==='ar'?'سهل':'Easy'}</button>
@@ -10626,7 +10740,7 @@ function renderSupChips(){
     const done=!!dailyTrack.supplements[it.key];
     const chip=document.createElement('div');
     chip.className='supp-chip'+(done?' done':'');
-    chip.innerHTML=`<button type="button" class="supp-emoji-btn" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Change icon'}">${escapeHtml(it.icon)}</button><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${escapeHtml(it.label)}</span>`;
+    chip.innerHTML=`<button type="button" class="supp-emoji-btn" title="${LANG==='ar'?'اضغط لتغيير الرمز':'Change icon'}">${escapeHtml(it.icon)}</button><span class="supp-check-mark${done?' on':''}" aria-hidden="true"></span><span class="label-text">${escapeHtml(it.label)}</span>`;
     chip.querySelector('.supp-emoji-btn').addEventListener('click',(e)=>{
       e.stopPropagation();
       openEmojiPicker(e.currentTarget,async(picked)=>{
@@ -10642,7 +10756,7 @@ function renderSupChips(){
       const nowDone=!dailyTrack.supplements[it.key];
       dailyTrack.supplements[it.key]=nowDone;
       chip.classList.toggle('done',nowDone);
-      chip.querySelector('.supp-check-mark').textContent=nowDone?'✅':'⬜';
+      chip.querySelector('.supp-check-mark').classList.toggle('on',nowDone);
       saveDailyTrack();
     });
     row.appendChild(chip);
@@ -13769,6 +13883,25 @@ function renderCalendar(){
     cell.addEventListener('click',()=>openCalendarDay(calViewYear,calViewMonth,d));
     grid.appendChild(cell);
   }
+  // "back to today" only makes sense away from this month
+  document.getElementById('calTodayBtn').classList.toggle('hidden',calViewMonth===today.getMonth()&&calViewYear===today.getFullYear());
+  renderScheduleToday();
+}
+/* the Schedule page opens on today: what's done, what's next, then the month */
+async function renderScheduleToday(){
+  const el=document.getElementById('schToday'); if(!el) return;
+  const ar=LANG==='ar', now=new Date(), mins=now.getHours()*60+now.getMinutes();
+  let items=[]; try{ items=await getScheduleItemsForDate(now); }catch(e){}
+  const next=items.findIndex(it=>it.time>mins);
+  const lbl=now.toLocaleDateString(ar?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long'});
+  let h=`<div class="dash-card-title dash-title-row"><span>${ar?'📅 يومك':'📅 Your day'}<small class="sch-date">${escapeHtml(lbl)}</small></span><button type="button" class="dash-link" id="schOpenDay" data-testid="sch-open-day">${ar?'بالساعات':'By the hour'}</button></div>`;
+  if(!items.length) h+=`<div class="dash-empty">${ar?'ما عندك شي اليوم — ضيف التزام من تحت.':'Nothing on today — add a commitment below.'}</div>`;
+  else h+='<div class="sch-list">'+items.map((it,i)=>{ const past=it.time>=0&&it.time<=mins&&(next<0||i<next);
+    return `<div class="sch-row${past?' past':''}${i===next?' next':''}" data-testid="sch-row"><span class="t num">${it.timeLabel||(ar?'طول اليوم':'All day')}</span><span class="l">${escapeHtml(it.label)}</span>${i===next?`<span class="sch-next">${ar?'الجاي':'Next'}</span>`:''}</div>`; }).join('')+'</div>';
+  el.innerHTML=h;
+  const open=()=>openCalendarDay(now.getFullYear(),now.getMonth(),now.getDate());
+  el.querySelector('#schOpenDay').onclick=open;
+  el.querySelectorAll('.sch-row').forEach(r=>r.onclick=open);
 }
 document.getElementById('calPrevMonth').addEventListener('click',()=>{
   calViewMonth--; if(calViewMonth<0){ calViewMonth=11; calViewYear--; }
@@ -14518,7 +14651,13 @@ document.querySelectorAll('#dashboardSummary .dash-mini[data-goto]').forEach(el=
    meals/supplements/water — no separate storage key), the habit LIST itself
    lives in P.habits (part of the profile, like foodSetup/workoutSetup).
    Streaks are computed from real historical daily-track docs, never faked. */
-function habitLabelText(h){ return (typeof h.label==='object') ? (h.label[LANG]||h.label.en) : h.label; }
+function habitLabelText(h){
+  const v=(typeof h.label==='object') ? (h.label[LANG]||h.label.en) : h.label;
+  // the five prayers keep their names but always in the app's language
+  const pk=/^h_pray_(\w+)$/.exec(h.id||''), k=pk&&pk[1];
+  if(k&&CM_PRAYER_NAMES.ar[k]&&(v===CM_PRAYER_NAMES.ar[k]||v===CM_PRAYER_NAMES.en[k])) return CM_PRAYER_NAMES[LANG][k];
+  return v;
+}
 /* ================= UI SOUNDS =================
    Small, quiet sounds for taps and actions, synthesized with Web Audio
    (same engine/context as the achievement chime — nothing to download or
@@ -15048,12 +15187,12 @@ async function renderSupplementsYesterdayList(items){
     const done=!!yDoc.supplements[it.key];
     const chip=document.createElement('div');
     chip.className='supp-chip'+(done?' done':'');
-    chip.innerHTML=`<span class="supp-emoji-btn">${escapeHtml(it.icon)}</span><span class="supp-check-mark">${done?'✅':'⬜'}</span><span class="label-text">${escapeHtml(it.label)}</span>`;
+    chip.innerHTML=`<span class="supp-emoji-btn">${escapeHtml(it.icon)}</span><span class="supp-check-mark${done?' on':''}" aria-hidden="true"></span><span class="label-text">${escapeHtml(it.label)}</span>`;
     chip.addEventListener('click',async()=>{
       const nowDone=!yDoc.supplements[it.key];
       yDoc.supplements[it.key]=nowDone;
       chip.classList.toggle('done',nowDone);
-      chip.querySelector('.supp-check-mark').textContent=nowDone?'✅':'⬜';
+      chip.querySelector('.supp-check-mark').classList.toggle('on',nowDone);
       await storageSet(yKey,JSON.stringify(yDoc));
     });
     box.appendChild(chip);
