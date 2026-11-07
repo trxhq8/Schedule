@@ -875,6 +875,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .net-banner.on{ transform:translate(-50%,0); }
   .net-banner.mini{ padding:5px 12px; font-size:.72rem; opacity:.92; }
   body.ai-open{ overflow:hidden; }
+  /* public edition: no fishing collection, no friends */
+  .ed-public [data-goto="collections"], .ed-public [data-goto="social"], .ed-public #socialMainCard, .ed-public #coopBossCard, .ed-public #homeCollectionPreview, .ed-public #homeAquarium{ display:none!important; }
   .net-banner.off{ background:#2b2f36; color:#fff; } .net-banner.sync{ background:#ffb703; color:#3a2600; } .net-banner.ok{ background:#1f9d55; color:#fff; }
 
   /* aquarium v3: free placement, preview, play */
@@ -3212,6 +3214,11 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script>
 /* ================= FIREBASE (cross-device sync) ================= */
+/* EDITION: 'full' = the owner's own planner; 'public' = the copy shared with
+   followers (schedule, food, training, prayers/habits, points & challenges —
+   no fishing collection, no friends). build-public.py flips this one line. */
+const EDITION='full', PUB=EDITION==='public';
+if(PUB) document.documentElement.classList.add('ed-public');
 const firebaseConfig={
   apiKey:"AIzaSyD_fqnKR-tfkx-oXUnu2RpPTtY1S5dtv9g",
   authDomain:"schedule-63420.firebaseapp.com",
@@ -3249,7 +3256,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.71.0';
+const APP_VERSION='v1.72.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3575,7 +3582,7 @@ function handleLaunchShortcut(){
   if(!go) return;
   try{ history.replaceState(null,'',location.pathname); }catch(e){}
   if(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed) return;
-  if(go==='catch'){ showPanel('collections'); enterSection('collections'); openCatchFinder(); }
+  if(go==='catch'&&!PUB){ showPanel('collections'); enterSection('collections'); openCatchFinder(); }
   else if(go==='water'){ adjustWater(0.25); showToast(LANG==='ar'?'💧 انضاف كوب ماي':'💧 Added a glass of water'); }
   else if(go==='quick'){ openQuickLog(); }
   else if(['today','habits','collections','home','health'].includes(go)) navTo(go);
@@ -3601,7 +3608,7 @@ function openQuickLog(){
   ];
   document.getElementById('dayTitle').textContent=ar?'➕ سجّل بسرعة':'➕ Quick log';
   document.getElementById('daySubtitle').textContent='';
-  document.getElementById('cardBody').innerHTML=`<div class="ql-grid">${items.map(([k,e,t1,t2])=>`<button type="button" class="ql-item" data-ql="${k}"><span class="e">${e}</span><b>${t1}</b><small>${t2}</small></button>`).join('')}</div>`;
+  document.getElementById('cardBody').innerHTML=`<div class="ql-grid">${items.filter(x=>!(PUB&&x[0]==='catch')).map(([k,e,t1,t2])=>`<button type="button" class="ql-item" data-ql="${k}"><span class="e">${e}</span><b>${t1}</b><small>${t2}</small></button>`).join('')}</div>`;
   overlay.classList.add('open');
   document.querySelectorAll('[data-ql]').forEach(b=>b.onclick=async()=>{
     const k=b.dataset.ql; overlay.classList.remove('open');
@@ -4746,6 +4753,7 @@ function showPanel(name){
   if(name==='health'){ name=healthLastTab(); opts._hs=1; } // the Health tab opens its last sub-tab
   const gated=usernameHardGateActive();
   if(gated) name='social';
+  else if(PUB&&(name==='social'||name==='collections')) name='profile-hub';
   // remember where a sub-page was opened from, so Back returns there
   if(!ROOT_PANELS.includes(name) && name!==currentPanelName && !opts.back && currentPanelName!==name){
     if(returnTo[currentPanelName]!==name) returnTo[name]=currentPanelName;
@@ -5248,7 +5256,7 @@ async function computeWrapped(y,m){
   const topH=habits.map(h=>({h,n:hc[h.id]||0})).sort((a,b)=>b.n-a.n)[0];
   const pd=await wrapMonthDocs(m?y:y-1,m?m-1:11), pt=tallyDocs(pd);
   let prevWater=0, prevActive=0; pd.forEach(d=>{ if(d){ prevActive++; prevWater+=+(d.water||0); } });
-  const fish=[]; try{ const raw=await storageGet('collections:animals:fish'), data=raw?JSON.parse(raw):{};
+  const fish=[]; if(!PUB) try{ const raw=await storageGet('collections:animals:fish'), data=raw?JSON.parse(raw):{};
     Object.entries(data).forEach(([sid,rec])=>{ const n=(rec&&rec.catches||[]).filter(c=>{ const d=new Date(c.date); return d.getFullYear()===y&&d.getMonth()===m; }).length;
       if(n){ const sp=collSpeciesInfo('fish',sid); fish.push({sid,n,name:sp?(LANG==='ar'?sp.nameAr:(sp.nameEn||sp.nameAr)):sid,rarity:(sp&&sp.rarity)||'common',icon:(sp&&sp.icon)||'🐟'}); } }); }catch(e){}
   fish.sort((a,b)=>RARITY_ORDER.indexOf(b.rarity)-RARITY_ORDER.indexOf(a.rarity));
@@ -5304,6 +5312,7 @@ async function drawWrapStory(r){
   const pool=[['📅',r.active,ar?'يوم التزام':'days active'],['💪',r.workouts,ar?'تمرين':'workouts'],['💧',r.waterL,ar?'لتر ماي':'L of water'],
     ['🕌',prayerHabitIds().length?r.prayers:0,ar?'يوم كل الصلوات':'all-prayer days'],['✅',r.habitChecks,ar?'علامة عادات':'habit ticks'],['🔥',r.best,ar?'أطول سلسلة':'best streak'],
     ['🎣',r.fish.length,ar?'نوع سمك':'fish species'],['📌',r.commits,ar?'التزام خلّصته':'tasks done'],['🌟',r.perfect,ar?'يوم مثالي':'perfect days'],['⭐',r.xp,'XP']];
+  if(PUB) pool.splice(pool.findIndex(t=>t[0]==='🎣'),1);
   const tiles=pool.filter(t=>t[1]>0).concat(pool.filter(t=>!(t[1]>0))).slice(0,6);
   const cw=440,ch=250,gx=70,gy=720,gap=60;
   tiles.forEach(([ic,v,l],i)=>{ const col=i%2,row=Math.floor(i/2),x=gx+col*(cw+gap),y=gy+row*(ch+40);
@@ -6340,6 +6349,7 @@ async function coopState(){
 }
 let _coopCache={at:0,st:null}, _coopRenderId=0;
 async function renderCoopBossCard(force){
+  if(PUB) return;
   const box=document.getElementById('coopBossCard'); if(!box) return;
   const ar=LANG==='ar', myId=++_coopRenderId;
   // keep what's on screen while the fresh numbers load (clearing it first made the page jump)
@@ -11191,7 +11201,7 @@ async function renderProfileSection(){
     ['📦',`${stats.totalCollected}/${stats.totalSpecies}`,'stat_collection'],
     ['🏅',`${stats.achievementsUnlocked}/${ACHIEVEMENTS_CONFIG.length}`,'stat_achievements'],
     ['⚡',stats.xp,'stat_xp'],
-  ].map(([ic,val,labelKey])=>`<div class="profile-stat-tile"><b>${ic} ${val}</b><span>${t(labelKey)}</span></div>`).join('');
+  ].filter(r=>!(PUB&&r[2]==='stat_collection')).map(([ic,val,labelKey])=>`<div class="profile-stat-tile"><b>${ic} ${val}</b><span>${t(labelKey)}</span></div>`).join('');
 
   const titlesList=document.getElementById('profileTitlesList');
   const earned=unlockedTitles(stats);
@@ -11240,6 +11250,7 @@ function renderWardrobe(){
   const owned=type=>COSMETICS_CATALOG.filter(c=>c.type===type&&inv[c.id]).sort((a,b)=>RARITY_ORDER.indexOf(b.rarity)-RARITY_ORDER.indexOf(a.rarity));
   const sets=LEGEND_THEMES.filter(T=>{ const i=lgSetIds(T); return inv[i.bg]&&inv[i.frame]&&inv[i.fx]; });
   const tabs=[['background','🖼️',ar?'خلفيات':'Backgrounds',owned('background').length],['frame','⭕',ar?'إطارات':'Frames',owned('frame').length],['effect','✨',ar?'تأثيرات':'Effects',owned('effect').length],['title','🏷️',ar?'ألقاب':'Titles',''],['set','🎁',ar?'أطقم':'Sets',sets.length]];
+  if(PUB){ tabs.pop(); if(wardTab==='set') wardTab='background'; } // legend sets come from fishing
   box.innerHTML=`<div class="ward-head"><h3>🎨 ${ar?'خزانتي':'My wardrobe'}</h3><button type="button" class="ward-store" id="wardStore">🛍️ ${ar?'المتجر':'Store'}</button></div>
     <div class="ward-tabs">${tabs.map(([k,i,l,n])=>`<button type="button" data-wt="${k}" class="${wardTab===k?'on':''}">${i} ${l}${n!==''?` <span class="num">${n}</span>`:''}</button>`).join('')}</div>
     <div class="ward-body" id="wardBody"></div>`;
@@ -11259,7 +11270,7 @@ function renderWardrobe(){
     return;
   }
   const list=owned(wardTab), cur=P.equipped&&P.equipped[wardTab];
-  if(!list.length){ body.innerHTML=`<p class="ward-empty">${ar?'ما عندك شي هني ليلحين — اشتر من المتجر أو افتحه بالصيد والإنجازات':'Nothing here yet — buy in the Store or unlock by catching and achievements'}</p>`; return; }
+  if(!list.length){ body.innerHTML=`<p class="ward-empty">${ar?(PUB?'ما عندك شي هني ليلحين — اشتر من المتجر أو افتحه بالإنجازات':'ما عندك شي هني ليلحين — اشتر من المتجر أو افتحه بالصيد والإنجازات'):(PUB?'Nothing here yet — buy in the Store or unlock with achievements':'Nothing here yet — buy in the Store or unlock by catching and achievements')}</p>`; return; }
   body.innerHTML=`<div class="ward-grid"><button type="button" class="ward-tile none${!cur?' on':''}" data-wid=""><div class="wt-prev">🚫</div><div class="wt-name">${ar?'بدون':'None'}</div></button>${list.map(it=>`<button type="button" class="ward-tile${cur===it.id?' on':''}" data-wid="${it.id}"><div class="wt-prev"></div><div class="wt-name">${escapeHtml(ar?it.nameAr:it.nameEn)}</div>${cur===it.id?'<span class="wt-on">✓</span>':''}</button>`).join('')}</div>`;
   body.querySelectorAll('.ward-tile[data-wid]').forEach(b=>{ const id=b.dataset.wid, it=id&&COSMETICS_CATALOG.find(c=>c.id===id); if(it){ const pv=b.querySelector('.wt-prev'); mountCosPreviewTile(pv,it); pv.classList.add('wt-prev'); }
     b.onclick=async()=>{ await equipCosmetic(wardTab,id||null); playSfx('check'); renderProfileCosmeticHero(); }; });
@@ -11311,7 +11322,7 @@ function openUsernameEditModal(){
   document.getElementById('daySubtitle').textContent='';
   const ar=LANG==='ar', curName=(P.publicProfile&&P.publicProfile.displayName)||'';
   document.getElementById('cardBody').innerHTML=`
-    <label class="edit-lbl">${ar?'الاسم اللي يشوفه ربعك':'The name your friends see'}</label>
+    <label class="edit-lbl">${PUB?(ar?'الاسم اللي يطلع بملفك':'The name on your profile'):(ar?'الاسم اللي يشوفه ربعك':'The name your friends see')}</label>
     <div class="edit-row"><input type="text" class="setup-input" id="editDisplayNameInput" autocomplete="off" maxlength="30" value="${escapeHtml(curName)}"><button type="button" class="setup-btn" id="editDisplayNameSaveBtn" disabled>${ar?'حفظ':'Save'}</button></div>
     <div class="username-check-msg" id="editDisplayNameMsg"></div>
     <label class="edit-lbl">${ar?'اسم المستخدم (@)':'Username (@)'}</label>
@@ -12102,6 +12113,17 @@ function lgFrameDeco(T,h){
   });
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
 })();
+/* public edition: drop everything that needs the fishing collection or friends */
+if(PUB){
+  const gone=['persistent_angler','species_explorer','rare_hunter','collector','legend_catch','coop_first','coop_5','league_podium','league_win'];
+  const drop=(arr,f)=>{ for(let i=arr.length-1;i>=0;i--) if(f(arr[i])) arr.splice(i,1); };
+  drop(ACHIEVEMENTS_CONFIG,a=>gone.includes(a.id));
+  drop(TITLES_CONFIG,t=>t.speciesId||['totalCatches','totalCollected','legendaryFish'].includes(t.metric));
+  drop(CHALLENGES_CONFIG,c=>c.cat==='collection');
+  drop(COSMETICS_CATALOG,c=>{ const n=c.exclusiveNote||''; return /^(legendfish|boss):/.test(n)||gone.some(id=>n==='achievement:'+id); });
+  Object.assign(I18N.ar,{profile_setup_title:'👤 سوّي ملفك',hub_sub:'ملفك وتقدمك والمتجر والإعدادات.',profile_setup_body:'اختار اسم مستخدم فريد لملفك. بياناتك خاصة فيك.'});
+  Object.assign(I18N.en,{profile_setup_title:'👤 Set up your profile',hub_sub:'Your profile, progress, store and settings.',profile_setup_body:'Pick a unique username for your profile. Your data stays private.'});
+}
 /* first catch of a legendary fish → its set. `already` guards a second device
    that doesn't know yet: if every piece is already owned, nothing pays twice. */
 async function grantLegendSet(sid){
@@ -13102,7 +13124,7 @@ function renderSocialSection(){
     if(gw){ gw.classList.toggle('hidden',!gated);
       if(gated) gw.innerHTML=`<div class="dash-card-title" style="font-size:1rem;">${ar?'👋 هلا فيك بـ مخططي':'👋 Welcome to My Planner'}</div>
         <p class="panel-sub" style="margin:0 0 8px;">${ar?'جدولك وأكلك وتمرينك وعاداتك بمكان واحد.':'Your schedule, meals, training and habits — in one place.'}</p>
-        <p class="panel-sub" style="margin:0;"><b>${ar?'أول خطوة:':'Step 1:'}</b> ${ar?'اختار اسم مستخدم (أصدقاؤك يلقونك فيه). بعدها نجهّز يومك.':'pick a username (it’s how friends find you). Then we’ll set up your day.'}</p>
+        <p class="panel-sub" style="margin:0;"><b>${ar?'أول خطوة:':'Step 1:'}</b> ${PUB?(ar?'اختار اسم مستخدم لملفك. بعدها نجهّز يومك.':'pick a username for your profile. Then we’ll set up your day.'):(ar?'اختار اسم مستخدم (أصدقاؤك يلقونك فيه). بعدها نجهّز يومك.':'pick a username (it’s how friends find you). Then we’ll set up your day.')}</p>
         ${currentUser&&currentUser.isAnonymous?`<p class="panel-sub" style="margin:8px 0 0;">👤 ${ar?'أنت داخل كضيف — بياناتك تنحفظ على هذا الجهاز، وتقدر تسوي حساب بعدين من «حسابي».':'You’re in as a guest — your data is saved on this device, and you can create an account later from “You”.'}</p>`:''}`; } }
   document.getElementById('profileSetupBody').textContent=t('profile_setup_body');
   const hasProfile=PublicProfileService.hasProfile();
