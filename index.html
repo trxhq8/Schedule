@@ -876,6 +876,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .net-banner.mini{ padding:5px 12px; font-size:.72rem; opacity:.92; }
   body.ai-open{ overflow:hidden; }
   /* public edition: no fishing collection, no friends */
+  html:not(.ed-public) .pub-only{ display:none!important; }
   .ed-public [data-goto="collections"], .ed-public [data-goto="social"], .ed-public #socialMainCard, .ed-public #coopBossCard, .ed-public #homeCollectionPreview, .ed-public #homeAquarium{ display:none!important; }
   .net-banner.off{ background:#2b2f36; color:#fff; } .net-banner.sync{ background:#ffb703; color:#3a2600; } .net-banner.ok{ background:#1f9d55; color:#fff; }
 
@@ -2173,6 +2174,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <button type="button" class="home-card" data-goto="collections"><span class="ic">🐾</span><span class="ttl" data-i18n="card_collections"></span><span class="hub-desc" data-i18n="hub_desc_collections"></span></button>
       <button type="button" class="home-card" data-goto="store"><span class="ic">🏪</span><span class="ttl" data-i18n="card_store"></span><span class="hub-desc" data-i18n="hub_desc_store"></span></button>
       <button type="button" class="home-card" data-goto="settings"><span class="ic">⚙️</span><span class="ttl" data-i18n="card_settings"></span><span class="hub-desc" data-i18n="hub_desc_settings"></span></button>
+      <button type="button" class="home-card pub-only" id="assistantHubCard" data-testid="assistant-card"><span class="ic">🤖</span><span class="ttl" data-i18n="card_assistant"></span><span class="hub-desc" data-i18n="hub_desc_assistant"></span></button>
     </div>
   </section>
 
@@ -2187,6 +2189,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="dash-card sch-today" id="schToday" data-testid="sch-today"></div>
       <div class="home-card" id="dailyRoutineToggleCard" style="margin-bottom:16px;cursor:pointer;">
         <span class="ic">🗓️</span><div class="ttl" data-i18n="daily_routine_title"></div>
+      </div>
+      <div class="home-card pub-only" id="aiPasteCard" data-testid="ai-paste" role="button" tabindex="0" style="margin-bottom:16px;cursor:pointer;">
+        <span class="ic">🤖</span><div class="ttl" data-i18n="ai_paste_title"></div>
       </div>
 
       <!-- setup, nested + collapsible like the Exercise folder inside Food -->
@@ -3202,6 +3207,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <input type="password" class="ob-input hidden" id="authPasswordConfirm" data-i18n-ph="auth_password_confirm_ph" autocomplete="new-password" style="margin-bottom:10px;">
     <div class="val-msg" id="authValMsg"></div>
     <button class="ob-btn" id="authSignInBtn" type="button" data-i18n="auth_sign_in" style="margin-bottom:8px;"></button>
+    <button type="button" class="auth-switch" id="authForgotBtn" data-i18n="auth_forgot" style="margin:0 auto 10px;"></button>
     <button class="ob-btn secondary" id="authSignUpBtn" type="button" data-i18n="auth_sign_up"></button>
     <button type="button" class="auth-switch hidden" id="authBackToSignIn" data-i18n="auth_have_account"></button>
   </div>
@@ -3256,7 +3262,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.72.0';
+const APP_VERSION='v1.73.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3516,6 +3522,14 @@ if(document.getElementById('googleSignInBtn')){
      only — there's no email/password to sign back in with elsewhere, so
      signing out of a guest session (or clearing site data) loses access to
      that data since a fresh anonymous sign-in gets a brand new identity. */
+  document.getElementById('authForgotBtn').addEventListener('click',async()=>{
+    const ar=LANG==='ar', email=document.getElementById('authEmail').value.trim();
+    if(!fbAuth) return;
+    if(!EMAIL_RE.test(email)){ showAuthError(ar?'اكتب إيميلك فوق، وبعدين اضغط «نسيت كلمة المرور؟»':'Type your email above, then tap “Forgot password?”'); document.getElementById('authEmail').focus(); return; }
+    try{ fbAuth.languageCode=ar?'ar':'en'; await fbAuth.sendPasswordResetEmail(email);
+      showAuthError(ar?'📧 إذا عندك حساب بهالإيميل، بيوصلك رابط تغيّر فيه كلمة المرور (شيك على Junk بعد).':'📧 If an account uses this email, a reset link is on its way (check spam too).'); }
+    catch(e){ console.error('Password reset error:',e.code,e.message); showAuthError(e&&e.code==='auth/user-not-found'?(ar?'📧 إذا عندك حساب بهالإيميل، بيوصلك رابط تغيّر فيه كلمة المرور.':'📧 If an account uses this email, a reset link is on its way.'):signInErrorMessage(e)); }
+  });
   document.getElementById('guestSignInBtn').addEventListener('click',async()=>{
     showAuthError('');
     if(!fbAuth) return;
@@ -3531,6 +3545,7 @@ if(document.getElementById('googleSignInBtn')){
     const up=document.getElementById('authSignUpBtn');
     document.getElementById('authPasswordConfirm').classList.toggle('hidden',m!=='signup');
     document.getElementById('authSignInBtn').classList.toggle('hidden',m==='signup');
+    document.getElementById('authForgotBtn').classList.toggle('hidden',m==='signup');
     document.getElementById('authBackToSignIn').classList.toggle('hidden',m!=='signup');
     up.dataset.i18n=m==='signup'?'auth_create_btn':'auth_sign_up'; up.textContent=t(up.dataset.i18n);
     up.classList.toggle('secondary',m!=='signup');
@@ -3915,6 +3930,7 @@ const I18N={
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   mode_light:'فاتح',mode_dark:'داكن',
+  ai_paste_title:'🤖 الصق من مساعدك',card_assistant:'مساعدك',hub_desc_assistant:'مساعد ذكي يرتب يومك معاك',auth_forgot:'نسيت كلمة المرور؟',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
   bg_tier_basic:'أساسي',bg_locked_empty:'ما عندك خلفيات من هذا المستوى بعد',bg_goto_store:'روح للمتجر',
   bottom_nav_home:'الرئيسية',bottom_nav_schedule:'الجدول',bottom_nav_training:'التمرين',bottom_nav_diettraining:'الأكل والتمرين',bottom_nav_profile:'حسابي',hub_title:'👤 حسابي',back_you:'👤 حسابي',
@@ -4076,6 +4092,7 @@ const I18N={
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   mode_light:'Light',mode_dark:'Dark',
+  ai_paste_title:'🤖 Paste from your assistant',card_assistant:'Your assistant',hub_desc_assistant:'An AI helper that plans your day with you',auth_forgot:'Forgot password?',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
   bg_tier_basic:'Basic',bg_locked_empty:"You don't own any of these yet",bg_goto_store:'Go to store',
   bottom_nav_home:'Home',bottom_nav_schedule:'Schedule',bottom_nav_training:'Training',bottom_nav_diettraining:'Diet & training',bottom_nav_profile:'You',hub_title:'👤 You',back_you:'👤 You',
@@ -6494,6 +6511,30 @@ function openGuideSheet(html,wire){
   el.onclick=e=>{ if(e.target===el) closeGuideSheet(); };
   if(wire) wire(body);
 }
+let _kitText=null;
+function loadKitText(){ if(_kitText) return Promise.resolve(_kitText); return fetch('./assistant.txt',{cache:'no-cache'}).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>(_kitText=t)); }
+function openAssistantGuide(){
+  const ar=LANG==='ar';
+  const step=(n,t)=>`<div class="step"><span class="n">${n}</span><span>${t}</span><span class="ic"></span></div>`;
+  openGuideSheet(`<h3>🤖 ${ar?'سوّ لك مساعد شخصي يرتب يومك':'Get a personal assistant for your day'}</h3>
+    <p class="panel-sub" style="margin:0 0 10px;">${ar?'«رفيق» يبدأ فاضي ويتعلم منك. تقوله «اليوم عندي…» ويعطيك كود تلصقه بالجدول بضغطة. يشتغل مع Claude (حتى المجاني).':'“Rafeeq” starts blank and learns from you. Tell it “today I have…” and it gives you a code to paste into your schedule in one tap. Works with Claude (free plan too).'}</p>
+    ${step(1,ar?'افتح Claude ← Projects ← سوّ مشروع جديد':'Open Claude → Projects → create a project')}
+    ${step(2,ar?'انسخ التعليمات من الزر تحت، وحطها في Project instructions':'Copy the instructions below into Project instructions')}
+    ${step(3,ar?'افتح محادثة داخل المشروع واكتب «هلا»':'Start a chat in the project and say “hi”')}
+    ${step(4,ar?'لما يعطيك كود: الجدول ← 🤖 الصق من مساعدك ← ✅ طبّق':'When it gives you code: Schedule → 🤖 Paste from your assistant → ✅ Apply')}
+    <div class="actions"><button type="button" class="setup-btn" id="kitCopy" data-testid="kit-copy">📋 ${ar?'انسخ التعليمات':'Copy the instructions'}</button><a class="ghost" href="./assistant.html" target="_blank" rel="noopener">${ar?'افتح النص كامل':'Open the full text'}</a></div>
+    <div class="val-msg" id="kitMsg" style="color:var(--err);"></div>`, body=>{
+    const msg=m=>{ body.querySelector('#kitMsg').textContent=m||''; };
+    loadKitText().catch(()=>{});
+    body.querySelector('#kitCopy').onclick=()=>{
+      // copy inside the tap itself (Safari refuses a copy after an await)
+      if(!_kitText){ msg(ar?'ثواني… اضغط مرة ثانية، أو افتح النص كامل وانسخه':'One moment… tap again, or open the full text'); loadKitText().then(()=>msg('')).catch(()=>msg(ar?'ما قدرت أجيب التعليمات — افتح النص كامل':'Couldn’t load the instructions — open the full text')); return; }
+      try{ navigator.clipboard.writeText(_kitText).then(()=>{ msg(''); showToast(ar?'📋 انتسخت التعليمات — الصقها في Claude':'📋 Copied — paste it into Claude'); },()=>msg(ar?'ما قدرت أنسخ — افتح النص كامل وانسخه':'Couldn’t copy — open the full text and copy it')); }
+      catch(e){ msg(ar?'ما قدرت أنسخ — افتح النص كامل وانسخه':'Couldn’t copy — open the full text and copy it'); }
+    };
+  });
+}
+document.getElementById('assistantHubCard').addEventListener('click',openAssistantGuide);
 let _guideShownThisVisit=false;
 function maybeShowGuide(){
   if(_guideShownThisVisit || usernameHardGateActive() || document.querySelector('.overlay.open')) return;
@@ -7888,7 +7929,7 @@ function enterSection(name){
   if(name==='store') renderStoreSection();
   if(name==='profile-hub') renderGuestNote();
 }
-document.querySelectorAll('#panel-home .home-card, #panel-profile-hub .home-card').forEach(c=>c.addEventListener('click',()=>navTo(c.dataset.goto)));
+document.querySelectorAll('#panel-home .home-card[data-goto], #panel-profile-hub .home-card[data-goto]').forEach(c=>c.addEventListener('click',()=>navTo(c.dataset.goto)));
 document.getElementById('exercisePromptBanner').addEventListener('click',()=>{ showPanel('workout'); enterSection('workout'); });
 document.getElementById('dailyRoutineToggleCard').addEventListener('click',()=>{
   const card=document.getElementById('todoSetupCard');
@@ -8225,10 +8266,20 @@ function cmToJson(c,id){
 function cmExportText(){ const list=P._commitments||[], ids=cmIds(list); return '[\n'+list.map((c,i)=>' '+JSON.stringify(cmToJson(c,ids[i]))).join(',\n')+'\n]'; }
 function cmIsoOk(v){ if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false; const [y,m,d]=v.split('-').map(Number), dt=new Date(y,m-1,d); return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d; }
 function cmIsoWd(v){ const [y,m,d]=v.split('-').map(Number); return (new Date(y,m-1,d).getDay()+1)%7; }
+/* a chat assistant's reply: keep only the JSON (inside ``` fences or between
+   the first [ / { and the last ] / }), fix curly quotes and trailing commas */
+function cmCleanJson(t){
+  t=String(t||'').replace(/^\uFEFF/,'').replace(/[\u201C\u201D\u201E\u201F]/g,'"');
+  const f=t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(f) t=f[1];
+  const a=t.indexOf('['), o=t.indexOf('{'), st=a>=0&&(o<0||a<o)?a:o, en=Math.max(t.lastIndexOf(']'),t.lastIndexOf('}'));
+  if(st>=0&&en>st) t=t.slice(st,en+1);
+  t=t.replace(/,\s*([\]}])/g,'$1').trim();
+  return t.startsWith('{')?'['+t+']':t;
+}
 /* checks every row first and builds the whole new list; nothing is saved here */
 function cmPlanImport(text){
   const ar=LANG==='ar', list=P._commitments||[], ids=cmIds(list), byId=new Map(ids.map((id,i)=>[id,i]));
-  let rows; try{ rows=JSON.parse(text); }catch(e){ return {fatal:(ar?'الـ JSON فيه خطأ: ':'Invalid JSON: ')+e.message}; }
+  let rows; try{ rows=JSON.parse(cmCleanJson(text)); }catch(e){ return {fatal:(ar?'الـ JSON فيه خطأ: ':'Invalid JSON: ')+e.message}; }
   if(!Array.isArray(rows)) return {fatal:ar?'لازم يكون مصفوفة [ … ]':'It must be an array [ … ]'};
   if(!rows.length) return {fatal:ar?'المصفوفة فاضية':'The array is empty'};
   const hm=/^([01]\d|2[0-3]):[0-5]\d$/, used=new Set(), items=[];
@@ -8388,6 +8439,19 @@ document.getElementById('cmJsonPreviewBtn').addEventListener('click',async()=>{
   if(/"prayer"/.test(txt)||(P._commitments||[]).some(c=>c.prayerAt)) await fetchPrayerTimes(new Date()); // prayer-tied rows need today's times
   _cmPlan=cmPlanImport(txt); cmRenderPreview();
 });
+/* public copy: one tap pastes the assistant's code into the import box and previews it */
+async function aiPasteFromAssistant(){
+  const ar=LANG==='ar', card=document.getElementById('todoSetupCard');
+  if(card.classList.contains('hidden')) document.getElementById('dailyRoutineToggleCard').click();
+  cmJsonInit(); const jc=document.getElementById('cmJsonCard'), ta=document.getElementById('cmJsonText'); jc.classList.remove('hidden');
+  let txt=''; try{ if(navigator.clipboard&&navigator.clipboard.readText) txt=await navigator.clipboard.readText(); }catch(e){}
+  jc.scrollIntoView({behavior:'smooth',block:'start'});
+  if(txt&&/[\[{]/.test(txt)){ ta.value=txt; _cmPlan=null; document.getElementById('cmJsonPreviewBtn').click(); }
+  else { ta.value=''; _cmPlan=null; cmRenderPreview(); ta.focus({preventScroll:true});
+    showToast(ar?'📋 الصق هني الكود اللي عطاك إياه مساعدك، وبعدين «👀 Preview»':'📋 Paste your assistant’s code here, then “👀 Preview”'); }
+}
+document.getElementById('aiPasteCard').addEventListener('click',aiPasteFromAssistant);
+document.getElementById('aiPasteCard').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); aiPasteFromAssistant(); } });
 document.getElementById('cmJsonText').addEventListener('input',()=>{ if(_cmPlan){ _cmPlan=null; cmRenderPreview(); } }); // a stale preview can't be applied
 document.getElementById('cmJsonExportBtn').addEventListener('click',()=>{
   cmJsonInit();
