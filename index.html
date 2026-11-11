@@ -2465,6 +2465,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
         <div class="ob-choice" data-split="custom"><span class="ic">🛠️</span><span data-i18n="split_custom"></span></div>
         <div class="ob-choice" data-split="loop" data-testid="split-loop"><span class="ic">🔁</span><span data-i18n="split_loop"></span></div>
       </div>
+      <label id="loopBehaviorRow" data-testid="loop-behavior" style="display:flex;align-items:flex-start;gap:8px;font-size:0.82rem;color:var(--ink-soft);margin:10px 2px 4px;line-height:1.5;">
+        <input type="checkbox" id="loopBehaviorCheck" checked style="margin-top:3px;"><span data-i18n="loop_behavior"></span>
+      </label>
       <div id="homeEquipSection">
       <h3 data-i18n="q_equip"></h3>
       <div class="ob-grid" id="obEquipGrid">
@@ -3261,7 +3264,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.75.0';
+const APP_VERSION='v1.76.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3575,6 +3578,7 @@ async function bootApp(){
   migrateRetiredCosmetics();
   try{ await migrateMergedSpecies(); }catch(e){}
   try{ await revokeUnearnedSailSet(); }catch(e){}
+  try{ await migrateWeekToLoop(); }catch(e){}
   if(!(P.achievements||{}).legend_catch) setTimeout(()=>{ notifyNewUnlocks().catch(()=>{}); },5000);
   setTimeout(async()=>{ try{ const raw=await storageGet('collections:animals:fish'); const d=raw?JSON.parse(raw):{}; let shown=false;
     for(const T of LEGEND_THEMES){ const rec=d[T.sid]; if(rec&&collIsCollected(rec)&&!(P.legendSets||{})[T.sid]){ const paid=await grantLegendSet(T.sid); if(paid&&!shown){ enqueueAchievements([{kind:'legendset',sid:T.sid}]); shown=true; } } }
@@ -4063,7 +4067,7 @@ const I18N={
   ex_goal_muscle:'بناء عضل',ex_goal_lose:'حرق دهون',ex_goal_mobility:'مرونة',
   q_train_location:'📍 وين تتمرن؟',trainloc_gym:'جيم',trainloc_home:'بيت',trainloc_outdoor:'خارجي',trainloc_other:'مكان ثاني',
   q_split:'🧩 شلون تبي تقسم تمرينك؟',split_hint:'المكان (جيم/بيت) يحدد الأدوات بس — هذا يحدد شكل أسبوعك',
-  split_ppl:'دفع/سحب/رجل',split_upperlower:'علوي/سفلي',split_bodypart:'حسب العضلة',split_fullbody:'جسم كامل',split_custom:'مخصص',split_loop:'لوب (يمشي على اللي سويته)',q_loop_order:'🔁 ترتيب اللوب',q_loop_order_sub:'رتّب أيامك بالترتيب اللي تمشي عليه — الدور ما يتحرك إلا لما تعلّم «تمرين اليوم ✓»',q_loop_off:'📅 أيام إجازة ثابتة (ما تحرّك اللوب)',q_loop_next:'▶️ تمرينك الجاي هو',
+  split_ppl:'دفع/سحب/رجل',split_upperlower:'علوي/سفلي',split_bodypart:'حسب العضلة',split_fullbody:'جسم كامل',split_custom:'مخصص',split_loop:'لوب (يمشي على اللي سويته)',loop_behavior:'🔁 ما ينتقل للتمرين الجاي إلا لما تعلّم ✓ — لو فاتك يوم، نفس العضلة تنتظرك بكرة. (شيل الصح إذا تبي كل يوم له عضلة ثابتة)',q_loop_order:'🔁 ترتيب اللوب',q_loop_order_sub:'رتّب أيامك بالترتيب اللي تمشي عليه — الدور ما يتحرك إلا لما تعلّم «تمرين اليوم ✓»',q_loop_off:'📅 أيام إجازة ثابتة (ما تحرّك اللوب)',q_loop_next:'▶️ تمرينك الجاي هو',
   q_custom_schedule:'🗓️ رتب أسبوعك بنفسك',split_custom_incomplete:'🚫 حدد نوع تمرين (أو راحة) لكل يوم قبل الحفظ',
   type_chest:'صدر',type_back:'ظهر',type_shoulders:'كتف',type_arms:'أذرع',type_upper:'علوي',type_lower:'سفلي',type_full:'جسم كامل',
   q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_barbell:'بار حديد (باربل)',eq_bench:'بنش',eq_kettlebell:'كيتل بيل',eq_dipbars:'متوازي ديبس',eq_mat:'مسطبة يوقا',eq_none:'ولا شي',
@@ -4225,7 +4229,7 @@ const I18N={
   ex_goal_muscle:'Build muscle',ex_goal_lose:'Fat loss',ex_goal_mobility:'Mobility',
   q_train_location:'📍 Where do you train?',trainloc_gym:'Gym',trainloc_home:'Home',trainloc_outdoor:'Outdoor',trainloc_other:'Other',
   q_split:'🧩 How do you want to split your training?',split_hint:'Location (gym/home) only decides equipment — this decides your weekly shape',
-  split_ppl:'Push/Pull/Legs',split_upperlower:'Upper/Lower',split_bodypart:'Body part',split_fullbody:'Full body',split_custom:'Custom',split_loop:'Loop (follows what you did)',q_loop_order:'🔁 Loop order',q_loop_order_sub:'Put your days in the order you cycle through — the loop only moves on once you tick “Today’s workout ✓”',q_loop_off:'📅 Fixed days off (never move the loop)',q_loop_next:'▶️ Your next workout is',
+  split_ppl:'Push/Pull/Legs',split_upperlower:'Upper/Lower',split_bodypart:'Body part',split_fullbody:'Full body',split_custom:'Custom',split_loop:'Loop (follows what you did)',loop_behavior:'🔁 Only moves to the next workout once you tick ✓ — miss a day and the same muscle waits for tomorrow. (Untick to fix each weekday to one muscle)',q_loop_order:'🔁 Loop order',q_loop_order_sub:'Put your days in the order you cycle through — the loop only moves on once you tick “Today’s workout ✓”',q_loop_off:'📅 Fixed days off (never move the loop)',q_loop_next:'▶️ Your next workout is',
   q_custom_schedule:'🗓️ Build your own week',split_custom_incomplete:'🚫 Assign a training type (or rest) to every day before saving',
   type_chest:'Chest',type_back:'Back',type_shoulders:'Shoulders',type_arms:'Arms',type_upper:'Upper',type_lower:'Lower',type_full:'Full body',
   q_equip:'🎒 What equipment do you have?',eq_db:'Dumbbells',eq_band:'Resistance band',eq_bar:'Pull-up bar',eq_barbell:'Barbell',eq_bench:'Bench',eq_kettlebell:'Kettlebell',eq_dipbars:'Dip bars',eq_mat:'Yoga mat',eq_none:'No equipment',
@@ -9314,6 +9318,7 @@ function onSplitChanged(){
   document.getElementById('restDaysSection').classList.toggle('hidden',isCustom||isLoop);
   document.getElementById('customScheduleSection').classList.toggle('hidden',!isCustom);
   document.getElementById('loopSection').classList.toggle('hidden',!isLoop);
+  const lbr=document.getElementById('loopBehaviorRow'); if(lbr) lbr.style.display=isLoop?'none':'flex';
   if(isCustom) buildCustomScheduleGrid();
   if(isLoop) buildLoopSetup();
   updateSplitPreview();
@@ -9384,6 +9389,7 @@ function prefillWorkoutSetup(){
   P._exGoals=s.goals||[]; P._fitnessLevel=s.fitnessLevel||''; P._trainLocation=trainLoc; P._splitId=splitId; P._equipment=s.equipment||[]; P._injuries=s.injuries||[];
   P._restDays=s.restDays||[];
   P._customSchedule={...(s.customSchedule||{})};
+  { const lb=document.getElementById('loopBehaviorCheck'); if(lb) lb.checked=!s.fixedWeek; }
   loopDraftInit(s);
   P._equipOtherList=(s.equipOtherList||[]).slice(); P._injuryOtherList=(s.injuryOtherList||[]).slice();
   renderEquipOtherChips(); renderInjuryOtherChips();
@@ -9523,6 +9529,45 @@ function loopTypeForDate(ws,dateObj){
   return loopExpected(ws,d);
 }
 function loopSig(ws){ return dateKeyOf(new Date())+'|'+ws.loop.start.date; }
+/* Loop is the default for everyone: a weekly split (preset or custom) runs as
+   a loop over the same muscles, its rest/sport weekdays become fixed days off.
+   Only a person who unticks «loop_behavior» keeps a fixed weekday week (fixedWeek). */
+function loopFromWeek(ws){
+  if(!ws) return null;
+  if(ws.splitId==='custom'){
+    const cs=ws.customSchedule||{};
+    const order=Array.from({length:7},(_,i)=>cs[i]).filter(k=>k&&k!=='rest'&&!isSportType(k)&&LOOP_ADDABLE.includes(k));
+    const offDays=Array.from({length:7},(_,i)=>i).filter(i=>!cs[i]||cs[i]==='rest'||isSportType(cs[i]));
+    return order.length&&offDays.length<7?{order,offDays}:null;
+  }
+  const days=((TRAINING_SPLITS[ws.splitId||'ppl']||TRAINING_SPLITS.ppl).days||[]).filter(k=>LOOP_ADDABLE.includes(k));
+  const offDays=[...(ws.restDays||[])].sort((a,b)=>a-b);
+  return days.length&&offDays.length<7?{order:days.slice(),offDays}:null;
+}
+function dayBack(b){ const d=dayOnly(new Date()); d.setDate(d.getDate()-b); return d; }
+/* where the loop starts on `d` (or the next training day after it) per the old fixed week */
+function loopStartAt(fixedWs,lp,d0){
+  const d=new Date(d0);
+  for(let i=0;i<7;i++,d.setDate(d.getDate()+1)){ if(lp.offDays.includes((d.getDay()+1)%7)) continue;
+    const tp=workoutTypeForDate(d,fixedWs); if(lp.order.includes(tp)) return {date:isoOfDate(dayOnly(d0)),next:tp}; }
+  return {date:isoOfDate(dayOnly(d0)),next:lp.order[0]};
+}
+async function migrateWeekToLoop(){
+  const ws=P.workoutSetup; if(!ws||ws.splitId==='loop'||ws.fixedWeek||navigator.onLine===false) return; // offline: past days may not be readable — next launch
+  const lp=loopFromWeek(ws); if(!lp) return;
+  // replay the last week: start where the old week was 7 days ago, let the days ticked since move it,
+  // then pin the result to today so no "did you train on …?" questions pop up for old days
+  let back=7; while(back<14&&lp.offDays.includes((dayBack(back).getDay()+1)%7)) back++;
+  const trial={...ws,splitId:'loop',loop:{...lp,start:loopStartAt(ws,lp,dayBack(back))}};
+  const keep=P.workoutSetup; P.workoutSetup=trial; _loopLoaded='';
+  let next;
+  try{ await loopEnsureLoaded(); next=trial.loop.order[loopIdxOn(trial,new Date())]; }catch(e){}
+  if(P.workoutSetup!==trial) return; // changed meanwhile (another device / the form) — leave it
+  if(!next||_loopLoaded!==loopSig(trial)){ P.workoutSetup=keep; _loopLoaded=''; return; } // couldn't read the past days: try next launch
+  P.workoutSetup={...ws,splitId:'loop',loopFrom:ws.splitId,restDays:lp.offDays.slice(),loop:{...lp,start:{date:isoOfDate(new Date()),next}}};
+  _loopLoaded='';
+  await storageSet('profile',JSON.stringify(P));
+}
 function loopEnsureLoaded(){
   const ws=P.workoutSetup; if(!isLoopWs(ws)) return null;
   const sig=loopSig(ws);
@@ -9892,6 +9937,14 @@ document.getElementById('workoutSetupSave').addEventListener('click',async()=>{
     ...((loop||prevLoop)?{loop:loop||prevLoop}:{})
   };
   if(isLoop){ _loopLoaded=''; P._loopNextTouched=false; }
+  else {
+    const lb=document.getElementById('loopBehaviorCheck');
+    if(lb&&!lb.checked) P.workoutSetup.fixedWeek=true;
+    else { const lp=loopFromWeek(P.workoutSetup);
+      if(lp){ const same=prevLoop&&prevLoop.start&&JSON.stringify(prevLoop.order)===JSON.stringify(lp.order)&&JSON.stringify(prevLoop.offDays||[])===JSON.stringify(lp.offDays);
+        P.workoutSetup={...P.workoutSetup,splitId:'loop',loopFrom:splitId,restDays:lp.offDays.slice(),loop:{...lp,start:same?prevLoop.start:loopStartAt(P.workoutSetup,lp,dayOnly(new Date()))}};
+        _loopLoaded=''; } }
+  }
   if(!P.exerciseLevel || previousFitnessLevel!==newFitnessLevel){
     P.exerciseLevel={}; P.workoutCounts={};
     ALL_TRAINING_DAY_TYPES.forEach(k=>{ P.exerciseLevel[k]=newFitnessLevel; P.workoutCounts[k]=1; });
