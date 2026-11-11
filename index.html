@@ -3261,7 +3261,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.74.0';
+const APP_VERSION='v1.75.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -9776,8 +9776,11 @@ function buildLoopWorkoutGrid(){
 /* setup form */
 function loopDraftInit(s){
   const L=s&&s.loop;
-  P._loopOrder=(L&&Array.isArray(L.order)&&L.order.length)?L.order.slice():['chest','back','shoulders','arms','legs','rest'];
-  P._loopOff=L?(L.offDays||[]).slice():[6];
+  // coming from a custom week: same muscles in the same order, its rest/sport days become fixed days off
+  const cs=s&&s.customSchedule, csOrder=cs?Array.from({length:7},(_,i)=>cs[i]).filter(k=>k&&k!=='rest'&&!isSportType(k)&&LOOP_ADDABLE.includes(k)):[];
+  const useCs=!(L&&Array.isArray(L.order)&&L.order.length)&&csOrder.length>0;
+  P._loopOrder=(L&&Array.isArray(L.order)&&L.order.length)?L.order.slice():useCs?csOrder:['chest','back','shoulders','arms','legs','rest'];
+  P._loopOff=L?(L.offDays||[]).slice():useCs?Array.from({length:7},(_,i)=>i).filter(i=>!cs[i]||cs[i]==='rest'||isSportType(cs[i])).slice(0,4):[6];
   let nx=null; try{ if(isLoopWs(s)) nx=loopExpected(s,new Date()); }catch(e){}
   P._loopNext=(nx&&P._loopOrder.includes(nx))?nx:(P._loopOrder.find(k=>k!=='rest')||P._loopOrder[0]);
   P._loopNextTouched=false;
