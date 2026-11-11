@@ -2411,14 +2411,13 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="log-card" id="foodWeightCard">
         <h3 data-i18n="weight_log_title"></h3>
         <button type="button" class="setup-btn" id="weightChartBox" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">📈 <span data-i18n="chart_btn"></span></button>
-        <div class="log-form">
+        <div class="log-form" id="weightForm">
           <input type="number" step="0.1" id="weightInput">
           <button id="saveWeightBtn" data-i18n="save"></button>
         </div>
         <label class="weight-yesterday-check" id="weightYesterdayRow" style="display:flex;align-items:center;gap:6px;font-size:0.76rem;color:var(--ink-soft);margin-top:6px;">
           <input type="checkbox" id="weightYesterdayCheck"><span id="weightYesterdayLabel"></span>
         </label>
-        <div class="log-list" id="logList"></div>
       </div>
 
     </div>
@@ -3262,7 +3261,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.73.0';
+const APP_VERSION='v1.74.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -10203,9 +10202,14 @@ function openWeightChartModal(){
   html+=`<div class="total-kcal" style="margin-top:14px;">${t('latest_weight')}: ${latest} ${t('kg')}</div>`;
   html+=`<div style="text-align:center;font-size:0.85rem;color:var(--ink-soft);margin-top:8px;">${LANG==='ar'?'المتوسط':'Average'}: ${avg} ${t('kg')}</div>`;
   if(trendHtml) html+=`<div style="text-align:center;font-size:0.85rem;margin-top:8px;">${trendHtml}</div>`;
+  html+=`<div class="log-list" id="logList" style="margin-top:14px;max-height:220px;"></div>`;
+  if(dailyTrack.weightLoggedToday) html+=`<button type="button" class="setup-btn" id="weightEditToday" style="margin-top:12px;">✏️ ${LANG==='ar'?'عدّل وزن اليوم':"Edit today's weight"}</button>`;
   document.getElementById('cardBody').innerHTML=html;
   overlay.classList.add('open');
-  renderChart('weightChartBig',260);
+  renderChart('weightChartBig',260); renderLog();
+  const eb=document.getElementById('weightEditToday');
+  if(eb) eb.onclick=()=>{ overlay.classList.remove('open'); window.__weightEdit=true; renderWeightYesterdayRow();
+    const d=new Date(), iso=isoDateStr(d.getFullYear(),d.getMonth(),d.getDate()), inp=document.getElementById('weightInput'), cur=weightLog.find(e=>e.isoDate===iso); if(cur) inp.value=cur.kg; inp.focus(); };
 }
 /* ================= PROGRESS (Priority 3) =================
    Read-only view built entirely from data that already exists: the same
@@ -10348,12 +10352,16 @@ document.getElementById('saveWeightBtn').addEventListener('click',async()=>{
   } else {
     await saveWeightForDate(new Date(),val);
   }
-  inp.value='';
+  inp.value=''; window.__weightEdit=false;
   document.getElementById('weightYesterdayCheck').checked=false;
   renderFoodSection();
 });
 function renderWeightYesterdayRow(){
   const row=document.getElementById('weightYesterdayRow'); if(!row) return;
+  // today's weight already in → the card is just the chart button (edit lives in the chart sheet)
+  const done=!!dailyTrack.weightLoggedToday&&!window.__weightEdit, form=document.getElementById('weightForm');
+  if(form) form.style.display=done?'none':'';
+  if(done){ row.style.display='none'; return; }
   if(!yesterdayCatchUpAllowed()){ row.style.display='none'; return; }
   const label=document.getElementById('weightYesterdayLabel');
   label.textContent=t('weight_yesterday_label').replace('{date}',yesterdayDateLabel());
