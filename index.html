@@ -1883,6 +1883,54 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   #questJsonPreview .qp-row .e{ color:#c0392b; display:block; }
   #questJsonPreview .qp-row .w{ color:var(--ink-soft); display:block; }
   .ed-public #homeQuestsCard{ display:none!important; }
+  /* ===== 🐟 الهب (agents hub) ===== */
+  #panel-hub, #panel-hubagent{ max-width:860px; margin-inline:auto; }
+  .ed-public .full-only{ display:none!important; }
+  .hub-quick{ margin-bottom:14px; }
+  .hub-q-h{ font-family:var(--font-head); font-weight:700; color:var(--heading); margin-bottom:8px; }
+  .hub-quick textarea, .hub-compose textarea{ width:100%; box-sizing:border-box; min-height:64px; resize:vertical; font:inherit; }
+  .hub-chips{ display:flex; gap:6px; overflow-x:auto; padding:8px 0 4px; scrollbar-width:none; }
+  .hub-chips::-webkit-scrollbar{ display:none; }
+  .hub-chip{ flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:6px 12px; font:inherit; font-size:.82rem; cursor:pointer; white-space:nowrap; }
+  .hub-chip.on{ background:var(--accent); color:var(--card); border-color:var(--accent); }
+  .hub-send{ margin-top:8px; }
+  .hub-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  @media (min-width:700px){ .hub-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @media (min-width:1100px){ .hub-grid{ grid-template-columns:repeat(5,minmax(0,1fr)); } }
+  .hub-card{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:4px; text-align:start; font:inherit; color:var(--ink); cursor:pointer; padding:12px; min-width:0; }
+  .hub-av{ width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:color-mix(in srgb, var(--hub-c) 22%, transparent); border:2px solid color-mix(in srgb, var(--hub-c) 55%, transparent); flex:0 0 auto; }
+  .hub-av.big{ width:58px; height:58px; font-size:1.9rem; }
+  .hub-card .hub-n{ font-family:var(--font-head); font-weight:700; color:var(--heading); }
+  .hub-card .hub-r{ font-size:.74rem; color:var(--ink-soft); }
+  .hub-card .hub-s{ font-size:.78rem; color:var(--ink); opacity:.85; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hub-badge{ position:absolute; top:8px; inset-inline-end:8px; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--accent); color:var(--card); font-size:.72rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .hub-head{ display:flex; align-items:center; gap:12px; margin:4px 2px 14px; }
+  .hub-head h2{ margin:0; font-family:var(--font-head); color:var(--heading); font-size:1.25rem; }
+  .hub-head .hub-r{ font-size:.82rem; color:var(--ink-soft); }
+  .hub-sec{ margin-bottom:12px; }
+  .hub-sec h3{ font-size:.9rem; margin:0 0 8px; color:var(--heading); }
+  .hub-now{ margin:0; padding-inline-start:18px; font-size:.88rem; line-height:1.7; }
+  .hub-news{ display:flex; gap:10px; font-size:.85rem; padding:5px 0; border-bottom:1px solid var(--line); }
+  .hub-news:last-child{ border-bottom:none; }
+  .hub-news .d{ color:var(--ink-soft); flex:0 0 auto; font-size:.76rem; padding-top:2px; }
+  .hub-links{ display:flex; flex-wrap:wrap; gap:8px; }
+  .hub-link{ border:1px solid var(--line); border-radius:12px; padding:7px 12px; font-size:.84rem; color:var(--heading); text-decoration:none; background:var(--card); }
+  .hub-empty{ color:var(--ink-soft); font-size:.84rem; }
+  .hub-order{ padding:10px 0; border-bottom:1px solid var(--line); }
+  .hub-order:last-child{ border-bottom:none; }
+  .hub-order .ot{ font-size:.88rem; white-space:pre-wrap; word-break:break-word; }
+  .hub-order .om{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:6px; font-size:.74rem; color:var(--ink-soft); }
+  .hub-st{ border-radius:999px; padding:2px 9px; font-size:.74rem; border:1px solid var(--line); color:var(--ink); }
+  .hub-st.done{ border-color:color-mix(in srgb, #16a34a 50%, transparent); }
+  .hub-st.working{ border-color:color-mix(in srgb, #d97706 50%, transparent); }
+  .hub-st.failed{ border-color:color-mix(in srgb, #dc2626 50%, transparent); }
+  .hub-order .orep{ margin-top:6px; font-size:.84rem; background:color-mix(in srgb, var(--line) 30%, transparent); border-radius:10px; padding:8px 10px; white-space:pre-wrap; word-break:break-word; }
+  .hub-cancel{ background:none; border:none; color:var(--ink-soft); text-decoration:underline; font:inherit; font-size:.74rem; cursor:pointer; padding:0; }
+  #hubJsonPreview{ margin-top:8px; font-size:.8rem; }
+  #hubJsonPreview .qp-row{ padding:5px 2px; border-bottom:1px solid var(--line); }
+  #hubJsonPreview .qp-row .e{ color:#c0392b; display:block; }
+  #hubJsonPreview .qp-row .w{ color:var(--ink-soft); display:block; }
+  #hubJsonApplyBtn:disabled{ opacity:.45; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -2203,6 +2251,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <button type="button" class="home-card" data-goto="profile"><span class="ic">👤</span><span class="ttl" data-i18n="card_profile"></span><span class="hub-desc" data-i18n="hub_desc_profile"></span></button>
       <button type="button" class="home-card" data-goto="progress"><span class="ic">📈</span><span class="ttl" data-i18n="card_progress"></span><span class="hub-desc" data-i18n="hub_desc_progress"></span></button>
       <button type="button" class="home-card" data-goto="collections"><span class="ic">🐾</span><span class="ttl" data-i18n="card_collections"></span><span class="hub-desc" data-i18n="hub_desc_collections"></span></button>
+      <button type="button" class="home-card full-only" data-goto="challenges" data-testid="you-challenges"><span class="ic">🎯</span><span class="ttl" data-i18n="bottom_nav_challenges"></span><span class="hub-desc" data-i18n="hub_desc_challenges"></span></button>
       <button type="button" class="home-card" data-goto="store"><span class="ic">🏪</span><span class="ttl" data-i18n="card_store"></span><span class="hub-desc" data-i18n="hub_desc_store"></span></button>
       <button type="button" class="home-card" data-goto="settings"><span class="ic">⚙️</span><span class="ttl" data-i18n="card_settings"></span><span class="hub-desc" data-i18n="hub_desc_settings"></span></button>
       <button type="button" class="home-card pub-only" id="assistantHubCard" data-testid="assistant-card"><span class="ic">🤖</span><span class="ttl" data-i18n="card_assistant"></span><span class="hub-desc" data-i18n="hub_desc_assistant"></span></button>
@@ -3072,6 +3121,29 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   </section>
 
   <!-- CHALLENGES (real — progress computed from actual logged history) -->
+  <!-- 🐟 الهب — the agents hub: quick order, 10 agent cards, Mangsi's update box -->
+  <section class="panel root-panel" id="panel-hub">
+    <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
+    <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
+    <div class="dash-card hub-quick" data-testid="hub-quick">
+      <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
+      <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
+      <div class="hub-chips" id="hubQuickAgents" role="radiogroup"></div>
+      <button type="button" class="setup-btn hub-send" id="hubQuickSend" data-testid="hub-quick-send">📤 <span data-i18n="hub_send"></span></button>
+    </div>
+    <div class="hub-grid" id="hubGrid" data-testid="hub-grid"></div>
+    <details class="qs-io" id="hubIo">
+      <summary data-i18n="hub_io"></summary>
+      <textarea id="hubJsonText" class="setup-input" rows="6" dir="ltr" spellcheck="false" placeholder='{"agents":[{"agent":"hamour","now":["…"],"news":[{"date":"2026-11-14","sum":"…"}],"links":[{"label":"…","url":"https://…"}]}],"inbox":[{"id":"o…","status":"done","reply":"…","link":""}]}'></textarea>
+      <div class="qs-io-btns"><button type="button" class="setup-btn" id="hubJsonPreviewBtn" data-testid="hub-json-preview">👀 <span data-i18n="quests_preview"></span></button><button type="button" class="setup-btn" id="hubJsonApplyBtn" data-testid="hub-json-apply" disabled>✅ <span data-i18n="hub_apply"></span></button><button type="button" class="setup-btn qs-ghost" id="hubJsonExportBtn" data-testid="hub-json-export">📤 Export JSON</button></div>
+      <div id="hubJsonPreview"></div>
+    </details>
+  </section>
+  <section class="panel" id="panel-hubagent">
+    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
+    <div id="hubAgentView" data-testid="hub-agent"></div>
+  </section>
+
   <section class="panel root-panel" id="panel-challenges">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2 data-i18n="challenges_title"></h2><p class="panel-sub" data-i18n="challenges_sub"></p></div>
@@ -3179,6 +3251,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic" aria-hidden="true">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="health"><span class="ic" aria-hidden="true">🩺</span><span data-i18n="bottom_nav_health"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="challenges"><span class="ic" aria-hidden="true">🎯</span><span data-i18n="bottom_nav_challenges"></span></button>
+  <button type="button" class="bottom-nav-item" data-goto="hub" data-testid="nav-hub"><span class="ic" aria-hidden="true">🐟</span><span data-i18n="bottom_nav_hub"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="profile-hub"><span class="ic" aria-hidden="true">👤</span><span data-i18n="bottom_nav_profile"></span></button>
 </nav>
 
@@ -3263,7 +3336,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.77.0';
+const APP_VERSION='v1.78.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3930,6 +4003,7 @@ const I18N={
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   mode_light:'فاتح',mode_dark:'داكن',
+  bottom_nav_hub:'الهب',back_hub:'الهب',hub_agents_title:'وكلائي',hub_quick:'أمر سريع',hub_send:'أرسل',hub_apply:'طبّق',hub_io:'📥 تحديث الوكلاء (JSON)',hub_order_ph:'شنو تبي منه؟',hub_desc_challenges:'تحديات يومية وأسبوعية ونقاط',
   quests_title:'مهامي',quests_io:'📥 تحديث المهام (JSON)',quests_preview:'معاينة',back_quests:'→ مهامي',
   ai_paste_title:'🤖 الصق من مساعدك',card_assistant:'مساعدك',hub_desc_assistant:'مساعد ذكي يرتب يومك معاك',auth_forgot:'نسيت كلمة المرور؟',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
@@ -4093,6 +4167,7 @@ const I18N={
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   mode_light:'Light',mode_dark:'Dark',
+  bottom_nav_hub:'Hub',back_hub:'Hub',hub_agents_title:'My agents',hub_quick:'Quick order',hub_send:'Send',hub_apply:'Apply',hub_io:'📥 Update agents (JSON)',hub_order_ph:'What do you need?',hub_desc_challenges:'Daily & weekly challenges, XP',
   quests_title:'My quests',quests_io:'📥 Update quests (JSON)',quests_preview:'Preview',back_quests:'→ My quests',
   ai_paste_title:'🤖 Paste from your assistant',card_assistant:'Your assistant',hub_desc_assistant:'An AI helper that plans your day with you',auth_forgot:'Forgot password?',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
@@ -4642,7 +4717,10 @@ document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPane
    is lit. Back goes to wherever the panel was opened FROM (returnTo) —
    e.g. Nutrition opened from Home backs to Home — falling back to the
    parent section when there's no history. */
-const ROOT_PANELS=['home','today','health','challenges','profile-hub'];
+const ROOT_PANELS=PUB?['home','today','health','challenges','profile-hub']:['home','today','health','hub','profile-hub'];
+/* full edition: the 🐟 Hub takes the Challenges slot; Challenges lives under You */
+(function(){ const gone=document.querySelector(`#bottomNav .bottom-nav-item[data-goto="${PUB?'hub':'challenges'}"]`); if(gone) gone.remove();
+  if(!PUB){ const ch=document.getElementById('panel-challenges'); if(ch){ ch.classList.remove('root-panel'); const b=ch.querySelector('.back-row .back-btn'); if(b) b.dataset.i18n='back_you'; } } })();
 /* Health = three tabs (Nutrition | Training | Habits); the Health button opens the last one used */
 const HEALTH_TABS=['food','workout','habits'];
 function healthLastTab(){ try{ const v=localStorage.getItem('healthTab'); if(HEALTH_TABS.includes(v)) return v; }catch(e){} return 'food'; }
@@ -4667,9 +4745,9 @@ document.addEventListener('click',e=>{
   if(origin&&!HEALTH_TABS.includes(origin)) returnTo[k]=origin; else delete returnTo[k];
   syncBackLabel(k); hsSyncBack(k); enterSection(k);
 });
-const PANEL_PARENT={ profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
+const PANEL_PARENT={ hubagent:'hub', ...(PUB?{}:{challenges:'profile-hub'}), profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
   food:'health', workout:'health', habits:'health' };
-const BACK_LABEL={ home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
+const BACK_LABEL={ hub:'back_hub', home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
   food:'back_nutrition', workout:'back_training', habits:'back_habits', progress:'back_progress', profile:'back_profile', social:'back_friends', store:'back_store', collections:'back_collection' };
 const returnTo={};
 let currentPanelName='home';
@@ -4756,7 +4834,7 @@ function showPanel(name){
   if(name==='diettraining') name='health'; // old combined Diet+Training entry → the Health hub
   if(name==='health'){ name=healthLastTab(); opts._hs=1; } // the Health tab opens its last sub-tab
   if(name==='social') name='profile-hub'; // friends were removed (v1.77) — any old link lands on You
-  else if(PUB&&(name==='collections'||name==='quests')) name=name==='quests'?'home':'profile-hub';
+  else if(PUB&&(name==='collections'||name==='quests'||name==='hub'||name==='hubagent')) name=name==='collections'?'profile-hub':'home';
   // remember where a sub-page was opened from, so Back returns there
   if(!ROOT_PANELS.includes(name) && name!==currentPanelName && !opts.back && currentPanelName!==name){
     if(returnTo[currentPanelName]!==name) returnTo[name]=currentPanelName;
@@ -4794,7 +4872,7 @@ document.addEventListener('keydown',e=>{
   if(k==='n'){ e.preventDefault(); showPanel('home'); enterSection('home'); setTimeout(()=>ccJump('now'),80); return; }
   if(e.key==='?'){ e.preventDefault(); const ar=LANG==='ar';
     openGuideSheet(`<h3 style="margin:0 0 10px;">⌨️ ${ar?'اختصارات الكيبورد':'Keyboard shortcuts'}</h3><div class="kb-list">
-      <kbd>1–5</kbd><span>${ar?'الرئيسية · الجدول · الصحة · التحديات · حسابي':'Home · Schedule · Health · Challenges · You'}</span>
+      <kbd>1–5</kbd><span>${ar?`الرئيسية · الجدول · الصحة · ${PUB?'التحديات':'الهب'} · حسابي`:`Home · Schedule · Health · ${PUB?'Challenges':'Hub'} · You`}</span>
       <kbd>W</kbd><span>${ar?'+٠٫٢٥ لتر ماي':'+0.25 L water'}</span>
       <kbd>N</kbd><span>${ar?'شسوي الحين؟':'What now?'}</span>
       <kbd>?</kbd><span>${ar?'هذي القائمة':'This list'}</span></div>`); }
@@ -7785,6 +7863,8 @@ function enterSection(name){
   if(name==='collections') enterCollections();
   if(name==='store') renderStoreSection();
   if(name==='quests') renderQuests();
+  if(name==='hub') renderHub();
+  if(name==='hubagent'){ renderHubAgent(); loadHub().then(()=>{ if(currentPanelName==='hubagent') renderHubAgent(); }).catch(()=>{}); }
   if(name==='profile-hub') renderGuestNote();
 }
 document.querySelectorAll('#panel-home .home-card[data-goto], #panel-profile-hub .home-card[data-goto]').forEach(c=>c.addEventListener('click',()=>navTo(c.dataset.goto)));
@@ -8244,6 +8324,199 @@ document.getElementById('questJsonExportBtn').addEventListener('click',async()=>
   const ta=document.getElementById('questJsonText'); ta.value=txt;
   try{ await navigator.clipboard.writeText(txt); showToast(LANG==='ar'?'📋 انتسخت المهام':'📋 Quests copied','success'); }catch(e){ ta.select(); }
 });
+/* ================= 🐟 الهب (agents hub) =================
+   hubInbox  (users/{uid}/data/hubInbox, value = JSON array) — the site writes
+     orders here: {id, agent, text, at, status:'new', reply:'', link:'', doneAt:null}.
+     Mangsi's reader polls it; a 'new' order can still be cancelled (removed).
+   hubAgents (users/{uid}/data/hubAgents, value = JSON array) — Mangsi writes
+     each agent's board through #hubJsonText: {agent, now[], news[{date,sum}],
+     links[{label,url}], updatedAt}. Status/reply updates for orders come in the
+     same box as {inbox:[{id,status,reply,link}]}. Every write re-reads first,
+     so a phone order and a PC update never overwrite each other. */
+const HUB_META={
+  mangsi:{e:'🐠',c:'#0d9488',ar:'الوكيل الرئيسي · يرتب الكل',en:'Main agent · runs the team'},
+  zoori:{e:'🐡',c:'#db2777',ar:'مدير الإنستقرام',en:'Instagram manager'},
+  hariri:{e:'🐟',c:'#ef4444',ar:'مدرب الصحة والتضخيم',en:'Health & bulk coach'},
+  hamour:{e:'🐟',c:'#b45309',ar:'القرآن والعلم الشرعي',en:'Qur’an & religious learning'},
+  hoot:{e:'🐋',c:'#2563eb',ar:'مستشار البرادو',en:'Prado advisor'},
+  saboor:{e:'🐟',c:'#9333ea',ar:'مدرّس الجامعة',en:'University tutor'},
+  yaryoor:{e:'🦈',c:'#0891b2',ar:'الصيانة والمشاريع',en:'DIY & maintenance'},
+  zubaidi:{e:'🐟',c:'#16a34a',ar:'أمين المال',en:'Money keeper'},
+  shaari:{e:'🐟',c:'#4f46e5',ar:'مفسر الأحلام',en:'Dream interpreter'},
+  faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'}
+};
+const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
+const HUB_OPEN=['new','sent','working'];
+let hubInbox=[], hubAgents={}, _hubLoaded=false, hubCurAgent='mangsi', hubQuickAgent='mangsi';
+async function loadHub(){
+  try{ const v=await storageGet('hubInbox'); const a=v?JSON.parse(v):[]; hubInbox=Array.isArray(a)?a.filter(o=>o&&o.id):[]; }catch(e){ hubInbox=[]; }
+  try{ const v=await storageGet('hubAgents'); const a=v?JSON.parse(v):[]; hubAgents={}; (Array.isArray(a)?a:[]).forEach(r=>{ if(r&&r.agent) hubAgents[r.agent]=r; }); }catch(e){ hubAgents={}; }
+  _hubLoaded=true;
+}
+const saveHubInbox=()=>storageSet('hubInbox',JSON.stringify(hubInbox));
+const saveHubAgents=()=>storageSet('hubAgents',JSON.stringify(HUB_KEYS.concat(Object.keys(hubAgents).filter(k=>!HUB_KEYS.includes(k))).map(k=>hubAgents[k]).filter(Boolean)));
+function hubMeta(a){ const m=HUB_META[a]||{e:'🐟',c:'#6b7280',ar:'',en:''}, r=hubAgents[a]||{}, ar=LANG==='ar';
+  return {e:(typeof r.emoji==='string'&&r.emoji.trim())?r.emoji.trim().slice(0,8):m.e, c:/^#[0-9a-f]{6}$/i.test(r.color||'')?r.color:m.c,
+    role:(typeof r.role==='string'&&r.role.trim())?r.role.trim().slice(0,60):(ar?m.ar:m.en), name:questAgentName(a)}; }
+function hubAv(a,big){ const m=hubMeta(a); return `<span class="hub-av${big?' big':''}" style="--hub-c:${m.c}" aria-hidden="true">${escapeHtml(m.e)}</span>`; }
+function hubNewsSorted(a){ const r=hubAgents[a]; return ((r&&r.news)||[]).slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||''))); }
+function hubSummary(a){ const n=hubNewsSorted(a)[0]; if(n) return n.sum; const r=hubAgents[a]; return (r&&r.now&&r.now[0])||''; }
+function hubOpenCount(a){ return hubInbox.filter(o=>o.agent===a&&HUB_OPEN.includes(o.status)).length; }
+function hubSafeUrl(u){ const v=String(u||'').trim(); return /^https?:\/\/[^\s]+$/i.test(v)?v:''; }
+function hubStatusChip(st){ const ar=LANG==='ar', M={new:['📤','بالطريق','On its way'],sent:['⏳','وصل','Received'],working:['🛠️','يشتغل','Working'],done:['✅','خلص','Done'],failed:['⚠️','ما زبط','Failed']}, m=M[st]||M.new;
+  return `<span class="hub-st ${escapeHtml(st||'new')}" data-testid="hub-status">${m[0]} ${ar?m[1]:m[2]}</span>`; }
+function hubWhen(iso){ const d=new Date(iso); if(isNaN(d)) return ''; return d.toLocaleString(LANG==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}); }
+async function hubSendOrder(agent,text){
+  const ar=LANG==='ar'; text=String(text||'').trim().slice(0,1000);
+  if(!text){ showToast(ar?'اكتب الأمر أول':'Write the order first','error'); return false; }
+  if(!HUB_KEYS.includes(agent)) return false;
+  await loadHub(); // fresh copy — never write over a reply that just landed from the PC
+  hubInbox.push({id:'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), agent, text, at:new Date().toISOString(), status:'new', reply:'', link:'', doneAt:null});
+  await saveHubInbox(); playSfx('success');
+  showToast(ar?`📤 انرسل لـ${questAgentName(agent)}`:`📤 Sent to ${questAgentName(agent)}`,'success');
+  return true;
+}
+async function hubCancelOrder(id){
+  const ar=LANG==='ar'; await loadHub();
+  const i=hubInbox.findIndex(o=>o.id===id);
+  if(i<0) return;
+  if(hubInbox[i].status!=='new'){ showToast(ar?'وصل الأمر خلاص — ما ينلغي':'Already received — can’t cancel','error'); return; }
+  hubInbox.splice(i,1); await saveHubInbox(); showToast(ar?'انلغى الأمر':'Order cancelled');
+}
+function renderHubChips(){
+  const box=document.getElementById('hubQuickAgents'); if(!box) return;
+  box.innerHTML=HUB_KEYS.map(k=>`<button type="button" class="hub-chip${k===hubQuickAgent?' on':''}" data-hq="${k}" role="radio" aria-checked="${k===hubQuickAgent}" data-testid="hub-chip-${k}">${escapeHtml(hubMeta(k).e)} ${escapeHtml(questAgentName(k))}</button>`).join('');
+  box.querySelectorAll('[data-hq]').forEach(b=>b.onclick=()=>{ hubQuickAgent=b.dataset.hq; renderHubChips(); });
+}
+function renderHubGrid(){
+  const g=document.getElementById('hubGrid'); if(!g) return;
+  g.innerHTML=HUB_KEYS.map(k=>{ const m=hubMeta(k), n=hubOpenCount(k), sm=hubSummary(k);
+    return `<button type="button" class="dash-card hub-card" data-agent="${k}" data-testid="hub-card">${n?`<span class="hub-badge" data-testid="hub-badge" aria-label="${n}">${n}</span>`:''}${hubAv(k)}<span class="hub-n">${escapeHtml(m.name)}</span><span class="hub-r">${escapeHtml(m.role)}</span><span class="hub-s">${escapeHtml(sm||'—')}</span></button>`; }).join('');
+  g.querySelectorAll('[data-agent]').forEach(b=>b.onclick=()=>{ hubCurAgent=b.dataset.agent; navTo('hubagent'); });
+}
+async function renderHub(){
+  const qt=document.getElementById('hubQuickText'); if(qt) qt.placeholder=t('hub_order_ph');
+  renderHubChips(); renderHubGrid();
+  await loadHub(); renderHubGrid();
+}
+async function renderHubAgent(){
+  const v=document.getElementById('hubAgentView'); if(!v) return;
+  if(!_hubLoaded) await loadHub();
+  if(!_questsLoaded) await loadQuests();
+  const a=hubCurAgent, ar=LANG==='ar', m=hubMeta(a), r=hubAgents[a]||{}, draft=v.dataset.agent===a?((document.getElementById('hubAgentText')||{}).value||''):'';
+  v.dataset.agent=a;
+  const now=(r.now||[]).slice(0,8), news=hubNewsSorted(a).slice(0,5), links=(r.links||[]).filter(l=>hubSafeUrl(l.url)), qs=quests.filter(q=>q.agent===a);
+  const orders=hubInbox.filter(o=>o.agent===a).sort((x,y)=>String(y.at).localeCompare(String(x.at)));
+  const none=t=>`<div class="hub-empty">${t}</div>`;
+  v.innerHTML=`<div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
+    <div class="dash-card hub-sec" data-testid="hub-now"><h3>${ar?'الحالة الآن':'Right now'}</h3>${now.length?`<ul class="hub-now">${now.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:none(ar?'ما فيه تحديث ليلحين':'No update yet')}</div>
+    <div class="dash-card hub-sec" data-testid="hub-news"><h3>${ar?'آخر الأخبار':'Latest'}</h3>${news.length?news.map(n=>`<div class="hub-news"><span class="d">${escapeHtml(n.date||'')}</span><span>${escapeHtml(n.sum||'')}</span></div>`).join(''):none(ar?'ما فيه أخبار ليلحين':'Nothing yet')}</div>
+    <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):none(ar?'ما عنده مهام':'No quests')}</div>
+    ${links.length?`<div class="dash-card hub-sec" data-testid="hub-links"><h3>🔗 ${ar?'صفحاته':'Pages'}</h3><div class="hub-links">${links.map(l=>`<a class="hub-link" href="${escapeHtml(hubSafeUrl(l.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label||hubSafeUrl(l.url))}</a>`).join('')}</div></div>`:''}
+    <div class="dash-card hub-sec hub-compose"><h3>📤 ${ar?'أمر جديد':'New order'}</h3><textarea id="hubAgentText" class="setup-input" rows="2" maxlength="1000" placeholder="${escapeHtml(ar?`شنو تبي من ${m.name}؟`:`What do you need from ${m.name}?`)}">${escapeHtml(draft)}</textarea><button type="button" class="setup-btn hub-send" id="hubAgentSend" data-testid="hub-agent-send">📤 ${t('hub_send')}</button></div>
+    <div class="dash-card hub-sec" data-testid="hub-orders"><h3>📬 ${ar?'أوامري له':'My orders'}</h3>${orders.length?orders.map(o=>{ const lk=hubSafeUrl(o.link);
+      return `<div class="hub-order" data-oid="${escapeHtml(o.id)}" data-testid="hub-order"><div class="ot">${escapeHtml(o.text)}</div><div class="om">${hubStatusChip(o.status)}<span>${escapeHtml(hubWhen(o.at))}</span>${o.status==='new'?`<button type="button" class="hub-cancel" data-cancel="${escapeHtml(o.id)}" data-testid="hub-cancel">${ar?'ألغِ':'Cancel'}</button>`:''}</div>${o.reply?`<div class="orep" data-testid="hub-reply">${escapeHtml(o.reply)}</div>`:''}${lk?`<div class="om"><a class="hub-link" href="${escapeHtml(lk)}" target="_blank" rel="noopener noreferrer">🔗 ${ar?'افتح':'Open'}</a></div>`:''}</div>`; }).join(''):none(ar?'ما أرسلت له شي ليلحين':'No orders yet')}</div>`;
+  v.querySelector('#hubAgentSend').onclick=async e=>{ const b=e.currentTarget, ta=document.getElementById('hubAgentText'); b.disabled=true;
+    if(await hubSendOrder(a,ta.value)){ ta.value=''; renderHubAgent(); } else b.disabled=false; };
+  v.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{ b.disabled=true; await hubCancelOrder(b.dataset.cancel); renderHubAgent(); });
+  v.querySelectorAll('[data-hqid]').forEach(b=>b.onclick=async()=>{ const q=quests.find(x=>x.id===b.dataset.hqid); if(!q) return;
+    q.done=!q.done; if(q.done){ q.doneAt=new Date().toISOString(); playSfx('success'); } else delete q.doneAt; renderHubAgent(); await saveQuests(); });
+}
+/* «agents board + replies» box — {agents:[…], inbox:[…]}, both optional */
+function hubPlan(text){
+  const ar=LANG==='ar', out={ok:false,fatal:'',rows:[],agents:[],inbox:[]};
+  let data; try{ data=JSON.parse(cmCleanJson(text)); }catch(e){ out.fatal=ar?'⚠️ هذا مو JSON صحيح':'⚠️ Not valid JSON'; return out; }
+  if(Array.isArray(data)&&data.length===1&&data[0]&&typeof data[0]==='object'&&!Array.isArray(data[0])) data=data[0];
+  if(!data||typeof data!=='object'||Array.isArray(data)){ out.fatal=ar?'⚠️ لازم يكون {"agents":[…], "inbox":[…]}':'⚠️ Expected {"agents":[…], "inbox":[…]}'; return out; }
+  const top=[]; Object.keys(data).forEach(k=>{ if(!['agents','inbox'].includes(k)) top.push(k); });
+  if(top.length) out.rows.push({n:'•',errs:[],warns:[(ar?'تجاهلت: ':'Ignored: ')+top.join(', ')],label:''});
+  const agents=data.agents==null?[]:data.agents, inbox=data.inbox==null?[]:data.inbox;
+  if(!Array.isArray(agents)||!Array.isArray(inbox)){ out.fatal=ar?'⚠️ agents و inbox لازم يكونون قوائم [ ]':'⚠️ agents and inbox must be arrays'; return out; }
+  if(!agents.length&&!inbox.length){ out.fatal=ar?'⚠️ ما فيه شي ينحفظ':'⚠️ Nothing to save'; return out; }
+  const seenA=new Set();
+  agents.forEach((r,i)=>{
+    const row={n:'A'+(i+1),errs:[],warns:[],label:''}; out.rows.push(row);
+    if(!r||typeof r!=='object'||Array.isArray(r)){ row.errs.push(ar?'لازم يكون {…}':'Must be an object'); return; }
+    const a=questAgentKey(r.agent);
+    if(!HUB_KEYS.includes(a)){ row.errs.push((ar?'وكيل مو معروف: ':'Unknown agent: ')+String(r.agent==null?'':r.agent)); return; }
+    if(seenA.has(a)) row.errs.push((ar?'نفس الوكيل مكرر: ':'Agent twice: ')+a); seenA.add(a);
+    row.label=`${HUB_META[a].e} ${questAgentName(a)}`;
+    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    let now=r.now==null?[]:r.now; if(!Array.isArray(now)){ row.errs.push(ar?'now لازم قائمة نصوص':'now must be a list of strings'); now=[]; }
+    now=now.map(x=>String(x==null?'':x).trim()).filter(Boolean);
+    if(now.length>8){ row.warns.push(ar?'now أكثر من ٨ أسطر — خذيت أول ٨':'now has more than 8 lines — kept the first 8'); now=now.slice(0,8); }
+    now=now.map(x=>x.slice(0,200));
+    let news=r.news==null?[]:r.news; if(!Array.isArray(news)){ row.errs.push(ar?'news لازم قائمة':'news must be a list'); news=[]; }
+    news=news.map((n,j)=>{ if(!n||typeof n!=='object'){ row.errs.push((ar?'خبر ':'news ')+(j+1)+(ar?' لازم {date, sum}':' must be {date, sum}')); return null; }
+      const sum=String(n.sum==null?'':n.sum).trim(); if(!sum){ row.errs.push((ar?'خبر ':'news ')+(j+1)+(ar?': sum ناقص':': sum missing')); return null; }
+      return {date:String(n.date==null?'':n.date).trim().slice(0,30), sum:sum.slice(0,300)}; }).filter(Boolean).slice(0,20);
+    let links=r.links==null?[]:r.links; if(!Array.isArray(links)){ row.errs.push(ar?'links لازم قائمة':'links must be a list'); links=[]; }
+    links=links.map((l,j)=>{ const u=hubSafeUrl(l&&l.url); if(!u){ row.errs.push((ar?'رابط ':'link ')+(j+1)+(ar?': لازم يبدأ بـ https://':': must start with https://')); return null; }
+      return {label:String((l&&l.label)||'').trim().slice(0,60)||u, url:u}; }).filter(Boolean).slice(0,12);
+    const rec={agent:a, now, news, links, updatedAt:typeof r.updatedAt==='string'&&r.updatedAt.trim()?r.updatedAt.trim().slice(0,40):new Date().toISOString()};
+    ['role','emoji','color'].forEach(k=>{ if(typeof r[k]==='string'&&r[k].trim()) rec[k]=r[k].trim().slice(0,k==='role'?60:16); });
+    if(rec.color&&!/^#[0-9a-f]{6}$/i.test(rec.color)){ row.warns.push(ar?'color لازم مثل #1a2b3c — تجاهلته':'color must look like #1a2b3c — ignored'); delete rec.color; }
+    row.kind=hubAgents[a]?'replace':'add'; row.rec=rec; out.agents.push(rec);
+  });
+  const seenO=new Set();
+  inbox.forEach((r,i)=>{
+    const row={n:'O'+(i+1),errs:[],warns:[],label:''}; out.rows.push(row);
+    if(!r||typeof r!=='object'||Array.isArray(r)){ row.errs.push(ar?'لازم يكون {…}':'Must be an object'); return; }
+    const id=r.id==null?'':String(r.id).trim();
+    if(!id){ row.errs.push(ar?'id ناقص':'id is missing'); return; }
+    if(seenO.has(id)) row.errs.push((ar?'نفس الـ id مكرر: ':'Duplicate id: ')+id); seenO.add(id);
+    Object.keys(r).forEach(k=>{ if(!['id','status','reply','link','agent','text','at','doneAt'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    if('status' in r&&!['sent','working','done','failed'].includes(r.status)) row.errs.push(ar?'status لازم: sent أو working أو done أو failed':'status must be sent, working, done or failed');
+    if('link' in r&&r.link!==''&&r.link!=null&&!hubSafeUrl(r.link)) row.errs.push(ar?'link لازم يبدأ بـ https://':'link must start with https://');
+    const old=hubInbox.find(o=>o.id===id);
+    if(!old){ row.warns.push(ar?'ما لقيت هالأمر — ما راح يتغير شي':'Order not found — skipped'); row.kind='skip'; row.label=id; return; }
+    row.label=`${questAgentName(old.agent)}: ${old.text.slice(0,60)}`;
+    const upd={id};
+    if('status' in r) upd.status=r.status;
+    if('reply' in r) upd.reply=String(r.reply==null?'':r.reply).slice(0,4000);
+    if('link' in r) upd.link=hubSafeUrl(r.link);
+    row.kind='order'; row.upd=upd; out.inbox.push(upd);
+  });
+  out.ok=out.rows.every(r=>!r.errs.length);
+  return out;
+}
+function renderHubPreview(plan){
+  const box=document.getElementById('hubJsonPreview'), ap=document.getElementById('hubJsonApplyBtn'), ar=LANG==='ar'; if(!box) return;
+  if(ap) ap.disabled=!(plan&&plan.ok);
+  if(plan.fatal){ box.innerHTML=`<div class="qp-row" data-testid="hub-json-summary"><span class="e">${escapeHtml(plan.fatal)}</span></div>`; return; }
+  const bad=plan.rows.filter(r=>r.errs.length).length, skip=plan.rows.filter(r=>r.kind==='skip').length;
+  const sum=bad?(ar?`⚠️ ${bad} سطر فيه خطأ — ما راح ينحفظ شي لين تصلحها`:`⚠️ ${bad} row(s) with errors — nothing is saved until they’re fixed`)
+    :(ar?`🐟 ${plan.agents.length} وكيل يتحدث · 📬 ${plan.inbox.length} أمر يتحدث${skip?` · ${skip} ما لقيته`:''}`:`🐟 ${plan.agents.length} agent(s) · 📬 ${plan.inbox.length} order(s)${skip?` · ${skip} not found`:''}`);
+  box.innerHTML=`<div class="qp-row" data-testid="hub-json-summary"><b>${sum}</b></div>`+plan.rows.map(r=>`<div class="qp-row">${escapeHtml(String(r.n))}${r.errs.length?'⚠️':''} ${escapeHtml(r.label||'')}${r.upd&&r.upd.status?' → '+hubStatusChip(r.upd.status):''}${r.errs.map(e=>`<span class="e">⚠️ ${escapeHtml(e)}</span>`).join('')}${r.warns.map(w=>`<span class="w">ℹ️ ${escapeHtml(w)}</span>`).join('')}</div>`).join('');
+}
+async function applyHubJson(){
+  const ta=document.getElementById('hubJsonText'), ap=document.getElementById('hubJsonApplyBtn'), ar=LANG==='ar';
+  ap.disabled=true;
+  await loadHub(); // re-check against what's saved right now
+  const plan=hubPlan(ta.value);
+  if(!plan.ok){ renderHubPreview(plan); return; }
+  if(plan.agents.length){ plan.agents.forEach(rec=>{ hubAgents[rec.agent]=rec; }); await saveHubAgents(); }
+  let touched=false;
+  plan.inbox.forEach(u=>{ const o=hubInbox.find(x=>x.id===u.id); if(!o) return; touched=true;
+    if('status' in u){ o.status=u.status; o.doneAt=(u.status==='done'||u.status==='failed')?(o.doneAt||new Date().toISOString()):null; }
+    if('reply' in u) o.reply=u.reply; if('link' in u) o.link=u.link; });
+  if(touched) await saveHubInbox();
+  ta.value=''; document.getElementById('hubJsonPreview').innerHTML='';
+  playSfx('success'); showToast(ar?'تحدّث الهب':'Hub updated','success');
+  if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent();
+}
+document.getElementById('hubQuickSend').addEventListener('click',async e=>{ const b=e.currentTarget, ta=document.getElementById('hubQuickText'); b.disabled=true;
+  if(await hubSendOrder(hubQuickAgent,ta.value)){ ta.value=''; renderHubGrid(); } b.disabled=false; });
+document.getElementById('hubJsonPreviewBtn').addEventListener('click',async()=>{ await loadHub(); renderHubPreview(hubPlan(document.getElementById('hubJsonText').value)); });
+document.getElementById('hubJsonText').addEventListener('input',()=>{ document.getElementById('hubJsonApplyBtn').disabled=true; });
+document.getElementById('hubJsonApplyBtn').addEventListener('click',applyHubJson);
+document.getElementById('hubJsonExportBtn').addEventListener('click',async()=>{
+  await loadHub();
+  const txt=JSON.stringify({agents:HUB_KEYS.map(k=>hubAgents[k]).filter(Boolean), inbox:hubInbox},null,1);
+  const ta=document.getElementById('hubJsonText'); ta.value=txt; document.getElementById('hubJsonApplyBtn').disabled=true;
+  try{ await navigator.clipboard.writeText(txt); showToast(LANG==='ar'?'📋 انتسخ الهب':'📋 Hub copied','success'); }catch(e){ ta.select(); }
+});
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&(currentPanelName==='hub'||currentPanelName==='hubagent')) loadHub().then(()=>{ if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent(); }); });
 function cmCleanJson(t){
   t=String(t||'').replace(/^\uFEFF/,'').replace(/[\u201C\u201D\u201E\u201F]/g,'"');
   const f=t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(f) t=f[1];
