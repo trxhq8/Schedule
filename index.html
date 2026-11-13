@@ -877,7 +877,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   body.ai-open{ overflow:hidden; }
   /* public edition: no fishing collection, no friends */
   html:not(.ed-public) .pub-only{ display:none!important; }
-  .ed-public [data-goto="collections"], .ed-public [data-goto="social"], .ed-public #socialMainCard, .ed-public #coopBossCard, .ed-public #homeCollectionPreview, .ed-public #homeAquarium{ display:none!important; }
+  .ed-public [data-goto="collections"], .ed-public #homeCollectionPreview, .ed-public #homeAquarium{ display:none!important; }
   .net-banner.off{ background:#2b2f36; color:#fff; } .net-banner.sync{ background:#ffb703; color:#3a2600; } .net-banner.ok{ background:#1f9d55; color:#fff; }
 
   /* aquarium v3: free placement, preview, play */
@@ -1750,7 +1750,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   @media(min-width:1100px){
     .wrap, .topnav-inner, .profile-bar, #mainNav #bottomNav{ max-width:1120px; }
     /* reading pages stay a comfortable width */
-    #panel-habits, #panel-challenges, #panel-profile, #panel-progress, #panel-social, #panel-health, #panel-profile-hub{ max-width:860px; margin-inline:auto; }
+    #panel-habits, #panel-challenges, #panel-profile, #panel-progress, #panel-health, #panel-profile-hub{ max-width:860px; margin-inline:auto; }
     /* Nutrition: meals beside water / supplements / weight */
     #foodContent:not(.hidden){ display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); column-gap:24px; align-items:start; }
     #foodContent > *{ grid-column:2; }
@@ -1851,6 +1851,38 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .cm-pr-row label{ display:block; font-size:.75rem; color:var(--ink-soft); }
   .cm-pr-row .setup-input{ margin:0; width:100%; box-sizing:border-box; }
   .cm-pr-prev{ grid-column:1/-1; font-size:.78rem; color:var(--ink-soft); }
+  /* ===== 🗺️ مهامي (agents' quest board) ===== */
+  .quests-mini{ display:flex; align-items:center; gap:10px; width:100%; border:1px solid var(--line); background:var(--card); color:var(--ink); font:inherit; text-align:start; cursor:pointer; padding:12px 14px; }
+  .quests-mini b{ font-family:var(--font-head); font-size:.95rem; color:var(--heading); }
+  .quests-mini .qm-sub{ flex:1; font-size:.8rem; color:var(--ink-soft); }
+  .quests-mini .qm-go{ color:var(--ink-soft); font-size:1.1rem; }
+  #panel-quests{ max-width:760px; margin-inline:auto; }
+  .qs-h{ font-family:var(--font-head); color:var(--heading); font-size:1.25rem; margin:4px 2px 12px; }
+  .qs-empty{ text-align:center; color:var(--ink-soft); padding:22px 10px; font-size:.9rem; }
+  .qs-agent{ margin-bottom:12px; padding:12px 12px 8px; }
+  .qs-agent-h{ display:flex; align-items:center; justify-content:space-between; font-family:var(--font-head); font-weight:700; color:var(--heading); margin-bottom:8px; }
+  .qs-agent-h .num{ font-size:.78rem; color:var(--ink-soft); font-weight:600; }
+  .qs-lbl{ font-size:.72rem; color:var(--ink-soft); margin:8px 2px 4px; }
+  .qs-item{ display:flex; align-items:flex-start; gap:10px; width:100%; background:none; border:none; padding:8px 4px; font:inherit; color:var(--ink); text-align:start; cursor:pointer; border-radius:10px; }
+  .qs-item:hover{ background:color-mix(in srgb, var(--line) 35%, transparent); }
+  .qs-item .qs-c{ flex:0 0 22px; height:22px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:.75rem; margin-top:1px; }
+  .qs-item.main{ background:color-mix(in srgb, var(--gold) 10%, transparent); border:1px solid color-mix(in srgb, var(--gold) 35%, transparent); padding:10px 8px; }
+  .qs-item.main .qs-t{ font-weight:700; }
+  .qs-item.side .qs-t{ font-size:.88rem; }
+  .qs-item.done .qs-t{ text-decoration:line-through; color:var(--ink-soft); font-weight:400; }
+  .qs-item.done .qs-c{ background:var(--accent); border-color:var(--accent); color:var(--card); }
+  .qs-item.done{ opacity:.7; }
+  .qs-io{ margin-top:18px; border:1px dashed var(--line); border-radius:14px; padding:8px 12px; }
+  .qs-io summary{ cursor:pointer; font-size:.82rem; color:var(--ink-soft); padding:4px 0; }
+  .qs-io textarea{ width:100%; box-sizing:border-box; font-family:ui-monospace,Consolas,monospace; font-size:.78rem; margin-top:8px; min-height:110px; }
+  .qs-io-btns{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .qs-io-btns .setup-btn{ width:auto; flex:1; }
+  .qs-ghost{ background:var(--card)!important; color:var(--heading)!important; border:1px solid var(--heading)!important; }
+  #questJsonPreview{ margin-top:8px; font-size:.8rem; }
+  #questJsonPreview .qp-row{ padding:5px 2px; border-bottom:1px solid var(--line); }
+  #questJsonPreview .qp-row .e{ color:#c0392b; display:block; }
+  #questJsonPreview .qp-row .w{ color:var(--ink-soft); display:block; }
+  .ed-public #homeQuestsCard{ display:none!important; }
 </style>
 </head>
 <body>
@@ -2065,9 +2097,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div id="homeNow"></div>
     <div id="homeMissed"></div>
+    <button type="button" class="dash-card quests-mini" id="homeQuestsCard" data-nav="quests" data-testid="quests-home"><span>🗺️</span><b data-i18n="quests_title"></b><span class="qm-sub" id="homeQuestsSub"></span><span class="qm-go" aria-hidden="true">‹</span></button>
     <div id="homeRecapPrompt"></div>
     <div id="homeRamadan"></div>
-    <div id="homeCheers"></div>
     <div id="homePushTip"></div>
     <div class="home-grid" id="homeGrid">
     <!-- TODAY'S PLAN: the schedule for today, with its own actions -->
@@ -2170,7 +2202,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="home-cards">
       <button type="button" class="home-card" data-goto="profile"><span class="ic">👤</span><span class="ttl" data-i18n="card_profile"></span><span class="hub-desc" data-i18n="hub_desc_profile"></span></button>
       <button type="button" class="home-card" data-goto="progress"><span class="ic">📈</span><span class="ttl" data-i18n="card_progress"></span><span class="hub-desc" data-i18n="hub_desc_progress"></span></button>
-      <button type="button" class="home-card" data-goto="social"><span class="ic">👥</span><span class="ttl" data-i18n="card_social"></span><span class="hub-desc" data-i18n="hub_desc_social"></span></button>
       <button type="button" class="home-card" data-goto="collections"><span class="ic">🐾</span><span class="ttl" data-i18n="card_collections"></span><span class="hub-desc" data-i18n="hub_desc_collections"></span></button>
       <button type="button" class="home-card" data-goto="store"><span class="ic">🏪</span><span class="ttl" data-i18n="card_store"></span><span class="hub-desc" data-i18n="hub_desc_store"></span></button>
       <button type="button" class="home-card" data-goto="settings"><span class="ic">⚙️</span><span class="ttl" data-i18n="card_settings"></span><span class="hub-desc" data-i18n="hub_desc_settings"></span></button>
@@ -2535,6 +2566,19 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   </section>
 
   <!-- PROGRESS (read-only view over real logged history, no charts beyond the existing weight trend line) -->
+  <!-- 🗺️ مهامي — the agents' quests (main + side), filled by Mangsi through the JSON box -->
+  <section class="panel" id="panel-quests">
+    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
+    <h2 class="qs-h">🗺️ <span data-i18n="quests_title"></span></h2>
+    <div id="questBoard" data-testid="quest-board"></div>
+    <details class="qs-io" id="questIo">
+      <summary data-i18n="quests_io"></summary>
+      <textarea id="questJsonText" class="setup-input" rows="6" dir="ltr" spellcheck="false" placeholder='[{"agent":"hamour","main":true,"text":"…","id":"h1","done":false}]'></textarea>
+      <div class="qs-io-btns"><button type="button" class="setup-btn" id="questJsonPreviewBtn" data-testid="quest-json-preview">👀 <span data-i18n="quests_preview"></span></button><button type="button" class="setup-btn qs-ghost" id="questJsonExportBtn" data-testid="quest-json-export">📤 Export JSON</button></div>
+      <div id="questJsonPreview"></div>
+    </details>
+  </section>
+
   <section class="panel" id="panel-progress">
     <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
     <div class="setup-card" id="weekReviewCard"></div>
@@ -2983,15 +3027,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
        actual logged data via computeUserStats()) -->
   <section class="panel" id="panel-profile">
     <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
-    <!-- shown ONLY for an existing/old account that has no username yet —
-         real XP/stats/achievements stay hidden until one is set, see
-         usernameSoftGateActive() + renderProfileSection() -->
-    <div class="setup-card hidden" id="profileUsernameGateCard" style="text-align:center;">
-      <div style="font-size:2.2rem;">🔒</div>
-      <h3 data-i18n="profile_gate_title" style="margin:6px 0;"></h3>
-      <p class="dash-empty" id="profileGateBody" data-i18n="profile_gate_body" style="text-align:center;"></p>
-      <button class="setup-btn" id="profileGateSetupBtn" data-i18n="profile_gate_btn"></button>
-    </div>
     <div id="profileStatsContent">
       <div class="cos-hero" id="profileHero">
         <div class="cos-hero-bg" id="profileHeroBg"></div>
@@ -3040,7 +3075,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-challenges">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2 data-i18n="challenges_title"></h2><p class="panel-sub" data-i18n="challenges_sub"></p></div>
-    <div id="coopBossCard"></div>
     <div id="challengesList"></div>
   </section>
 
@@ -3058,41 +3092,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div id="storeContent"></div>
   </section>
 
-  <!-- SOCIAL (DEMO MODE — see banner; friends/leaderboard/feed/comparison
-       need a backend change — public profile reads — that isn't possible
-       from this static-site + per-user-Firestore architecture alone) -->
-  <section class="panel" id="panel-social">
-    <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
-    <div class="dash-card gate-welcome hidden" id="gateWelcome"></div>
-    <!-- shown only until the user has claimed a public username -->
-    <div class="setup-card" id="profileSetupCard">
-      <h3 data-i18n="profile_setup_title"></h3>
-      <p class="dash-empty" id="profileSetupBody" style="text-align:start;"></p>
-      <input type="text" class="setup-input" id="usernameInput" autocomplete="off" data-i18n-ph="username_ph">
-      <div class="username-check-msg" id="usernameCheckMsg"></div>
-      <input type="text" class="setup-input" id="displayNameInput" autocomplete="off" data-i18n-ph="displayname_ph">
-      <label class="settings-row-label" data-i18n="avatar_label" style="display:block;margin-bottom:6px;"></label>
-      <div class="avatar-picker-grid" id="avatarPickerGrid"></div>
-      <button class="setup-btn" id="saveProfileBtn" data-i18n="save_profile_btn"></button>
-    </div>
-    <!-- real friends UI, shown once a profile exists -->
-    <div class="setup-card hidden" id="socialMainCard">
-      <div class="social-tabs" id="socialTabs">
-        <button type="button" class="social-tab active" data-tab="friends" id="socialTabFriends"></button>
-        <button type="button" class="social-tab" data-tab="feed" id="socialTabFeed"></button>
-        <button type="button" class="social-tab" data-tab="compete" id="socialTabCompete"></button>
-        <button type="button" class="social-tab" data-tab="privacy" id="socialTabPrivacy" data-i18n="privacy_title"></button>
-      </div>
-      <!-- Compete groups the three competitive views under one tab -->
-      <div class="social-subtabs hidden" id="socialSubTabs">
-        <button type="button" class="social-subtab" data-tab="league" id="socialTabLeague"></button>
-        <button type="button" class="social-subtab" data-tab="leaderboard" id="socialTabLeaderboard"></button>
-        <button type="button" class="social-subtab" data-tab="compare" id="socialTabCompare"></button>
-        <button type="button" class="social-subtab" data-tab="challenges" id="socialTabChallenges"></button>
-      </div>
-      <div id="socialTabContent"></div>
-    </div>
-  </section>
 
   <!-- COLLECTIONS -->
   <section class="panel" id="panel-collections">
@@ -3264,7 +3263,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.76.0';
+const APP_VERSION='v1.77.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3568,6 +3567,7 @@ async function bootApp(){
   // Firestore history on the next storageSet('weight-log', ...).
   await loadWeightLog();
   await loadFoodDraft();
+  if(!PUB) loadQuests().catch(()=>{});
   const pv=await storageGet('profile');
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
   else{ P.lang=LANG; await storageSet('profile',JSON.stringify(P)); } // a brand-new profile keeps the language picked on the sign-in screen
@@ -3579,6 +3579,7 @@ async function bootApp(){
   try{ await migrateMergedSpecies(); }catch(e){}
   try{ await revokeUnearnedSailSet(); }catch(e){}
   try{ await migrateWeekToLoop(); }catch(e){}
+  dropSocialLeftovers();
   if(!(P.achievements||{}).legend_catch) setTimeout(()=>{ notifyNewUnlocks().catch(()=>{}); },5000);
   setTimeout(async()=>{ try{ const raw=await storageGet('collections:animals:fish'); const d=raw?JSON.parse(raw):{}; let shown=false;
     for(const T of LEGEND_THEMES){ const rec=d[T.sid]; if(rec&&collIsCollected(rec)&&!(P.legendSets||{})[T.sid]){ const paid=await grantLegendSet(T.sid); if(paid&&!shown){ enqueueAchievements([{kind:'legendset',sid:T.sid}]); shown=true; } } }
@@ -3586,11 +3587,7 @@ async function bootApp(){
   autoUseShield();
   checkQadaForYesterday();
   setTimeout(async()=>{ try{ if(PushService.prefs().enabled&&PushService.supported()&&Notification.permission==='granted'){ const reg=await navigator.serviceWorker.getRegistration('./'); if(reg){ const tk=await firebase.messaging().getToken({serviceWorkerRegistration:reg}); if(tk) await PushService.save(tk); } } }catch(e){} },6000);
-  setTimeout(()=>{ claimLeagueIfDue().catch(()=>{}); },5000);
   renderAppBackground();
-  migratePublicCollectionMirrors(); // fire-and-forget backfill — must not delay app launch
-  // publish your look + collection for friends once, without waiting for the next completed action
-  if(!P._showcaseV1Done) setTimeout(()=>{ try{ PublicProfileService.syncStats(); }catch(e){} },3000);
   launchApp();
   setTimeout(()=>{ try{ handleLaunchShortcut(); }catch(e){} },700);
 }
@@ -3642,7 +3639,7 @@ document.getElementById('quickLogFab').addEventListener('click',()=>{ playSfx('p
 /* shown whenever the main nav is (signed in, past the username gate) */
 function syncQuickFab(){
   const nav=document.getElementById('bottomNav'), fab=document.getElementById('quickLogFab'); if(!nav||!fab) return;
-  const show=!nav.classList.contains('hidden') && !(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed) && !usernameHardGateActive();
+  const show=!nav.classList.contains('hidden') && !(P.firstRun&&P.firstRun.active&&!P.firstRun.dismissed);
   fab.classList.toggle('hidden',!show);
 }
 new MutationObserver(syncQuickFab).observe(document.getElementById('bottomNav'),{attributes:true,attributeFilter:['class']});
@@ -3933,6 +3930,7 @@ const I18N={
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   mode_light:'فاتح',mode_dark:'داكن',
+  quests_title:'مهامي',quests_io:'📥 تحديث المهام (JSON)',quests_preview:'معاينة',back_quests:'→ مهامي',
   ai_paste_title:'🤖 الصق من مساعدك',card_assistant:'مساعدك',hub_desc_assistant:'مساعد ذكي يرتب يومك معاك',auth_forgot:'نسيت كلمة المرور؟',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
   bg_tier_basic:'أساسي',bg_locked_empty:'ما عندك خلفيات من هذا المستوى بعد',bg_goto_store:'روح للمتجر',
@@ -4095,6 +4093,7 @@ const I18N={
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   mode_light:'Light',mode_dark:'Dark',
+  quests_title:'My quests',quests_io:'📥 Update quests (JSON)',quests_preview:'Preview',back_quests:'→ My quests',
   ai_paste_title:'🤖 Paste from your assistant',card_assistant:'Your assistant',hub_desc_assistant:'An AI helper that plans your day with you',auth_forgot:'Forgot password?',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
   bg_tier_basic:'Basic',bg_locked_empty:"You don't own any of these yet",bg_goto_store:'Go to store',
@@ -4387,7 +4386,7 @@ let P={ name:'',font:'classic',palette:'mono',mode:'light',lang:'ar',
   achievements:{}, // {achievementId: {unlockedAt: isoString}}
   challengeState:{}, // {challengeId+periodKey: {completed:true, completedAt}}
   settings:{achSoundEnabled:true, achSoundVolume:0.7},
-  publicProfile:null // {username,displayName,avatar,privacy} — see PublicProfileService; null until claimed
+  publicProfile:null // {username,displayName,avatar} — your name on your own profile (friends removed v1.77)
 };
 
 document.getElementById('mainLangToggle').addEventListener('click',async()=>{
@@ -4629,7 +4628,6 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
 
 document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); });
 document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPanel('profile-hub'); });
-document.getElementById('profileGateSetupBtn').addEventListener('click',()=>{ showPanel('social'); enterSection('social'); });
 /* Collections has its own back-stack (species → category → animals → home)
    instead of always jumping straight to home like every other section's
    back button, so it's wired separately below and skipped here. */
@@ -4752,28 +4750,13 @@ function isBrandNewAccount(){
     && !(P.xp>0)
     && !(P.achievements && Object.keys(P.achievements).length);
 }
-/* brand-new account, no username yet — the ENTIRE app is off-limits
-   until one is created. Checked inside showPanel/enterSection itself
-   (not just at launch) so there is no button, back-nav, or deep link
-   that can skip past it. */
-function usernameHardGateActive(){
-  return typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile() && isBrandNewAccount();
-}
-/* pre-existing account (created before usernames existed) with no
-   username yet — the rest of the app stays usable, but Profile must
-   never show real XP/stats/achievements until a username is set, so
-   renderProfileSection() checks this itself. */
-function usernameSoftGateActive(){
-  return typeof PublicProfileService!=='undefined' && !PublicProfileService.hasProfile() && !isBrandNewAccount();
-}
 function showPanel(name){
   revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
   const opts=arguments[1]||{};
   if(name==='diettraining') name='health'; // old combined Diet+Training entry → the Health hub
   if(name==='health'){ name=healthLastTab(); opts._hs=1; } // the Health tab opens its last sub-tab
-  const gated=usernameHardGateActive();
-  if(gated) name='social';
-  else if(PUB&&(name==='social'||name==='collections')) name='profile-hub';
+  if(name==='social') name='profile-hub'; // friends were removed (v1.77) — any old link lands on You
+  else if(PUB&&(name==='collections'||name==='quests')) name=name==='quests'?'home':'profile-hub';
   // remember where a sub-page was opened from, so Back returns there
   if(!ROOT_PANELS.includes(name) && name!==currentPanelName && !opts.back && currentPanelName!==name){
     if(returnTo[currentPanelName]!==name) returnTo[name]=currentPanelName;
@@ -4791,9 +4774,6 @@ function showPanel(name){
   // the tab of the section this page belongs to stays lit
   const navOwner=ROOT_PANELS.includes(name)?name:(PANEL_PARENT[name]||name);
   document.querySelectorAll('.bottom-nav-item').forEach(b=>{ const on=b.dataset.goto===navOwner; b.classList.toggle('active',on); if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
-  // until a username exists the rest of the app is off-limits (see
-  // usernameHardGateActive), so the nav would only be dead buttons
-  document.getElementById('bottomNav').classList.toggle('gated',gated);
   // Home must always be current the moment it's shown, from EVERY entry
   // point (bottom nav, back buttons, the 🏠 shortcut, programmatic calls)
   // — previously only the standalone #homeBtn handler called refreshHome()
@@ -6266,135 +6246,11 @@ function ramadanStats(){
 }
 
 
-/* ================= SOCIAL WEEK (league · cheers · co-op boss) =================
-   Everything here rides on each person's own PUBLIC profile doc, which only
-   its owner writes and friends can already read — so it works with the
-   database rules that are live today. Weeks run Saturday→Friday like the
-   rest of the app. */
+/* week key (Saturday→Friday, like the rest of the app) — weekly XP + the weekly «repeat?» nudge use it */
 function weekKeySat(offsetWeeks){
   const d=datesForCurrentWeek()[0]; d.setDate(d.getDate()-7*(offsetWeeks||0));
   return 'w'+isoDateStr(d.getFullYear(),d.getMonth(),d.getDate());
 }
-function daysLeftInWeek(){ return 7-todayWeekdayIndex(); }
-let _friendsCache={at:0,list:null};
-async function friendsWithProfiles(force){
-  if(!PublicProfileService.hasProfile()) return [];
-  const ttl=(_friendsCache.list&&_friendsCache.list.length)?120000:15000; // an empty list is re-checked sooner
-  if(!force && _friendsCache.list && Date.now()-_friendsCache.at<ttl) return _friendsCache.list;
-  try{ const list=await FriendService.listFriends(); _friendsCache={at:Date.now(),list:list.filter(p=>!p.restricted),ok:true,hadRestricted:list.some(p=>p.restricted)}; }catch(e){ _friendsCache={at:Date.now(),list:[],ok:false}; }
-  return _friendsCache.list;
-}
-/* weekly damage = what you actually did this week */
-const BOSS_DMG={workout:60, prayerDay:40, water:25, nutrition:25, habit:8, weight:10};
-async function myWeekDamage(){
-  const docs=await Promise.all(datesForCurrentWeek().map(trackDocFor)); const w=tallyDocs(docs);
-  return w.workouts*BOSS_DMG.workout+w.prayers*BOSS_DMG.prayerDay+w.water*BOSS_DMG.water+w.nutrition*BOSS_DMG.nutrition+w.habitChecks*BOSS_DMG.habit+w.weight*BOSS_DMG.weight;
-}
-async function socialWeekStats(){
-  const k=weekKeySat(0), pk=weekKeySat(1);
-  return { league:{key:k, xp:(P.weekXp||{})[k]||0, prevKey:pk, prevXp:(P.weekXp||{})[pk]||0}, boss:{key:k, dmg:await myWeekDamage()} };
-}
-function friendWeekXp(f,key){ const L=(f.stats||{}).league||{}; if(L.key===key) return safeNum(L.xp); if(L.prevKey===key) return safeNum(L.prevXp); return 0; }
-function friendWeekDmg(f,key){ const B=(f.stats||{}).boss||{}; return B.key===key?safeNum(B.dmg):0; }
-/* ---- league ---- */
-async function leagueStandings(key,fresh){
-  const fr=await friendsWithProfiles(fresh);
-  const me={uid:currentUser.uid, me:true, name:(P.publicProfile&&P.publicProfile.displayName)||'You', avatar:(P.publicProfile&&P.publicProfile.avatar)||'🙂', xp:(P.weekXp||{})[key]||0};
-  const rows=[me,...fr.map(f=>({uid:f.uid, name:f.displayName||f.username||'—', avatar:f.avatar||'🙂', xp:friendWeekXp(f,key)}))];
-  rows.sort((a,b)=>b.xp-a.xp);
-  return rows;
-}
-const LEAGUE_REWARD=[150,100,60];
-async function claimLeagueIfDue(){
-  const pk=weekKeySat(1); if(P._leagueClaimed===pk) return;
-  const rows=await leagueStandings(pk,true);
-  if(!_friendsCache.ok||_friendsCache.hadRestricted) return; // couldn't see every friend — try again later instead of losing the reward
-  P._leagueClaimed=pk;
-  const active=rows.filter(r=>r.xp>0);
-  const myRank=rows.findIndex(r=>r.me);
-  if(active.length>=2 && myRank>=0 && myRank<3 && rows[myRank].xp>0){
-    const n=LEAGUE_REWARD[myRank]; await awardCoins(n);
-    P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.leaguePodiums=(P.lifetimeStats.leaguePodiums||0)+1; if(myRank===0) P.lifetimeStats.leagueWins=(P.lifetimeStats.leagueWins||0)+1;
-    showToast(LANG==='ar'?`${['🥇','🥈','🥉'][myRank]} خلصت الأسبوع الماضي بالمركز ${myRank+1} — +${n} عملة`:`${['🥇','🥈','🥉'][myRank]} You finished last week #${myRank+1} — +${n} coins`); playSfx('fanfare');
-  }
-  await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks();
-}
-async function renderSocialLeagueTab(content){
-  const ar=LANG==='ar', k=weekKeySat(0);
-  content.innerHTML=`<div class="dash-empty">…</div>`;
-  PublicProfileService.syncStats();
-  const rows=await leagueStandings(k,true), today=dateKeyOf(new Date()), sent=P.cheersSent||{};
-  content.innerHTML=`<p class="lg-note">${ar?`🏆 دوري الأسبوع بين أصدقائك حسب الـXP — باقي ${daysLeftInWeek()} أيام. أول ٣ ياخذون ${LEAGUE_REWARD.join(' / ')} عملة.`:`🏆 This week’s friends league by XP — ${daysLeftInWeek()} days left. Top 3 win ${LEAGUE_REWARD.join(' / ')} coins.`}</p>`+
-    rows.map((r,i)=>`<div class="lg-row${r.me?' me':''}"><span class="lg-rank">${['🥇','🥈','🥉'][i]||i+1}</span><span class="lg-av">${safeAvatar(r.avatar)}</span><span class="lg-name">${escapeHtml(r.name)}${r.me?(ar?' (أنت)':' (you)'):''}</span><span class="lg-xp num">${r.xp} XP</span>${r.me?'':`<button type="button" class="cheer-btn${sent[r.uid]===today?' sent':''}" data-cheer="${r.uid}" aria-label="cheer">👏</button>`}</div>`).join('')+
-    (rows.length<2?`<div class="dash-empty">${ar?'ضيف أصدقاء عشان تتنافسون 👥':'Add friends to compete 👥'}</div>`:'');
-  content.querySelectorAll('[data-cheer]').forEach(b=>b.onclick=()=>sendCheer(b.dataset.cheer,b));
-}
-/* ---- cheers: stored on the sender's own doc, read by the friend ---- */
-async function sendCheer(toUid,btn){
-  const today=dateKeyOf(new Date()); P.cheersSent=P.cheersSent||{};
-  if(P.cheersSent[toUid]===today){ showToast(LANG==='ar'?'شجعته اليوم 👏':'Already cheered today 👏'); return; }
-  P.cheersSent[toUid]=today; if(btn) btn.classList.add('sent'); playSfx('success');
-  try{ await usersCol().doc(currentUser.uid).set({cheers:{[toUid]:{d:today,e:'👏'}}},{merge:true}); }catch(e){ delete P.cheersSent[toUid]; if(btn) btn.classList.remove('sent'); showToast(friendlyErr(e&&(e.code||e.message)),'error'); return; }
-  storageSet('profile',JSON.stringify(P));
-  showToast(LANG==='ar'?'👏 وصلته تشجيعتك':'👏 Cheer sent');
-}
-async function renderHomeCheers(){
-  const box=document.getElementById('homeCheers'); if(!box) return;
-  if(!PublicProfileService.hasProfile()){ box.innerHTML=''; return; }
-  const fr=await friendsWithProfiles(), today=dateKeyOf(new Date()), me=currentUser.uid;
-  const from=fr.filter(f=>f.cheers&&f.cheers[me]&&f.cheers[me].d===today);
-  if(!from.length){ box.innerHTML=''; return; }
-  const ar=LANG==='ar', names=from.map(f=>f.displayName||f.username).slice(0,2).map(escapeHtml).join(ar?' و':' & ');
-  const more=from.length>2?(ar?` و${from.length-2} غيرهم`:` +${from.length-2}`):'';
-  box.innerHTML=`<div class="dash-card cheers-strip"><span style="font-size:1.8rem;">👏</span><div style="flex:1;"><b>${names}${more}</b> ${ar?'شجعوك اليوم':'cheered you on today'}</div><button type="button" class="dash-link" id="cheerBackBtn">${ar?'رد التشجيع':'Cheer back'}</button></div>`;
-  document.getElementById('cheerBackBtn').onclick=()=>{ from.forEach(f=>sendCheer(f.uid)); };
-}
-/* ---- co-op weekly boss ---- */
-const COOP_BOSSES=[
-  {id:'kraken', icon:'🐙', ar:'الكراكن', en:'The Kraken'}, {id:'leviathan', icon:'🐉', ar:'اللوياثان', en:'The Leviathan'},
-  {id:'stormshark', icon:'🦈', ar:'قرش العاصفة', en:'The Storm Shark'}, {id:'sandtitan', icon:'🦂', ar:'عملاق الرمال', en:'The Sand Titan'},
-  {id:'icewyrm', icon:'🐲', ar:'تنين الجليد', en:'The Ice Wyrm'}, {id:'abyssray', icon:'🦑', ar:'حبّار الأعماق', en:'The Abyss Squid'}
-];
-const COOP_HP_PER_MEMBER=900, COOP_REWARD=200;
-function currentCoopBoss(){ const k=weekKeySat(0); return COOP_BOSSES[hashSeed(k)%COOP_BOSSES.length]; }
-async function coopState(){
-  const k=weekKeySat(0), fr=await friendsWithProfiles(true);
-  const mine=await myWeekDamage();
-  // friends who haven't done anything this week don't make the boss tougher — they sit out until they show up
-  const active=fr.filter(f=>friendWeekDmg(f,k)>0), idle=fr.filter(f=>!(friendWeekDmg(f,k)>0));
-  const pp=P.publicProfile||{};
-  const party=[{name:pp.displayName||(pp.username?'@'+pp.username:'You'), me:true, dmg:mine},...active.map(f=>({name:f.displayName||f.username||'—', dmg:friendWeekDmg(f,k)}))];
-  const hp=COOP_HP_PER_MEMBER*party.length, dealt=party.reduce((a,b)=>a+b.dmg,0);
-  return {k, boss:currentCoopBoss(), party:party.sort((a,b)=>b.dmg-a.dmg), idle:idle.map(f=>({uid:f.uid,name:f.displayName||f.username||'—'})), hp, dealt, left:Math.max(0,hp-dealt), dead:dealt>=hp};
-}
-let _coopCache={at:0,st:null}, _coopRenderId=0;
-async function renderCoopBossCard(force){
-  if(PUB) return;
-  const box=document.getElementById('coopBossCard'); if(!box) return;
-  const ar=LANG==='ar', myId=++_coopRenderId;
-  // keep what's on screen while the fresh numbers load (clearing it first made the page jump)
-  let st=_coopCache.st;
-  if(force || !st || Date.now()-_coopCache.at>45000){ st=await coopState(); _coopCache={at:Date.now(),st}; }
-  if(myId!==_coopRenderId) return; // a newer render already started
-  const pct=Math.max(0,Math.round(st.left/st.hp*100)), claimed=(P._coopClaimed===st.k);
-  box.innerHTML=`<div class="dash-card boss-coop${st.dead?' dead':''}"><div class="bc-top"><span class="bc-ic">${st.boss.icon}</span><div style="flex:1;">
-      <h3>${ar?'⚔️ زعيم الأسبوع':'⚔️ Boss of the week'}: ${ar?st.boss.ar:st.boss.en}</h3>
-      <div class="bc-sub">${st.party.length>1?(ar?`أنت و${st.party.length-1} من أصدقائك`:`You and ${st.party.length-1} friend${st.party.length>2?'s':''}`):(ar?'لحالك — ضيف أصدقاء يساعدونك':'Solo — add friends to help')} · ${ar?`باقي ${daysLeftInWeek()} أيام`:`${daysLeftInWeek()} days left`}</div></div></div>
-    <div class="bc-hp"><div style="width:${pct}%"></div></div>
-    <div class="bc-sub num">${st.dead?(ar?'💀 انهزم!':'💀 Defeated!'):`❤️ ${st.left} / ${st.hp}`}</div>
-    <div class="bc-party">${st.party.map(m=>`<div><span>${escapeHtml(m.name)}${m.me?(ar?' (أنت)':' (you)'):''}</span><b class="num">⚔️ ${m.dmg}</b></div>`).join('')}</div>
-    ${(st.idle||[]).length?`<div class="bc-idle"><span>😴 ${ar?`${st.idle.length} ما دخلوا هالأسبوع — ما ينحسبون على الزعيم`:`${st.idle.length} haven’t shown up this week — they don’t count against the boss`}<small>${st.idle.slice(0,4).map(m=>escapeHtml(m.name)).join(ar?'، ':', ')}${st.idle.length>4?' …':''}</small></span>${P._coopNudged===dateKeyOf(new Date())?`<em>👋 ${ar?'حرّكتهم اليوم':'Nudged today'}</em>`:`<button type="button" id="coopNudge">👋 ${ar?'حرّكهم':'Nudge them'}</button>`}</div>`:''}
-    ${st.dead&&!claimed?`<button type="button" class="bc-claim" id="coopClaim">🏆 ${ar?`خذ الجائزة (+${COOP_REWARD} عملة)`:`Claim reward (+${COOP_REWARD} coins)`}</button>`:''}
-    ${st.dead&&claimed?`<div class="bc-sub" style="margin-top:8px;">✅ ${ar?'أخذت جائزة هالأسبوع':'Reward claimed this week'}</div>`:''}
-    <div class="bc-how">${ar?`تضربه بيومك: تمرين +${BOSS_DMG.workout} · يوم كل الصلوات +${BOSS_DMG.prayerDay} · هدف الماء +${BOSS_DMG.water} · يوم أكل +${BOSS_DMG.nutrition} · كل عادة +${BOSS_DMG.habit} · وزن +${BOSS_DMG.weight}`:`You hit it by living your week: workout +${BOSS_DMG.workout} · all prayers +${BOSS_DMG.prayerDay} · water goal +${BOSS_DMG.water} · nutrition day +${BOSS_DMG.nutrition} · each habit +${BOSS_DMG.habit} · weigh-in +${BOSS_DMG.weight}`}</div></div>`;
-  const cb=document.getElementById('coopClaim');
-  if(cb) cb.onclick=async()=>{ if(P._coopClaimed===st.k) return; P._coopClaimed=st.k; P.lifetimeStats=P.lifetimeStats||{}; P.lifetimeStats.coopKills=(P.lifetimeStats.coopKills||0)+1;
-    await awardCoins(COOP_REWARD); playSfx('fanfare'); await storageSet('profile',JSON.stringify(P)); notifyNewUnlocks(); renderCoopBossCard(true); };
-  const nb=document.getElementById('coopNudge');
-  if(nb) nb.onclick=async()=>{ nb.disabled=true; for(const m of (st.idle||[])){ try{ await sendCheer(m.uid); }catch(e){} } P._coopNudged=dateKeyOf(new Date()); storageSet('profile',JSON.stringify(P)); showToast(LANG==='ar'?'👋 وصلهم تنبيه — يمكن يرجعون يساعدونك':'👋 Nudge sent — maybe they’ll jump in','success'); renderCoopBossCard(); };
-}
-
-
 /* ================= REMINDERS (free push) =================
    Firebase Cloud Messaging delivers them; a free scheduled GitHub Action in
    this repo is the sender (every ~10 min it works out whose reminder is due
@@ -6540,7 +6396,7 @@ function openAssistantGuide(){
 document.getElementById('assistantHubCard').addEventListener('click',openAssistantGuide);
 let _guideShownThisVisit=false;
 function maybeShowGuide(){
-  if(_guideShownThisVisit || usernameHardGateActive() || document.querySelector('.overlay.open')) return;
+  if(_guideShownThisVisit || document.querySelector('.overlay.open')) return;
   const ar=LANG==='ar', standalone=PushService.standalone(), mobile=isMobileDevice();
   // 1) phone browser, not installed yet → add to Home Screen
   if(mobile && !standalone && lsGet('mp_install_never')!=='1' && !snoozed('mp_install_snooze')){
@@ -7917,7 +7773,6 @@ function equipTip(typeKey){
 
 /* ================= SECTION ENTRY (setup vs content) ================= */
 function enterSection(name){
-  if(usernameHardGateActive()) name='social';
   if(name==='health'&&HEALTH_TABS.includes(currentPanelName)) name=currentPanelName; // Health opens a tab
   if(name==='today') renderTodoSection();
   if(name==='food') renderFoodSection();
@@ -7927,9 +7782,9 @@ function enterSection(name){
   if(name==='progress') renderProgressSection();
   if(name==='profile') renderProfileSection();
   if(name==='challenges') renderChallengesSection();
-  if(name==='social') renderSocialSection();
   if(name==='collections') enterCollections();
   if(name==='store') renderStoreSection();
+  if(name==='quests') renderQuests();
   if(name==='profile-hub') renderGuestNote();
 }
 document.querySelectorAll('#panel-home .home-card[data-goto], #panel-profile-hub .home-card[data-goto]').forEach(c=>c.addEventListener('click',()=>navTo(c.dataset.goto)));
@@ -8271,6 +8126,124 @@ function cmIsoOk(v){ if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)) ret
 function cmIsoWd(v){ const [y,m,d]=v.split('-').map(Number); return (new Date(y,m-1,d).getDay()+1)%7; }
 /* a chat assistant's reply: keep only the JSON (inside ``` fences or between
    the first [ / { and the last ] / }), fix curly quotes and trailing commas */
+/* ================= 🗺️ مهامي (agents' quests) =================
+   One list in the owner's own data (key 'quests' → users/{uid}/data/quests,
+   {value: JSON string} like every other key). Item: {id, agent, main, text,
+   done, doneAt?}. Mangsi updates it through #questJsonText → preview →
+   #questJsonApplyBtn: same id = that item is replaced (fields not sent are
+   kept — a re-sent quest keeps its tick unless "done" is sent),
+   {id, delete:true} removes it. Ticking happens here, on the board. */
+const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة']];
+const QUEST_FIELDS=['id','agent','main','text','done','delete'];
+let quests=[], _questsLoaded=false;
+async function loadQuests(){
+  try{ const v=await storageGet('quests'); const a=v?JSON.parse(v):[]; quests=Array.isArray(a)?a.filter(q=>q&&q.id):[]; }catch(e){ quests=[]; }
+  _questsLoaded=true; renderHomeQuests();
+}
+async function saveQuests(){ await storageSet('quests',JSON.stringify(quests)); renderHomeQuests(); }
+function questAgentKey(a){
+  const v=String(a==null?'':a).trim(); if(!v) return '';
+  const lo=v.toLowerCase(), bare=x=>x.replace(/^ال/,'');
+  const hit=QUEST_AGENTS.find(([k,ar])=>k===lo||ar===v||bare(ar)===bare(v));
+  return hit?hit[0]:v.slice(0,40);
+}
+function questAgentName(k){ const hit=QUEST_AGENTS.find(x=>x[0]===k); return hit?(LANG==='ar'?hit[1]:hit[0].charAt(0).toUpperCase()+hit[0].slice(1)):k; }
+function questNewId(){ return 'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+/* checks a pasted batch against the current list — nothing is saved here */
+function questPlan(text){
+  const ar=LANG==='ar', out={ok:false,fatal:'',rows:[]};
+  let data; try{ data=JSON.parse(cmCleanJson(text)); }catch(e){ out.fatal=ar?'⚠️ هذا مو JSON صحيح':'⚠️ Not valid JSON'; return out; }
+  if(!Array.isArray(data)) data=[data];
+  if(!data.length){ out.fatal=ar?'⚠️ القائمة فاضية':'⚠️ The list is empty'; return out; }
+  const seen=new Set();
+  data.forEach((r,i)=>{
+    const row={n:i+1,errs:[],warns:[],kind:'',item:null};
+    out.rows.push(row);
+    if(!r||typeof r!=='object'||Array.isArray(r)){ row.errs.push(ar?'لازم يكون {…}':'Must be an object {…}'); return; }
+    Object.keys(r).forEach(k=>{ if(!QUEST_FIELDS.includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    const id=r.id==null?'':String(r.id).trim().slice(0,64);
+    if(id){ if(seen.has(id)) row.errs.push((ar?'نفس الـ id مكرر: ':'Duplicate id: ')+id); seen.add(id); }
+    const old=id?quests.find(q=>q.id===id):null;
+    if(r.delete===true){
+      if(!id){ row.errs.push(ar?'الحذف يبي id':'delete needs an id'); return; }
+      row.kind='delete'; row.item=old||{id};
+      if(!old) row.warns.push(ar?'ما لقيت هالـ id — ما راح يتغير شي':'id not found — nothing to delete');
+      return;
+    }
+    if('main' in r&&typeof r.main!=='boolean') row.errs.push(ar?'main لازم true أو false':'main must be true or false');
+    if('done' in r&&typeof r.done!=='boolean') row.errs.push(ar?'done لازم true أو false':'done must be true or false');
+    const text=('text' in r)?String(r.text==null?'':r.text).trim():(old?old.text:'');
+    if(!text) row.errs.push(ar?'text (نص المهمة) ناقص':'text is missing');
+    else if(text.length>300) row.errs.push(ar?'النص أطول من ٣٠٠ حرف':'text is over 300 characters');
+    const agent=('agent' in r)?questAgentKey(r.agent):(old?old.agent:'');
+    if(!agent) row.errs.push(ar?'agent (الوكيل) ناقص':'agent is missing');
+    else if(!QUEST_AGENTS.some(x=>x[0]===agent)) row.warns.push((ar?'وكيل جديد: ':'New agent: ')+agent);
+    const item={id:id||questNewId(), agent, main:('main' in r)?r.main===true:!!(old&&old.main), text,
+      done:('done' in r)?r.done===true:!!(old&&old.done)};
+    if(item.done) item.doneAt=(old&&old.done&&old.doneAt)||new Date().toISOString();
+    row.kind=old?'update':'add'; row.item=item;
+  });
+  out.ok=out.rows.every(r=>!r.errs.length);
+  return out;
+}
+function renderQuestPreview(plan){
+  const box=document.getElementById('questJsonPreview'), ar=LANG==='ar'; if(!box) return;
+  if(plan.fatal){ box.innerHTML=`<div class="qp-row" data-testid="quest-json-summary"><span class="e">${escapeHtml(plan.fatal)}</span></div>`; return; }
+  const c=k=>plan.rows.filter(r=>r.kind===k&&!r.errs.length).length, bad=plan.rows.filter(r=>r.errs.length).length;
+  const sum=bad?(ar?`⚠️ ${bad} سطر فيه خطأ — ما راح ينحفظ شي لين تصلحها`:`⚠️ ${bad} row(s) with errors — nothing is saved until they’re fixed`)
+    :(ar?`➕ ${c('add')} جديدة · ✏️ ${c('update')} تتحدث · 🗑️ ${c('delete')} تنحذف`:`➕ ${c('add')} new · ✏️ ${c('update')} updated · 🗑️ ${c('delete')} deleted`);
+  const ic={add:'➕',update:'✏️',delete:'🗑️'};
+  box.innerHTML=`<div class="qp-row" data-testid="quest-json-summary"><b>${sum}</b></div>`+plan.rows.map(r=>`<div class="qp-row">${r.n}${r.errs.length?'⚠️':ic[r.kind]||''} ${r.item?`${r.item.main?'⭐ ':''}${escapeHtml(questAgentName(r.item.agent||''))}${r.item.text?' — '+escapeHtml(r.item.text):''}`:''}${r.errs.map(e=>`<span class="e">⚠️ ${escapeHtml(e)}</span>`).join('')}${r.warns.map(w=>`<span class="w">ℹ️ ${escapeHtml(w)}</span>`).join('')}</div>`).join('')+
+    (plan.ok?`<div class="qs-io-btns"><button type="button" class="setup-btn" id="questJsonApplyBtn" data-testid="quest-json-apply">✅ ${ar?'طبّق':'Apply'}</button></div>`:'');
+  const ap=document.getElementById('questJsonApplyBtn'); if(ap) ap.onclick=applyQuestJson;
+}
+async function applyQuestJson(){
+  const ta=document.getElementById('questJsonText'), ar=LANG==='ar';
+  if(!_questsLoaded) await loadQuests();
+  const plan=questPlan(ta.value); // re-checked against the list as it is now
+  if(!plan.ok){ renderQuestPreview(plan); return; }
+  for(const r of plan.rows){
+    const i=quests.findIndex(q=>q.id===r.item.id);
+    if(r.kind==='delete'){ if(i>=0) quests.splice(i,1); }
+    else if(i>=0) quests[i]=r.item; else quests.push(r.item);
+  }
+  await saveQuests();
+  ta.value=''; document.getElementById('questJsonPreview').innerHTML='';
+  playSfx('success'); showToast(ar?'تحدّثت المهام':'Quests updated','success');
+  renderQuests();
+}
+function renderHomeQuests(){
+  const sub=document.getElementById('homeQuestsSub'); if(!sub) return;
+  const ar=LANG==='ar', left=quests.filter(q=>!q.done), mains=left.filter(q=>q.main).length;
+  sub.textContent=!quests.length?'':(!left.length?(ar?'كلها خالصة ✓':'All done ✓'):(ar?`${mains} رئيسية · ${left.length-mains} سايد`:`${mains} main · ${left.length-mains} side`));
+}
+async function renderQuests(){
+  const board=document.getElementById('questBoard'); if(!board) return;
+  if(!_questsLoaded) await loadQuests();
+  const ar=LANG==='ar';
+  if(!quests.length){ board.innerHTML=`<div class="dash-card qs-empty">${ar?'ما فيه مهام ليلحين — منقسي يحطها لك هني.':'No quests yet — Mangsi puts them here.'}</div>`; return; }
+  const order=[...QUEST_AGENTS.map(x=>x[0]),...[...new Set(quests.map(q=>q.agent))].filter(a=>!QUEST_AGENTS.some(x=>x[0]===a)).sort()];
+  const row=q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-qid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}" data-testid="quest-item"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`;
+  board.innerHTML=order.map(a=>{
+    const list=quests.filter(q=>q.agent===a); if(!list.length) return '';
+    const mains=list.filter(q=>q.main), sides=list.filter(q=>!q.main), byDone=(x,y)=>(x.done?1:0)-(y.done?1:0);
+    return `<div class="dash-card qs-agent" data-agent="${escapeHtml(a)}" data-testid="quest-agent"><div class="qs-agent-h"><span>${escapeHtml(questAgentName(a))}</span><span class="num">${list.filter(q=>q.done).length}/${list.length}</span></div>
+      ${mains.length?`<div class="qs-lbl">${ar?'مهمة رئيسية':'Main quest'}</div>${mains.sort(byDone).map(row).join('')}`:''}
+      ${sides.length?`<div class="qs-lbl">${ar?'سايد كويست':'Side quests'}</div>${sides.sort(byDone).map(row).join('')}`:''}</div>`;
+  }).join('');
+  board.querySelectorAll('[data-qid]').forEach(b=>b.onclick=async()=>{
+    const q=quests.find(x=>x.id===b.dataset.qid); if(!q) return;
+    q.done=!q.done; if(q.done){ q.doneAt=new Date().toISOString(); playSfx('success'); } else delete q.doneAt;
+    renderQuests(); await saveQuests();
+  });
+}
+document.getElementById('questJsonPreviewBtn').addEventListener('click',async()=>{ if(!_questsLoaded) await loadQuests(); renderQuestPreview(questPlan(document.getElementById('questJsonText').value)); });
+document.getElementById('questJsonExportBtn').addEventListener('click',async()=>{
+  if(!_questsLoaded) await loadQuests();
+  const txt=JSON.stringify(quests.map(({id,agent,main,text,done})=>({agent,main:!!main,text,id,done:!!done})),null,1);
+  const ta=document.getElementById('questJsonText'); ta.value=txt;
+  try{ await navigator.clipboard.writeText(txt); showToast(LANG==='ar'?'📋 انتسخت المهام':'📋 Quests copied','success'); }catch(e){ ta.select(); }
+});
 function cmCleanJson(t){
   t=String(t||'').replace(/^\uFEFF/,'').replace(/[\u201C\u201D\u201E\u201F]/g,'"');
   const f=t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(f) t=f[1];
@@ -10107,7 +10080,6 @@ async function toggleWorkoutDone(typeKey){
       await awardXP(XP_CONFIG.workout_complete);
       await saveDailyTrack();
       await notifyNewUnlocks();
-      if(typeof ActivityService!=='undefined') await ActivityService.post('workout',{typeKey});
     }
   }
   return dailyTrack.workoutDone;
@@ -10134,11 +10106,6 @@ async function notifyNewUnlocks(){
   // every completion event, so it's the one place that refreshes the public
   // stats mirror and posts the resulting activity — never scattered into
   // the individual event handlers above.
-  if(typeof PublicProfileService!=='undefined' && PublicProfileService.hasProfile()){
-    await PublicProfileService.syncStats();
-    for(const a of newAch) await ActivityService.post('achievement',{name:LANG==='ar'?a.nameAr:a.nameEn});
-    for(const c of newlyCompleted) await ActivityService.post('challenge',{name:LANG==='ar'?c.nameAr:c.nameEn});
-  }
 }
 function showFeedbackPrompt(typeKey,host){
   const row=(host||document).querySelector('#feedbackRow'); if(!row) return;
@@ -10845,12 +10812,10 @@ function onRemoteProfile(){
    leaves is a store refund, which leaves a `refunded` record the merge
    respects — so the union still can't lose or wrongly add an item. */
 function persistInventoryItem(id){
-  setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
   if(!fbDb||!currentUser||!P.inventory||!P.inventory[id]) return;
   try{ fsDataRef('profile').set({inventory:{[id]:P.inventory[id]}},{merge:true}).catch(()=>{}); }catch(e){}
 }
 function persistEquippedSlot(slot){
-  setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
   if(!fbDb||!currentUser) return;
   const v=(P.equipped&&P.equipped[slot]!=null)?P.equipped[slot]:null;
   try{ fsDataRef('profile').set({equipped:{[slot]:v}},{merge:true}).catch(()=>{}); }catch(e){}
@@ -11292,16 +11257,8 @@ async function checkAndAwardLevelRewards(stats){
 /* ================= PROFILE PANEL (real) ================= */
 async function renderProfileSection(){
   const peb=document.getElementById('profileEditBtn'); if(peb) peb.textContent=LANG==='ar'?'✏️ عدّل الملف':'✏️ Edit profile';
-  const gateCard=document.getElementById('profileUsernameGateCard');
-  const statsContent=document.getElementById('profileStatsContent');
-  if(usernameSoftGateActive()){
-    gateCard.classList.remove('hidden');
-    statsContent.classList.add('hidden');
-    return; // real XP/stats/achievements never even get computed/rendered until a username exists
-  }
-  gateCard.classList.add('hidden');
-  statsContent.classList.remove('hidden');
-  document.getElementById('profileUsernameDisplay').textContent='@'+((P.publicProfile&&P.publicProfile.username)||'');
+  document.getElementById('profileStatsContent').classList.remove('hidden');
+  { const pp=P.publicProfile||{}; document.getElementById('profileUsernameDisplay').textContent=pp.username?'@'+pp.username:(pp.displayName||''); }
   renderNavXpChip();
   document.getElementById('profileStreaksTitle').textContent=t('profile_streaks_title');
   document.getElementById('profileStatsTitle').textContent=t('profile_stats_title');
@@ -11440,61 +11397,27 @@ document.getElementById('profileEditBtn').addEventListener('click',()=>{
   const ar=LANG==='ar';
   openGuideSheet(`<h3 style="margin:0 0 4px;">${ar?'✏️ عدّل ملفك':'✏️ Edit your profile'}</h3><div class="pe-opts">
     <button type="button" class="setup-btn" id="peAvatar" data-testid="profile-edit-photo">📷 ${ar?'غيّر الصورة':'Change photo'}</button>
-    <button type="button" class="setup-btn" id="peName" data-testid="profile-edit-name" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">@ ${ar?'غيّر اسم المستخدم':'Change username'}</button></div>`,
+    <button type="button" class="setup-btn" id="peName" data-testid="profile-edit-name" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);">✏️ ${ar?'غيّر اسمك':'Change your name'}</button></div>`,
     sh=>{ sh.querySelector('#peAvatar').onclick=()=>{ closeGuideSheet(); document.getElementById('profileAvatarEditBtn').click(); };
           sh.querySelector('#peName').onclick=()=>{ closeGuideSheet(); openUsernameEditModal(); }; });
 });
 function openUsernameEditModal(){
-  const current=(P.publicProfile&&P.publicProfile.username)||'';
-  document.getElementById('dayTitle').textContent=t('edit_username_title');
-  document.getElementById('daySubtitle').textContent='';
   const ar=LANG==='ar', curName=(P.publicProfile&&P.publicProfile.displayName)||'';
+  document.getElementById('dayTitle').textContent=ar?'✏️ اسمك':'✏️ Your name';
+  document.getElementById('daySubtitle').textContent='';
   document.getElementById('cardBody').innerHTML=`
-    <label class="edit-lbl">${PUB?(ar?'الاسم اللي يطلع بملفك':'The name on your profile'):(ar?'الاسم اللي يشوفه ربعك':'The name your friends see')}</label>
-    <div class="edit-row"><input type="text" class="setup-input" id="editDisplayNameInput" autocomplete="off" maxlength="30" value="${escapeHtml(curName)}"><button type="button" class="setup-btn" id="editDisplayNameSaveBtn" disabled>${ar?'حفظ':'Save'}</button></div>
-    <div class="username-check-msg" id="editDisplayNameMsg"></div>
-    <label class="edit-lbl">${ar?'اسم المستخدم (@)':'Username (@)'}</label>
-    <input type="text" class="setup-input" id="editUsernameInput" autocomplete="off" value="${escapeHtml(current)}">
-    <div class="username-check-msg" id="editUsernameMsg"></div>
-    <button type="button" class="setup-btn" id="editUsernameSaveBtn" disabled>${t('save_profile_btn')}</button>
-  `;
+    <label class="edit-lbl">${ar?'الاسم اللي يطلع بملفك':'The name on your profile'}</label>
+    <div class="edit-row"><input type="text" class="setup-input" id="editDisplayNameInput" autocomplete="off" maxlength="30" value="${escapeHtml(curName)}"><button type="button" class="setup-btn" id="editDisplayNameSaveBtn" disabled>${ar?'حفظ':'Save'}</button></div>`;
   overlay.classList.add('open');
-  const dn=document.getElementById('editDisplayNameInput'), dnBtn=document.getElementById('editDisplayNameSaveBtn'), dnMsg=document.getElementById('editDisplayNameMsg');
-  dn.addEventListener('input',()=>{ const v=dn.value.trim(); dnBtn.disabled=!v||v===curName; dnMsg.textContent=''; });
+  const dn=document.getElementById('editDisplayNameInput'), dnBtn=document.getElementById('editDisplayNameSaveBtn');
+  dn.addEventListener('input',()=>{ const v=dn.value.trim(); dnBtn.disabled=!v||v===curName; });
   dnBtn.addEventListener('click',async()=>{
     dnBtn.disabled=true;
-    try{ await PublicProfileService.changeDisplayName(dn.value); showToast(ar?'تم تغيير اسمك ✅':'Name updated ✅','success'); overlay.classList.remove('open'); renderProfileSection(); try{ _coopCache={at:0,st:null}; renderCoopBossCard(true); }catch(e){} }
-    catch(e){ dnMsg.textContent=e.message; dnMsg.className='username-check-msg bad'; dnBtn.disabled=false; }
+    P.publicProfile={...(P.publicProfile||{}),displayName:dn.value.trim().slice(0,30)};
+    await storageSet('profile',JSON.stringify(P));
+    showToast(ar?'تم تغيير اسمك ✅':'Name updated ✅','success'); overlay.classList.remove('open'); renderProfileSection();
   });
-  const inp=document.getElementById('editUsernameInput');
-  const msgEl=document.getElementById('editUsernameMsg');
-  const saveBtn=document.getElementById('editUsernameSaveBtn');
-  let checkToken=0, debounceT=null;
-  const runCheck=async()=>{
-    const val=inp.value.trim().toLowerCase();
-    if(!val){ msgEl.textContent=''; msgEl.className='username-check-msg'; saveBtn.disabled=true; return; }
-    if(val===current){ msgEl.textContent=''; msgEl.className='username-check-msg'; saveBtn.disabled=true; return; } // unchanged — nothing to save
-    if(!PublicProfileService.usernameRegex.test(val)){ msgEl.textContent=t('username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; return; }
-    msgEl.textContent=t('username_checking'); msgEl.className='username-check-msg'; saveBtn.disabled=true;
-    const myToken=++checkToken;
-    const res=await PublicProfileService.checkUsernameAvailable(val);
-    if(myToken!==checkToken) return; // a newer keystroke already superseded this check
-    if(res.ok){ msgEl.textContent=t('username_available'); msgEl.className='username-check-msg ok'; saveBtn.disabled=false; }
-    else{ msgEl.textContent=t(res.reason==='taken'?'username_taken':'username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; }
-  };
-  inp.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(runCheck,400); });
-  saveBtn.addEventListener('click',async()=>{
-    saveBtn.disabled=true;
-    try{
-      await PublicProfileService.changeUsername(inp.value);
-      showToast(LANG==='ar'?'تم تغيير اسم المستخدم ✅':'Username updated ✅','success');
-      overlay.classList.remove('open');
-      renderProfileSection();
-    }catch(e){
-      msgEl.textContent=e.message; msgEl.className='username-check-msg bad'; saveBtn.disabled=false;
-    }
-  });
-  inp.focus();
+  dn.focus();
 }
 
 /* ================= COSMETICS / STORE (approved batch 1) =================
@@ -12252,6 +12175,13 @@ if(PUB){
   Object.assign(I18N.ar,{profile_setup_title:'👤 سوّي ملفك',hub_sub:'ملفك وتقدمك والمتجر والإعدادات.',profile_setup_body:'اختار اسم مستخدم فريد لملفك. بياناتك خاصة فيك.'});
   Object.assign(I18N.en,{profile_setup_title:'👤 Set up your profile',hub_sub:'Your profile, progress, store and settings.',profile_setup_body:'Pick a unique username for your profile. Your data stays private.'});
 }
+/* friends are gone: league/boss achievements and boss rewards stay only if already earned/owned */
+function dropSocialLeftovers(){
+  const SOC=['coop_first','coop_5','league_podium','league_win'], got=P.achievements||{}, inv=P.inventory||{};
+  const drop=(arr,f)=>{ for(let i=arr.length-1;i>=0;i--) if(f(arr[i])) arr.splice(i,1); };
+  drop(ACHIEVEMENTS_CONFIG,a=>SOC.includes(a.id)&&!got[a.id]);
+  drop(COSMETICS_CATALOG,c=>{ const n=c.exclusiveNote||''; return !inv[c.id]&&(/^boss:/.test(n)||SOC.some(id=>n==='achievement:'+id&&!got[id])); });
+}
 /* first catch of a legendary fish → its set. `already` guards a second device
    that doesn't know yet: if every piece is already owned, nothing pays twice. */
 async function grantLegendSet(sid){
@@ -12285,7 +12215,7 @@ async function revokeUnearnedSailSet(){
     });
     if(any){ if(!Object.keys(upd.equipped).length) delete upd.equipped;
       if(fbDb&&currentUser){ try{ fsDataRef('profile').set(upd,{merge:true}).catch(()=>{}); }catch(e){} }
-      setTimeout(()=>{ try{ PublicProfileService.syncShowcase(); }catch(e){} },0); renderAppBackground(); }
+      renderAppBackground(); }
   }
   P._sailFixV1=true; await storageSet('profile',JSON.stringify(P));
 }
@@ -12386,7 +12316,6 @@ async function refundCosmetic(id){
     await storageSet('profile',JSON.stringify(P));
     await incrementXpCoins(0,info.amount);
     playSfx('coin');
-    setTimeout(()=>{ if(typeof PublicProfileService!=='undefined') PublicProfileService.syncShowcase(); },0);
     renderAppBackground(); renderNavXpChip(); if(it.type==='tank'||it.type==='aqdeco') renderHomeAquarium();
     if(document.getElementById('panel-profile').classList.contains('active')) renderProfileCosmeticHero();
     return info;
@@ -12761,7 +12690,6 @@ async function renderChallengesSection(tabOnly){
     if(!list.children.length) list.innerHTML=`<div class="dash-empty">…</div>`; // only on the very first load
     ({progress}=await checkAndAwardChallenges()); // also awards+persists any just-completed challenge
     _chProgress=progress;
-    renderCoopBossCard();
   }
   const ar=LANG==='ar';
   const inTab=CHALLENGES_CONFIG.filter(c=>c.period===challengesTab);
@@ -12795,888 +12723,7 @@ async function renderChallengesSection(tabOnly){
   list.querySelectorAll('[data-cht]').forEach(b=>b.addEventListener('click',()=>{ challengesTab=b.dataset.cht; renderChallengesSection(true); }));
 }
 
-/* ================= FRIENDS ARCHITECTURE (real Firebase Auth + Firestore) =================
-   Layering:  Firebase Auth  →  P.publicProfile (local source of truth for
-   YOUR OWN settings, mirrored out)  →  PublicProfileService (read/write the
-   public profile doc)  →  FriendService / ActivityService / LeaderboardService
-   (friend graph, feed, rankings)  →  the render/open functions at the
-   bottom. No Firestore call for any of this happens outside this section —
-   nothing scattered into random UI handlers.
-
-   Design note on privacy: a friendship grants read access to the other
-   person's whole public profile DOCUMENT (Firestore security rules are
-   document-level, not field-level) — the privacy.* toggles are enforced by
-   the render functions below, which simply omit a category its owner has
-   switched off. This is the same model Strava/Instagram-style "hide my
-   activity" toggles use: the number exists on the server, the toggle
-   controls what's displayed. True per-field access control would need a
-   separate document per privacy category, which is a much bigger change
-   than this feature calls for — noted here rather than hidden. */
-function usersCol(){ return fbDb.collection('users'); }
-function usernamesCol(){ return fbDb.collection('usernames'); }
-function friendRequestsCol(){ return fbDb.collection('friendRequests'); }
-function friendshipsCol(){ return fbDb.collection('friendships'); }
-function activityCol(){ return fbDb.collection('activity'); }
-function leaderboardEntriesCol(){ return fbDb.collection('leaderboardEntries'); }
-function friendChallengesCol(){ return fbDb.collection('friendChallenges'); }
-function pairId(a,b){ return a<b ? a+'_'+b : b+'_'+a; }
-function defaultPrivacy(){ return {profileVisibility:'friends', training:true, nutrition:true, achievements:true, collection:true, activity:true, leaderboardGlobal:false}; }
 function serverNow(){ return firebase.firestore.FieldValue.serverTimestamp(); }
-
-const PublicProfileService={
-  usernameRegex:/^[a-z0-9_]{3,20}$/,
-  hasProfile(){ return !!(P.publicProfile && P.publicProfile.username); },
-  async checkUsernameAvailable(rawUsername){
-    const uname=String(rawUsername||'').trim().toLowerCase();
-    if(!this.usernameRegex.test(uname)) return {ok:false, reason:'invalid'};
-    try{ const doc=await usernamesCol().doc(uname).get(); return {ok:!doc.exists, reason:doc.exists?'taken':null}; }
-    catch(e){ return {ok:false, reason:'error'}; }
-  },
-  /* two writes: claim the username doc (fails server-side if it exists —
-     see the rules' create-only match), then create the public profile doc
-     itself. If the username doc write is rejected, nothing else runs. */
-  async claimUsername(rawUsername, displayName, avatar){
-    if(!fbDb||!currentUser) throw new Error('offline');
-    const uname=String(rawUsername||'').trim().toLowerCase();
-    if(!this.usernameRegex.test(uname)) throw new Error(t('username_invalid'));
-    try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
-    catch(e){
-      const mine=await usernamesCol().doc(uname).get().then(d=>d.exists&&d.data().uid===currentUser.uid).catch(()=>false);
-      if(!mine){ if(e&&/unavailable|network|offline/i.test(e.code||e.message||'')) throw new Error(friendlyErr(e.code)); throw new Error(t('username_taken')); }
-    }
-    const privacy=defaultPrivacy();
-    const stats=await computeUserStats();
-    const titles=unlockedTitles(stats).map(x=>x.id);
-    await usersCol().doc(currentUser.uid).set({
-      uid:currentUser.uid, username:uname, displayName:displayName||uname, avatar:avatar||'🙂',
-      privacy, stats, titles, createdAt:serverNow(), updatedAt:serverNow()
-    });
-    P.publicProfile={username:uname, displayName:displayName||uname, avatar:avatar||'🙂', privacy};
-    await storageSet('profile',JSON.stringify(P));
-    migratePublicCollectionMirrors(); // so a collection built before claiming a username is visible right away
-    return uname;
-  },
-  /* changes an ALREADY-claimed username. Claims the new handle first
-     (create-fails-if-taken, same race protection as claimUsername), only
-     repoints users/{uid}.username at it once that succeeds, and only
-     THEN releases the old handle — so a failed or interrupted change
-     never leaves the account's old username floating deleted while the
-     new one didn't actually go through. Freeing the old handle (instead
-     of leaving it reserved forever) needs the rules to allow deleting
-     your OWN usernames/{name} doc — see the rules file's `friendRequests`-
-     adjacent `usernames` match, updated alongside this. */
-  async changeDisplayName(raw){
-    if(!fbDb||!currentUser) throw new Error('offline');
-    if(!this.hasProfile()) throw new Error('no profile yet');
-    const name=String(raw||'').replace(/\s+/g,' ').trim().slice(0,30);
-    if(!name) throw new Error(LANG==='ar'?'اكتب اسم':'Type a name');
-    await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, displayName:name, updatedAt:serverNow()},{merge:true});
-    P.publicProfile.displayName=name;
-    await storageSet('profile',JSON.stringify(P));
-    try{ this.syncStats(); }catch(e){}
-    return name;
-  },
-  async changeUsername(rawUsername){
-    if(!fbDb||!currentUser) throw new Error('offline');
-    if(!this.hasProfile()) throw new Error('no profile yet');
-    const uname=String(rawUsername||'').trim().toLowerCase();
-    if(!this.usernameRegex.test(uname)) throw new Error(t('username_invalid'));
-    const oldUname=P.publicProfile.username;
-    if(uname===oldUname) return uname; // unchanged — nothing to do
-    try{ await usernamesCol().doc(uname).set({uid:currentUser.uid, createdAt:serverNow()}); }
-    catch(e){
-      const mine=await usernamesCol().doc(uname).get().then(d=>d.exists&&d.data().uid===currentUser.uid).catch(()=>false);
-      if(!mine){ if(e&&/unavailable|network|offline/i.test(e.code||e.message||'')) throw new Error(friendlyErr(e.code)); throw new Error(t('username_taken')); }
-    }
-    // `uid` is included even though it never actually changes — a merge
-    // write against a doc that doesn't exist (e.g. local state says a
-    // profile exists but the Firestore doc was never actually created)
-    // is evaluated by the rules as a CREATE, which requires uid to be
-    // present and match; omitting it here caused exactly that write to
-    // be denied with a raw "Missing or insufficient permissions" error.
-    await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, username:uname, updatedAt:serverNow()},{merge:true});
-    P.publicProfile.username=uname;
-    await storageSet('profile',JSON.stringify(P));
-    // best-effort: the new username is already claimed and saved above,
-    // so even if this fails (offline, rules not yet updated on an older
-    // deploy, etc.) the account is still left in a fully consistent state
-    // — the old handle just stays reserved instead of freeing up.
-    await usernamesCol().doc(oldUname).delete().catch(()=>{});
-    return uname;
-  },
-  async updatePrivacy(partial){
-    if(!this.hasProfile()) return;
-    P.publicProfile.privacy={...P.publicProfile.privacy, ...partial};
-    await storageSet('profile',JSON.stringify(P));
-    await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, privacy:P.publicProfile.privacy, updatedAt:serverNow()},{merge:true});
-    if('collection' in partial){ await this.syncWholeCollection(); await this.syncAllPhotoThumbs(); } // hides (deletes) or re-publishes it
-    if(partial.leaderboardGlobal===false) await leaderboardEntriesCol().doc(currentUser.uid).delete().catch(()=>{});
-    else if(partial.leaderboardGlobal===true) await this.syncStats();
-  },
-  /* the ONLY place your public mirror's stats/titles are pushed out — called
-     from notifyNewUnlocks() (the app's existing single convergence point
-     after every real completion event), never from random UI handlers. */
-  async syncStats(){
-    if(!this.hasProfile()||!fbDb||!currentUser) return;
-    try{
-      const stats=await computeUserStats();
-      const titles=unlockedTitles(stats).map(x=>x.id);
-      Object.assign(stats, await socialWeekStats());
-      const pp=P.publicProfile||{};
-      await usersCol().doc(currentUser.uid).set({uid:currentUser.uid, stats,titles,updatedAt:serverNow(), ...(pp.username?{username:pp.username}:{}), ...(pp.displayName?{displayName:pp.displayName}:{}), ...(pp.avatar?{avatar:pp.avatar}:{}), ...(pp.privacy?{privacy:pp.privacy}:{})},{merge:true});
-      // one-time: publish the look + collection for people who had them before this existed
-      if(!P._showcaseV1Done){ await this.syncShowcase(); if(await this.syncWholeCollection()){ P._showcaseV1Done=true; storageSet('profile',JSON.stringify(P)); } }
-      if(!P._photoThumbsV1){ if(await this.syncAllPhotoThumbs()){ P._photoThumbsV1=true; storageSet('profile',JSON.stringify(P)); } }
-      if(P.publicProfile.privacy.leaderboardGlobal){
-        await leaderboardEntriesCol().doc(currentUser.uid).set({
-          uid:currentUser.uid, displayName:P.publicProfile.displayName, avatar:P.publicProfile.avatar,
-          xp:stats.xp, level:stats.level, totalWorkouts:stats.totalWorkouts, achievementsUnlocked:stats.achievementsUnlocked,
-          bestStreak:stats.bestStreak, totalCollected:stats.totalCollected, nutritionDaysHit:stats.nutritionDaysHit, waterDaysHit:stats.waterDaysHit,
-          updatedAt:serverNow()
-        });
-      }
-    }catch(e){ /* offline/transient — the next real completion event retries via this same hook */ }
-  },
-  /* what friends see of you beyond stats: your equipped look + what you own,
-     and (unless collection privacy is off) your collection as
-     {catId:{speciesId:count}} — kept on this same public doc friends can
-     already read, instead of a separate subcollection that needs extra rules */
-  async syncShowcase(){
-    if(!this.hasProfile()||!fbDb||!currentUser) return;
-    try{
-      const eq=P.equipped||{};
-      await usersCol().doc(currentUser.uid).set({uid:currentUser.uid,
-        cosmetics:{equipped:{background:eq.background||null,frame:eq.frame||null,effect:eq.effect||null,title:eq.title||null}, owned:Object.keys(P.inventory||{})},
-        updatedAt:serverNow()},{merge:true});
-    }catch(e){}
-  },
-  async syncCollectionCategory(catId,data){
-    if(!this.hasProfile()||!fbDb||!currentUser) return;
-    if((P.publicProfile.privacy||{}).collection===false) return;
-    const map={}; Object.entries(data||{}).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) map[sid]=n; });
-    try{ await usersCol().doc(currentUser.uid).update({['collection.'+catId]:map, updatedAt:serverNow()}); }catch(e){}
-  },
-  /* catch photos stay private at full size; friends get a small thumbnail
-     (~4 KB) on this same public doc, only while collection privacy is on.
-     A budget keeps the doc far below Firestore's 1 MiB limit. */
-  async syncPhotoThumb(catId,sid,dataUrl){
-    if(!this.hasProfile()||!fbDb||!currentUser) return;
-    const key=catId+'__'+sid; P._thumbIndex=P._thumbIndex||{};
-    try{
-      if(!dataUrl || (P.publicProfile.privacy||{}).collection===false){ delete P._thumbIndex[key]; await usersCol().doc(currentUser.uid).update({['photos.'+key]:firebase.firestore.FieldValue.delete()}); return; }
-      const thumb=await makeThumb(dataUrl,112);
-      const used=Object.entries(P._thumbIndex).filter(([k])=>k!==key).reduce((a,[,v])=>a+v,0);
-      if(used+thumb.length>420000) return; // over budget: keep the rest, skip this one
-      P._thumbIndex[key]=thumb.length;
-      await usersCol().doc(currentUser.uid).update({['photos.'+key]:thumb});
-    }catch(e){}
-  },
-  async syncAllPhotoThumbs(){
-    if(!this.hasProfile()||!fbDb||!currentUser) return false;
-    const map={}; let used=0; P._thumbIndex={};
-    if((P.publicProfile.privacy||{}).collection!==false){
-      for(const cat of ANIMAL_CATEGORIES){
-        let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
-        for(const [sid,rec] of Object.entries(data)){
-          if(!rec||!rec.hasPhoto) continue;
-          let ph=null; try{ const raw=await storageGet('collection-photo:'+cat.id+':'+sid); ph=raw?JSON.parse(raw):null; }catch(e){}
-          if(!ph||!ph.dataUrl) continue;
-          const th=await makeThumb(ph.dataUrl,112); if(used+th.length>420000) break;
-          map[cat.id+'__'+sid]=th; used+=th.length; P._thumbIndex[cat.id+'__'+sid]=th.length;
-        }
-      }
-    }
-    try{ await usersCol().doc(currentUser.uid).update({photos:map}); return true; }catch(e){ return false; }
-  },
-  async syncWholeCollection(){
-    if(!this.hasProfile()||!fbDb||!currentUser) return false;
-    if((P.publicProfile.privacy||{}).collection===false){ try{ await usersCol().doc(currentUser.uid).update({collection:firebase.firestore.FieldValue.delete()}); }catch(e){} return true; }
-    const all={};
-    for(const cat of ANIMAL_CATEGORIES){
-      let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
-      const map={}; Object.entries(data).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) map[sid]=n; });
-      all[cat.id]=map;
-    }
-    try{ await usersCol().doc(currentUser.uid).update({collection:all, updatedAt:serverNow()}); return true; }catch(e){ return false; }
-  },
-  async getProfile(uid){
-    try{ const doc=await usersCol().doc(uid).get(); return doc.exists?{...doc.data(),uid}:null; }
-    catch(e){ return {uid, restricted:true}; } // exists but rules denied us (not friends, not public) — treated as "can't view", not "doesn't exist"
-  },
-  async searchByUsername(rawUsername){
-    const uname=String(rawUsername||'').trim().toLowerCase();
-    if(!uname) return null;
-    const unameDoc=await usernamesCol().doc(uname).get();
-    if(!unameDoc.exists) return null;
-    const uid=unameDoc.data().uid;
-    if(uid===currentUser.uid) return {uid, self:true};
-    const profile=await this.getProfile(uid);
-    // profile exists but the read was denied (their visibility isn't public
-    // and we're not friends yet) — keep the username we already have from
-    // the public usernames lookup so the UI can still show *something* real
-    // and still let the user send a request, instead of literal "undefined".
-    if(profile&&profile.restricted) return {uid, username:uname, restricted:true};
-    return profile;
-  }
-};
-
-const FriendService={
-  async requestStatusWith(uid){
-    const me=currentUser.uid;
-    const fr=await friendshipsCol().doc(pairId(me,uid)).get().catch(()=>null);
-    if(fr&&fr.exists) return 'friends';
-    const out=await friendRequestsCol().doc(me+'_'+uid).get().catch(()=>null);
-    if(out&&out.exists&&out.data().status==='pending') return 'outgoing';
-    const inc=await friendRequestsCol().doc(uid+'_'+me).get().catch(()=>null);
-    if(inc&&inc.exists&&inc.data().status==='pending') return 'incoming';
-    return 'none';
-  },
-  /* A pending request no longer grants either side read access to the
-     other's profile (that exception let a stranger — or a friend you'd
-     removed — read a private profile). So the request carries the
-     sender's OWN public identity for the recipient's request list; the
-     rules verify fromUsername really is the sender's claimed handle, so
-     it can't be spoofed. toLabel is only ever shown back to the sender. */
-  async sendRequest(targetUid, targetLabel){
-    const me=currentUser.uid;
-    if(targetUid===me) throw new Error('self');
-    // if they already sent YOU one, accept theirs instead of creating a
-    // second, opposite-direction pending request for the same pair
-    const incoming=await friendRequestsCol().doc(targetUid+'_'+me).get().catch(()=>null);
-    if(incoming && incoming.exists && incoming.data().status==='pending') return this.respondToRequest(targetUid+'_'+me,'accepted');
-    const pp=P.publicProfile||{};
-    await friendRequestsCol().doc(me+'_'+targetUid).set({
-      fromUid:me, toUid:targetUid, status:'pending', createdAt:serverNow(),
-      fromUsername:pp.username||'', fromName:String(pp.displayName||pp.username||'').slice(0,40),
-      fromAvatar:String(pp.avatar||'🙂').slice(0,16), toLabel:String(targetLabel||'').slice(0,40)
-    });
-  },
-  async cancelRequest(targetUid){
-    await friendRequestsCol().doc(currentUser.uid+'_'+targetUid).update({status:'cancelled'});
-  },
-  /* Accepting is ONE atomic batch: request pending→accepted + friendship
-     created together. The rules now only allow a friendship to be created
-     in the same write that turns a pending request into accepted — a
-     leftover 'accepted' request from before an unfriend can no longer be
-     reused to silently recreate the friendship.
-     Fallback: until the new rules are published, the old rules check the
-     request's PRE-write status and reject the batch — so on
-     permission-denied we fall back to the old two-step flow. */
-  async respondToRequest(reqId,status){
-    if(typeof _friendsCache!=="undefined") _friendsCache={at:0,list:null};
-    const reqRef=friendRequestsCol().doc(reqId);
-    if(status!=='accepted'){ await reqRef.update({status, respondedAt:serverNow()}); return; }
-    const [fromUid,toUid]=reqId.split('_');
-    const uidA=fromUid<toUid?fromUid:toUid, uidB=fromUid<toUid?toUid:fromUid;
-    const frRef=friendshipsCol().doc(uidA+'_'+uidB);
-    const frData={uidA,uidB,members:[uidA,uidB],createdAt:serverNow()};
-    try{
-      const batch=fbDb.batch();
-      batch.update(reqRef,{status:'accepted', respondedAt:serverNow()});
-      batch.set(frRef,frData);
-      await batch.commit();
-    }catch(e){
-      if(e&&e.code!=='permission-denied') throw e;
-      await reqRef.update({status:'accepted', respondedAt:serverNow()});
-      await frRef.set(frData);
-    }
-    const otherUid=fromUid===currentUser.uid?toUid:fromUid;
-    const otherProfile=await PublicProfileService.getProfile(otherUid).catch(()=>null);
-    await ActivityService.post('friend_added',{withName:(otherProfile&&otherProfile.displayName)||'?'});
-  },
-  async listIncomingRequests(){
-    const snap=await friendRequestsCol().where('toUid','==',currentUser.uid).where('status','==','pending').get();
-    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    // identity comes from the request itself (sender-provided, username
-    // verified by the rules) — a pending request no longer lets you read
-    // the sender's profile. Only requests sent before this change, which
-    // carry no identity, try the profile (works only if it's public).
-    return Promise.all(reqs.map(async r=>{
-      if(r.fromUsername) return {...r, profile:{displayName:r.fromName||r.fromUsername, avatar:r.fromAvatar, username:r.fromUsername}};
-      const p=await PublicProfileService.getProfile(r.fromUid);
-      return {...r, profile:(p&&!p.restricted)?p:null};
-    }));
-  },
-  async listOutgoingRequests(){
-    const snap=await friendRequestsCol().where('fromUid','==',currentUser.uid).where('status','==','pending').get();
-    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    return Promise.all(reqs.map(async r=>{
-      const p=await PublicProfileService.getProfile(r.toUid);
-      if(p&&!p.restricted) return {...r, profile:p};
-      // their profile isn't readable until they accept — show the handle you searched for
-      return {...r, profile:r.toLabel?{displayName:'@'+r.toLabel}:null};
-    }));
-  },
-  async listFriends(){
-    const me=currentUser.uid;
-    const snap=await friendshipsCol().where('members','array-contains',me).get();
-    const uids=snap.docs.map(d=>{ const dt=d.data(); return dt.uidA===me?dt.uidB:dt.uidA; });
-    const profiles=await Promise.all(uids.map(uid=>PublicProfileService.getProfile(uid)));
-    return profiles.filter(Boolean);
-  },
-  async removeFriend(otherUid){
-    _friendsCache={at:0,list:null};
-    await friendshipsCol().doc(pairId(currentUser.uid,otherUid)).delete();
-  }
-};
-
-const ActivityService={
-  async post(type,data){
-    if(!PublicProfileService.hasProfile()) return; // no public profile yet — nothing for a friend to read anyway
-    if(((P.publicProfile||{}).privacy||{}).activity===false) return; // the user turned activity sharing off
-    try{ await activityCol().add({uid:currentUser.uid, type, data:data||{}, createdAt:serverNow()}); }
-    catch(e){ /* best-effort — never block the real action (workout/achievement/etc.) that triggered this */ }
-  },
-  /* deliberately NOT using orderBy alongside the "in" filter here — that
-     combination needs a composite index Firestore would have to be asked
-     to build. Sorting the (capped, ≤100) result client-side avoids that
-     dependency entirely for this size of friend list. */
-  async listFeed(){
-    const friends=await FriendService.listFriends();
-    const uids=[currentUser.uid, ...friends.map(f=>f.uid)].slice(0,30);
-    if(!uids.length) return [];
-    try{
-      const snap=await activityCol().where('uid','in',uids).limit(100).get();
-      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-      docs.sort((a,b)=>(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0)-(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0));
-      return docs.slice(0,30);
-    }catch(e){ return []; }
-  }
-};
-
-const LEADERBOARD_CATEGORIES=[
-  {id:'training', icon:'🏋️', metric:'totalWorkouts', privacyKey:'training', labelEn:'Training', labelAr:'التمارين', unitEn:'workouts', unitAr:'تمرين'},
-  {id:'nutrition', icon:'🍽️', metric:'nutritionDaysHit', privacyKey:'nutrition', labelEn:'Nutrition', labelAr:'التغذية', unitEn:'days', unitAr:'يوم'},
-  {id:'water', icon:'💧', metric:'waterDaysHit', privacyKey:'nutrition', labelEn:'Water', labelAr:'الماء', unitEn:'days', unitAr:'يوم'},
-  {id:'collection', icon:'📦', metric:'totalCollected', privacyKey:'collection', labelEn:'Collection', labelAr:'المقتنيات', unitEn:'collected', unitAr:'مجموع'},
-  {id:'streak', icon:'🔥', metric:'bestStreak', privacyKey:'training', labelEn:'Streak', labelAr:'السلاسل', unitEn:'days', unitAr:'يوم'},
-  {id:'achievements', icon:'🏅', metric:'achievementsUnlocked', privacyKey:'achievements', labelEn:'Achievements', labelAr:'الإنجازات', unitEn:'unlocked', unitAr:'إنجاز'},
-  {id:'xp', icon:'⚡', metric:'xp', privacyKey:null, labelEn:'XP', labelAr:'الخبرة', unitEn:'XP', unitAr:'نقطة'},
-];
-const LeaderboardService={
-  /* 'global' reads the slim opt-in leaderboardEntries mirror (public to any
-     signed-in user, by design — that's what opting in means); 'friends'
-     reads each friend's real profile doc directly, honoring whichever
-     per-category privacy flag that category maps to. Both are 100% real
-     Firestore reads — there is no local/demo fallback in either branch. */
-  async getLeaderboard(categoryId, scope){
-    const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===categoryId)||LEADERBOARD_CATEGORIES[0];
-    const you=await computeUserStats();
-    let others=[];
-    if(scope==='global'){
-      try{
-        const snap=await leaderboardEntriesCol().orderBy(cat.metric,'desc').limit(50).get();
-        others=snap.docs.map(d=>d.data()).filter(r=>r.uid!==currentUser.uid);
-      }catch(e){ others=[]; }
-    } else {
-      const friends=await FriendService.listFriends();
-      others=friends
-        .filter(f=>!cat.privacyKey || (f.privacy&&f.privacy[cat.privacyKey]!==false))
-        .map(f=>({uid:f.uid, displayName:f.displayName, avatar:f.avatar, ...(f.stats||{})}));
-    }
-    const rows=[{name:t('lb_you'), isMe:true, avatar:'⭐', ...you}, ...others.map(o=>({name:o.displayName, avatar:o.avatar, ...o}))];
-    rows.sort((a,b)=>(b[cat.metric]||0)-(a[cat.metric]||0));
-    return {category:cat, rows};
-  }
-};
-
-/* ---- Friend-vs-friend challenges ----
-   A challenge doc is created ONCE with both participants' starting stat
-   value baked in (startValues), so "progress" is always "how much have you
-   moved the metric SINCE the challenge began", never the lifetime total —
-   two people starting a "most workouts" challenge mid-way through their
-   own histories still compete on a level footing. Per the security rules,
-   after creation only `progress.<your own uid>` and `updatedAt` may ever
-   change, and only by you — nobody can edit the target, the metric, or the
-   other participant's number. There is no separate "winner" field; a
-   challenge's status (still open / someone hit target) is always derived
-   live from the two real progress numbers, never stored, so it can never
-   drift out of sync with what actually happened. */
-const ChallengeService={
-  async create(friendUid, metric, target){
-    const me=currentUser.uid;
-    const myStats=await computeUserStats();
-    const friendProfile=await PublicProfileService.getProfile(friendUid);
-    const friendStats=(friendProfile&&friendProfile.stats)||{};
-    // `metric` arrives as a LEADERBOARD_CATEGORIES id ('training'), which is
-    // also what the list view uses for its label — but the actual stats
-    // field is that category's .metric ('totalWorkouts'). Reading stats by
-    // the category id always gave 0, so every non-XP challenge was stuck.
-    // statKey is stored on new docs; legacy docs without it keep their old
-    // (0-based) behaviour rather than suddenly jumping to a lifetime total.
-    const statKey=(LEADERBOARD_CATEGORIES.find(c=>c.id===metric)||{}).metric||metric;
-    const doc={
-      createdBy:me,
-      participantUids:[me,friendUid],
-      metric, statKey, target,
-      startValues:{[me]:myStats[statKey]||0, [friendUid]:friendStats[statKey]||0},
-      progress:{[me]:0, [friendUid]:0},
-      createdAt:serverNow(), updatedAt:serverNow()
-    };
-    const ref=await friendChallengesCol().add(doc);
-    await ActivityService.post('friend_challenge_started',{withName:(friendProfile&&friendProfile.displayName)||'?', metric});
-    return ref.id;
-  },
-  async listMine(){
-    const me=currentUser.uid;
-    const snap=await friendChallengesCol().where('participantUids','array-contains',me).get();
-    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const withProfiles=await Promise.all(rows.map(async r=>{
-      const otherUid=r.participantUids.find(u=>u!==me);
-      const profile=await PublicProfileService.getProfile(otherUid).catch(()=>null);
-      return {...r, otherUid, otherProfile:profile};
-    }));
-    withProfiles.sort((a,b)=>(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():0)-(a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():0));
-    return withProfiles;
-  },
-  /* recomputes and pushes only YOUR OWN progress number for one challenge —
-     called whenever the challenges tab renders, so numbers are always
-     fresh without needing a background job. */
-  async syncMyProgress(challenge){
-    const me=currentUser.uid;
-    const start=(challenge.startValues&&challenge.startValues[me])||0;
-    const stats=await computeUserStats();
-    const current=Math.max(0,(stats[challenge.statKey||challenge.metric]||0)-start);
-    if(challenge.progress&&challenge.progress[me]===current) return current;
-    try{ await friendChallengesCol().doc(challenge.id).update({['progress.'+me]:current, updatedAt:serverNow()}); }catch(e){}
-    return current;
-  }
-};
-
-let socialActiveTab='friends';
-let socialActiveCategory='training';
-let socialActiveScope='friends';
-function renderSocialSection(){
-  { const gw=document.getElementById('gateWelcome'), gated=usernameHardGateActive(), ar=LANG==='ar';
-    const br=document.querySelector('#panel-social > .back-row'); if(br) br.classList.toggle('hidden',gated);
-    if(gw){ gw.classList.toggle('hidden',!gated);
-      if(gated) gw.innerHTML=`<div class="dash-card-title" style="font-size:1rem;">${ar?'👋 هلا فيك بـ مخططي':'👋 Welcome to My Planner'}</div>
-        <p class="panel-sub" style="margin:0 0 8px;">${ar?'جدولك وأكلك وتمرينك وعاداتك بمكان واحد.':'Your schedule, meals, training and habits — in one place.'}</p>
-        <p class="panel-sub" style="margin:0;"><b>${ar?'أول خطوة:':'Step 1:'}</b> ${PUB?(ar?'اختار اسم مستخدم لملفك. بعدها نجهّز يومك.':'pick a username for your profile. Then we’ll set up your day.'):(ar?'اختار اسم مستخدم (أصدقاؤك يلقونك فيه). بعدها نجهّز يومك.':'pick a username (it’s how friends find you). Then we’ll set up your day.')}</p>
-        ${currentUser&&currentUser.isAnonymous?`<p class="panel-sub" style="margin:8px 0 0;">👤 ${ar?'أنت داخل كضيف — بياناتك تنحفظ على هذا الجهاز، وتقدر تسوي حساب بعدين من «حسابي».':'You’re in as a guest — your data is saved on this device, and you can create an account later from “You”.'}</p>`:''}`; } }
-  document.getElementById('profileSetupBody').textContent=t('profile_setup_body');
-  const hasProfile=PublicProfileService.hasProfile();
-  document.getElementById('profileSetupCard').classList.toggle('hidden',hasProfile);
-  document.getElementById('socialMainCard').classList.toggle('hidden',!hasProfile);
-  if(!hasProfile){ initProfileSetupCard(); return; }
-  document.getElementById('socialTabFriends').textContent=t('social_tab_friends');
-  document.getElementById('socialTabLeaderboard').textContent=t('social_tab_leaderboard');
-  document.getElementById('socialTabFeed').textContent=t('social_tab_feed');
-  document.getElementById('socialTabCompare').textContent=t('social_tab_compare');
-  document.getElementById('socialTabChallenges').textContent=t('social_tab_challenges');
-  const COMPETE=['league','leaderboard','compare','challenges'];
-  const lgBtn=document.getElementById('socialTabLeague'); if(lgBtn) lgBtn.textContent=LANG==='ar'?'🏆 الدوري':'🏆 League';
-  const group=COMPETE.includes(socialActiveTab)?'compete':socialActiveTab;
-  document.getElementById('socialTabCompete').textContent=LANG==='ar'?'🏆 منافسة':'🏆 Compete';
-  document.querySelectorAll('#socialTabs .social-tab').forEach(b=>{
-    b.classList.toggle('active', b.dataset.tab===group);
-    b.onclick=()=>{ socialActiveTab=b.dataset.tab==='compete'?(COMPETE.includes(socialActiveTab)?socialActiveTab:'league'):b.dataset.tab; renderSocialSection(); };
-  });
-  document.getElementById('socialSubTabs').classList.toggle('hidden',group!=='compete');
-  document.querySelectorAll('#socialSubTabs .social-subtab').forEach(b=>{
-    b.classList.toggle('active', b.dataset.tab===socialActiveTab);
-    b.onclick=()=>{ socialActiveTab=b.dataset.tab; renderSocialSection(); };
-  });
-  const content=document.getElementById('socialTabContent');
-  content.innerHTML=`<div class="dash-empty">…</div>`;
-  const tabFn={friends:renderSocialFriendsTab,league:renderSocialLeagueTab,leaderboard:renderSocialLeaderboardTab,feed:renderSocialFeedTab,compare:renderSocialCompareTab,challenges:renderSocialChallengesTab,privacy:renderSocialPrivacyTab}[socialActiveTab];
-  if(!tabFn) return;
-  return Promise.resolve().then(()=>tabFn(content)).catch(e=>{
-    try{ console.warn('[social]',e); }catch(_){}
-    const ar=LANG==='ar';
-    content.innerHTML=`<div class="dash-empty">${ar?'ما قدرنا نحمّل هذا القسم الحين.':'Couldn’t load this right now.'}<br><button type="button" class="dash-link" id="socialRetryBtn" style="margin-top:8px;">↻ ${ar?'حاول مرة ثانية':'Try again'}</button></div>`;
-    const r=document.getElementById('socialRetryBtn'); if(r) r.onclick=()=>renderSocialSection();
-  });
-}
-const AVATAR_CHOICES=['🙂','😎','🦁','🐯','🐺','🦊','🐼','🐸','🐵','🦉','🦅','🐢','🐙','🌵','⚡','🔥','🌟','🥷','🧗','🏃'];
-function initProfileSetupCard(){
-  const grid=document.getElementById('avatarPickerGrid');
-  if(!grid.dataset.built){
-    grid.innerHTML=AVATAR_CHOICES.map(a=>`<div class="avatar-choice" data-avatar="${a}">${a}</div>`).join('');
-    grid.dataset.built='1';
-    grid.dataset.selected=AVATAR_CHOICES[0];
-    grid.querySelectorAll('.avatar-choice').forEach(el=>el.addEventListener('click',()=>{
-      grid.querySelectorAll('.avatar-choice').forEach(c=>c.classList.remove('selected'));
-      el.classList.add('selected'); grid.dataset.selected=el.dataset.avatar;
-    }));
-    grid.querySelector('.avatar-choice').classList.add('selected');
-  }
-  const unameInp=document.getElementById('usernameInput');
-  const msgEl=document.getElementById('usernameCheckMsg');
-  const saveBtn=document.getElementById('saveProfileBtn');
-  if(!document.getElementById('displayNameInput').value) document.getElementById('displayNameInput').value=P.name||'';
-  let checkToken=0;
-  const runCheck=async()=>{
-    const val=unameInp.value.trim();
-    if(!val){ msgEl.textContent=''; msgEl.className='username-check-msg'; saveBtn.disabled=true; return; }
-    if(!PublicProfileService.usernameRegex.test(val.toLowerCase())){
-      msgEl.textContent=t('username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; return;
-    }
-    msgEl.textContent=t('username_checking'); msgEl.className='username-check-msg'; saveBtn.disabled=true;
-    const myToken=++checkToken;
-    const res=await PublicProfileService.checkUsernameAvailable(val);
-    if(myToken!==checkToken) return; // a newer keystroke already superseded this check
-    if(res.ok){ msgEl.textContent=t('username_available'); msgEl.className='username-check-msg ok'; saveBtn.disabled=false; }
-    else{ msgEl.textContent=t(res.reason==='taken'?'username_taken':'username_invalid'); msgEl.className='username-check-msg bad'; saveBtn.disabled=true; }
-  };
-  if(!unameInp.dataset.wired){
-    unameInp.dataset.wired='1';
-    let debounceT=null;
-    unameInp.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(runCheck,400); });
-    saveBtn.addEventListener('click',async()=>{
-      saveBtn.disabled=true;
-      try{
-        await PublicProfileService.claimUsername(unameInp.value, document.getElementById('displayNameInput').value.trim(), grid.dataset.selected);
-        showToast(LANG==='ar'?'تم إنشاء ملفك العام 🎉':'Public profile created 🎉','success');
-        // username requirement now satisfied — usernameHardGateActive()/
-        // usernameSoftGateActive() both immediately return false, so
-        // send the person straight into the normal app instead of leaving
-        // them sitting on the setup screen they just finished.
-        showPanel('home');
-      }catch(e){
-        msgEl.textContent=e.message; msgEl.className='username-check-msg bad'; saveBtn.disabled=false;
-      }
-    });
-  }
-}
-function relTimeFromTimestamp(ts){
-  if(!ts||!ts.toMillis) return '';
-  const ms=Date.now()-ts.toMillis();
-  const mins=Math.floor(ms/60000);
-  if(mins<1) return LANG==='ar'?'الحين':'now';
-  if(mins<60) return mins+(LANG==='ar'?'د':'m');
-  const hrs=Math.floor(mins/60);
-  if(hrs<24) return hrs+(LANG==='ar'?'س':'h');
-  return Math.floor(hrs/24)+(LANG==='ar'?'ي':'d');
-}
-function activityLine(a, isMine){
-  // who/withName trace back to a Firestore-stored displayName — escaped
-  // here, once, so every branch below (and any future one) is covered
-  // without having to remember to wrap each return individually.
-  const who=isMine?t('activity_you'):escapeHtml(a._authorName||'?');
-  const withName=escapeHtml((a.data&&a.data.withName)||'?');
-  const dataName=a.data&&a.data.name?escapeHtml(a.data.name):'';
-  if(a.type==='workout') return `🏋️ ${who} ${t('act_workout')}`;
-  if(a.type==='achievement') return `🏆 ${who} ${t('act_achievement')}${dataName?': '+dataName:''}`;
-  if(a.type==='challenge') return `🎯 ${who} ${t('act_challenge')}${dataName?': '+dataName:''}`;
-  if(a.type==='collection') return `📦 ${who} ${t('act_collection')}`;
-  if(a.type==='friend_added') return `🤝 ${who} ${t('act_friend_added').replace('{name}',withName)}`;
-  if(a.type==='friend_challenge_started') return `🎯 ${who} ${t('act_friend_challenge_started').replace('{name}',withName)}`;
-  return `• ${who}`;
-}
-async function renderSocialFriendsTab(content){
-  const [incoming,outgoing,friends]=await Promise.all([FriendService.listIncomingRequests(),FriendService.listOutgoingRequests(),FriendService.listFriends()]);
-  let html=`<div class="username-check-row" style="margin-bottom:6px;">
-    <input type="text" class="setup-input" id="friendSearchInput" style="margin-bottom:0;" data-i18n-ph="search_username_ph" placeholder="${t('search_username_ph')}">
-    <button class="setup-btn" id="friendSearchBtn" type="button" style="width:auto;padding:12px 16px;margin-bottom:0;">${t('search_btn')}</button>
-  </div>
-  <div id="friendSearchResult"></div>`;
-  if(incoming.length){
-    html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('incoming_requests_title')}</h3>`;
-    html+=incoming.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.fromUid)}</div>${r.profile&&r.profile.username?`<div style="font-size:0.7rem;color:var(--ink-soft);" dir="ltr">@${escapeHtml(r.profile.username)}</div>`:''}</div><div class="friend-row-actions"><button class="friend-action-btn accept" data-req="${r.id}">${t('accept_btn')}</button><button class="friend-action-btn reject" data-req="${r.id}">${t('reject_btn')}</button></div></div>`).join('');
-  }
-  if(outgoing.length){
-    html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('outgoing_requests_title')}</h3>`;
-    html+=outgoing.map(r=>`<div class="friend-row"><div class="friend-avatar">${safeAvatar(r.profile&&r.profile.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml((r.profile&&r.profile.displayName)||r.toUid)}</div></div><div class="friend-row-actions"><button class="friend-action-btn reject" data-cancel="${r.toUid}">${t('cancel_request_btn')}</button></div></div>`).join('');
-  }
-  html+=`<h3 style="font-size:0.85rem;margin-top:14px;">${t('social_tab_friends')}</h3>`;
-  html+= friends.length ? friends.map(f=>`<div class="friend-row friend-row-clickable" data-open-profile="${escapeHtml(f.uid)}"><div class="friend-avatar">${safeAvatar(f.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(f.displayName||f.username||(LANG==='ar'?'حساب غير متاح حالياً':'Account unavailable'))}</div><div style="font-size:0.7rem;color:var(--ink-soft);">${f.restricted?(LANG==='ar'?'ما قدرنا نفتح ملفه الحين':'Couldn’t open their profile right now'):`${LANG==='ar'?'مستوى':'Lvl'} ${safeNum(f.stats&&f.stats.level)||1} · ${safeNum(f.stats&&f.stats.xp)} XP`}</div></div></div>`).join('')
-    : `<div class="dash-empty">${t('friends_empty')}</div>`;
-  content.innerHTML=html;
-
-  content.querySelectorAll('[data-open-profile]').forEach(el=>el.addEventListener('click',()=>openFriendProfile(el.dataset.openProfile)));
-  content.querySelectorAll('[data-req]').forEach(btn=>btn.addEventListener('click',async()=>{
-    const accept=btn.classList.contains('accept');
-    btn.closest('.friend-row').style.opacity='0.5';
-    try{ await FriendService.respondToRequest(btn.dataset.req, accept?'accepted':'rejected'); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); }
-    renderSocialFriendsTab(content).catch(()=>{});
-  }));
-  content.querySelectorAll('[data-cancel]').forEach(btn=>btn.addEventListener('click',async()=>{
-    btn.closest('.friend-row').style.opacity='0.5';
-    try{ await FriendService.cancelRequest(btn.dataset.cancel); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); }
-    renderSocialFriendsTab(content).catch(()=>{});
-  }));
-  async function doSearch(){
-    const q=document.getElementById('friendSearchInput').value.trim();
-    const resEl=document.getElementById('friendSearchResult');
-    if(!q){ resEl.innerHTML=''; return; }
-    resEl.innerHTML=`<div class="dash-empty">…</div>`;
-    let result, status;
-    try{ result=await PublicProfileService.searchByUsername(q); }
-    catch(e){ resEl.innerHTML=`<div class="dash-empty">${friendlyErr(e&&(e.code||e.message))}</div>`; return; }
-    if(!result){ resEl.innerHTML=`<div class="dash-empty">${t('user_not_found')}</div>`; return; }
-    if(result.self){ resEl.innerHTML=`<div class="dash-empty">${LANG==='ar'?'هذا حسابك 🙂':'That\'s your account 🙂'}</div>`; return; }
-    try{ status=await FriendService.requestStatusWith(result.uid); }catch(e){ status='none'; }
-    const btnHtml = status==='friends' ? `<span class="friend-action-btn remove" style="cursor:default;">${t('already_friends_btn')}</span>`
-      : status==='outgoing' ? `<span class="friend-action-btn reject" style="cursor:default;">${t('request_sent_btn')}</span>`
-      : status==='incoming' ? `<button class="friend-action-btn accept" id="searchAcceptBtn">${t('accept_btn')}</button>`
-      : `<button class="friend-action-btn accept" id="searchAddBtn">${t('send_request_btn')}</button>`;
-    resEl.innerHTML=`<div class="friend-row"><div class="friend-avatar">${safeAvatar(result.avatar)}</div><div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(result.displayName||result.username)}</div></div><div class="friend-row-actions">${btnHtml}</div></div>`;
-    const addBtn=document.getElementById('searchAddBtn');
-    if(addBtn) addBtn.addEventListener('click',async()=>{ addBtn.disabled=true; try{ await FriendService.sendRequest(result.uid, result.username||q); showToast(LANG==='ar'?'📨 انرسل الطلب':'📨 Request sent'); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); } doSearch(); });
-    const accBtn=document.getElementById('searchAcceptBtn');
-    if(accBtn) accBtn.addEventListener('click',async()=>{ accBtn.disabled=true; try{ await FriendService.respondToRequest(result.uid+'_'+currentUser.uid,'accepted'); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); } doSearch(); renderSocialFriendsTab(content).catch(()=>{}); });
-  }
-  document.getElementById('friendSearchBtn').addEventListener('click',doSearch);
-  document.getElementById('friendSearchInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSearch(); });
-}
-async function renderSocialLeaderboardTab(content){
-  content.innerHTML=`
-    <div class="social-tabs" id="lbScopeTabs" style="margin-bottom:8px;"></div>
-    <div class="social-tabs" id="lbCategoryTabs" style="margin-bottom:12px;"></div>
-    <div id="lbRows">…</div>
-  `;
-  document.getElementById('lbScopeTabs').innerHTML=['friends','global'].map(s=>`<button type="button" class="social-tab${s===socialActiveScope?' active':''}" data-scope="${s}">${t('lb_scope_'+s)}</button>`).join('');
-  document.querySelectorAll('#lbScopeTabs button').forEach(b=>b.addEventListener('click',()=>{ socialActiveScope=b.dataset.scope; renderSocialLeaderboardTab(content); }));
-  const catTabs=document.getElementById('lbCategoryTabs');
-  catTabs.innerHTML=LEADERBOARD_CATEGORIES.map(c=>`<button type="button" class="social-tab${c.id===socialActiveCategory?' active':''}" data-cat="${c.id}">${c.icon} ${LANG==='ar'?c.labelAr:c.labelEn}</button>`).join('');
-  catTabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ socialActiveCategory=b.dataset.cat; renderSocialLeaderboardTab(content); }));
-  const {category,rows}=await LeaderboardService.getLeaderboard(socialActiveCategory, socialActiveScope);
-  const medals=['🥇','🥈','🥉'];
-  const rowsEl=document.getElementById('lbRows');
-  if(rows.length<=1 && socialActiveScope==='friends'){ rowsEl.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
-  rowsEl.innerHTML=rows.map((r,i)=>{
-    const rank=medals[i]||(i+1);
-    const unit=LANG==='ar'?category.unitAr:category.unitEn;
-    return `<div class="lb-row${r.isMe?' me':''}"><div class="lb-rank">${rank}</div><div class="friend-avatar" style="width:28px;height:28px;font-size:0.9rem;">${safeAvatar(r.avatar)}</div><div class="lb-name">${escapeHtml(r.name)}</div><div class="lb-value">${safeNum(r[category.metric])} ${unit}</div></div>`;
-  }).join('');
-}
-async function renderSocialFeedTab(content){
-  const feed=await ActivityService.listFeed();
-  if(!feed.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
-  const authorUids=[...new Set(feed.filter(a=>a.uid!==currentUser.uid).map(a=>a.uid))];
-  const authorProfiles={};
-  await Promise.all(authorUids.map(async uid=>{ authorProfiles[uid]=await PublicProfileService.getProfile(uid); }));
-  content.innerHTML=feed.map(a=>{
-    const isMine=a.uid===currentUser.uid;
-    if(!isMine) a._authorName=(authorProfiles[a.uid]&&authorProfiles[a.uid].displayName)||'?';
-    return `<div class="feed-row"><div style="flex:1;">${activityLine(a,isMine)}<div class="feed-time">${relTimeFromTimestamp(a.createdAt)}</div></div></div>`;
-  }).join('');
-}
-async function renderSocialCompareTab(content){
-  const friends=await FriendService.listFriends();
-  if(!friends.length){ content.innerHTML=`<div class="dash-empty">${t('friends_empty')}</div>`; return; }
-  content.innerHTML=`<select class="setup-input" id="compareFriendSelect" style="margin-bottom:12px;">${friends.map(f=>`<option value="${f.uid}">${escapeHtml(f.displayName)}</option>`).join('')}</select><div id="compareRows">…</div>`;
-  const sel=document.getElementById('compareFriendSelect');
-  const draw=async()=>{
-    const you=await computeUserStats();
-    const friend=friends.find(f=>f.uid===sel.value)||friends[0];
-    const fstats=friend.stats||{};
-    document.getElementById('compareRows').innerHTML='<div style="text-align:center;font-weight:700;margin-bottom:10px;">'+t('compare_vs').replace('{name}',escapeHtml(friend.displayName))+'</div>'+
-      LEADERBOARD_CATEGORIES.filter(c=>!c.privacyKey||(friend.privacy&&friend.privacy[c.privacyKey]!==false)).map(c=>{
-        const yv=safeNum(you[c.metric]), fv=safeNum(fstats[c.metric]), max=Math.max(yv,fv,1);
-        return `<div class="compare-row"><div>${c.icon} ${yv}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${yv/max*50}%;"></div><div class="compare-bar-them" style="width:${fv/max*50}%;"></div></div><div>${fv}</div></div>`;
-      }).join('');
-  };
-  sel.addEventListener('change',draw);
-  draw();
-}
-function renderSocialPrivacyTab(content){
-  const priv=P.publicProfile.privacy;
-  const rows=[
-    ['training','privacy_training'],['nutrition','privacy_nutrition'],['achievements','privacy_achievements'],
-    ['collection','privacy_collection'],['activity','privacy_activity'],['leaderboardGlobal','privacy_leaderboard_global']
-  ];
-  content.innerHTML=`
-    <div class="privacy-toggle-row"><span>${t('privacy_profile_visibility')}</span>
-      <select class="setup-input" id="privVisibilitySelect" style="width:auto;margin-bottom:0;">
-        <option value="private">${t('privacy_visibility_private')}</option>
-        <option value="friends">${t('privacy_visibility_friends')}</option>
-        <option value="public">${t('privacy_visibility_public')}</option>
-      </select>
-    </div>
-    ${rows.map(([key,label])=>`<div class="privacy-toggle-row"><span>${t(label)}</span><label class="toggle-switch"><input type="checkbox" data-priv="${key}" ${priv[key]?'checked':''}><span class="slider"></span></label></div>`).join('')}
-  `;
-  document.getElementById('privVisibilitySelect').value=priv.profileVisibility||'friends';
-  document.getElementById('privVisibilitySelect').addEventListener('change',(e)=>PublicProfileService.updatePrivacy({profileVisibility:e.target.value}));
-  content.querySelectorAll('[data-priv]').forEach(inp=>inp.addEventListener('change',(e)=>PublicProfileService.updatePrivacy({[e.target.dataset.priv]:e.target.checked})));
-}
-async function renderSocialChallengesTab(content){
-  const friends=await FriendService.listFriends();
-  const startHtml = friends.length ? `
-    <div class="setup-card" style="padding:12px;margin-bottom:14px;">
-      <h3 style="font-size:0.85rem;margin-top:0;">${t('new_challenge_title')}</h3>
-      <select class="setup-input" id="challengeFriendSelect">${friends.map(f=>`<option value="${f.uid}">${escapeHtml(f.displayName)}</option>`).join('')}</select>
-      <select class="setup-input" id="challengeMetricSelect">${LEADERBOARD_CATEGORIES.map(c=>`<option value="${c.id}">${c.icon} ${LANG==='ar'?c.labelAr:c.labelEn}</option>`).join('')}</select>
-      <input type="number" class="setup-input" id="challengeTargetInput" min="1" value="5" placeholder="${t('challenge_target_ph')}">
-      <button class="setup-btn" id="challengeStartBtn">${t('challenge_start_btn')}</button>
-    </div>` : `<div class="dash-empty">${t('friends_empty')}</div>`;
-  content.innerHTML = startHtml + `<div id="friendChallengesList"><div class="dash-empty">…</div></div>`;
-  if(friends.length){
-    document.getElementById('challengeStartBtn').addEventListener('click',async()=>{
-      const friendUid=document.getElementById('challengeFriendSelect').value;
-      const catId=document.getElementById('challengeMetricSelect').value;
-      const target=Math.max(1,parseInt(document.getElementById('challengeTargetInput').value,10)||5);
-      const btn=document.getElementById('challengeStartBtn'); btn.disabled=true;
-      try{ await ChallengeService.create(friendUid, catId, target); }catch(e){ showToast(e.message,'error'); }
-      renderSocialChallengesTab(content);
-    });
-  }
-  const challenges=await ChallengeService.listMine();
-  const listEl=document.getElementById('friendChallengesList');
-  if(!challenges.length){ listEl.innerHTML=`<div class="dash-empty">${t('no_challenges_yet')}</div>`; return; }
-  const me=currentUser.uid;
-  const rendered=await Promise.all(challenges.map(async ch=>{
-    const cat=LEADERBOARD_CATEGORIES.find(c=>c.id===ch.metric)||LEADERBOARD_CATEGORIES[0];
-    const myProgress=await ChallengeService.syncMyProgress(ch);
-    const theirProgress=safeNum(ch.progress&&ch.progress[ch.otherUid]);
-    ch={...ch, target:safeNum(ch.target)||1}; // written by either participant — never trust it as markup
-    const otherName=escapeHtml((ch.otherProfile&&ch.otherProfile.displayName)||'?');
-    const otherAvatar=safeAvatar(ch.otherProfile&&ch.otherProfile.avatar);
-    const max=Math.max(myProgress,theirProgress,ch.target,1);
-    let status;
-    if(myProgress>=ch.target && theirProgress>=ch.target) status=t('challenge_both_done');
-    else if(myProgress>=ch.target) status=t('challenge_you_won');
-    else if(theirProgress>=ch.target) status=t('challenge_they_won').replace('{name}',otherName);
-    else if(myProgress>theirProgress) status=t('challenge_you_ahead');
-    else if(theirProgress>myProgress) status=t('challenge_they_ahead').replace('{name}',otherName);
-    else status=t('challenge_tied');
-    return `<div class="setup-card" style="padding:12px;">
-      <div style="font-weight:700;font-size:0.85rem;margin-bottom:6px;">${cat.icon} ${LANG==='ar'?cat.labelAr:cat.labelEn} — ${t('challenge_target_label')} ${ch.target}</div>
-      <div class="compare-row"><div>⭐ ${myProgress}</div><div class="compare-bar-wrap"><div class="compare-bar-you" style="width:${Math.min(100,myProgress/max*50)}%;"></div><div class="compare-bar-them" style="width:${Math.min(100,theirProgress/max*50)}%;"></div></div><div>${theirProgress} ${otherAvatar}</div></div>
-      <div style="font-size:0.75rem;color:var(--ink-soft);text-align:center;margin-top:4px;">${status}</div>
-    </div>`;
-  }));
-  listEl.innerHTML=rendered.join('');
-}
-/* real friend profile view — reuses the same overlay/cardBody modal every
-   other detail screen (workout day, food day, calendar day) already uses. */
-async function openFriendProfile(uid){
-  document.getElementById('dayTitle').textContent=`👤 ${t('friend_profile_title')}`;
-  document.getElementById('daySubtitle').textContent='';
-  document.getElementById('cardBody').innerHTML=`<div class="dash-empty">…</div>`;
-  overlay.classList.add('open');
-  const profile=await PublicProfileService.getProfile(uid);
-  if(!profile||profile.restricted){
-    const isFriend=((_friendsCache&&_friendsCache.list)||[]).some(f=>f.uid===uid)||!!(await FriendService.requestStatusWith(uid).then(st=>st==='friends').catch(()=>false));
-    document.getElementById('cardBody').innerHTML=`<div class="dash-empty">${t('friend_profile_hidden')}</div>${isFriend?`<button class="setup-btn" id="friendRemoveBtn2" style="margin-top:12px;background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>`:''}`;
-    const rb=document.getElementById('friendRemoveBtn2'); if(rb) rb.onclick=async()=>{ if(!confirm(t('confirm_remove_friend'))) return; try{ await FriendService.removeFriend(uid); overlay.classList.remove('open'); renderSocialSection(); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); } };
-    return; }
-  const s=profile.stats||{};
-  const priv=profile.privacy||{};
-  const statBlocks=[
-    priv.training!==false ? {icon:'🏋️',label:LANG==='ar'?'تمارين':'Workouts',val:s.totalWorkouts||0} : null,
-    {icon:'🔥',label:LANG==='ar'?'أفضل سلسلة':'Best streak',val:s.bestStreak||0},
-    priv.nutrition!==false ? {icon:'🍽️',label:LANG==='ar'?'أيام تغذية':'Nutrition days',val:s.nutritionDaysHit||0} : null,
-    priv.achievements!==false ? {icon:'🏆',label:LANG==='ar'?'إنجازات':'Achievements',val:s.achievementsUnlocked||0} : null,
-    priv.collection!==false ? {icon:'📦',label:LANG==='ar'?'مقتنيات':'Collection',val:s.totalCollected||0} : null,
-    {icon:'⚡',label:'XP',val:s.xp||0},
-  ].filter(Boolean);
-  const titleLine=(profile.titles&&profile.titles.length) ? TITLES_CONFIG.filter(tc=>profile.titles.includes(tc.id)).map(tc=>`${tc.icon} ${LANG==='ar'?tc.nameAr:tc.nameEn}`).join(' · ') : '';
-  const cz=profile.cosmetics||{}, feq=cz.equipped||{};
-  const eqTitle=feq.title&&TITLES_CONFIG.find(x=>x.id===feq.title);
-  const owned=(cz.owned||[]).map(id=>COSMETICS_CATALOG.find(c=>c.id===id)).filter(Boolean)
-    .sort((a,b)=>(RARITY_TIERS[b.rarity]?.order||0)-(RARITY_TIERS[a.rarity]?.order||0));
-  const RARITY_LABEL=r=>{ const tr=RARITY_TIERS[r]; return tr?`${tr.icon} ${LANG==='ar'?tr.nameAr:tr.nameEn}`:r; };
-  document.getElementById('cardBody').innerHTML=`
-    <div class="cos-hero friend-hero" id="friendHero">
-      <div class="cos-hero-bg" id="friendHeroBg"></div><div class="cos-hero-effect" id="friendHeroFx"></div><div class="cos-hero-scrim"></div>
-      <div class="cos-hero-card">
-        <div class="cos-avatar-wrap"><div class="cos-frame-ring" id="friendFrameRing"></div><div class="cos-avatar">${safeAvatar(profile.avatar)}</div></div>
-        <h2 style="margin:0;color:#fff;">${escapeHtml(profile.displayName)}</h2>
-        ${eqTitle?`<div class="cos-chip">${eqTitle.icon} ${LANG==='ar'?eqTitle.nameAr:eqTitle.nameEn}</div>`:''}
-        <div style="font-size:0.8rem;opacity:0.9;">${LANG==='ar'?'مستوى':'Level'} ${safeNum(s.level)||1}${titleLine&&!eqTitle?' · '+titleLine:''}</div>
-      </div>
-    </div>
-    ${owned.length?`<div class="friend-showcase"><div class="friend-showcase-title">✨ ${LANG==='ar'?`يملك ${owned.length} من المتجر`:`Owns ${owned.length} from the store`}</div>
-      <div class="friend-showcase-list">${owned.slice(0,12).map(c=>`<span class="showcase-chip rar-${c.rarity}" title="${escapeHtml(RARITY_LABEL(c.rarity))}">${escapeHtml(LANG==='ar'?c.nameAr:c.nameEn)}</span>`).join('')}</div></div>`:''}
-    <div class="friend-profile-stats-grid">${statBlocks.map(b=>`<div class="friend-profile-stat"><b>${b.icon} ${safeNum(b.val)}</b><span>${b.label}</span></div>`).join('')}</div>
-    ${priv.collection!==false ? `<button class="setup-btn" id="viewFriendCollectionBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:10px;">🐾 ${t('view_collection_btn')}</button>` : ''}
-    <button class="setup-btn" id="friendCheerBtn" style="margin-bottom:10px;">👏 ${LANG==='ar'?'شجّعه اليوم':'Cheer them on today'}</button>
-    <button class="setup-btn" id="friendRemoveBtn" style="background:var(--card);color:#c0392b;border:1px solid #d9a79e;">${t('remove_friend_btn')}</button>
-  `;
-  // mount their equipped background / effect / frame, exactly as their own profile shows it
-  { const bgItem=feq.background&&COSMETICS_CATALOG.find(c=>c.id===feq.background), fxItem=feq.effect&&COSMETICS_CATALOG.find(c=>c.id===feq.effect), frItem=feq.frame&&COSMETICS_CATALOG.find(c=>c.id===feq.frame);
-    const bgEl=document.getElementById('friendHeroBg'), fxEl=document.getElementById('friendHeroFx'), frEl=document.getElementById('friendFrameRing');
-    mountCosmeticSet(bgEl,fxEl,frEl,feq); }
-  const viewCollBtn=document.getElementById('viewFriendCollectionBtn');
-  if(viewCollBtn) viewCollBtn.addEventListener('click',()=>openFriendCollectionView(uid,profile.displayName));
-  const chBtn=document.getElementById('friendCheerBtn'); if(chBtn) chBtn.addEventListener('click',()=>sendCheer(uid,chBtn));
-  document.getElementById('friendRemoveBtn').addEventListener('click',async()=>{
-    if(!confirm(t('confirm_remove_friend'))) return;
-    try{ await FriendService.removeFriend(uid); }catch(e){ showToast(friendlyErr(e&&(e.code||e.message)),'error'); return; }
-    overlay.classList.remove('open'); _coopCache={at:0,st:null};
-    renderSocialSection();
-  });
-}
-/* ================= FRIEND COLLECTION — READ-ONLY VIEW =================
-   Deliberately a separate, self-contained renderer rather than reusing
-   the owner's own collRoot/collGroups/collSpeciesGrid/collSpeciesDetail
-   stack (which is built entirely around the shared collCatData/
-   collCurrentCat/collStack globals for MY OWN collection) — piggybacking
-   on that shared state for a friend's data would risk it leaking into or
-   getting clobbered by the owner's own in-progress collection view.
-   Reads ONLY users/{uid}/publicCollection/{catId} — the minimal derived
-   mirror (species id + collected + a plain catch count), never the
-   private users/{uid}/data/* collection docs. No control here can write
-   anything: no counters, no upload, no save — purely a display. */
-async function openFriendCollectionView(uid,displayName){
-  document.getElementById('dayTitle').textContent=`🐾 ${t('friend_collection_title')}`;
-  document.getElementById('daySubtitle').textContent=t('read_only_tag');
-  const body=document.getElementById('cardBody');
-  body.innerHTML=`<div class="dash-empty">…</div>`;
-  const ar=LANG==='ar';
-  const backRow=`<button type="button" class="setup-btn" id="friendCollBackBtn" style="background:var(--card);color:var(--heading);border:1px solid var(--heading);margin-bottom:14px;">${t('back_generic')}</button>`;
-  const wireBack=()=>{ const bb=document.getElementById('friendCollBackBtn'); if(bb) bb.addEventListener('click',()=>openFriendProfile(uid)); };
-  try{
-    const profile=await PublicProfileService.getProfile(uid);
-    const priv=(profile&&profile.privacy)||{};
-    let theirs=profile&&!profile.restricted&&profile.collection?profile.collection:null; // {catId:{sid:count}}
-    if(!theirs&&priv.collection!==false){ // older app versions only had the separate mirror
-      const results=await Promise.all(ANIMAL_CATEGORIES.map(async cat=>{
-        try{ const doc=await fbDb.collection('users').doc(uid).collection('publicCollection').doc(cat.id).get();
-          const sp=doc.exists?(doc.data().species||{}):null; if(!sp) return [cat.id,null];
-          const m={}; Object.entries(sp).forEach(([sid,v])=>{ m[sid]=(v&&v.catchCount)||1; }); return [cat.id,m];
-        }catch(e){ return [cat.id,null]; }
-      }));
-      if(results.some(([,m])=>m)) theirs=Object.fromEntries(results.map(([k,m])=>[k,m||{}]));
-    }
-    if(theirs){ theirs=Object.fromEntries(Object.entries(theirs).map(([c,m])=>[c,collRemapCounts(c,m)]));
-      const ph={...(profile.photos||{})}; Object.entries(COLL_ID_MERGE).forEach(([c,m])=>Object.entries(m).forEach(([from,to])=>{ if(ph[c+'__'+from]&&!ph[c+'__'+to]) ph[c+'__'+to]=ph[c+'__'+from]; })); profile.photos=ph; }
-    if(!theirs){
-      const why = priv.collection===false ? t('friend_collection_hidden')
-        : (ar?'مقتنياته ما انرفعت ليلحين — بتطلع هني أول ما يفتح التطبيق بآخر نسخة.':'Their collection hasn’t synced yet — it shows up here once they open the latest version of the app.');
-      body.innerHTML=backRow+`<div class="dash-empty">${why}</div>`; wireBack(); return;
-    }
-    const mine={};
-    for(const cat of ANIMAL_CATEGORIES){
-      let data={}; try{ const raw=await storageGet('collections:animals:'+cat.id); if(raw) data=JSON.parse(raw); }catch(e){}
-      mine[cat.id]={}; Object.entries(data).forEach(([sid,rec])=>{ const n=collCatchCount(rec); if(n>0) mine[cat.id][sid]=n; });
-    }
-    const cats=ANIMAL_CATEGORIES.filter(c=>collSpeciesList(c.id).length);
-    let tot={them:0,me:0,both:0};
-    cats.forEach(c=>{ const th=theirs[c.id]||{}, me=mine[c.id]||{}; tot.them+=Object.keys(th).length; tot.me+=Object.keys(me).length; tot.both+=Object.keys(th).filter(k=>me[k]).length; });
-    let curCat=cats[0]&&cats[0].id, filter='all';
-    const render=()=>{
-      const list=collSpeciesList(curCat), th=theirs[curCat]||{}, me=mine[curCat]||{};
-      let shown=list.slice().sort((a,b)=>RARITY_TIERS[b.rarity].order-RARITY_TIERS[a.rarity].order);
-      if(filter==='theirs') shown=shown.filter(sp=>th[sp.id]);
-      if(filter==='missing') shown=shown.filter(sp=>th[sp.id]&&!me[sp.id]);
-      if(filter==='both') shown=shown.filter(sp=>th[sp.id]&&me[sp.id]);
-      const cat=collCategoryConfig(curCat);
-      body.innerHTML=backRow+`
-        <div style="text-align:center;font-weight:800;margin-bottom:10px;">${escapeHtml(displayName)}</div>
-        <div class="fc-summary"><div><b class="num">${tot.them}</b>${ar?'عنده':'They have'}</div><div><b class="num">${tot.me}</b>${ar?'عندك':'You have'}</div><div><b class="num">${tot.both}</b>${ar?'مشتركة':'In common'}</div></div>
-        <div class="fc-chips">${cats.map(c=>`<button type="button" data-fcat="${c.id}" class="${c.id===curCat?'active':''}">${c.icon} ${escapeHtml(collCatName(c))} <span class="num">${Object.keys(theirs[c.id]||{}).length}/${collSpeciesList(c.id).length}</span></button>`).join('')}</div>
-        <div class="fc-chips">${[['all',ar?'الكل':'All'],['theirs',ar?'اللي عنده':'What they have'],['missing',ar?'عنده وما عندك':'They have, you don’t'],['both',ar?'عندكم الاثنين':'You both have']].map(([k,l])=>`<button type="button" data-ffil="${k}" class="${k===filter?'active':''}">${l}</button>`).join('')}</div>
-        <div class="coll-species-grid">${shown.map(sp=>{
-          const n=th[sp.id], tier=RARITY_TIERS[sp.rarity], photo=(profile.photos||{})[curCat+'__'+sp.id];
-          return `<div class="coll-species-card tier-${sp.rarity} ${n?'collected':'locked'}" style="cursor:default;">
-            ${me[sp.id]?`<span class="you-have">${ar?'✓ عندك':'✓ you'}</span>`:''}
-            <span class="coll-rarity-mini rarity-tag coll-rarity-${sp.rarity}">${tier.icon}</span>
-            <div class="thumb">${collThumbHtml(sp,!!n,photo&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(photo)?photo:null)}</div>
-            <div class="name">${escapeHtml(collName(sp))}</div>
-            <div class="meta">${n?(safeNum(n)+' '+(ar?cat.countLabelAr:cat.countLabelEn)):t('coll_undiscovered')}</div>
-          </div>`; }).join('')||`<div class="dash-empty">${ar?'ما في شي هني':'Nothing here'}</div>`}</div>`;
-      wireBack();
-      body.querySelectorAll('[data-fcat]').forEach(bt=>bt.addEventListener('click',()=>{ curCat=bt.dataset.fcat; render(); }));
-      body.querySelectorAll('[data-ffil]').forEach(bt=>bt.addEventListener('click',()=>{ filter=bt.dataset.ffil; render(); }));
-    };
-    render();
-  }catch(e){
-    body.innerHTML=backRow+`<div class="dash-empty">${t('friend_collection_error')}</div>`; wireBack();
-  }
-}
 
 const AGENDA_SLOTS=Array.from({length:24},(_,h)=>{
   const pad=n=>String(n).padStart(2,'0');
@@ -13957,7 +13004,6 @@ function refreshHome(){
   renderHomeRecapPrompt();
   renderHijriLine();
   renderRamadanCard();
-  renderHomeCheers();
   renderHomePushTip();
   renderHomeNow(); renderHomeMissed(); renderLoopAsk();
   try{ ccInit(); ccRenderBar(); }catch(e){}
@@ -15240,17 +14286,6 @@ function launchApp(){
   // this to Social (refreshHome, which normally does it, won't run then)
   applyI18n(); applyTheme(P.palette,P.mode,P.font);
   showPanel('home'); // refreshes Home itself — calling refreshHome() first rendered it twice
-  // username-first, brand-new accounts ONLY: a sign-up that has never
-  // signed in before lands directly on the profile-setup screen instead
-  // of the home dashboard, and showPanel/enterSection refuse to leave it
-  // (see usernameHardGateActive) until a username is saved. An existing
-  // account that predates the username requirement is NEVER redirected
-  // here — it launches straight to Home as always; renderProfileSection()
-  // is what prompts it for a username, and only when Profile is opened.
-  if(usernameHardGateActive()){
-    showPanel('social');
-    enterSection('social');
-  }
 }
 
 /* ================= COLLECTIONS =================
@@ -15452,12 +14487,10 @@ async function migrateMergedSpecies(){
     }
     if(changed){
       await storageSet('collections:animals:'+catId, JSON.stringify(data));
-      try{ await syncPublicCollectionMirror(catId,data); }catch(e){}
       touched=true;
     }
   }
   P._collMergeV1=true; await storageSet('profile',JSON.stringify(P));
-  if(touched) setTimeout(()=>{ try{ PublicProfileService.syncWholeCollection(); PublicProfileService.syncAllPhotoThumbs(); }catch(e){} },4000);
 }
 
 const FISH_THEMES=[{"id":"shallow_hunters","icon":"🏖️","nameAr":"قناص الشاطئ","nameEn":"Shallow Hunters"},{"id":"deep_reef_monsters","icon":"🪸","nameAr":"وحوش الشعاب","nameEn":"Deep Reef Monsters"},{"id":"surface_predators","icon":"🦅","nameAr":"مفترسات السطح","nameEn":"Surface Predators"},{"id":"coastal_favorites","icon":"⚓","nameAr":"المفضلة عند الحداقة","nameEn":"Coastal Favorites"}];
@@ -15497,60 +14530,6 @@ async function collSaveCategory(catId){
   // collCatData is replaced, and the mirror must still get THIS category's data
   const snapshot=collCatData;
   await storageSet('collections:animals:'+catId, JSON.stringify(snapshot));
-  // the private save above has already succeeded and must never be rolled
-  // back or blocked by the mirror write failing (e.g. offline) — caught
-  // here, at the call site, so callers that DO need to know about a real
-  // failure (the backfill migration below) can still let it propagate.
-  syncPublicCollectionMirror(catId, snapshot).catch(()=>{}); // optional mirror — never blocks the save (offline it would wait for the server)
-  PublicProfileService.syncCollectionCategory(catId, snapshot);
-}
-/* Derives the friend-visible mirror doc from the private collection data
-   and overwrites it wholesale — this is a pure recomputation (not an
-   increment/merge of deltas), so it's naturally idempotent: running it
-   twice, or after a dropped/offline write, always converges to the same
-   correct result on the next successful call. Only species/collected/
-   catchCount ever leave the private record — no photos, measurements,
-   catch history, bait, notes, XP or coins. Deliberately does NOT catch
-   its own errors — callers decide whether a failure is safe to ignore
-   (collSaveCategory) or must block a "done" flag from being set
-   (migratePublicCollectionMirrors). */
-async function syncPublicCollectionMirror(catId, data){
-  if(!fbDb||!currentUser) return;
-  const species={};
-  Object.keys(data||{}).forEach(speciesId=>{
-    const rec=data[speciesId];
-    if(rec && rec.catches && rec.catches.length>0){
-      species[speciesId]={collected:true, catchCount:collCatchCount(rec)};
-    }
-  });
-  await fbDb.collection('users').doc(currentUser.uid).collection('publicCollection').doc(catId)
-    .set({species, updatedAt:serverNow()});
-}
-/* One-time backfill so existing users (whose collections predate this
-   feature) get a publicCollection mirror without re-saving every category
-   by hand. Guarded by a persisted flag purely as an efficiency shortcut,
-   NOT for correctness — unlike the XP/coins migration, this recompute is
-   a deterministic derived projection of the current private data, so
-   re-running it (flag lost, retried after a failure, etc.) can never
-   double-count or corrupt anything; it just rewrites the same mirror.
-   Crucially, the flag is only ever persisted AFTER every category's write
-   has actually succeeded — syncPublicCollectionMirror's errors are left
-   to propagate here on purpose, so a rules-permission failure (e.g. the
-   Firestore Rules for this new path haven't been deployed yet) or an
-   offline failure leaves the flag unset and the whole backfill retries
-   from scratch on the next boot, instead of being wrongly marked done. */
-async function migratePublicCollectionMirrors(){
-  if(!fbDb||!currentUser) return;
-  if(P._publicCollectionMirrorDone) return;
-  try{
-    for(const cat of ANIMAL_CATEGORIES){
-      const raw=await storageGet('collections:animals:'+cat.id);
-      const data=raw?JSON.parse(raw):{};
-      await syncPublicCollectionMirror(cat.id, data);
-    }
-    P._publicCollectionMirrorDone=true;
-    await storageSet('profile',JSON.stringify(P));
-  }catch(e){ if(e&&e.code==='permission-denied'){ P._publicCollectionMirrorDone=true; storageSet('profile',JSON.stringify(P)); } /* denied by the rules: stop retrying every launch; offline: retried next boot */ }
 }
 function collRecord(speciesId){ return collCatData[speciesId]||{catches:[],hasPhoto:false,variantState:{}}; }
 /* a catch entry may stand for several catches (`n`, default 1) — a bulk add
@@ -16088,7 +15067,6 @@ async function collRemovePhoto(){
   collPhotoCache[collCurrentCat+':'+collCurrentSpecies]=null;
   renderCollSpeciesDetail();
   await storageSet('collection-photo:'+collCurrentCat+':'+collCurrentSpecies, JSON.stringify(null));
-  PublicProfileService.syncPhotoThumb(collCurrentCat,collCurrentSpecies,null);
   await collSaveCategory(collCurrentCat);
   showToast(LANG==='ar'?'تم إزالة الصورة':'Photo removed');
 }
@@ -16136,7 +15114,6 @@ function collGrantFirstCatchReward(sp){
     const gotSet=sp?await grantLegendSet(sp.id):false;
     await notifyNewUnlocks();
     if(gotSet) enqueueAchievements([{kind:'legendset',sid:sp.id}]);
-    if(typeof ActivityService!=='undefined') await ActivityService.post('collection',{});
   })();
 }
 /* A species pays its first-catch reward ONCE, ever. The old check was only
@@ -16263,7 +15240,6 @@ async function collHandlePhotoUpload(e){
     if(!rec.catches||!rec.catches.length){ rec.catches=[{id:collGenId(), date:new Date().toISOString(), measurements:{}}]; }
     renderCollSpeciesDetail();   // instant — show the photo before the network write finishes
     storageSet('collection-photo:'+collCurrentCat+':'+collCurrentSpecies, JSON.stringify(photoRecord));
-    PublicProfileService.syncPhotoThumb(collCurrentCat,collCurrentSpecies,dataUrl);
     collSaveCategory(collCurrentCat);
     showToast(LANG==='ar'?'انحفظت صورتك 📷':'Your photo was saved 📷');
   }catch(err){ showToast((LANG==='ar'?'فشل رفع الصورة: ':'Photo upload failed: ')+err.message,'error'); }
