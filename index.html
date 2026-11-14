@@ -1931,6 +1931,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   #hubJsonPreview .qp-row .e{ color:#c0392b; display:block; }
   #hubJsonPreview .qp-row .w{ color:var(--ink-soft); display:block; }
   #hubJsonApplyBtn:disabled{ opacity:.45; cursor:not-allowed; }
+  .hub-home{ margin-bottom:12px; padding:18px 16px; text-align:center; background:linear-gradient(160deg, color-mix(in srgb, var(--hub-c) 16%, var(--card)), var(--card)); border-color:color-mix(in srgb, var(--hub-c) 40%, var(--line)); }
+  .hub-home .hh-t{ font-family:var(--font-head); font-weight:700; font-size:1.05rem; color:var(--heading); margin-bottom:12px; }
+  .hub-home .hh-go{ display:block; text-decoration:none; text-align:center; padding:14px; font-size:1rem; }
 </style>
 </head>
 <body>
@@ -3336,7 +3339,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.78.0';
+const APP_VERSION='v1.79.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4003,7 +4006,7 @@ const I18N={
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   mode_light:'فاتح',mode_dark:'داكن',
-  bottom_nav_hub:'الهب',back_hub:'الهب',hub_agents_title:'وكلائي',hub_quick:'أمر سريع',hub_send:'أرسل',hub_apply:'طبّق',hub_io:'📥 تحديث الوكلاء (JSON)',hub_order_ph:'شنو تبي منه؟',hub_desc_challenges:'تحديات يومية وأسبوعية ونقاط',
+  bottom_nav_hub:'المقر',back_hub:'المقر',hub_agents_title:'وكلائي',hub_quick:'أمر سريع',hub_send:'أرسل',hub_apply:'طبّق',hub_io:'📥 تحديث الوكلاء (JSON)',hub_order_ph:'شنو تبي منه؟',hub_desc_challenges:'تحديات يومية وأسبوعية ونقاط',
   quests_title:'مهامي',quests_io:'📥 تحديث المهام (JSON)',quests_preview:'معاينة',back_quests:'→ مهامي',
   ai_paste_title:'🤖 الصق من مساعدك',card_assistant:'مساعدك',hub_desc_assistant:'مساعد ذكي يرتب يومك معاك',auth_forgot:'نسيت كلمة المرور؟',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
@@ -4167,7 +4170,7 @@ const I18N={
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   mode_light:'Light',mode_dark:'Dark',
-  bottom_nav_hub:'Hub',back_hub:'Hub',hub_agents_title:'My agents',hub_quick:'Quick order',hub_send:'Send',hub_apply:'Apply',hub_io:'📥 Update agents (JSON)',hub_order_ph:'What do you need?',hub_desc_challenges:'Daily & weekly challenges, XP',
+  bottom_nav_hub:'HQ',back_hub:'HQ',hub_agents_title:'My agents',hub_quick:'Quick order',hub_send:'Send',hub_apply:'Apply',hub_io:'📥 Update agents (JSON)',hub_order_ph:'What do you need?',hub_desc_challenges:'Daily & weekly challenges, XP',
   quests_title:'My quests',quests_io:'📥 Update quests (JSON)',quests_preview:'Preview',back_quests:'→ My quests',
   ai_paste_title:'🤖 Paste from your assistant',card_assistant:'Your assistant',hub_desc_assistant:'An AI helper that plans your day with you',auth_forgot:'Forgot password?',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
@@ -4872,7 +4875,7 @@ document.addEventListener('keydown',e=>{
   if(k==='n'){ e.preventDefault(); showPanel('home'); enterSection('home'); setTimeout(()=>ccJump('now'),80); return; }
   if(e.key==='?'){ e.preventDefault(); const ar=LANG==='ar';
     openGuideSheet(`<h3 style="margin:0 0 10px;">⌨️ ${ar?'اختصارات الكيبورد':'Keyboard shortcuts'}</h3><div class="kb-list">
-      <kbd>1–5</kbd><span>${ar?`الرئيسية · الجدول · الصحة · ${PUB?'التحديات':'الهب'} · حسابي`:`Home · Schedule · Health · ${PUB?'Challenges':'Hub'} · You`}</span>
+      <kbd>1–5</kbd><span>${ar?`الرئيسية · الجدول · الصحة · ${PUB?'التحديات':'المقر'} · حسابي`:`Home · Schedule · Health · ${PUB?'Challenges':'HQ'} · You`}</span>
       <kbd>W</kbd><span>${ar?'+٠٫٢٥ لتر ماي':'+0.25 L water'}</span>
       <kbd>N</kbd><span>${ar?'شسوي الحين؟':'What now?'}</span>
       <kbd>?</kbd><span>${ar?'هذي القائمة':'This list'}</span></div>`); }
@@ -8346,6 +8349,8 @@ const HUB_META={
   faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'}
 };
 const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
+const HUB_HOME_FALLBACK={mangsi:'https://claude.ai/artifact/7gQ64zvKv5mLm9wc9G24Z6'}; // the agents' HQ
+function hubHome(a){ const r=hubAgents[a]; if(r&&typeof r.home==='string') return hubSafeUrl(r.home)||(r.home===''?(HUB_HOME_FALLBACK[a]||''):''); return HUB_HOME_FALLBACK[a]||''; }
 const HUB_OPEN=['new','sent','working'];
 let hubInbox=[], hubAgents={}, _hubLoaded=false, hubCurAgent='mangsi', hubQuickAgent='mangsi';
 async function loadHub(){
@@ -8408,7 +8413,9 @@ async function renderHubAgent(){
   const now=(r.now||[]).slice(0,8), news=hubNewsSorted(a).slice(0,5), links=(r.links||[]).filter(l=>hubSafeUrl(l.url)), qs=quests.filter(q=>q.agent===a);
   const orders=hubInbox.filter(o=>o.agent===a).sort((x,y)=>String(y.at).localeCompare(String(x.at)));
   const none=t=>`<div class="hub-empty">${t}</div>`;
+  const home=hubHome(a);
   v.innerHTML=`<div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
+    ${home?`<div class="dash-card hub-home" style="--hub-c:${m.c}" data-testid="hub-home"><div class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</div><a class="setup-btn hh-go" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</a></div>`:''}
     <div class="dash-card hub-sec" data-testid="hub-now"><h3>${ar?'الحالة الآن':'Right now'}</h3>${now.length?`<ul class="hub-now">${now.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:none(ar?'ما فيه تحديث ليلحين':'No update yet')}</div>
     <div class="dash-card hub-sec" data-testid="hub-news"><h3>${ar?'آخر الأخبار':'Latest'}</h3>${news.length?news.map(n=>`<div class="hub-news"><span class="d">${escapeHtml(n.date||'')}</span><span>${escapeHtml(n.sum||'')}</span></div>`).join(''):none(ar?'ما فيه أخبار ليلحين':'Nothing yet')}</div>
     <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):none(ar?'ما عنده مهام':'No quests')}</div>
@@ -8441,7 +8448,7 @@ function hubPlan(text){
     if(!HUB_KEYS.includes(a)){ row.errs.push((ar?'وكيل مو معروف: ':'Unknown agent: ')+String(r.agent==null?'':r.agent)); return; }
     if(seenA.has(a)) row.errs.push((ar?'نفس الوكيل مكرر: ':'Agent twice: ')+a); seenA.add(a);
     row.label=`${HUB_META[a].e} ${questAgentName(a)}`;
-    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color','home'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
     let now=r.now==null?[]:r.now; if(!Array.isArray(now)){ row.errs.push(ar?'now لازم قائمة نصوص':'now must be a list of strings'); now=[]; }
     now=now.map(x=>String(x==null?'':x).trim()).filter(Boolean);
     if(now.length>8){ row.warns.push(ar?'now أكثر من ٨ أسطر — خذيت أول ٨':'now has more than 8 lines — kept the first 8'); now=now.slice(0,8); }
@@ -8455,6 +8462,7 @@ function hubPlan(text){
       return {label:String((l&&l.label)||'').trim().slice(0,60)||u, url:u}; }).filter(Boolean).slice(0,12);
     const rec={agent:a, now, news, links, updatedAt:typeof r.updatedAt==='string'&&r.updatedAt.trim()?r.updatedAt.trim().slice(0,40):new Date().toISOString()};
     ['role','emoji','color'].forEach(k=>{ if(typeof r[k]==='string'&&r[k].trim()) rec[k]=r[k].trim().slice(0,k==='role'?60:16); });
+    if('home' in r){ const h=r.home==null?'':String(r.home).trim(); if(h&&!hubSafeUrl(h)) row.errs.push(ar?'home لازم يبدأ بـ https://':'home must start with https://'); else rec.home=h; }
     if(rec.color&&!/^#[0-9a-f]{6}$/i.test(rec.color)){ row.warns.push(ar?'color لازم مثل #1a2b3c — تجاهلته':'color must look like #1a2b3c — ignored'); delete rec.color; }
     row.kind=hubAgents[a]?'replace':'add'; row.rec=rec; out.agents.push(rec);
   });
