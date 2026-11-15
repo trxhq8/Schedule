@@ -3059,7 +3059,7 @@ function placeBoard(el, p, off){
   const w=el.offsetWidth||100, h=el.offsetHeight||60;
   let sx=(_bv.x+1)/2*innerWidth, sy=(1-_bv.y)/2*innerHeight;
   sx=Math.min(innerWidth-w/2-6, Math.max(w/2+6, sx));
-  if(sy<50 || sy>innerHeight-40){ el.style.visibility='hidden'; return null; }
+  sy=Math.min(innerHeight-40-h/2, Math.max(50+h/2, sy));   // clamp, never hide (every agent must show)
   el.style.transform='translate('+sx+'px,'+sy+'px) translate(-50%,-50%)'; el.style.visibility='visible';
   return {el, depth};
 }
@@ -3072,10 +3072,12 @@ function placeBoards(){
     const it=placeBoard(b, _bp, ch.hideLab); if(it){ it.u=ch.urgent?1:0; items.push(it); } }
   items.sort((a,b)=>(b.u-a.u)||(a.depth-b.depth));
   for(const it of items){ const r0=it.el.getBoundingClientRect(); let ok=null;
-    for(const dy of [0, r0.height*.6, -r0.height*.6, r0.height*1.05, -r0.height*1.05]){ const r={left:r0.left,right:r0.right,top:r0.top+dy,bottom:r0.bottom+dy};
-      if(r.top>44 && r.bottom<innerHeight-36 && !taken.some(q=>hit(r,q))){ ok={r,dy}; break; } }
-    if(!ok){ it.el.style.visibility='hidden'; continue; }
-    if(ok.dy) it.el.style.transform += ' translateY('+ok.dy+'px)'; taken.push(ok.r); }
+    const H=r0.height, W=r0.width, tries=[];
+    for(const dx of [0, W*.6, -W*.6, W*1.1, -W*1.1]) for(const dy of [0, H*.6, -H*.6, H*1.05, -H*1.05, H*1.6, -H*1.6]) tries.push([dx,dy]);
+    for(const [dx,dy] of tries){ const r={left:r0.left+dx,right:r0.right+dx,top:r0.top+dy,bottom:r0.bottom+dy};
+      if(r.top>44 && r.bottom<innerHeight-36 && r.left>4 && r.right<innerWidth-4 && !taken.some(q=>hit(r,q))){ ok={r,dx,dy}; break; } }
+    if(!ok) ok={r:r0,dx:0,dy:0};   // no free spot: keep it where it is (a small overlap beats a missing agent)
+    if(ok.dx||ok.dy) it.el.style.transform += ' translate('+ok.dx+'px,'+ok.dy+'px)'; taken.push(ok.r); }
 }
 
 /* ---------- site mode (his My Planner site) ---------- */
