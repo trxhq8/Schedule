@@ -8,7 +8,7 @@
 
    BUMP APP_VERSION every time you deploy a real update — it changes the cache
    name, which makes the old cache get deleted automatically on activate. */
-const APP_VERSION = 'v1.91.0';
+const APP_VERSION = 'v1.92.0';
 const CACHE_NAME = `my-planner-${APP_VERSION}`;
 const STATIC_CACHE = 'my-planner-static-v1'; // libraries/fonts with versioned URLs — kept across deploys
 const PRECACHE_URLS = [
@@ -43,6 +43,8 @@ self.addEventListener('activate', (event) => {
       // delete caches from older app versions (the library cache stays)
       caches.keys().then((names) => {
         const old = names.filter((n) => n !== CACHE_NAME && n !== STATIC_CACHE);
+        // our own ?v= files (old hq.html / planner-data.js versions) piled up in the library cache forever — drop them; current ones re-cache on use
+        caches.open(STATIC_CACHE).then((c) => c.keys().then((ks) => Promise.all(ks.filter((r) => new URL(r.url).origin === self.location.origin).map((r) => c.delete(r))))).catch(() => {});
         return Promise.all(old.map((n) => caches.delete(n))).then(() => old.some((n) => n.startsWith('my-planner-v')));
       }),
       self.clients.claim() // take control of any already-open tabs immediately
