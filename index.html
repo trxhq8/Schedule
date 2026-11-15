@@ -3153,7 +3153,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=10" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=11" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
@@ -3366,7 +3366,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.92.0';
+const APP_VERSION='v1.93.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8398,7 +8398,11 @@ const HUB_META={
   faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'}
 };
 const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
-const HUB_HOME_FALLBACK={mangsi:'https://claude.ai/artifact/7gQ64zvKv5mLm9wc9G24Z6'}; // the agents' HQ
+const HUB_HOME_FALLBACK={ // each agent's own artifact (15 Nov payload) — used until the bridge sends a home; Mangsi = the agents' HQ
+  mangsi:'https://claude.ai/artifact/7gQ64zvKv5mLm9wc9G24Z6', zoori:'https://claude.ai/artifact/5uT7Egvb1t1ZR84AnYWfjY', hariri:'https://claude.ai/artifact/Wa1uzCsTMt9DGGMo3zVJvQ',
+  hamour:'https://claude.ai/artifact/NAq7HgaUdeBwdPzohMi7QU', hoot:'https://claude.ai/artifact/RTCtKdmjzqWaeayebeZbGQ', saboor:'https://claude.ai/artifact/DRp8xjF6K533hZY4yH6t4g',
+  yaryoor:'https://claude.ai/artifact/J4RP25fukF3BwWz7QQRxPM', zubaidi:'https://claude.ai/artifact/L89XLa9MxDkN1xS6XEZ1KE', shaari:'https://claude.ai/artifact/FkryufjkRciQnG3HQQ7FC5',
+  faryala:'https://claude.ai/artifact/Su9F153145wjVJg6mD7ihW'};
 function hubHome(a){ const r=hubAgents[a]; if(r&&typeof r.home==='string') return hubSafeUrl(r.home)||(r.home===''?(HUB_HOME_FALLBACK[a]||''):''); return HUB_HOME_FALLBACK[a]||''; }
 const HUB_OPEN=['new','sent','working'];
 let hubInbox=[], hubAgents={}, _hubLoaded=false, hubCurAgent='mangsi', hubQuickAgent='mangsi', hubUrgentDone={};
@@ -8468,8 +8472,11 @@ function renderHubChips(){
   const pg=document.getElementById('hubQuickPage'); if(pg){ pg.textContent=(LANG==='ar'?`📬 أوامر ومهام ${questAgentName(hubQuickAgent)}`:`📬 ${questAgentName(hubQuickAgent)}: orders & quests`); pg.onclick=()=>{ hubCurAgent=hubQuickAgent; navTo('hubagent'); }; }
 }
 // his rule (15 Nov): tapping an agent opens its own artifact directly; only an agent with no home falls back to the planner page
-function hubOpenAgent(k){ const h=hubHome(k);
-  if(h){ const w=window.open(h,'_blank'); if(w){ try{ w.opener=null; }catch(e){} return; } }
+function hubGo(url){ location.href=url; } // own function so the lab can watch it
+function hubOpenAgent(k,viaIsland){ const h=hubHome(k);
+  if(h){ // a new tab when allowed; when the popup is blocked (iPhone home-screen app, or a tap relayed from the island) go there in this window
+    const w=viaIsland?null:window.open(h,'_blank'); if(w){ try{ w.opener=null; }catch(e){} return; }
+    hubGo(h); return; }
   hubCurAgent=k; navTo('hubagent'); }
 function renderHubGrid(){
   const g=document.getElementById('hubGrid'); if(!g) return;
@@ -8486,7 +8493,7 @@ window.addEventListener('message', ev=>{ const f=hubIslandEl(); if(!f||ev.source
   if(location.origin!=='null'&&ev.origin!==location.origin) return;
   const m=ev.data; if(!m||typeof m!=='object') return;
   if(m.type==='hq-ready'){ f.dataset.ready='1'; if(_hubLoaded) hubFeed(); else loadHub().then(hubFeed); }
-  else if(m.type==='hq-open'&&HUB_KEYS.includes(m.agent)){ hubCurAgent=m.agent; navTo('hubagent'); } });
+  else if(m.type==='hq-open'&&HUB_KEYS.includes(m.agent)){ hubOpenAgent(m.agent,true); } }); // the island only relays when its own window.open was blocked → open the home here, never the planner page
 // the island draws every frame — hold its frames while «المقر» isn't on screen (battery), release on return
 function hubIslandPause(on){ const f=hubIslandEl(); let w=null; try{ w=f&&f.getAttribute('src')&&f.contentWindow; if(!w||typeof w.requestAnimationFrame!=='function') return; }catch(e){ return; }
   if(!w.__rafOrig){ w.__rafOrig=w.requestAnimationFrame.bind(w); w.__rafQ=[]; w.requestAnimationFrame=cb=>{ if(w.__hqPaused){ w.__rafQ.push(cb); return 0; } return w.__rafOrig(cb); }; }
