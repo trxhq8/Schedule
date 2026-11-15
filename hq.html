@@ -3097,14 +3097,14 @@ function placeBoards(){
   deliver = function(){}; toast = function(){}; say = function(){};
   for(const k of Object.keys(SITE)) unboxed.add(k);
   try{ const t=document.getElementById('toasts'); if(t) t.hidden=true; }catch(e){}
-  openAgent = function(id){ if(inFrame){ parent.postMessage({type:'hq-open', agent: SITE[id]||id}, '*'); return; } own(id); };
+  openAgent = function(id){ const h=(docs[id]&&docs[id].home)||''; if(h.indexOf('https://claude.ai/artifact/')===0){ const w=window.open(h,'_blank'); if(w){ try{ w.opener=null; }catch(e){} return; } if(!inFrame) return; } if(inFrame){ parent.postMessage({type:'hq-open', agent: SITE[id]||id}, '*'); return; } own(id); };   // 15 Nov: a tap opens the agent's own artifact directly
   addEventListener('message', ev=>{
     const m=ev.data; if(!m || m.type!=='hq-feed' || !Array.isArray(m.agents)) return;
     const list=[];
     for(const r of m.agents){ const id=HUB[r.agent]||r.agent; if(!SITE[id]) continue;
       const base=docs[id]||{};
       const entries=Array.isArray(r.news)&&r.news.length ? r.news.map(n=>({date:n.date, title:n.sum, sum:n.sum, lines:[]})) : base.entries;
-      list.push(Object.assign({}, base, {agent:id, name: base.name||NAMES[id], now: Array.isArray(r.now)? r.now : base.now, entries, urgent: typeof r.urgent==='string' ? r.urgent : '', updatedAt: r.updatedAt||base.updatedAt})); }
+      list.push(Object.assign({}, base, {agent:id, name: base.name||NAMES[id], now: Array.isArray(r.now)? r.now : base.now, entries, urgent: typeof r.urgent==='string' ? r.urgent : '', home: typeof r.home==='string' ? r.home : (base.home||''), updatedAt: r.updatedAt||base.updatedAt})); }
     if(list.length) window.__feed(list);
   });
   if(inFrame) parent.postMessage({type:'hq-ready'}, '*');
