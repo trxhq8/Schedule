@@ -1908,6 +1908,15 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-island{ display:block; width:100%; height:75vh; min-height:520px; border:0; border-radius:18px; margin:0 0 12px; background:#0b2a3a; overflow:hidden; }
   .hub-list > .hub-grid{ margin-top:10px; }
   .hub-sec .qs-item + .qs-item{ margin-top:8px; }
+  section.panel#panel-agentpage.active{ position:fixed; inset:0; z-index:2000; display:flex; flex-direction:column; background:var(--bg); padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px) !important; margin:0; max-width:none; animation:none; }
+  .ap-bar{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--card); flex-shrink:0; }
+  .ap-x{ width:40px; height:40px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:var(--bg); color:var(--heading); font-size:1.05rem; cursor:pointer; }
+  .ap-bar b{ flex:1; min-width:0; font-family:var(--font-head); font-size:1.05rem; color:var(--heading); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ap-claude{ flex-shrink:0; font-size:.8rem; font-weight:700; color:var(--ink-soft); text-decoration:none; padding:7px 11px; border:1px solid var(--line); border-radius:999px; }
+  .ap-claude[hidden]{ display:none; }
+  .ap-body{ flex:1; min-height:0; position:relative; background:var(--bg); }
+  .ap-body iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#fff; }
+  .ap-body .hub-empty{ padding:40px 20px; text-align:center; }
   .hub-chip{ -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
   .hub-qpage{ display:block; margin:10px auto 0; border:0; background:none; color:var(--ink-soft); font:inherit; font-size:.85rem; font-weight:700; text-decoration:underline; cursor:pointer; padding:6px; }
   .hub-urg-q:not(.done){ border-color:#b5533a; background:color-mix(in srgb, #b5533a 14%, var(--card)); }
@@ -3169,6 +3178,11 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div id="hubJsonPreview"></div>
     </details>
   </section>
+  <!-- 📄 an agent's own page, hosted privately in his Firestore (never in this public repo), sandboxed -->
+  <section class="panel" id="panel-agentpage" data-testid="agent-page">
+    <div class="ap-bar"><button type="button" class="ap-x" id="apClose" aria-label="close" data-testid="ap-close">✕</button><b id="apName"></b><a id="apClaude" class="ap-claude" target="_blank" rel="noopener noreferrer" data-testid="ap-claude">↗ بكلود</a></div>
+    <div class="ap-body" id="apBody"></div>
+  </section>
   <section class="panel" id="panel-hubagent">
     <div class="back-row"><button class="back-btn" data-i18n="back_generic"></button><span></span></div>
     <div id="hubAgentView" data-testid="hub-agent"></div>
@@ -3366,7 +3380,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.93.0';
+const APP_VERSION='v1.94.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4796,7 +4810,7 @@ document.addEventListener('click',e=>{
   if(origin&&!HEALTH_TABS.includes(origin)) returnTo[k]=origin; else delete returnTo[k];
   syncBackLabel(k); hsSyncBack(k); enterSection(k);
 });
-const PANEL_PARENT={ hubagent:'hub', ...(PUB?{}:{challenges:'profile-hub'}), profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
+const PANEL_PARENT={ hubagent:'hub', agentpage:'hub', ...(PUB?{}:{challenges:'profile-hub'}), profile:'profile-hub', social:'profile-hub', progress:'profile-hub', store:'profile-hub', collections:'profile-hub',
   food:'health', workout:'health', habits:'health' };
 const BACK_LABEL={ hub:'back_hub', home:'back_home', today:'back_schedule', health:'back_health', challenges:'back_challenges', 'profile-hub':'back_you',
   food:'back_nutrition', workout:'back_training', habits:'back_habits', progress:'back_progress', profile:'back_profile', social:'back_friends', store:'back_store', collections:'back_collection' };
@@ -4885,7 +4899,7 @@ function showPanel(name){
   if(name==='diettraining') name='health'; // old combined Diet+Training entry → the Health hub
   if(name==='health'){ name=healthLastTab(); opts._hs=1; } // the Health tab opens its last sub-tab
   if(name==='social') name='profile-hub'; // friends were removed (v1.77) — any old link lands on You
-  else if(PUB&&(name==='collections'||name==='quests'||name==='hub'||name==='hubagent')) name=name==='collections'?'profile-hub':'home';
+  else if(PUB&&(name==='collections'||name==='quests'||name==='hub'||name==='hubagent'||name==='agentpage')) name=name==='collections'?'profile-hub':'home';
   // remember where a sub-page was opened from, so Back returns there
   if(!ROOT_PANELS.includes(name) && name!==currentPanelName && !opts.back && currentPanelName!==name){
     if(returnTo[currentPanelName]!==name) returnTo[name]=currentPanelName;
@@ -7915,6 +7929,8 @@ function enterSection(name){
   if(name==='store') renderStoreSection();
   if(name==='quests') renderQuests();
   hubIslandPause(name!=='hub');
+  if(name!=='agentpage') apTeardown();
+  if(name==='agentpage') apRender();
   if(name==='hub') renderHub();
   if(name==='hubagent'){ renderHubAgent(); loadHub().then(()=>{ if(currentPanelName==='hubagent') renderHubAgent(); }).catch(()=>{}); }
   if(name==='profile-hub') renderGuestNote();
@@ -8415,6 +8431,7 @@ async function loadHub(){
   try{ const v=await storageGet('hubAgents'); const a=v?JSON.parse(v):[]; hubAgents={}; (Array.isArray(a)?a:[]).forEach(r=>{ if(r&&r.agent) hubAgents[r.agent]=r; }); }catch(e){ hubAgents={}; }
   try{ const v=await storageGet('urgentDone'); const o=v?JSON.parse(v):{}; if(o&&typeof o==='object'&&!Array.isArray(o)){ for(const k in o) if(Array.isArray(o[k])){ hubUrgentDone[k]=[...new Set([...(hubUrgentDone[k]||[]),...o[k].filter(x=>typeof x==='string')])].slice(-50); } } }catch(e){}
   hubScrubUrgent();
+  await apLoadIndex();
   _hubLoaded=true;
 }
 const saveHubInbox=()=>storageSet('hubInbox',JSON.stringify(hubInbox));
@@ -8459,6 +8476,170 @@ async function hubCancelOrder(id){
   if(hubInbox[i].status!=='new'){ showToast(ar?'وصل الأمر خلاص — ما ينلغي':'Already received — can’t cancel','error'); return; }
   hubInbox.splice(i,1); await saveHubInbox(); showToast(ar?'انلغى الأمر':'Order cancelled');
 }
+/* ================= 📄 AGENT PAGES INSIDE THE SITE =================
+   Each agent's page (its claude.ai artifact's HTML) lives in users/{uid}/data/agentPage_<key> = {html, updatedAt, version}.
+   Shown in a sandboxed iframe (no allow-same-origin: it can't reach the planner, its storage or Firebase). A small shim gives it
+   window.claude.use('db'|'user'); every db call is relayed here, checked (ev.source === that frame) and kept in ONE doc per
+   agent: users/{uid}/data/agentPageDb_<key> = {"<collection>/<id>": {data, version, updatedAt}} — offline-first via Firestore
+   persistence; the bridge on his PC reads it back. These docs skip the localStorage cache (pages are big). */
+const AP_MAX_KB=900, AP_DOC_MAX=256*1024, AP_MAP_MAX=900*1024;
+let apIndex={}, apCur=null;
+async function apLoadIndex(){ try{ const v=await storageGet('agentPagesIndex'); const o=v?JSON.parse(v):{}; apIndex=(o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ apIndex={}; } }
+async function apDocGet(key){
+  if(currentUser&&fbDb){ try{
+    const ref=fsDataRef(key), cache=()=>ref.get({source:'cache'}).catch(()=>null); let d=null;
+    if(navigator.onLine===false||Date.now()<_netSlowUntil) d=await cache();
+    if(!d) d=await Promise.race([ref.get(), new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),4000))]).catch(async()=>{ _netSlowUntil=Date.now()+20000; return await cache(); });
+    if(d&&d.exists&&typeof d.data().value==='string') return d.data().value;
+    if(d&&d.metadata&&!d.metadata.fromCache) return _mem[key]!==undefined?_mem[key]:null;
+  }catch(e){} }
+  return _mem[key]!==undefined?_mem[key]:null;
+}
+function apDocSet(key,value){ _mem[key]=value; if(currentUser&&fbDb){ try{ syncTrack(fsDataRef(key).set({value},{merge:true})); }catch(e){} } }
+async function apUserId(){ const uid=(currentUser&&currentUser.uid)||'guest';
+  try{ const h=await crypto.subtle.digest('SHA-256', new TextEncoder().encode('planner-page:'+uid)); return 'u_'+[...new Uint8Array(h)].slice(0,12).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  catch(e){ let x=0; for(const c of uid) x=(x*31+c.charCodeAt(0))>>>0; return 'u_'+x.toString(16); } }
+// runs INSIDE the sandboxed page (injected as source text) — talks to the planner only through postMessage
+function apShim(U){
+  var P=parent, seq=0, waits={}, subs={};
+  function call(op,a){ return new Promise(function(res,rej){ var id=++seq; waits[id]=[res,rej]; a=a||{}; a.__ap=1; a.id=id; a.op=op; P.postMessage(a,'*'); }); }
+  addEventListener('message',function(e){ if(e.source!==P) return; var m=e.data; if(!m||m.__ap!==1) return;
+    if(m.sid){ var s=subs[m.sid]; if(s) s(m.snap); return; }
+    var w=waits[m.id]; if(!w) return; delete waits[m.id]; if(m.ok) w[0](m.res); else w[1](m.err); });
+  function seg(p){ if(typeof p!=='string'||!p) throw new TypeError('db: bad path'); var s=p.split('/'); if(s.length>16||p.length>1000) throw new TypeError('db: path too long'); for(var i=0;i<s.length;i++) if(!s[i]||s[i].length>200) throw new TypeError('db: bad path '+p); return s; }
+  function clone(x){ return x===undefined?undefined:JSON.parse(JSON.stringify(x)); }
+  function dsnap(o){ return {id:o.id, exists:o.exists, metadata:o.metadata, data:function(){ return o.exists?clone(o.data):undefined; }}; }
+  function qsnap(o){ var docs=o.docs.map(dsnap), ch=(o.changes||[]).map(function(c){ return {type:c.type, oldIndex:c.oldIndex, newIndex:c.newIndex, doc:dsnap(c.doc)}; });
+    return {docs:docs, size:docs.length, empty:!docs.length, metadata:o.metadata, docChanges:function(){ return ch; }, forEach:function(f){ docs.forEach(f); }}; }
+  function rid(){ var c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', a=new Uint8Array(20), s=''; crypto.getRandomValues(a); for(var i=0;i<20;i++) s+=c[a[i]%62]; return s; }
+  function report(e){ try{ reportError(e); }catch(x){ console.error(e); } }
+  function sub(spec,cb){ var sid='s'+(++seq); subs[sid]=cb; spec.__ap=1; spec.op='sub'; spec.sid=sid; P.postMessage(spec,'*');
+    return function(){ if(subs[sid]){ delete subs[sid]; P.postMessage({__ap:1,op:'unsub',sid:sid},'*'); } }; }
+  function docRef(path){ var s=seg(path); if(s.length%2) throw new TypeError('db: a document path needs an even number of segments: '+path);
+    return { id:s[s.length-1], path:path,
+      get:function(){ return call('get',{path:path}).then(dsnap); },
+      set:function(d){ return call('set',{path:path,data:clone(d)}).then(function(){}); },
+      update:function(d){ return call('update',{path:path,data:clone(d)}).then(function(){}); },
+      delete:function(){ return call('delete',{path:path}).then(function(){}); },
+      acquire:function(o){ return call('acquire',{path:path,options:clone(o||{})}); },
+      onSnapshot:function(next,err){ return sub({kind:'doc',path:path},function(x){ if(x&&x.error){ err?err(x.error):report(x.error); return; } next(dsnap(x)); }); },
+      collection:function(p){ return colRef(path+'/'+p); } }; }
+  function query(path,q){ return {
+      where:function(f,op,v){ return query(path,{w:(q.w||[]).concat([[f,op,clone(v)]]),o:q.o,l:q.l}); },
+      orderBy:function(f,d){ return query(path,{w:q.w,o:[f,d||'asc'],l:q.l}); },
+      limit:function(n){ return query(path,{w:q.w,o:q.o,l:n}); },
+      get:function(){ return call('query',{path:path,q:q}).then(qsnap); },
+      onSnapshot:function(next,err){ return sub({kind:'query',path:path,q:q},function(x){ if(x&&x.error){ err?err(x.error):report(x.error); return; } next(qsnap(x)); }); } }; }
+  function colRef(path){ var s=seg(path); if(!(s.length%2)) throw new TypeError('db: a collection path needs an odd number of segments: '+path);
+    var c=query(path,{}); c.path=path; c.doc=function(id){ return docRef(path+'/'+(id||rid())); };
+    c.add=function(d){ var r=c.doc(); return r.set(d).then(function(){ return r; }); }; return c; }
+  var db={doc:docRef, collection:colRef};
+  var me={id:U.id, name:U.name||'', avatarUrl:U.av, color:'#5b7fa6', email:null, isOwner:true, canEdit:true};
+  function R(v){ return Promise.resolve(v); }
+  var user={ isOwner:function(){ return R(true); }, canEdit:function(){ return R(true); }, can:function(c){ return R(c==='data.write'); },
+    me:function(){ return R(JSON.parse(JSON.stringify(me))); }, id:function(){ return R(me.id); }, name:function(){ return R(me.name); },
+    avatarUrl:function(){ return R(me.avatarUrl); }, email:function(){ return R(null); }, search:function(){ return R([]); },
+    profiles:function(ids){ ids=typeof ids==='string'?[ids]:(ids||[]); var o={}; for(var i=0;i<ids.length;i++){ var x=ids[i]; o[x]={id:x, name:x===me.id?me.name:'', avatarUrl:me.avatarUrl, color:'#5b7fa6', email:null, isMe:x===me.id, guest:false}; } return R(o); } };
+  window.claude={ use:function(n){ return R(n==='db'?db:n==='user'?user:null); } };
+}
+function apWrap(html,U){
+  const u=JSON.stringify(U).replace(/</g,'\\u003c');
+  return '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><script>('+apShim.toString()+')('+u+');<'+'/script>'
+    +String(html).replace(/^\uFEFF?\s*<!doctype[^>]*>/i,'');
+}
+const apErr=(code,message)=>({code,message});
+function apSegs(p){ if(typeof p!=='string'||!p||p.length>1000) return null; const s=p.split('/'); if(s.length>16||s.some(x=>!x||x.length>200)) return null; return s; }
+function apIsObj(x){ return !!x&&typeof x==='object'&&!Array.isArray(x); }
+function apMerge(a,b){ const o={...a}; for(const k in b){ o[k]=apIsObj(b[k])&&apIsObj(o[k])?apMerge(o[k],b[k]):b[k]; } return o; }
+function apMeta(){ return {fromCache:false, hasPendingWrites:!!(apCur&&apCur.dirty)}; }
+function apDocSnap(path){ const e=apCur.M[path], s=path.split('/'); return {id:s[s.length-1], exists:!!e, data:e?e.data:undefined, metadata:apMeta()}; }
+function apCmp(a,b){ if(a===b) return 0; if(a===undefined) return 1; if(b===undefined) return -1; return a<b?-1:a>b?1:0; }
+function apTest(v,op,x){ switch(op){ case '==': return JSON.stringify(v)===JSON.stringify(x); case '!=': return v!==undefined&&JSON.stringify(v)!==JSON.stringify(x);
+  case '<': return v!==undefined&&v<x; case '<=': return v!==undefined&&v<=x; case '>': return v!==undefined&&v>x; case '>=': return v!==undefined&&v>=x;
+  case 'in': return Array.isArray(x)&&x.some(y=>JSON.stringify(y)===JSON.stringify(v)); case 'not-in': return v!==undefined&&Array.isArray(x)&&!x.some(y=>JSON.stringify(y)===JSON.stringify(v));
+  case 'array-contains': return Array.isArray(v)&&v.some(y=>JSON.stringify(y)===JSON.stringify(x)); default: throw apErr('invalid_argument','unknown operator '+op); } }
+function apQuery(path,q){ q=q||{};
+  const pre=path+'/', n=path.split('/').length+1;
+  let docs=Object.keys(apCur.M).filter(k=>k.startsWith(pre)&&k.split('/').length===n).sort().map(k=>apDocSnap(k));
+  const w=Array.isArray(q.w)?q.w:[]; if(w.length>10) throw apErr('invalid_argument','at most 10 filters');
+  for(const [f,op,x] of w) docs=docs.filter(d=>apTest((d.data||{})[f],op,x));
+  if(Array.isArray(q.o)&&q.o[0]){ const [f,dir]=q.o, s=dir==='desc'?-1:1; docs.sort((a,b)=>{ const va=(a.data||{})[f], vb=(b.data||{})[f]; if(va===undefined&&vb!==undefined) return 1; if(vb===undefined&&va!==undefined) return -1; return s*apCmp(va,vb)||apCmp(a.id,b.id); }); }
+  if(q.l!=null){ const l=Math.floor(+q.l); if(!(l>=1&&l<=1000)) throw apErr('invalid_argument','limit must be 1-1000'); docs=docs.slice(0,l); }
+  return docs; }
+function apPost(msg){ try{ apCur.frame.contentWindow.postMessage(msg,'*'); }catch(e){} }
+function apPush(sid,sb){
+  let snap;
+  try{ if(sb.kind==='doc') snap=apDocSnap(sb.path);
+    else { const docs=apQuery(sb.path,sb.q), prev=sb.prev||[], changes=[];
+      const pi=new Map(prev.map((d,i)=>[d.id,i])), ni=new Map(docs.map((d,i)=>[d.id,i]));
+      prev.forEach((d,i)=>{ if(!ni.has(d.id)) changes.push({type:'removed',oldIndex:i,newIndex:-1,doc:d}); });
+      docs.forEach((d,i)=>{ if(!pi.has(d.id)) changes.push({type:'added',oldIndex:-1,newIndex:i,doc:d}); else if(JSON.stringify(prev[pi.get(d.id)].data)!==JSON.stringify(d.data)) changes.push({type:'modified',oldIndex:pi.get(d.id),newIndex:i,doc:d}); });
+      if(sb.prev&&!changes.length&&prev.map(d=>d.id).join()===docs.map(d=>d.id).join()) return; sb.prev=docs; snap={docs, changes, metadata:apMeta()}; }
+  }catch(e){ apPost({__ap:1,sid,snap:{error:e&&e.code?e:apErr('invalid_argument',String(e))}}); return; }
+  if(sb.kind==='doc'){ const j=JSON.stringify([snap.exists,snap.data]); if(sb.last===j) return; sb.last=j; }
+  apPost({__ap:1,sid,snap});
+}
+function apNotify(){ if(!apCur) return; apCur.subs.forEach((sb,sid)=>apPush(sid,sb)); }
+function apSave(){ if(!apCur) return; apCur.dirty++; clearTimeout(apCur.saveT); apCur.saveT=setTimeout(apFlush,200); }
+function apFlush(){ if(!apCur||!apCur.dirty) return; clearTimeout(apCur.saveT); apDocSet('agentPageDb_'+apCur.k, JSON.stringify(apCur.M)); apCur.dirty=0; }
+function apWrite(path,fn){
+  const s=apSegs(path); if(!s||s.length%2) throw apErr('invalid_argument','bad document path');
+  const cur=apCur.M[path], next=fn(cur);
+  if(next===undefined){ if(cur){ delete apCur.M[path]; apSave(); apNotify(); } return; }
+  if(!apIsObj(next)) throw apErr('invalid_argument','a document body must be a JSON object');
+  if(JSON.stringify(next).length>AP_DOC_MAX) throw apErr('invalid_argument','document over 256 KiB');
+  const was=apCur.M[path]; apCur.M[path]={data:next, version:((cur&&cur.version)||0)+1, updatedAt:new Date().toISOString()};
+  if(JSON.stringify(apCur.M).length>AP_MAP_MAX){ if(was) apCur.M[path]=was; else delete apCur.M[path]; throw apErr('quota_exceeded','this page is out of room'); }
+  apSave(); apNotify(); }
+function apHandle(m){
+  const reply=(ok,v)=>apPost(ok?{__ap:1,id:m.id,ok:true,res:v}:{__ap:1,id:m.id,ok:false,err:v&&v.code?v:apErr('invalid_argument',String(v))});
+  try{
+    switch(m.op){
+      case 'get': { const s=apSegs(m.path); if(!s||s.length%2) throw apErr('invalid_argument','bad document path'); return reply(true,apDocSnap(m.path)); }
+      case 'set': apWrite(m.path,()=>m.data); return reply(true,null);
+      case 'update': apWrite(m.path,cur=>{ if(!cur) throw apErr('invalid_argument','update needs an existing document — use set'); if(!apIsObj(m.data)) throw apErr('invalid_argument','a body must be an object'); return apMerge(cur.data,m.data); }); return reply(true,null);
+      case 'delete': apWrite(m.path,()=>undefined); return reply(true,null);
+      case 'acquire': { const o=apIsObj(m.options)?m.options:{}, ttl=Math.min(600000,Math.max(1000,+o.ttlMs||30000));
+        if(apIsObj(o.data)) apWrite(m.path,cur=>apMerge(cur?cur.data:{},o.data));
+        const e=apCur.M[m.path]; return reply(true,{acquired:true, version:e?e.version:0, expiresAt:new Date(Date.now()+ttl).toISOString(), holder:String(o.holder||'')}); }
+      case 'query': { const s=apSegs(m.path); if(!s||!(s.length%2)) throw apErr('invalid_argument','bad collection path'); const docs=apQuery(m.path,m.q); return reply(true,{docs,changes:docs.map((d,i)=>({type:'added',oldIndex:-1,newIndex:i,doc:d})),metadata:apMeta()}); }
+      case 'sub': { if(typeof m.sid!=='string') return; const s=apSegs(m.path);
+        if(!s||(m.kind==='doc'?s.length%2:!(s.length%2))){ apPost({__ap:1,sid:m.sid,snap:{error:apErr('invalid_argument','bad path')}}); return; }
+        if(apCur.subs.size>=64){ apPost({__ap:1,sid:m.sid,snap:{error:apErr('resource_exhausted','too many subscriptions')}}); return; }
+        const sb={kind:m.kind==='doc'?'doc':'query', path:m.path, q:m.q||{}}; apCur.subs.set(m.sid,sb); apPush(m.sid,sb); return; }
+      case 'unsub': apCur.subs.delete(m.sid); return;
+    }
+    reply(false,apErr('invalid_argument','unknown call'));
+  }catch(e){ reply(false,e); }
+}
+window.addEventListener('message',ev=>{ if(!apCur||!apCur.frame||ev.source!==apCur.frame.contentWindow) return; const m=ev.data; if(!m||m.__ap!==1||typeof m.op!=='string') return; apHandle(m); });
+window.addEventListener('pagehide',()=>apFlush());
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') apFlush(); });
+function apTeardown(){ if(!apCur) return; apFlush(); try{ apCur.unsubFs&&apCur.unsubFs(); }catch(e){} if(apCur.frame) apCur.frame.remove(); apCur=null; }
+async function apRender(){
+  apTeardown();
+  const k=hubCurAgent, ar=LANG==='ar', body=document.getElementById('apBody'), token={};
+  document.getElementById('apName').textContent=`${hubMeta(k).e} ${questAgentName(k)}`;
+  const home=hubHome(k), cl=document.getElementById('apClaude'); cl.hidden=!home; if(home) cl.href=home; cl.textContent=ar?'↗ بكلود':'↗ Claude';
+  document.getElementById('apClose').onclick=()=>goBack('agentpage');
+  body.innerHTML=`<div class="hub-empty">${ar?'يفتح…':'Opening…'}</div>`;
+  apCur={k, token, M:{}, subs:new Map(), dirty:0, frame:null};
+  const [pv,dv,uid]=await Promise.all([apDocGet('agentPage_'+k), apDocGet('agentPageDb_'+k), apUserId()]);
+  if(!apCur||apCur.token!==token) return;
+  let page=null; try{ page=pv?JSON.parse(pv):null; }catch(e){}
+  if(!page||typeof page.html!=='string'||!page.html.trim()){
+    body.innerHTML=`<div class="hub-empty">${ar?'صفحته ما وصلت هالجهاز ليلحين.':'This page hasn’t reached this device yet.'}${home?`<br><br><a class="setup-btn" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer">${ar?'افتحها بكلود ↗':'Open in Claude ↗'}</a>`:''}</div>`; return; }
+  try{ const m=dv?JSON.parse(dv):{}; apCur.M=apIsObj(m)?m:{}; }catch(e){}
+  const f=document.createElement('iframe');
+  f.setAttribute('sandbox','allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals');
+  f.setAttribute('referrerpolicy','no-referrer'); f.setAttribute('data-testid','ap-frame'); f.title=questAgentName(k);
+  f.srcdoc=apWrap(page.html,{id:uid, name:(P&&P.publicProfile&&P.publicProfile.displayName)||'', av:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#5b7fa6"/></svg>')});
+  body.innerHTML=''; apCur.frame=f; body.appendChild(f);
+  // his other devices / the bridge: follow the stored copy while nothing local is waiting to save
+  if(currentUser&&fbDb){ try{ apCur.unsubFs=fsDataRef('agentPageDb_'+k).onSnapshot(s=>{
+    if(!apCur||apCur.token!==token||apCur.dirty) return; const v=s.exists?s.data().value:null; let m; try{ m=v?JSON.parse(v):{}; }catch(e){ return; }
+    if(!apIsObj(m)||JSON.stringify(m)===JSON.stringify(apCur.M)) return; apCur.M=m; apNotify(); },()=>{}); }catch(e){} }
+}
 function renderHubChips(){
   const box=document.getElementById('hubQuickAgents'); if(!box) return;
   box.innerHTML=HUB_KEYS.map(k=>`<button type="button" class="hub-chip${k===hubQuickAgent?' on':''}" data-hq="${k}" role="radio" aria-checked="${k===hubQuickAgent}" data-testid="hub-chip-${k}">${escapeHtml(hubMeta(k).e)} ${escapeHtml(questAgentName(k))}</button>`).join('');
@@ -8472,12 +8653,10 @@ function renderHubChips(){
   const pg=document.getElementById('hubQuickPage'); if(pg){ pg.textContent=(LANG==='ar'?`📬 أوامر ومهام ${questAgentName(hubQuickAgent)}`:`📬 ${questAgentName(hubQuickAgent)}: orders & quests`); pg.onclick=()=>{ hubCurAgent=hubQuickAgent; navTo('hubagent'); }; }
 }
 // his rule (15 Nov): tapping an agent opens its own artifact directly; only an agent with no home falls back to the planner page
-function hubGo(url){ location.href=url; } // own function so the lab can watch it
-function hubOpenAgent(k,viaIsland){ const h=hubHome(k);
-  if(h){ // a new tab when allowed; when the popup is blocked (iPhone home-screen app, or a tap relayed from the island) go there in this window
-    const w=viaIsland?null:window.open(h,'_blank'); if(w){ try{ w.opener=null; }catch(e){} return; }
-    hubGo(h); return; }
-  hubCurAgent=k; navTo('hubagent'); }
+// a tap on an agent opens its page INSIDE the site (stored privately in his Firestore); an agent with no stored page yet
+// gets its planner page, whose «صفحة <name> ↗» card is a real link. This window itself never goes to claude.ai
+// (on iPad that split the screen into the Claude app + a blank «Done» sheet).
+function hubOpenAgent(k){ hubCurAgent=k; navTo(apIndex[k]?'agentpage':'hubagent'); }
 function renderHubGrid(){
   const g=document.getElementById('hubGrid'); if(!g) return;
   g.innerHTML=HUB_KEYS.map(k=>{ const m=hubMeta(k), n=hubOpenCount(k), sm=hubSummary(k);
@@ -8487,13 +8666,13 @@ function renderHubGrid(){
 }
 function hubIslandEl(){ return document.getElementById('hubIsland'); }
 function hubFeed(){ const f=hubIslandEl(); if(!f||!f.contentWindow||!f.dataset.ready) return;
-  const agents=HUB_KEYS.map(k=>hubAgents[k]||(hubHome(k)?{agent:k}:null)).filter(Boolean).map(r=>({agent:r.agent, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], urgent:typeof r.urgent==='string'?r.urgent:'', home:hubHome(r.agent), updatedAt:r.updatedAt||''}));
+  const agents=HUB_KEYS.map(k=>hubAgents[k]||(hubHome(k)?{agent:k}:null)).filter(Boolean).map(r=>({agent:r.agent, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], urgent:typeof r.urgent==='string'?r.urgent:'', home:'', updatedAt:r.updatedAt||''})); // home '' → the island relays the tap (hq-open) and the site opens the page inside
   try{ f.contentWindow.postMessage({type:'hq-feed', agents}, location.origin==='null'?'*':location.origin); }catch(e){} }
 window.addEventListener('message', ev=>{ const f=hubIslandEl(); if(!f||ev.source!==f.contentWindow) return;
   if(location.origin!=='null'&&ev.origin!==location.origin) return;
   const m=ev.data; if(!m||typeof m!=='object') return;
   if(m.type==='hq-ready'){ f.dataset.ready='1'; if(_hubLoaded) hubFeed(); else loadHub().then(hubFeed); }
-  else if(m.type==='hq-open'&&HUB_KEYS.includes(m.agent)){ hubOpenAgent(m.agent,true); } }); // the island only relays when its own window.open was blocked → open the home here, never the planner page
+  else if(m.type==='hq-open'&&HUB_KEYS.includes(m.agent)){ hubOpenAgent(m.agent); } }); // the island only relays when its own window.open was blocked → open the home here, never the planner page
 // the island draws every frame — hold its frames while «المقر» isn't on screen (battery), release on return
 function hubIslandPause(on){ const f=hubIslandEl(); let w=null; try{ w=f&&f.getAttribute('src')&&f.contentWindow; if(!w||typeof w.requestAnimationFrame!=='function') return; }catch(e){ return; }
   if(!w.__rafOrig){ w.__rafOrig=w.requestAnimationFrame.bind(w); w.__rafQ=[]; w.requestAnimationFrame=cb=>{ if(w.__hqPaused){ w.__rafQ.push(cb); return 0; } return w.__rafOrig(cb); }; }
@@ -8515,7 +8694,8 @@ async function renderHubAgent(){
   const orders=hubInbox.filter(o=>o.agent===a).sort((x,y)=>String(y.at).localeCompare(String(x.at)));
   const none=t=>`<div class="hub-empty">${t}</div>`;
   const home=hubHome(a);
-  v.innerHTML=`${home?`<a class="dash-card hub-home" style="--hub-c:${m.c}" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</span></a>`:''}
+  const inSite=!!apIndex[a];
+  v.innerHTML=`${inSite?`<button type="button" class="dash-card hub-home" style="--hub-c:${m.c};width:100%;font:inherit;cursor:pointer" data-ap-open="1" data-testid="hub-home-site"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">📄 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go">${ar?'افتح صفحته':'Open the page'}</span></button>`:''}${!inSite&&home?`<a class="dash-card hub-home" style="--hub-c:${m.c}" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</span></a>`:''}
     <div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
     <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${urg?`<button type="button" class="qs-item main hub-urg-q" data-urgtick="1" role="checkbox" aria-checked="false" data-testid="hub-urgent"><span class="qs-c"></span><span class="qs-t">🙋 ${escapeHtml(urg)}</span></button>`:''}${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):(urg?'':none(ar?'ما عنده مهام':'No quests'))}</div>
     <div class="dash-card hub-sec hub-compose"><h3>📤 ${ar?'أمر جديد':'New order'}</h3><textarea id="hubAgentText" class="setup-input" rows="2" maxlength="1000" placeholder="${escapeHtml(ar?`شنو تبي من ${m.name}؟`:`What do you need from ${m.name}?`)}">${escapeHtml(draft)}</textarea><button type="button" class="setup-btn hub-send" id="hubAgentSend" data-testid="hub-agent-send">📤 ${t('hub_send')}</button></div>
@@ -8524,21 +8704,42 @@ async function renderHubAgent(){
   v.querySelector('#hubAgentSend').onclick=async e=>{ const b=e.currentTarget, ta=document.getElementById('hubAgentText'); b.disabled=true;
     if(await hubSendOrder(a,ta.value)){ ta.value=''; renderHubAgent(); } else b.disabled=false; };
   v.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{ b.disabled=true; await hubCancelOrder(b.dataset.cancel); renderHubAgent(); });
+  const apb=v.querySelector('[data-ap-open]'); if(apb) apb.onclick=()=>{ hubCurAgent=a; navTo('agentpage'); };
   const ub=v.querySelector('[data-urgtick]'); if(ub) ub.onclick=()=>{ ub.disabled=true; ub.classList.add('done'); ub.setAttribute('aria-checked','true'); ub.querySelector('.qs-c').textContent='✓'; hubTickUrgent(a); };
   v.querySelectorAll('[data-hqid]').forEach(b=>b.onclick=async()=>{ const q=quests.find(x=>x.id===b.dataset.hqid); if(!q) return;
     q.done=!q.done; if(q.done){ q.doneAt=new Date().toISOString(); playSfx('success'); } else delete q.doneAt; renderHubAgent(); await saveQuests(); });
 }
 /* «agents board + replies» box — {agents:[…], inbox:[…]}, both optional */
 function hubPlan(text){
-  const ar=LANG==='ar', out={ok:false,fatal:'',rows:[],agents:[],inbox:[]};
-  let data; try{ data=JSON.parse(cmCleanJson(text)); }catch(e){ out.fatal=ar?'⚠️ هذا مو JSON صحيح':'⚠️ Not valid JSON'; return out; }
+  const ar=LANG==='ar', out={ok:false,fatal:'',rows:[],agents:[],inbox:[],pages:[]};
+  // strict first: the cleaner (smart quotes → ", trailing commas) would corrupt a page's html inside the JSON
+  let data; try{ data=JSON.parse(String(text||'').replace(/^﻿/,'').trim()); }catch(e0){ data=undefined; }
+  if(data===undefined) try{ data=JSON.parse(cmCleanJson(text)); }catch(e){ out.fatal=ar?'⚠️ هذا مو JSON صحيح':'⚠️ Not valid JSON'; return out; }
   if(Array.isArray(data)&&data.length===1&&data[0]&&typeof data[0]==='object'&&!Array.isArray(data[0])) data=data[0];
   if(!data||typeof data!=='object'||Array.isArray(data)){ out.fatal=ar?'⚠️ لازم يكون {"agents":[…], "inbox":[…]}':'⚠️ Expected {"agents":[…], "inbox":[…]}'; return out; }
-  const top=[]; Object.keys(data).forEach(k=>{ if(!['agents','inbox'].includes(k)) top.push(k); });
+  const top=[]; Object.keys(data).forEach(k=>{ if(!['agents','inbox','pages'].includes(k)) top.push(k); });
   if(top.length) out.rows.push({n:'•',errs:[],warns:[(ar?'تجاهلت: ':'Ignored: ')+top.join(', ')],label:''});
   const agents=data.agents==null?[]:data.agents, inbox=data.inbox==null?[]:data.inbox;
   if(!Array.isArray(agents)||!Array.isArray(inbox)){ out.fatal=ar?'⚠️ agents و inbox لازم يكونون قوائم [ ]':'⚠️ agents and inbox must be arrays'; return out; }
-  if(!agents.length&&!inbox.length){ out.fatal=ar?'⚠️ ما فيه شي ينحفظ':'⚠️ Nothing to save'; return out; }
+  const pages=data.pages==null?[]:data.pages;
+  if(!Array.isArray(pages)){ out.fatal=ar?'⚠️ pages لازم قائمة [ ]':'⚠️ pages must be an array'; return out; }
+  if(!agents.length&&!inbox.length&&!pages.length){ out.fatal=ar?'⚠️ ما فيه شي ينحفظ':'⚠️ Nothing to save'; return out; }
+  const seenP=new Set(), enc=new TextEncoder();
+  pages.forEach((r,i)=>{
+    const row={n:'P'+(i+1),errs:[],warns:[],label:''}; out.rows.push(row);
+    if(!r||typeof r!=='object'||Array.isArray(r)){ row.errs.push(ar?'لازم يكون {agent, html}':'Must be {agent, html}'); return; }
+    const a=questAgentKey(r.agent);
+    if(!HUB_KEYS.includes(a)){ row.errs.push((ar?'وكيل مو معروف: ':'Unknown agent: ')+String(r.agent==null?'':r.agent)); return; }
+    if(seenP.has(a)) row.errs.push((ar?'نفس الوكيل مكرر: ':'Agent twice: ')+a); seenP.add(a);
+    const html=typeof r.html==='string'?r.html:'', kb=Math.ceil(enc.encode(html).length/1024);
+    row.label=`📄 ${HUB_META[a].e} ${ar?'صفحة':'page'} ${questAgentName(a)} · ${kb} KB`;
+    if(!html.trim()) row.errs.push(ar?'html فاضي':'html is empty');
+    else if(kb>AP_MAX_KB) row.errs.push(ar?`الصفحة ${kb} KB — الحد ${AP_MAX_KB} KB`:`Page is ${kb} KB — limit ${AP_MAX_KB} KB`);
+    const updatedAt=typeof r.updatedAt==='string'&&r.updatedAt.trim()?r.updatedAt.trim().slice(0,40):new Date().toISOString();
+    if(!row.errs.length&&enc.encode(JSON.stringify({value:JSON.stringify({html,updatedAt,version:999999})})).length>1000000) row.errs.push(ar?'الصفحة كبيرة على الحفظ — صغّرها':'Too big to store — make it smaller');
+    Object.keys(r).forEach(k=>{ if(!['agent','html','updatedAt'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    row.kind=apIndex[a]?'replace':'add'; out.pages.push({agent:a, html, updatedAt, size:kb});
+  });
   const seenA=new Set();
   agents.forEach((r,i)=>{
     const row={n:'A'+(i+1),errs:[],warns:[],label:''}; out.rows.push(row);
@@ -8595,7 +8796,7 @@ function renderHubPreview(plan){
   if(plan.fatal){ box.innerHTML=`<div class="qp-row" data-testid="hub-json-summary"><span class="e">${escapeHtml(plan.fatal)}</span></div>`; return; }
   const bad=plan.rows.filter(r=>r.errs.length).length, skip=plan.rows.filter(r=>r.kind==='skip').length;
   const sum=bad?(ar?`⚠️ ${bad} سطر فيه خطأ — ما راح ينحفظ شي لين تصلحها`:`⚠️ ${bad} row(s) with errors — nothing is saved until they’re fixed`)
-    :(ar?`🐟 ${plan.agents.length} وكيل يتحدث · 📬 ${plan.inbox.length} أمر يتحدث${skip?` · ${skip} ما لقيته`:''}`:`🐟 ${plan.agents.length} agent(s) · 📬 ${plan.inbox.length} order(s)${skip?` · ${skip} not found`:''}`);
+    :(ar?`🐟 ${plan.agents.length} وكيل يتحدث · 📬 ${plan.inbox.length} أمر يتحدث${plan.pages&&plan.pages.length?` · 📄 ${plan.pages.length} صفحة`:''}${skip?` · ${skip} ما لقيته`:''}`:`🐟 ${plan.agents.length} agent(s) · 📬 ${plan.inbox.length} order(s)${plan.pages&&plan.pages.length?` · 📄 ${plan.pages.length} page(s)`:''}${skip?` · ${skip} not found`:''}`);
   box.innerHTML=`<div class="qp-row" data-testid="hub-json-summary"><b>${sum}</b></div>`+plan.rows.map(r=>`<div class="qp-row">${escapeHtml(String(r.n))}${r.errs.length?'⚠️':''} ${escapeHtml(r.label||'')}${r.upd&&r.upd.status?' → '+hubStatusChip(r.upd.status):''}${r.errs.map(e=>`<span class="e">⚠️ ${escapeHtml(e)}</span>`).join('')}${r.warns.map(w=>`<span class="w">ℹ️ ${escapeHtml(w)}</span>`).join('')}</div>`).join('');
 }
 async function applyHubJson(){
@@ -8610,6 +8811,11 @@ async function applyHubJson(){
     if('status' in u){ o.status=u.status; o.doneAt=(u.status==='done'||u.status==='failed')?(o.doneAt||new Date().toISOString()):null; }
     if('reply' in u) o.reply=u.reply; if('link' in u) o.link=u.link; });
   if(touched) await saveHubInbox();
+  if(plan.pages.length){ await apLoadIndex();
+    plan.pages.forEach(pg=>{ const version=((apIndex[pg.agent]&&apIndex[pg.agent].version)||0)+1;
+      apDocSet('agentPage_'+pg.agent, JSON.stringify({html:pg.html, updatedAt:pg.updatedAt, version}));
+      apIndex[pg.agent]={updatedAt:pg.updatedAt, version, size:pg.size}; });
+    await storageSet('agentPagesIndex', JSON.stringify(apIndex)); }
   ta.value=''; document.getElementById('hubJsonPreview').innerHTML=`<div class="hub-empty" data-testid="hub-json-done">✅ ${ar?'انحفظ':'Saved'}</div>`; // quiet: no toast, no sound (his rule for «المقر»)
   if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent();
 }
