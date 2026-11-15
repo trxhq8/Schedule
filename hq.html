@@ -287,12 +287,12 @@ locked:`<svg viewBox="0 0 200 200"><rect width="200" height="200" fill="#1a2240"
 /* ================= data + helpers ================= */
 const AGENTS = [
   {id:'knowledge',name:'منقسي',role:'الوكيل الرئيسي · يجمع ويوزّع أخبار الكل',c:'#b8913f',center:true},
-  {id:'zory',name:'زوري',role:'إنستقرام · @abdullah.alza3abi',c:'#a95a7d',a:-120},
-  {id:'hurairy',name:'هريري',role:'الصحة والتضخيم · هدف 70 كغ',c:'#b4613f',a:-40},
+  {id:'zory',name:'زوري',role:'إنستقرام · @abdullah.alza3abi',c:'#a95a7d',a:-40},
+  {id:'hurairy',name:'هريري',role:'الصحة والتضخيم · هدف 70 كغ',c:'#b4613f',a:40},
   {id:'hamour',name:'هامور',role:'القرآن والحديث والفقه والأخلاق',c:'#3f8c7a',a:80},
   {id:'hoot',name:'الحوت',role:'مستشار البرادو · برادو 2019',c:'#4f7d95',a:-80,locked:true,gate:'car'},   // locked until its db doc exists, then unboxed live
   {id:'uni',name:'الجامعة',role:'قريباً',c:'#878494',a:120,locked:true,gate:'uni',open:true},           // open: a new agent the page doesn't know yet claims it
-  {id:'yaryour',name:'يريور',role:'القرش · الصيانة والمشاريع',c:'#8a7a5c',a:40,locked:true,gate:'workshop'},   // the DIY workshop (7 Nov): locked only until its db doc arrives
+  {id:'yaryour',name:'يريور',role:'القرش · الصيانة والمشاريع',c:'#8a7a5c',a:-120,locked:true,gate:'workshop'},   // the DIY workshop (7 Nov): locked only until its db doc arrives
   {id:'zubaidi',name:'زبيدي',role:'أمين المال · الفلوس والادخار',c:'#5f8a5a',a:0,locked:true,gate:'treasury',view:[.3,.95]},
   {id:'shaari',name:'شعري',role:'مفسر الأحلام',c:'#4a5a8a',a:160,locked:true,gate:'dreams'},   // the dream reader (13 Nov)
   {id:'fryalah',name:'فريالة',role:'الزراعة والنباتات',c:'#5f8a4a',a:-160,locked:true,gate:'garden'},   // the plants teacher (13 Nov): 9 stations, 40° apart
