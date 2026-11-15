@@ -1897,6 +1897,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   .hub-island{ display:block; width:100%; height:75vh; min-height:520px; border:0; border-radius:18px; margin:0 0 12px; background:#0b2a3a; overflow:hidden; }
   .hub-list > .hub-grid{ margin-top:10px; }
+  .hub-urgent{ margin:0 0 12px; padding:10px 14px; border-radius:14px; background:#b5533a; color:#fff; font-weight:700; line-height:1.5; }
   .new-ver-bar{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 10px); z-index:99999; border:0; border-radius:999px; padding:11px 20px; font:inherit; font-weight:700; font-size:.95rem; background:var(--heading,#111); color:var(--bg,#fff); box-shadow:0 6px 24px rgba(0,0,0,.25); cursor:pointer; max-width:calc(100vw - 32px); }
   @media (min-width:700px){ .hub-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
   @media (min-width:1100px){ .hub-grid{ grid-template-columns:repeat(5,minmax(0,1fr)); } }
@@ -3131,7 +3132,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=2" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=3" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
@@ -3343,7 +3344,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.81.0';
+const APP_VERSION='v1.82.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8428,7 +8429,7 @@ function renderHubGrid(){
 }
 function hubIslandEl(){ return document.getElementById('hubIsland'); }
 function hubFeed(){ const f=hubIslandEl(); if(!f||!f.contentWindow||!f.dataset.ready) return;
-  const agents=HUB_KEYS.map(k=>hubAgents[k]).filter(Boolean).map(r=>({agent:r.agent, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], updatedAt:r.updatedAt||''}));
+  const agents=HUB_KEYS.map(k=>hubAgents[k]).filter(Boolean).map(r=>({agent:r.agent, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], urgent:typeof r.urgent==='string'?r.urgent:'', updatedAt:r.updatedAt||''}));
   try{ f.contentWindow.postMessage({type:'hq-feed', agents}, location.origin==='null'?'*':location.origin); }catch(e){} }
 window.addEventListener('message', ev=>{ const f=hubIslandEl(); if(!f||ev.source!==f.contentWindow) return;
   if(location.origin!=='null'&&ev.origin!==location.origin) return;
@@ -8456,6 +8457,7 @@ async function renderHubAgent(){
   const none=t=>`<div class="hub-empty">${t}</div>`;
   const home=hubHome(a);
   v.innerHTML=`<div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
+    ${(typeof r.urgent==='string'&&r.urgent.trim())?`<div class="hub-urgent" data-testid="hub-urgent">🙋 ${escapeHtml(r.urgent.trim())}</div>`:''}
     ${home?`<div class="dash-card hub-home" style="--hub-c:${m.c}" data-testid="hub-home"><div class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</div><a class="setup-btn hh-go" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</a></div>`:''}
     <div class="dash-card hub-sec" data-testid="hub-now"><h3>${ar?'الحالة الآن':'Right now'}</h3>${now.length?`<ul class="hub-now">${now.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:none(ar?'ما فيه تحديث ليلحين':'No update yet')}</div>
     <div class="dash-card hub-sec" data-testid="hub-news"><h3>${ar?'آخر الأخبار':'Latest'}</h3>${news.length?news.map(n=>`<div class="hub-news"><span class="d">${escapeHtml(n.date||'')}</span><span>${escapeHtml(n.sum||'')}</span></div>`).join(''):none(ar?'ما فيه أخبار ليلحين':'Nothing yet')}</div>
@@ -8489,7 +8491,7 @@ function hubPlan(text){
     if(!HUB_KEYS.includes(a)){ row.errs.push((ar?'وكيل مو معروف: ':'Unknown agent: ')+String(r.agent==null?'':r.agent)); return; }
     if(seenA.has(a)) row.errs.push((ar?'نفس الوكيل مكرر: ':'Agent twice: ')+a); seenA.add(a);
     row.label=`${HUB_META[a].e} ${questAgentName(a)}`;
-    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color','home'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color','home','urgent'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
     let now=r.now==null?[]:r.now; if(!Array.isArray(now)){ row.errs.push(ar?'now لازم قائمة نصوص':'now must be a list of strings'); now=[]; }
     now=now.map(x=>String(x==null?'':x).trim()).filter(Boolean);
     if(now.length>8){ row.warns.push(ar?'now أكثر من ٨ أسطر — خذيت أول ٨':'now has more than 8 lines — kept the first 8'); now=now.slice(0,8); }
@@ -8503,6 +8505,7 @@ function hubPlan(text){
       return {label:String((l&&l.label)||'').trim().slice(0,60)||u, url:u}; }).filter(Boolean).slice(0,12);
     const rec={agent:a, now, news, links, updatedAt:typeof r.updatedAt==='string'&&r.updatedAt.trim()?r.updatedAt.trim().slice(0,40):new Date().toISOString()};
     ['role','emoji','color'].forEach(k=>{ if(typeof r[k]==='string'&&r[k].trim()) rec[k]=r[k].trim().slice(0,k==='role'?60:16); });
+    if('urgent' in r){ const u=r.urgent==null?'':r.urgent; if(typeof u!=='string') row.errs.push(ar?'urgent لازم يكون نص':'urgent must be text'); else { const v=u.trim(); if(v.length>60) row.warns.push(ar?'urgent أطول من ٦٠ حرف — قصّيته':'urgent over 60 chars — trimmed'); rec.urgent=v.slice(0,60); } }
     if('home' in r){ const h=r.home==null?'':String(r.home).trim(); if(h&&!hubSafeUrl(h)) row.errs.push(ar?'home لازم يبدأ بـ https://':'home must start with https://'); else rec.home=h; }
     if(rec.color&&!/^#[0-9a-f]{6}$/i.test(rec.color)){ row.warns.push(ar?'color لازم مثل #1a2b3c — تجاهلته':'color must look like #1a2b3c — ignored'); delete rec.color; }
     row.kind=hubAgents[a]?'replace':'add'; row.rec=rec; out.agents.push(rec);

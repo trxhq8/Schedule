@@ -43,6 +43,13 @@ body[data-mode="dark"] #vig{background:radial-gradient(ellipse at 50% 45%,transp
 @keyframes blink{50%{opacity:.35}}
 .tag .note{font-family:var(--body);font-size:11px;line-height:1.5;background:#efe3c4;color:#5a4426;border:1px solid #b89a5e;border-radius:99px;padding:0 6px}
 .tag .udot{width:7px;height:7px;border-radius:50%;background:var(--c,var(--gold));flex:none}
+.brd{position:absolute;left:0;top:0;will-change:transform;pointer-events:auto;cursor:pointer;width:150px;padding:7px 9px 8px;border-radius:12px;
+  background:var(--glass2);border:2px solid var(--c,var(--edge));border-top-width:6px;box-shadow:var(--shadow);color:var(--ink);text-align:center;direction:rtl}
+.brd b{display:block;font-family:var(--display);font-size:15px;line-height:1.2;color:var(--c,var(--ink))}
+.brd span{display:block;font-size:12px;line-height:1.35;color:var(--ink);opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.brd.urg{border-color:#b5533a}
+.brd .u{white-space:normal;font-weight:700;color:#fff;background:#b5533a;border-radius:8px;padding:2px 6px;margin-top:4px;opacity:1}
+@media (max-width:820px){.brd{width:98px;padding:4px 6px 5px;border-top-width:4px;border-radius:10px}.brd b{font-size:12.5px}.brd span{font-size:10px;line-height:1.3}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* HUD */
@@ -2636,7 +2643,7 @@ function makeLabel(ch){
   const a = byId[ch.id] || {c:'#c98a3a', name:'ميد'};
   const el=document.createElement('div'); el.className='lab'; el.style.setProperty('--c',a.c);
   el.innerHTML = `<div class="say" hidden></div><div class="chip" hidden></div>` + (ch.kind==='courier' ? '' : `<div class="tag"><i class="udot" hidden></i>${esc(a.name)}<b class="note" hidden></b></div>`);
-  $('labels').appendChild(el); ch.el=el; ch.elSay=el.querySelector('.say'); ch.elChip=el.querySelector('.chip'); ch.elTag=el.querySelector('.tag');
+  $('labels').appendChild(el); if(ch.kind!=='courier'){ const b=document.createElement('div'); b.className='brd'; b.style.setProperty('--c',a.c); b.onclick=()=>openAgent(ch.id); $('labels').appendChild(b); ch.elBrd=b; } ch.el=el; ch.elSay=el.querySelector('.say'); ch.elChip=el.querySelector('.chip'); ch.elTag=el.querySelector('.tag');
 }
 function makeLabels(){
   for(const ch of Object.values(W3.chars)) makeLabel(ch);
@@ -2820,6 +2827,8 @@ function pose(ch, dt, t){
     else { T.aL=Math.sin(t*1.3+ch.seed)*.05-.04; T.aR=-T.aL; }
     T.hx += Math.sin(t*1.1+ch.seed)*.03;
   }
+  ch.up=(ch.up||0)+((ch.urgent?1:0)-(ch.up||0))*Math.min(1,dt*3);
+  if(ch.urgent){ T.lL=T.lR=0; T.kL=T.kR=.05; T.aL=-.05; T.eL=-.14; T.zL=-.08; T.aR=-.1; T.zR=2.6; T.eR=-.35; T.fzR=Math.sin(t*3+ch.seed)*.35; T.hx=-.06; T.hy=0; }
   if(ch.wave>0){ ch.wave-=dt; T.aR=-.12; T.zR=2.55; T.eR=-.3; T.fzR=Math.sin(t*12)*.55; }
   if(!mv){ ch.lookT-=dt; if(ch.lookT<=0){ ch.lookT=2.5+Math.random()*4; ch.look=(Math.random()-.5)*.8; } } else ch.look=0;   // glancing around
   const k=Math.min(1,dt*9), kl=mv?1:k, L=(o,key,v,kk=k)=>{ o[key]+=(v-o[key])*kk; };
@@ -2829,7 +2838,7 @@ function pose(ch, dt, t){
   L(P.head.rotation,'x',T.hx); L(P.head.rotation,'y',T.hy+ch.look*.5,k*.5);
   P.body.rotation.x = mv ? .07 : 0;
   P.body.rotation.z = mv ? s1*.025 : Math.sin(t*.75+ch.seed)*(ch.seated?.008:.03);            // shifting weight while standing
-  P.body.position.y = (ch.seated?-ch.drop:0) + (mv ? Math.abs(c1)*.07 : Math.sin(t*1.6+ch.seed)*.012);  // a step's lift; breathing at rest
+  P.body.position.y = (ch.seated?-ch.drop*(1-(ch.up||0)):0) + (mv ? Math.abs(c1)*.07 : Math.sin(t*1.6+ch.seed)*.012);  // a step's lift; breathing at rest
   if(P.finR){ const fl=Math.sin(t*1.5+ch.seed)*.08; P.finR.rotation.y=.9+fl; P.finL.rotation.y=-.9-fl; }
   if(P.tail) P.tail.rotation.y = Math.sin(t*(mv?9:1.6)+ch.seed)*(mv?.4:.1);
   P.eyeL.scale.y = P.eyeR.scale.y = (Math.sin(t*.9+ch.seed*3) > .985) ? .1 : 1;
@@ -2880,9 +2889,9 @@ function loop(now){
   for(const id in (W3.desks||{})){ const d=W3.desks[id]; if(d.env>0){ d.env-=real; if(d.env<=0) drawDesk(id); } }
   W3.camera.updateMatrixWorld();
   const labs=[];
-  for(const ch of Object.values(W3.chars)){ if(!ch.el) continue; const it=placeLabel(ch.el, ch.g.position, (ch.kind==='courier'?2.6:ch.kind==='boss'?4.1:3.5)-(ch.seated?ch.drop*ch.g.scale.y:0), ch.hideLab); if(it){ it.say=ch.sayT>0?1:0; labs.push(it); } }
+  for(const ch of Object.values(W3.chars)){ if(!ch.el) continue; const it=placeLabel(ch.el, ch.g.position, (ch.kind==='courier'?2.6:ch.kind==='boss'?4.1:3.5)-(ch.seated?ch.drop*ch.g.scale.y*(1-(ch.up||0)):0), ch.hideLab); if(it){ it.say=ch.sayT>0?1:0; labs.push(it); } }
   for(const L of W3.lockLabels){ const it=placeLabel(L.el, L.p, 0, L.el.hidden); if(it){ it.say=0; labs.push(it); } }
-  declutterLabels(labs);
+  declutterLabels(labs); placeBoards();
   if(W3.scene.fog && W3.cur) W3.scene.fog.density = W3.cur.fogD*Math.min(1, 60/W3.camera.position.distanceTo(W3.controls.target));   // a far (phone) camera is not lost in haze
   for(const f of W3.flyers){ f.t=Math.min(1,f.t+dt*1.8); f.m.position.lerpVectors(f.s,f.e,f.t); f.m.position.y += Math.sin(f.t*Math.PI)*1.4; f.m.rotation.y=f.t*Math.PI*2; }
   W3.flyers = W3.flyers.filter(f=>f.t<1);
@@ -2996,7 +3005,7 @@ function onDocs(changed){
   for(const id of changed) drawScreen(id);
 }
 function renderTags(){
-  if(!ok3d) return; const groups=questGroups();
+  if(!ok3d) return; renderBoards(); const groups=questGroups();
   for(const ch of Object.values(W3.chars)){ if(!ch.elTag) continue;
     const n=groups.get(ch.id)?.length||0, note=ch.elTag.querySelector('.note'); note.hidden=!n; note.textContent=n?`📌 ${n}`:'';
     const u=ch.elTag.querySelector('.udot'); if(u) u.hidden=!(unread[ch.id]?.length); }
@@ -3025,6 +3034,50 @@ if(document.fonts?.ready) document.fonts.ready.then(()=>{ for(const id in (W3.sc
 if(false) connect();
 else setTimeout(()=>{ if(window.claude?.use) connect(); else { $('liveTxt').textContent='غير متصل'; $('liveChip').title='غير متصل'; } }, 1500);
 
+/* ---------- boards: a big readable sign above each station (DOM, so it stays sharp on a phone) ---------- */
+const brdClean = s => String(s||'').replace(/🏠\s*صفحتي\s*[:：]\s*\S*\s*(\([^)]*\))?\s*[·.]?\s*/gu,'').replace(/https?:\/\/\S+/g,'').replace(/\*\*/g,'').replace(/\s{2,}/g,' ').trim();
+function boardLines(id){
+  const d=docs[id]||{}; let L=[];
+  if(id==='knowledge' && Array.isArray(d.quests) && d.quests.length) L=d.quests.slice(0,2).map(q=>'📌 '+(typeof q==='string'?q:q.text));
+  if(!L.length) L=(d.now||[]).map(brdClean).filter(x=>x.length>2 && !/^🙋/.test(x));
+  if(!L.length) L=(d.entries||[]).map(e=>brdClean(e.sum||e.title));
+  return L.filter(Boolean).slice(0,2).map(x=>x.length>40?x.slice(0,39)+'…':x);
+}
+function renderBoards(){
+  for(const ch of Object.values(W3.chars||{})){ const b=ch.elBrd; if(!b) continue; const a=byId[ch.id]; if(!a) continue;
+    const d=docs[ch.id]; ch.urgent = (d && typeof d.urgent==='string') ? d.urgent.trim() : '';
+    if(a.locked || !d){ b.hidden=true; continue; } b.hidden=false;
+    const lines=boardLines(ch.id); b.classList.toggle('urg', !!ch.urgent);
+    b.innerHTML='<b>'+esc(a.name)+'</b>'+lines.map(x=>'<span>'+esc(x)+'</span>').join('')+(ch.urgent?'<span class="u">🙋 '+esc(ch.urgent)+'</span>':''); }
+}
+const _bp=new THREE.Vector3(), _bv=new THREE.Vector3();
+// like placeLabel, but a board near the screen edge is pulled inside instead of hidden
+function placeBoard(el, p, off){
+  if(off){ el.style.visibility='hidden'; return null; }
+  _bv.copy(p).applyMatrix4(W3.camera.matrixWorldInverse); if(_bv.z > -.5){ el.style.visibility='hidden'; return null; }
+  const depth=-_bv.z; _bv.copy(p).project(W3.camera);
+  const w=el.offsetWidth||100, h=el.offsetHeight||60;
+  let sx=(_bv.x+1)/2*innerWidth, sy=(1-_bv.y)/2*innerHeight;
+  sx=Math.min(innerWidth-w/2-6, Math.max(w/2+6, sx));
+  if(sy<50 || sy>innerHeight-40){ el.style.visibility='hidden'; return null; }
+  el.style.transform='translate('+sx+'px,'+sy+'px) translate(-50%,-50%)'; el.style.visibility='visible';
+  return {el, depth};
+}
+function placeBoards(){
+  const taken=[...document.querySelectorAll('#labels .lab')].filter(e=>e.style.visibility==='visible').map(e=>e.getBoundingClientRect()).filter(()=>false);
+  const hit=(r,q)=>r.left<q.right-1 && r.right>q.left+1 && r.top<q.bottom-1 && r.bottom>q.top+1, items=[];
+  for(const ch of Object.values(W3.chars)){ const b=ch.elBrd; if(!b || b.hidden) continue;
+    const a=byId[ch.id], ring=ch.kind!=='boss' && a && isFinite(a.x); if(ring){ _bp.set(a.x*1.5, 1.2, a.z*1.5); } else _bp.copy(ch.g.position);
+    if(!ring) _bp.y += 4.1-(ch.seated?ch.drop*ch.g.scale.y*(1-(ch.up||0)):0)+1.1;
+    const it=placeBoard(b, _bp, ch.hideLab); if(it){ it.u=ch.urgent?1:0; items.push(it); } }
+  items.sort((a,b)=>(b.u-a.u)||(a.depth-b.depth));
+  for(const it of items){ const r0=it.el.getBoundingClientRect(); let ok=null;
+    for(const dy of [0, r0.height*.6, -r0.height*.6, r0.height*1.05, -r0.height*1.05]){ const r={left:r0.left,right:r0.right,top:r0.top+dy,bottom:r0.bottom+dy};
+      if(r.top>44 && r.bottom<innerHeight-36 && !taken.some(q=>hit(r,q))){ ok={r,dy}; break; } }
+    if(!ok){ it.el.style.visibility='hidden'; continue; }
+    if(ok.dy) it.el.style.transform += ' translateY('+ok.dy+'px)'; taken.push(ok.r); }
+}
+
 /* ---------- site mode (his My Planner site) ---------- */
 (function(){
   const NAMES={knowledge:'منقسي',zory:'زوري',hurairy:'هريري',hamour:'هامور',hoot:'الحوت',saboor:'الصبور',yaryour:'يريور',zubaidi:'زبيدي',shaari:'شعري',fryalah:'فريالة'};
@@ -3041,7 +3094,7 @@ else setTimeout(()=>{ if(window.claude?.use) connect(); else { $('liveTxt').text
     for(const r of m.agents){ const id=HUB[r.agent]||r.agent; if(!SITE[id]) continue;
       const base=docs[id]||{};
       const entries=Array.isArray(r.news)&&r.news.length ? r.news.map(n=>({date:n.date, title:n.sum, sum:n.sum, lines:[]})) : base.entries;
-      list.push(Object.assign({}, base, {agent:id, name: base.name||NAMES[id], now: Array.isArray(r.now)? r.now : base.now, entries, updatedAt: r.updatedAt||base.updatedAt})); }
+      list.push(Object.assign({}, base, {agent:id, name: base.name||NAMES[id], now: Array.isArray(r.now)? r.now : base.now, entries, urgent: typeof r.urgent==='string' ? r.urgent : '', updatedAt: r.updatedAt||base.updatedAt})); }
     if(list.length) window.__feed(list);
   });
   if(inFrame) parent.postMessage({type:'hq-ready'}, '*');
