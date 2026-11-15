@@ -1686,8 +1686,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hn-head{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-head); font-weight:800; font-size:.82rem; color:var(--ink-soft); margin-bottom:8px; }
   .hn-clock{ font-weight:700; font-size:.75rem; }
   .hn-main{ display:flex; align-items:center; gap:12px; }
-  .hn-ic{ font-size:2rem; line-height:1.3; padding-block:2px; flex-shrink:0; animation:hnPop .4s ease-out; } /* room for the emoji's ascent — iOS clipped it at line-height:1 */
-  @keyframes hnPop{ from{ transform:scale(.6); opacity:0; } to{ transform:none; opacity:1; } }
+  .hn-ic{ font-size:2rem; line-height:1.4; padding-block:2px; overflow:visible; flex-shrink:0; animation:hnPop .4s ease-out; } /* room for the emoji's ascent — iOS clipped it at line-height:1 */
+  @keyframes hnPop{ from{ opacity:0; } to{ opacity:1; } }
   .hn-txt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .hn-txt b{ font-family:var(--font-head); font-size:1rem; color:var(--heading); overflow-wrap:anywhere; }
   .hn-txt small{ color:var(--ink-soft); font-size:.78rem; }
@@ -1907,6 +1907,9 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   .hub-island{ display:block; width:100%; height:75vh; min-height:520px; border:0; border-radius:18px; margin:0 0 12px; background:#0b2a3a; overflow:hidden; }
   .hub-list > .hub-grid{ margin-top:10px; }
+  .hub-sec .qs-item + .qs-item{ margin-top:8px; }
+  .hub-urg-q:not(.done){ border-color:#b5533a; background:color-mix(in srgb, #b5533a 14%, var(--card)); }
+  .hub-urg-q:not(.done) .qs-t{ color:var(--heading); font-weight:800; }
   .hub-urgent{ margin:0 0 12px; padding:10px 14px; border-radius:14px; background:#b5533a; color:#fff; font-weight:700; line-height:1.5; }
   .new-ver-bar{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 10px); z-index:99999; border:0; border-radius:999px; padding:11px 20px; font:inherit; font-weight:700; font-size:.95rem; background:var(--heading,#111); color:var(--bg,#fff); box-shadow:0 6px 24px rgba(0,0,0,.25); cursor:pointer; max-width:calc(100vw - 32px); }
   @media (min-width:700px){ .hub-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -3148,7 +3151,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=6" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=7" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
@@ -3360,7 +3363,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.87.0';
+const APP_VERSION='v1.88.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8395,10 +8398,16 @@ const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
 const HUB_HOME_FALLBACK={mangsi:'https://claude.ai/artifact/7gQ64zvKv5mLm9wc9G24Z6'}; // the agents' HQ
 function hubHome(a){ const r=hubAgents[a]; if(r&&typeof r.home==='string') return hubSafeUrl(r.home)||(r.home===''?(HUB_HOME_FALLBACK[a]||''):''); return HUB_HOME_FALLBACK[a]||''; }
 const HUB_OPEN=['new','sent','working'];
-let hubInbox=[], hubAgents={}, _hubLoaded=false, hubCurAgent='mangsi', hubQuickAgent='mangsi';
+let hubInbox=[], hubAgents={}, _hubLoaded=false, hubCurAgent='mangsi', hubQuickAgent='mangsi', hubUrgentDone={};
+// his rule: once he ticks an agent's 🙋, that exact text never comes back (a later import / bridge write is ignored); a new text still shows
+function hubUrgentIsDone(a,txt){ const t=String(txt||'').trim(); return !!t&&Array.isArray(hubUrgentDone[a])&&hubUrgentDone[a].includes(t); }
+function hubScrubUrgent(){ for(const k in hubAgents){ const r=hubAgents[k]; if(r&&typeof r.urgent==='string'&&hubUrgentIsDone(k,r.urgent)) r.urgent=''; } }
+const saveHubUrgentDone=()=>storageSet('urgentDone',JSON.stringify(hubUrgentDone));
 async function loadHub(){
   try{ const v=await storageGet('hubInbox'); const a=v?JSON.parse(v):[]; hubInbox=Array.isArray(a)?a.filter(o=>o&&o.id):[]; }catch(e){ hubInbox=[]; }
   try{ const v=await storageGet('hubAgents'); const a=v?JSON.parse(v):[]; hubAgents={}; (Array.isArray(a)?a:[]).forEach(r=>{ if(r&&r.agent) hubAgents[r.agent]=r; }); }catch(e){ hubAgents={}; }
+  try{ const v=await storageGet('urgentDone'); const o=v?JSON.parse(v):{}; if(o&&typeof o==='object'&&!Array.isArray(o)){ for(const k in o) if(Array.isArray(o[k])){ hubUrgentDone[k]=[...new Set([...(hubUrgentDone[k]||[]),...o[k].filter(x=>typeof x==='string')])].slice(-50); } } }catch(e){}
+  hubScrubUrgent();
   _hubLoaded=true;
 }
 const saveHubInbox=()=>storageSet('hubInbox',JSON.stringify(hubInbox));
@@ -8423,6 +8432,18 @@ async function hubSendOrder(agent,text){
   await saveHubInbox(); playSfx('success');
   showToast(ar?`📤 انرسل لـ${questAgentName(agent)}`:`📤 Sent to ${questAgentName(agent)}`,'success');
   return true;
+}
+async function hubTickUrgent(a){
+  const r=hubAgents[a], txt=r&&typeof r.urgent==='string'?r.urgent.trim():''; if(!txt) return;
+  // 1) at once, in memory: the fish sits down, the page updates
+  hubUrgentDone[a]=[...new Set([...(hubUrgentDone[a]||[]),txt])].slice(-50); r.urgent='';
+  playSfx('success'); hubFeed(); if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid();
+  // 2) then persist on a fresh copy (never write over what the PC just sent)
+  await saveHubUrgentDone();
+  await loadHub(); if(hubAgents[a]) hubAgents[a].urgent=''; await saveHubAgents();
+  hubInbox.push({id:'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), agent:a, text:'✅ خلصت: '+txt, at:new Date().toISOString(), status:'new', reply:'', link:'', doneAt:null});
+  await saveHubInbox(); hubFeed();
+  if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid();
 }
 async function hubCancelOrder(id){
   const ar=LANG==='ar'; await loadHub();
@@ -8468,20 +8489,21 @@ async function renderHubAgent(){
   if(!_questsLoaded) await loadQuests();
   const a=hubCurAgent, ar=LANG==='ar', m=hubMeta(a), r=hubAgents[a]||{}, draft=v.dataset.agent===a?((document.getElementById('hubAgentText')||{}).value||''):'';
   v.dataset.agent=a;
+  const urg=(typeof r.urgent==='string'&&!hubUrgentIsDone(a,r.urgent))?r.urgent.trim():'';
   const qs=quests.filter(q=>q.agent===a); // his rule: the agent's page = its own artifact (top) + quests + orders; now/news/links live inside the artifact
   const orders=hubInbox.filter(o=>o.agent===a).sort((x,y)=>String(y.at).localeCompare(String(x.at)));
   const none=t=>`<div class="hub-empty">${t}</div>`;
   const home=hubHome(a);
   v.innerHTML=`${home?`<a class="dash-card hub-home" style="--hub-c:${m.c}" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</span></a>`:''}
     <div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
-    ${(typeof r.urgent==='string'&&r.urgent.trim())?`<div class="hub-urgent" data-testid="hub-urgent">🙋 ${escapeHtml(r.urgent.trim())}</div>`:''}
-    <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):none(ar?'ما عنده مهام':'No quests')}</div>
+    <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${urg?`<button type="button" class="qs-item main hub-urg-q" data-urgtick="1" role="checkbox" aria-checked="false" data-testid="hub-urgent"><span class="qs-c"></span><span class="qs-t">🙋 ${escapeHtml(urg)}</span></button>`:''}${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):(urg?'':none(ar?'ما عنده مهام':'No quests'))}</div>
     <div class="dash-card hub-sec hub-compose"><h3>📤 ${ar?'أمر جديد':'New order'}</h3><textarea id="hubAgentText" class="setup-input" rows="2" maxlength="1000" placeholder="${escapeHtml(ar?`شنو تبي من ${m.name}؟`:`What do you need from ${m.name}?`)}">${escapeHtml(draft)}</textarea><button type="button" class="setup-btn hub-send" id="hubAgentSend" data-testid="hub-agent-send">📤 ${t('hub_send')}</button></div>
     <div class="dash-card hub-sec" data-testid="hub-orders"><h3>📬 ${ar?'أوامري له':'My orders'}</h3>${orders.length?orders.map(o=>{ const lk=hubSafeUrl(o.link);
       return `<div class="hub-order" data-oid="${escapeHtml(o.id)}" data-testid="hub-order"><div class="ot">${escapeHtml(o.text)}</div><div class="om">${hubStatusChip(o.status)}<span>${escapeHtml(hubWhen(o.at))}</span>${o.status==='new'?`<button type="button" class="hub-cancel" data-cancel="${escapeHtml(o.id)}" data-testid="hub-cancel">${ar?'ألغِ':'Cancel'}</button>`:''}</div>${o.reply?`<div class="orep" data-testid="hub-reply">${escapeHtml(o.reply)}</div>`:''}${lk?`<div class="om"><a class="hub-link" href="${escapeHtml(lk)}" target="_blank" rel="noopener noreferrer">🔗 ${ar?'افتح':'Open'}</a></div>`:''}</div>`; }).join(''):none(ar?'ما أرسلت له شي ليلحين':'No orders yet')}</div>`;
   v.querySelector('#hubAgentSend').onclick=async e=>{ const b=e.currentTarget, ta=document.getElementById('hubAgentText'); b.disabled=true;
     if(await hubSendOrder(a,ta.value)){ ta.value=''; renderHubAgent(); } else b.disabled=false; };
   v.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{ b.disabled=true; await hubCancelOrder(b.dataset.cancel); renderHubAgent(); });
+  const ub=v.querySelector('[data-urgtick]'); if(ub) ub.onclick=()=>{ ub.disabled=true; ub.classList.add('done'); ub.setAttribute('aria-checked','true'); ub.querySelector('.qs-c').textContent='✓'; hubTickUrgent(a); };
   v.querySelectorAll('[data-hqid]').forEach(b=>b.onclick=async()=>{ const q=quests.find(x=>x.id===b.dataset.hqid); if(!q) return;
     q.done=!q.done; if(q.done){ q.doneAt=new Date().toISOString(); playSfx('success'); } else delete q.doneAt; renderHubAgent(); await saveQuests(); });
 }
@@ -8521,6 +8543,7 @@ function hubPlan(text){
     if('urgent' in r){ const u=r.urgent==null?'':r.urgent; if(typeof u!=='string') row.errs.push(ar?'urgent لازم يكون نص':'urgent must be text'); else { const v=u.trim(); if(v.length>60) row.warns.push(ar?'urgent أطول من ٦٠ حرف — قصّيته':'urgent over 60 chars — trimmed'); rec.urgent=v.slice(0,60); } }
     if('home' in r){ const h=r.home==null?'':String(r.home).trim(); if(h&&!hubSafeUrl(h)) row.errs.push(ar?'home لازم يبدأ بـ https://':'home must start with https://'); else rec.home=h; }
     if(rec.color&&!/^#[0-9a-f]{6}$/i.test(rec.color)){ row.warns.push(ar?'color لازم مثل #1a2b3c — تجاهلته':'color must look like #1a2b3c — ignored'); delete rec.color; }
+    if(rec.urgent&&hubUrgentIsDone(a,rec.urgent)){ row.warns.push(ar?'🙋 هذا خلّصته من قبل — ما يرجع':'🙋 already done — ignored'); rec.urgent=''; }
     row.kind=hubAgents[a]?'replace':'add'; row.rec=rec; out.agents.push(rec);
   });
   const seenO=new Set();
@@ -8560,7 +8583,7 @@ async function applyHubJson(){
   await loadHub(); // re-check against what's saved right now
   const plan=hubPlan(ta.value);
   if(!plan.ok){ renderHubPreview(plan); return; }
-  if(plan.agents.length){ plan.agents.forEach(rec=>{ hubAgents[rec.agent]=rec; }); await saveHubAgents(); }
+  if(plan.agents.length){ plan.agents.forEach(rec=>{ hubAgents[rec.agent]=rec; }); hubScrubUrgent(); await saveHubAgents(); }
   let touched=false;
   plan.inbox.forEach(u=>{ const o=hubInbox.find(x=>x.id===u.id); if(!o) return; touched=true;
     if('status' in u){ o.status=u.status; o.doneAt=(u.status==='done'||u.status==='failed')?(o.doneAt||new Date().toISOString()):null; }

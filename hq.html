@@ -2830,6 +2830,8 @@ function pose(ch, dt, t){
     T.hx += Math.sin(t*1.1+ch.seed)*.03;
   }
   ch.up=(ch.up||0)+((ch.urgent?1:0)-(ch.up||0))*Math.min(1,dt*3);
+  // urgent: walk out of the room to the plaza side, turn to face him (the camera); back to the desk when done
+  if(ch.kind!=='courier' && ch.kind!=='boss'){ const A=byId[ch.id]; if(A && isFinite(A.x)){ if(!ch.seatPos) ch.seatPos=ch.g.position.clone(); const k=Math.min(1,dt*1.2); let tx,tz,ry; if(ch.urgent){ tx=A.x*.7; tz=A.z*.7; const c=W3.camera.position; ry=Math.atan2(c.x-ch.g.position.x, c.z-ch.g.position.z); } else { tx=ch.seatPos.x; tz=ch.seatPos.z; ry=ch.face; } ch.g.position.x+=(tx-ch.g.position.x)*k; ch.g.position.z+=(tz-ch.g.position.z)*k; let d=ry-ch.g.rotation.y; d=Math.atan2(Math.sin(d),Math.cos(d)); ch.g.rotation.y+=d*k; } }
   if(ch.urgent){ T.lL=T.lR=0; T.kL=T.kR=.05; T.aL=-.05; T.eL=-.14; T.zL=-.08; T.aR=-.1; T.zR=2.6; T.eR=-.35; T.fzR=Math.sin(t*3+ch.seed)*.35; T.hx=-.06; T.hy=0; }
   if(ch.wave>0){ ch.wave-=dt; T.aR=-.12; T.zR=2.55; T.eR=-.3; T.fzR=Math.sin(t*12)*.55; }
   if(!mv){ ch.lookT-=dt; if(ch.lookT<=0){ ch.lookT=2.5+Math.random()*4; ch.look=(Math.random()-.5)*.8; } } else ch.look=0;   // glancing around
