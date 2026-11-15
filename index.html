@@ -1908,6 +1908,17 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-island{ display:block; width:100%; height:75vh; min-height:520px; border:0; border-radius:18px; margin:0 0 12px; background:#0b2a3a; overflow:hidden; }
   .hub-list > .hub-grid{ margin-top:10px; }
   .hub-sec .qs-item + .qs-item{ margin-top:8px; }
+  .cm-av{ display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; flex-shrink:0; border-radius:50%; background:color-mix(in srgb, var(--hub-c) 22%, var(--card)); border:1.5px solid var(--hub-c); font-size:.78rem; line-height:1; cursor:pointer; vertical-align:middle; margin-inline-end:6px; -webkit-tap-highlight-color:transparent; }
+  .hn-main > .cm-av{ width:30px; height:30px; font-size:1rem; margin:0; }
+  .hn-chip .cm-av{ width:20px; height:20px; font-size:.7rem; margin-inline-end:4px; }
+  .cmt-l, .sch-row .l{ display:inline-flex; align-items:center; min-width:0; }
+  .hn-skiprow{ display:flex; justify-content:flex-end; margin-top:6px; }
+  .hn-skip{ border:1px solid var(--line); background:none; color:var(--ink-soft); font:inherit; font-size:.75rem; font-weight:700; border-radius:999px; padding:5px 12px; cursor:pointer; }
+  .cm-ag-row{ display:flex; flex-direction:column; gap:4px; margin:0 0 10px; }
+  .cm-ag-row label{ font-size:.8rem; color:var(--ink-soft); font-weight:700; }
+  .cm-ag-row .setup-input{ margin:0; }
+  .cm-ag-row small{ font-size:.75rem; color:var(--ink-soft); min-height:1em; }
+  .hub-sched{ background:color-mix(in srgb, var(--accent) 16%, var(--card)); color:var(--heading); border:1px solid var(--line); }
   section.panel#panel-agentpage.active{ position:fixed; inset:0; z-index:2000; display:flex; flex-direction:column; background:var(--bg); padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px) !important; margin:0; max-width:none; animation:none; }
   .ap-bar{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--card); flex-shrink:0; }
   .ap-x{ width:40px; height:40px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:var(--bg); color:var(--heading); font-size:1.05rem; cursor:pointer; }
@@ -2315,6 +2326,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="setup-card hidden" id="todoSetupCard">
         <h3 data-i18n="q_commit"></h3>
         <input type="text" class="setup-input" id="commitLabel" data-i18n-ph="commit_label_ph">
+        <div class="cm-ag-row full-only" id="commitAgentRow"><label for="commitAgent" id="commitAgentLbl"></label><select class="setup-input" id="commitAgent" data-testid="cm-agent"></select><small id="commitAgentAuto" data-testid="cm-agent-auto"></small></div>
         <label style="font-size:0.85rem;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <input type="checkbox" id="commitHardToggle" checked style="width:18px;height:18px;"> <span data-i18n="commit_hard_label"></span>
         </label>
@@ -3380,7 +3392,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.94.0';
+const APP_VERSION='v1.95.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5197,14 +5209,66 @@ function mtSpan(c){
   const s=parseHM(c.from); let e=c.to?parseHM(c.to):s+30; if(e<=s) e+=24*60;
   return {start:s,end:e};
 }
+/* ================= 🐟 AGENTS FROM THE SCHEDULE =================
+   Each commitment can name an agent (c.agent = site key, 'none' = no agent); empty = guessed from its name.
+   While its item runs, that agent STANDS on the island (hq-feed urgent «⏳ <item>»); a meal/gym item keeps Hurairy
+   standing until it's ticked. Done or skipped → it sits at once. Order: Qur'an (hamour) → sport (hariri) & study
+   (saboor) → the rest. Public edition: no agents. */
+const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور']];
+const CM_AGENT_KW=[
+  ['hamour',['قرآن','قران','quran','ورد','حفظ','تسميع','حلقة','الوجه','تجويد','درس','أذكار','اذكار']],
+  ['hariri',['جيم','gym','تمرين','أكل','اكل','وجبة','فطور','غدا','عشا','ماي','بروتين','كرياتين','نوم']],
+  ['saboor',['class','كلاس','مذاكرة','كويز','quiz','اختبار','cs','ma','ph','fyp','محاضرة','moodle']],
+  ['hoot',['سيارة','زيت','برادو','بانزين','بنزين']],
+  ['yaryoor',['خشب','مطبخ','درج','كهربا','تركيب']],
+  ['zoori',['ريل','تصوير','مونتاج','ستوري','نشر','انستقرام','إنستقرام']],
+  ['zubaidi',['فلوس','مصروف','مربعات','صدقة']],
+  ['faryala',['نبات','زراعة','شتلة','سقي']],
+  ['shaari',['حلم']]];
+const CM_WAIT_KW=['جيم','gym','تمرين','workout','أكل','اكل','وجبة','فطور','غدا','عشا','meal','breakfast','lunch','dinner'];
+function cmKwHit(L,w){ return /^[a-z]+$/.test(w)?new RegExp('(^|[^a-z])'+w+'([^a-z]|$)').test(L):L.includes(w); }
+function cmAgentGuess(label){ const L=String(label||'').toLowerCase();
+  for(const [k,n] of CM_AGENT_NAMES) if(L.includes(n)) return k;
+  for(const [k,ws] of CM_AGENT_KW) if(ws.some(w=>cmKwHit(L,w))) return k;
+  return ''; }
+function cmAgentOf(c){ if(PUB||!c) return ''; const src=c._src||c;
+  if(src.agent==='none') return ''; if(src.agent&&HUB_KEYS.includes(src.agent)) return src.agent; return cmAgentGuess(src.label||c.label); }
+const cmAgentRank=k=>k==='hamour'?1:(k==='hariri'||k==='saboor')?2:3;
+function cmAgentAv(k){ if(!k) return ''; const m=hubMeta(k);
+  return `<span class="cm-av" role="button" tabindex="0" data-agent-open="${k}" style="--hub-c:${m.c}" title="${escapeHtml(m.name)}" aria-label="${escapeHtml(m.name)}" data-testid="cm-av-${k}">${escapeHtml(m.e)}</span>`; }
+// a tap on any avatar opens that agent's page — before the row's own click (rows are buttons too)
+document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('[data-agent-open]'); if(!a) return; e.preventDefault(); e.stopPropagation(); hubOpenAgent(a.dataset.agentOpen); },true);
+document.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const a=e.target.closest&&e.target.closest('[data-agent-open]'); if(!a) return; e.preventDefault(); e.stopPropagation(); hubOpenAgent(a.dataset.agentOpen); },true);
+function cmIsWaitItem(label){ const L=String(label||'').toLowerCase(); return CM_WAIT_KW.some(w=>cmKwHit(L,w)); }
+// {agent:[item labels]} standing right now
+function cmStanding(){
+  if(PUB) return {};
+  const now=hnMinNow(), done=dailyTrack.commitDone||{}, skip=dailyTrack.commitSkip||{}, out={};
+  const add=(k,c)=>{ (out[k]=out[k]||[]).includes(c.label)||out[k].push(c.label); };
+  commitmentsForDate(new Date()).forEach(c=>{ const k=cmAgentOf(c); if(!k) return; const ck=commitKey(c); if(done[ck]||skip[ck]) return;
+    const sp=mtSpan(c); if(!sp) return;
+    if((sp.start<=now&&now<sp.end)||(k==='hariri'&&now>=sp.start&&cmIsWaitItem(c.label))) add(k,c); });
+  const yd=new Date(); yd.setDate(yd.getDate()-1); // last night's overnight item still running
+  commitmentsForDate(yd).forEach(c=>{ const k=cmAgentOf(c); if(!k||!c.from||!c.to) return; const a=parseHM(c.from), b=parseHM(c.to); if(b<=a&&now<b&&!done[commitKey(c)]&&!skip[commitKey(c)]) add(k,c); });
+  return out; }
+function cmAgentFormSet(v){ const sel=document.getElementById('commitAgent'); if(!sel) return; const ar=LANG==='ar';
+  document.getElementById('commitAgentLbl').textContent=ar?'🐟 الوكيل المسؤول':'🐟 Agent in charge';
+  sel.innerHTML=`<option value="">${ar?'🤖 تلقائي (من الاسم)':'🤖 Auto (from the name)'}</option><option value="none">${ar?'— بدون وكيل':'— No agent'}</option>`+HUB_KEYS.map(k=>`<option value="${k}">${escapeHtml(hubMeta(k).e)} ${escapeHtml(questAgentName(k))}</option>`).join('');
+  sel.value=v||''; sel.onchange=cmAgentAutoHint; const lb=document.getElementById('commitLabel'); if(lb&&!lb._agHint){ lb._agHint=1; lb.addEventListener('input',cmAgentAutoHint); }
+  cmAgentAutoHint(); }
+function cmAgentFormVal(){ const sel=document.getElementById('commitAgent'); return sel&&!PUB?sel.value:''; }
+function cmAgentAutoHint(){ const el=document.getElementById('commitAgentAuto'), sel=document.getElementById('commitAgent'); if(!el||!sel) return; const ar=LANG==='ar';
+  if(sel.value){ el.textContent=''; return; }
+  const k=cmAgentGuess(document.getElementById('commitLabel').value);
+  el.textContent=k?(ar?`تلقائي: ${hubMeta(k).e} ${questAgentName(k)}`:`Auto: ${hubMeta(k).e} ${questAgentName(k)}`):(ar?'تلقائي: ما فيه وكيل لهالاسم':'Auto: no agent for this name'); }
 function hnCandidates(){
-  const ar=LANG==='ar', now=hnMinNow(), hr=Math.floor(now/60), out=[], done=dailyTrack.commitDone||{};
+  const ar=LANG==='ar', now=hnMinNow(), hr=Math.floor(now/60), out=[], done=dailyTrack.commitDone||{}, skip=dailyTrack.commitSkip||{};
   // 1) the schedule: what's on right now / starting soon
   commitmentsForDate(new Date()).forEach(c=>{
-    const sp=mtSpan(c); if(!sp||done[commitKey(c)]) return;
-    if(sp.start<=now && now<sp.end) out.push({id:'c'+commitKey(c), s:100, ic:'🟢', title:(ar?'الحين: ':'Now: ')+c.label,
+    const sp=mtSpan(c); if(!sp||done[commitKey(c)]||skip[commitKey(c)]) return; const ag=cmAgentOf(c);
+    if(sp.start<=now && now<sp.end) out.push({id:'c'+commitKey(c), s:100, ag, skip:ag?commitKey(c):'', ic:'🟢', title:(ar?'الحين: ':'Now: ')+c.label,
       sub:c.to?(ar?`لين ${formatTime12h(minutesToHM(sp.end))}`:`until ${formatTime12h(minutesToHM(sp.end))}`):'', act:{k:'commit',ck:commitKey(c)}, btn:ar?'✓ خلصت':'✓ Done'});
-    else if(sp.start>now && sp.start-now<=60) out.push({id:'s'+commitKey(c), s:92-(sp.start-now)/6, ic:'⏰', title:(ar?`بعد ${hnIn(sp.start-now)}: `:`In ${hnIn(sp.start-now)}: `)+c.label,
+    else if(sp.start>now && sp.start-now<=60) out.push({id:'s'+commitKey(c), s:92-(sp.start-now)/6, ag, ic:'⏰', title:(ar?`بعد ${hnIn(sp.start-now)}: `:`In ${hnIn(sp.start-now)}: `)+c.label,
       sub:ar?'جهّز نفسك من الحين':'Get ready now', act:{k:'nav',to:'today'}, btn:ar?'📅 الجدول':'📅 Schedule'});
   });
   { const yd=new Date(); yd.setDate(yd.getDate()-1);
@@ -5272,14 +5336,17 @@ function renderHomeNow(){
   const top=pick||list[0], more=list.filter(x=>x!==top).slice(0,2), all=[top,...more];
   const clock=new Date().toLocaleTimeString(ar?'ar-EG':'en-GB',{hour:'numeric',minute:'2-digit'});
   el.innerHTML=`<div class="dash-card hn-card"><div class="hn-head"><span>${ar?'⚡ شسوي الحين؟':'⚡ What now?'}</span><span class="hn-clock">${clock}</span></div>
-    <div class="hn-main"><span class="hn-ic">${top.ic}</span><div class="hn-txt"><b>${escapeHtml(top.title)}</b>${top.sub?`<small>${escapeHtml(top.sub)}</small>`:''}</div>${top.btn&&top.act?`<button type="button" class="hn-btn" data-hn="0">${escapeHtml(top.btn)}</button>`:''}</div>
-    ${more.length?`<div class="hn-more">${more.map((m,i)=>`<button type="button" class="hn-chip" data-hp="${i+1}">${m.ic} ${escapeHtml(m.title)}</button>`).join('')}</div>`:''}</div>`;
+    <div class="hn-main"><span class="hn-ic">${top.ic}</span>${top.ag?cmAgentAv(top.ag):''}<div class="hn-txt"><b>${escapeHtml(top.title)}</b>${top.sub?`<small>${escapeHtml(top.sub)}</small>`:''}</div>${top.btn&&top.act?`<button type="button" class="hn-btn" data-hn="0">${escapeHtml(top.btn)}</button>`:''}</div>
+    ${top.skip?`<div class="hn-skiprow"><button type="button" class="hn-skip" data-hn-skip="1" data-testid="hn-skip">${ar?'⏭️ تخطّي اليوم':'⏭️ Skip today'}</button></div>`:''}
+    ${more.length?`<div class="hn-more">${more.map((m,i)=>`<button type="button" class="hn-chip" data-hp="${i+1}">${m.ag?cmAgentAv(m.ag):''}${m.ic} ${escapeHtml(m.title)}</button>`).join('')}</div>`:''}</div>`;
   el.querySelectorAll('[data-hn]').forEach(b=>b.onclick=()=>hnDo(all[+b.dataset.hn].act));
+  const sk=el.querySelector('[data-hn-skip]'); if(sk) sk.onclick=()=>hnDo({k:'skip',ck:top.skip});
   el.querySelectorAll('[data-hp]').forEach(b=>b.onclick=()=>{ renderHomeNow._pick=all[+b.dataset.hp].id; renderHomeNow._pickAt=Date.now(); renderHomeNow(); });
 }
 async function hnDo(a){
   if(!a) return; renderHomeNow._pick=null;
-  if(a.k==='commit'){ dailyTrack.commitDone={...(dailyTrack.commitDone||{}),[a.ck]:true}; playSfx('pop'); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
+  if(a.k==='commit'){ dailyTrack.commitDone={...(dailyTrack.commitDone||{}),[a.ck]:true}; playSfx('pop'); hubFeed(); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
+  if(a.k==='skip'){ dailyTrack.commitSkip={...(dailyTrack.commitSkip||{}),[a.ck]:true}; hubFeed(); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
   if(a.k==='water'){ await adjustWater(0.25); renderHomeNow(); return; }
   if(a.k==='habit'){ const h=(P.habits||[]).find(x=>x.id===a.hid);
     if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:'ontime'}; } });
@@ -8115,6 +8182,7 @@ function commitDatesOverlap(a,b){ return (a.fromDate||'0000')<=(b.toDate||'9999'
 function resetCommitForm(){
   _cmEditIdx=null; setCommitEditBar(null);
   document.getElementById('commitLabel').value='';
+  cmAgentFormSet('');
   document.getElementById('commitAllDayToggle').checked=false;
   document.getElementById('commitHardToggle').checked=true;
   document.getElementById('commitTimeRow').classList.remove('hidden');
@@ -8147,6 +8215,7 @@ function setCommitEditBar(label){
 function startCommitEdit(i){
   const c=(P._commitments||[])[i]; if(!c) return; _cmEditIdx=i;
   document.getElementById('commitLabel').value=c.label;
+  cmAgentFormSet(c.agent||'');
   document.getElementById('commitHardToggle').checked=c.hard!==false;
   const allDay=!c.from; document.getElementById('commitAllDayToggle').checked=allDay;
   document.getElementById('commitTimeRow').classList.toggle('hidden',allDay);
@@ -8248,7 +8317,7 @@ document.getElementById('bulkImportBtn').addEventListener('click',()=>{
    If it was edited in between, its id is unknown and nothing is saved. */
 const CM_DAY_KEYS=['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
 const CM_DAY_ALIASES={sat:0,saturday:0,sun:1,sunday:1,mon:2,monday:2,tue:3,tuesday:3,wed:4,wednesday:4,thu:5,thursday:5,fri:6,friday:6};
-const CM_FIELDS=['id','name','fixed','pinned','from','to','durationMin','allDay','overnight','days','fromDate','toDate','delete'];
+const CM_FIELDS=['id','name','fixed','pinned','from','to','durationMin','allDay','overnight','days','fromDate','toDate','delete','agent'];
 function cmGapWarnOff(){ return P.cmGapWarnOff!==false; } // default ON
 function cmHash(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(36); }
 function cmIds(list){
@@ -8267,6 +8336,7 @@ function cmToJson(c,id){
   else if(!c.from&&!c.to) o.allDay=true; else { o.from=c.from||null; o.to=c.to||null; if(cmIsOvernight(c)) o.overnight=true; }
   o.days=[...(c.days||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]);
   o.fromDate=c.fromDate||null; o.toDate=c.toDate||null;
+  if(c.agent) o.agent=c.agent;
   return o;
 }
 function cmExportText(){ const list=P._commitments||[], ids=cmIds(list); return '[\n'+list.map((c,i)=>' '+JSON.stringify(cmToJson(c,ids[i]))).join(',\n')+'\n]'; }
@@ -8659,19 +8729,28 @@ function renderHubChips(){
 function hubOpenAgent(k){ hubCurAgent=k; navTo(apIndex[k]?'agentpage':'hubagent'); }
 function renderHubGrid(){
   const g=document.getElementById('hubGrid'); if(!g) return;
-  g.innerHTML=HUB_KEYS.map(k=>{ const m=hubMeta(k), n=hubOpenCount(k), sm=hubSummary(k);
+  const stand=cmStanding();
+  g.innerHTML=hubOrder(stand).map(k=>{ const m=hubMeta(k), n=hubOpenCount(k), sm=stand[k]?'⏳ '+stand[k].join(' · '):hubSummary(k);
     return `<button type="button" class="dash-card hub-card" data-agent="${k}" data-testid="hub-card">${n?`<span class="hub-badge" data-testid="hub-badge" aria-label="${n}">${n}</span>`:''}${hubAv(k)}<span class="hub-n">${escapeHtml(m.name)}</span><span class="hub-r">${escapeHtml(m.role)}</span><span class="hub-s">${escapeHtml(sm||'—')}</span></button>`; }).join('');
   g.querySelectorAll('[data-agent]').forEach(b=>b.onclick=()=>hubOpenAgent(b.dataset.agent));
   hubFeed();
 }
 function hubIslandEl(){ return document.getElementById('hubIsland'); }
-function hubFeed(){ const f=hubIslandEl(); if(!f||!f.contentWindow||!f.dataset.ready) return;
-  const agents=HUB_KEYS.map(k=>hubAgents[k]||(hubHome(k)?{agent:k}:null)).filter(Boolean).map(r=>({agent:r.agent, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], urgent:typeof r.urgent==='string'?r.urgent:'', home:'', updatedAt:r.updatedAt||''})); // home '' → the island relays the tap (hq-open) and the site opens the page inside
+let _hubFeedLast='';
+function hubUrgentFull(k,stand){ const r=hubAgents[k]||{}, own=typeof r.urgent==='string'?r.urgent.trim():'', sc=(stand[k]||[]).map(l=>'⏳ '+l).join(' · ');
+  return [own,sc].filter(Boolean).join(' · '); }
+function hubOrder(stand){ return HUB_KEYS.slice().sort((a,b)=>{ const sa=stand[a]||(hubAgents[a]&&hubAgents[a].urgent)?cmAgentRank(a):9, sb=stand[b]||(hubAgents[b]&&hubAgents[b].urgent)?cmAgentRank(b):9; return sa-sb||HUB_KEYS.indexOf(a)-HUB_KEYS.indexOf(b); }); }
+function hubFeed(force){ const f=hubIslandEl(); if(!f||!f.contentWindow||!f.dataset.ready) return;
+  const stand=cmStanding();
+  const agents=hubOrder(stand).map(k=>{ const r=hubAgents[k]||{agent:k}; return {agent:k, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], urgent:hubUrgentFull(k,stand), rank:cmAgentRank(k), home:'', updatedAt:r.updatedAt||''}; }); // home '' → the island relays the tap (hq-open) and the site opens the page inside
+  const j=JSON.stringify(agents); if(!force&&j===_hubFeedLast) return; _hubFeedLast=j;
   try{ f.contentWindow.postMessage({type:'hq-feed', agents}, location.origin==='null'?'*':location.origin); }catch(e){} }
+// time moves on: an item starts or ends → a fish stands up or sits down (only while «المقر» is open)
+setInterval(()=>{ try{ if(document.visibilityState==='visible'&&currentPanelName==='hub') hubFeed(); }catch(e){} },30000);
 window.addEventListener('message', ev=>{ const f=hubIslandEl(); if(!f||ev.source!==f.contentWindow) return;
   if(location.origin!=='null'&&ev.origin!==location.origin) return;
   const m=ev.data; if(!m||typeof m!=='object') return;
-  if(m.type==='hq-ready'){ f.dataset.ready='1'; if(_hubLoaded) hubFeed(); else loadHub().then(hubFeed); }
+  if(m.type==='hq-ready'){ f.dataset.ready='1'; if(_hubLoaded) hubFeed(true); else loadHub().then(()=>hubFeed(true)); }
   else if(m.type==='hq-open'&&HUB_KEYS.includes(m.agent)){ hubOpenAgent(m.agent); } }); // the island only relays when its own window.open was blocked → open the home here, never the planner page
 // the island draws every frame — hold its frames while «المقر» isn't on screen (battery), release on return
 function hubIslandPause(on){ const f=hubIslandEl(); let w=null; try{ w=f&&f.getAttribute('src')&&f.contentWindow; if(!w||typeof w.requestAnimationFrame!=='function') return; }catch(e){ return; }
@@ -8697,6 +8776,7 @@ async function renderHubAgent(){
   const inSite=!!apIndex[a];
   v.innerHTML=`${inSite?`<button type="button" class="dash-card hub-home" style="--hub-c:${m.c};width:100%;font:inherit;cursor:pointer" data-ap-open="1" data-testid="hub-home-site"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">📄 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go">${ar?'افتح صفحته':'Open the page'}</span></button>`:''}${!inSite&&home?`<a class="dash-card hub-home" style="--hub-c:${m.c}" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</span></a>`:''}
     <div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
+    ${(()=>{ const st=cmStanding()[a]; return st?`<div class="hub-urgent hub-sched" data-testid="hub-sched">⏳ ${ar?'ينتظرك':'Waiting for'}: ${escapeHtml(st.join(' · '))}</div>`:''; })()}
     <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${urg?`<button type="button" class="qs-item main hub-urg-q" data-urgtick="1" role="checkbox" aria-checked="false" data-testid="hub-urgent"><span class="qs-c"></span><span class="qs-t">🙋 ${escapeHtml(urg)}</span></button>`:''}${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):(urg?'':none(ar?'ما عنده مهام':'No quests'))}</div>
     <div class="dash-card hub-sec hub-compose"><h3>📤 ${ar?'أمر جديد':'New order'}</h3><textarea id="hubAgentText" class="setup-input" rows="2" maxlength="1000" placeholder="${escapeHtml(ar?`شنو تبي من ${m.name}؟`:`What do you need from ${m.name}?`)}">${escapeHtml(draft)}</textarea><button type="button" class="setup-btn hub-send" id="hubAgentSend" data-testid="hub-agent-send">📤 ${t('hub_send')}</button></div>
     <div class="dash-card hub-sec" data-testid="hub-orders"><h3>📬 ${ar?'أوامري له':'My orders'}</h3>${orders.length?orders.map(o=>{ const lk=hubSafeUrl(o.link);
@@ -8888,6 +8968,11 @@ function cmPlanImport(text){
     if(r.fromDate!==undefined) c.fromDate=r.fromDate||null;
     if(r.toDate!==undefined) c.toDate=r.toDate||null;
     if(days) c.days=days;
+    if(r.agent!==undefined){ // site key / Arabic name; '' or null = auto from the name; "none" = no agent
+      if(r.agent===null||r.agent==='') delete c.agent;
+      else if(r.agent==='none') c.agent='none';
+      else { const k=typeof r.agent==='string'?questAgentKey(r.agent):''; if(HUB_KEYS.includes(k)) c.agent=k; else E((ar?'وكيل مو معروف: ':'Unknown agent: ')+JSON.stringify(r.agent)); }
+    }
     const keepPr=!pr&&!!c.prayerAt&&r.from===undefined&&r.allDay!==true;
     if(r.allDay===true){ if(r.from||r.to||r.durationMin!==undefined) E(ar?'allDay ما يكون معه وقت':'allDay can\'t have times'); c.from=null; c.to=null; delete c.prayerAt; }
     else if(pr||keepPr){
@@ -8933,7 +9018,7 @@ function cmPlanImport(text){
     it.after=c;
     if(base){
       const show=(k,v)=>k==='days'?[...(v||[])].sort((a,b)=>a-b).map(i=>CM_DAY_KEYS[i]).join(','):k==='prayerAt'?(v?`${v.prayer}${(v.offset||0)<0?'':'+'}${v.offset||0} · ${v.durationMin}min`:'—'):v==null?'—':String(v);
-      it.diff=[['label','name'],['prayerAt','prayer'],['from','from'],['to','to'],['days','days'],['fromDate','fromDate'],['toDate','toDate'],['hard','fixed'],['pinned','pinned']]
+      it.diff=[['label','name'],['prayerAt','prayer'],['from','from'],['to','to'],['days','days'],['fromDate','fromDate'],['toDate','toDate'],['hard','fixed'],['pinned','pinned'],['agent','agent']]
         .map(([k,lbl])=>[lbl,show(k,k==='hard'?base.hard!==false:k==='pinned'?!!base.pinned:base[k]),show(k,k==='hard'?c.hard!==false:k==='pinned'?!!c.pinned:c[k])]).filter(x=>x[1]!==x[2]);
       if(!it.diff.length) it.kind='same';
     }
@@ -9101,7 +9186,8 @@ document.getElementById('commitAddBtn').addEventListener('click',async()=>{
     if(!r){ commitFormError(ar?'ما قدرنا نجيب مواقيت الصلاة — تأكد من النت':'Couldn’t load prayer times — check your connection','commitPrayerRow'); return; }
     from=r.from; to=r.to; }
   const was=_cmEditIdx!=null?(P._commitments||[])[_cmEditIdx]:null;
-  attemptAddCommitment({...(was&&was.src?{src:was.src}:{}),label,from,to,days,fromDate,toDate,pinned:was?!!was.pinned:false,hard,...(prayerAt?{prayerAt}:{})});
+  const agent=cmAgentFormVal();
+  attemptAddCommitment({...(was&&was.src?{src:was.src}:{}),label,from,to,days,fromDate,toDate,pinned:was?!!was.pinned:false,hard,...(prayerAt?{prayerAt}:{}),...(agent?{agent}:{})});
 });
 function prefillTodoSetup(){
   const s=P.todoSetup||{};
@@ -13356,7 +13442,7 @@ async function renderScheduleToday(){
   let h=`<div class="dash-card-title dash-title-row"><span>${ar?'📅 يومك':'📅 Your day'}<small class="sch-date">${escapeHtml(lbl)}</small></span><button type="button" class="dash-link" id="schOpenDay" data-testid="sch-open-day">${ar?'بالساعات':'By the hour'}</button></div>`;
   if(!items.length) h+=`<div class="dash-empty">${ar?'ما عندك شي اليوم — ضيف التزام من تحت.':'Nothing on today — add a commitment below.'}</div>`;
   else h+='<div class="sch-list">'+items.map((it,i)=>{ const past=it.time>=0&&it.time<=mins&&(next<0||i<next);
-    return `<div class="sch-row${past?' past':''}${i===next?' next':''}" data-testid="sch-row"><span class="t num">${it.timeLabel||(ar?'طول اليوم':'All day')}</span><span class="l">${escapeHtml(it.label)}</span>${i===next?`<span class="sch-next">${ar?'الجاي':'Next'}</span>`:''}</div>`; }).join('')+'</div>';
+    return `<div class="sch-row${past?' past':''}${i===next?' next':''}" data-testid="sch-row"><span class="t num">${it.timeLabel||(ar?'طول اليوم':'All day')}</span><span class="l">${cmAgentAv(it.ag)}${escapeHtml(it.label)}</span>${i===next?`<span class="sch-next">${ar?'الجاي':'Next'}</span>`:''}</div>`; }).join('')+'</div>';
   el.innerHTML=h;
   const open=()=>openCalendarDay(now.getFullYear(),now.getMonth(),now.getDate());
   el.querySelector('#schOpenDay').onclick=open;
@@ -13400,7 +13486,7 @@ async function openCalendarDay(y,m,d){
   } else {
     const dayConflicts=findAllScheduleConflicts(commitments).filter(cf=>cf.kind==='overlap');
     const conflicted=new Set(); dayConflicts.forEach(cf=>{ conflicted.add(cf.a); conflicted.add(cf.b); });
-    const row=(c)=>`<div class="meal"><div class="content">${conflicted.has(c)?`<span style="color:var(--err);font-weight:700;">${t('conflict_badge')} </span>`:''}${c.pinned?'📌 ':''}${escapeHtml(c.label)} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
+    const row=(c)=>`<div class="meal"><div class="content">${conflicted.has(c)?`<span style="color:var(--err);font-weight:700;">${t('conflict_badge')} </span>`:''}${c.pinned?'📌 ':''}${cmAgentAv(cmAgentOf(c))}${escapeHtml(c.label)} <span style="color:var(--ink-soft);font-size:0.85em;">(${formatCommitRange(c)})</span></div></div>`;
     html+=`<div class="total-kcal" style="font-size:1rem;">${pinned.length?(ar?'📌 المثبّت':'📌 Pinned'):(ar?'ما عندك شي مثبّت هاليوم':'Nothing pinned this day')}</div>`;
     html+=pinned.map(row).join('');
     const rest=others.length+noteList.length;
@@ -13762,7 +13848,7 @@ async function getAgendaForDate(dateObj){
 }
 async function getScheduleItemsForDate(dateObj){
   const commits=commitmentsForDate(dateObj).map(c=>({
-    time:c.from?commitTimeSpan(c).start:-1, label:c.label, timeLabel:c.from?formatTime12h(c.from):''
+    time:c.from?commitTimeSpan(c).start:-1, label:c.label, ag:cmAgentOf(c), timeLabel:c.from?formatTime12h(c.from):''
   }));
   const notes=await getAgendaForDate(dateObj);
   return commits.concat(notes).sort((a,b)=>(a.time<0?9999:a.time)-(b.time<0?9999:b.time));
@@ -13864,7 +13950,7 @@ async function renderHomeTodoProgress(){
 async function renderHomeTodoScheduleRows(){
   const el=document.getElementById('homeTodoScheduleRows'); if(!el) return;
   const items=await getScheduleItemsForDate(homeSelectedDate);
-  el.innerHTML=items.map(it=>`<div class="home-todo-schedule-row"><span class="t">${it.timeLabel}</span><span>${escapeHtml(it.label)}</span></div>`).join('');
+  el.innerHTML=items.map(it=>`<div class="home-todo-schedule-row"><span class="t">${it.timeLabel}</span><span>${cmAgentAv(it.ag)}${escapeHtml(it.label)}</span></div>`).join('');
 }
 async function renderHomeSchedulePreview(){
   const el=document.getElementById('homeSchedulePreview'); if(!el) return;
@@ -13874,7 +13960,7 @@ async function renderHomeSchedulePreview(){
     html+=`<div class="home-preview-sub" style="margin-top:8px;">${t('home_plan_empty')}</div><button type="button" class="cta-btn" data-nav="schedule-add">${t('home_plan_add')}</button>`;
   } else {
     const shown=items.slice(0,6);
-    html+=shown.map(it=>`<div class="home-todo-schedule-row"><span class="t">${it.timeLabel||'—'}</span><span>${escapeHtml(it.label)}</span></div>`).join('');
+    html+=shown.map(it=>`<div class="home-todo-schedule-row"><span class="t">${it.timeLabel||'—'}</span><span>${cmAgentAv(it.ag)}${escapeHtml(it.label)}</span></div>`).join('');
     if(items.length>shown.length) html+=`<button type="button" class="home-cta" data-nav="today">${LANG==='ar'?`و${items.length-shown.length} غيرها`:`+${items.length-shown.length} more`}</button>`;
   }
   el.innerHTML=html;
@@ -14007,7 +14093,7 @@ document.getElementById('profileBar').addEventListener('click',()=>{ showPanel('
 function commitKey(c){ return 'c:'+(c.label||'')+'|'+((c._src||c).from||''); }
 async function todayCommitItems(){
   const ar=LANG==='ar', d=new Date();
-  const cm=commitmentsForDate(d).map(c=>({k:commitKey(c), label:c.label, time:c.from?commitTimeSpan(c).start:-1, timeLabel:c.from?(formatTime12h(c.from)+(c.to?' – '+formatTime12h(c.to):'')):(ar?'طول اليوم':'All day'), commit:true}));
+  const cm=commitmentsForDate(d).map(c=>({k:commitKey(c), ag:cmAgentOf(c), label:c.label, time:c.from?commitTimeSpan(c).start:-1, timeLabel:c.from?(formatTime12h(c.from)+(c.to?' – '+formatTime12h(c.to):'')):(ar?'طول اليوم':'All day'), commit:true}));
   let notes=[]; try{ notes=(await getAgendaForDate(d)).map(n=>({k:'n:'+n.label+'|'+n.time, label:n.label, time:n.time, timeLabel:n.timeLabel})); }catch(e){}
   return cm.concat(notes).sort((a,b)=>(a.time<0?-1:a.time)-(b.time<0?-1:b.time));
 }
@@ -14026,13 +14112,13 @@ async function renderDashCommitCard(){
     const nx=nextCommitAfterToday();
     html+=`<div class="cmt-empty">${ar?'ما عندك التزامات اليوم 🎉':'Nothing scheduled today 🎉'}${nx?`<small>⏭️ ${ar?'الجاي:':'Next:'} ${nx}</small>`:''}</div><button type="button" class="cta-btn" data-nav="schedule-add">➕ ${ar?'أضف التزام':'Add a commitment'}</button>`;
   } else {
-    html+=items.map(it=>`<button type="button" class="cmt-row${done[it.k]?' done':''}" data-ck="${escapeHtml(it.k)}"><span class="cmt-t">${escapeHtml(it.timeLabel)}</span><span class="cmt-l">${escapeHtml(it.label)}</span><span class="dash-toggle${done[it.k]?' done':''}">${done[it.k]?'✓':''}</span></button>`).join('');
+    html+=items.map(it=>`<button type="button" class="cmt-row${done[it.k]?' done':''}" data-ck="${escapeHtml(it.k)}"><span class="cmt-t">${escapeHtml(it.timeLabel)}</span><span class="cmt-l">${cmAgentAv(it.ag)}${escapeHtml(it.label)}</span><span class="dash-toggle${done[it.k]?' done':''}">${done[it.k]?'✓':''}</span></button>`).join('');
   }
   el.innerHTML=html;
   el.querySelectorAll('[data-ck]').forEach(b=>b.onclick=async()=>{
     const k=b.dataset.ck; dailyTrack.commitDone={...(dailyTrack.commitDone||{})};
     if(dailyTrack.commitDone[k]) delete dailyTrack.commitDone[k]; else { dailyTrack.commitDone[k]=true; playSfx('pop'); }
-    await saveDailyTrack(); renderDashCommitCard();
+    hubFeed(); await saveDailyTrack(); renderDashCommitCard(); try{ renderHomeNow(); }catch(e){}
   });
 }
 function renderDailySummary(){
