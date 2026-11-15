@@ -3027,10 +3027,11 @@ else setTimeout(()=>{ if(window.claude?.use) connect(); else { $('liveTxt').text
 
 /* ---------- site mode (his My Planner site) ---------- */
 (function(){
+  const NAMES={knowledge:'منقسي',zory:'زوري',hurairy:'هريري',hamour:'هامور',hoot:'الحوت',saboor:'الصبور',yaryour:'يريور',zubaidi:'زبيدي',shaari:'شعري',fryalah:'فريالة'};
   const SITE={"knowledge":"mangsi","zory":"zoori","hurairy":"hariri","hamour":"hamour","hoot":"hoot","saboor":"saboor","yaryour":"yaryoor","zubaidi":"zubaidi","shaari":"shaari","fryalah":"faryala"}, HUB=Object.fromEntries(Object.entries(SITE).map(([h,s])=>[s,h]));
   const inFrame = window.parent && window.parent!==window;
   try{ $('liveTxt').textContent='موقعي'; $('liveChip').title='موقعي'; }catch(e){}
-  const BAKED=[]; // private journal stays off the public site — the planner feeds it after sign-in
+  const BAKED=[];
   setTimeout(()=>window.__feed(BAKED), 300);
   const own = openAgent;
   openAgent = function(id){ if(inFrame){ parent.postMessage({type:'hq-open', agent: SITE[id]||id}, '*'); return; } own(id); };
@@ -3040,7 +3041,7 @@ else setTimeout(()=>{ if(window.claude?.use) connect(); else { $('liveTxt').text
     for(const r of m.agents){ const id=HUB[r.agent]||r.agent; if(!SITE[id]) continue;
       const base=docs[id]||{};
       const entries=Array.isArray(r.news)&&r.news.length ? r.news.map(n=>({date:n.date, title:n.sum, sum:n.sum, lines:[]})) : base.entries;
-      list.push(Object.assign({}, base, {agent:id, now: Array.isArray(r.now)? r.now : base.now, entries, updatedAt: r.updatedAt||base.updatedAt})); }
+      list.push(Object.assign({}, base, {agent:id, name: base.name||NAMES[id], now: Array.isArray(r.now)? r.now : base.now, entries, updatedAt: r.updatedAt||base.updatedAt})); }
     if(list.length) window.__feed(list);
   });
   if(inFrame) parent.postMessage({type:'hq-ready'}, '*');

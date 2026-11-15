@@ -1897,6 +1897,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   .hub-island{ display:block; width:100%; height:75vh; min-height:520px; border:0; border-radius:18px; margin:0 0 12px; background:#0b2a3a; overflow:hidden; }
   .hub-list > .hub-grid{ margin-top:10px; }
+  .new-ver-bar{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 10px); z-index:99999; border:0; border-radius:999px; padding:11px 20px; font:inherit; font-weight:700; font-size:.95rem; background:var(--heading,#111); color:var(--bg,#fff); box-shadow:0 6px 24px rgba(0,0,0,.25); cursor:pointer; max-width:calc(100vw - 32px); }
   @media (min-width:700px){ .hub-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
   @media (min-width:1100px){ .hub-grid{ grid-template-columns:repeat(5,minmax(0,1fr)); } }
   .hub-card{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:4px; text-align:start; font:inherit; color:var(--ink); cursor:pointer; padding:12px; min-width:0; }
@@ -3130,13 +3131,13 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=2" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
       <div class="hub-chips" id="hubQuickAgents" role="radiogroup"></div>
       <button type="button" class="setup-btn hub-send" id="hubQuickSend" data-testid="hub-quick-send">📤 <span data-i18n="hub_send"></span></button>
     </div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=1" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <details class="qs-io hub-list" id="hubListWrap"><summary data-i18n="hub_list"></summary><div class="hub-grid" id="hubGrid" data-testid="hub-grid"></div></details>
     <details class="qs-io" id="hubIo">
       <summary data-i18n="hub_io"></summary>
@@ -3342,12 +3343,33 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.80.0';
+const APP_VERSION='v1.81.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
   });
 }
+/* an open tab / home-screen app keeps the old build in memory — check the live version on return and every 30 min */
+let _verChecking=false, _verLast=0;
+async function checkNewVersion(force){
+  if(_verChecking||!/^https?:$/.test(location.protocol)||document.getElementById('newVerBar')) return;
+  if(!force&&Date.now()-_verLast<60e3) return; _verChecking=true; _verLast=Date.now();
+  try{
+    const r=await fetch('./index.html?nc='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
+    const m=(await r.text()).match(/const APP_VERSION='(v[0-9.]+)'/);
+    if(m&&m[1]!==APP_VERSION){
+      try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration('./'); if(reg) reg.update().catch(()=>{}); }catch(e){}
+      const ar=(typeof LANG==='undefined'?'ar':LANG)==='ar', b=document.createElement('button');
+      b.id='newVerBar'; b.type='button'; b.className='new-ver-bar'; b.setAttribute('data-testid','new-version');
+      b.textContent=ar?'✨ نسخة جديدة — حدّث':'✨ New version — refresh';
+      b.onclick=()=>{ b.disabled=true; location.reload(); };
+      document.body.appendChild(b);
+    }
+  }catch(e){} finally{ _verChecking=false; }
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkNewVersion(); });
+setInterval(()=>{ if(document.visibilityState==='visible') checkNewVersion(); }, 30*60e3);
+window.addEventListener('load',()=>setTimeout(()=>checkNewVersion(true),8000));
 
 /* ================= STORAGE + ERRORS =================
    When signed in, Firestore is the source of truth (synced across every
