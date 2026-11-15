@@ -1938,6 +1938,10 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-home{ margin-bottom:12px; padding:18px 16px; text-align:center; background:linear-gradient(160deg, color-mix(in srgb, var(--hub-c) 16%, var(--card)), var(--card)); border-color:color-mix(in srgb, var(--hub-c) 40%, var(--line)); }
   .hub-home .hh-t{ font-family:var(--font-head); font-weight:700; font-size:1.05rem; color:var(--heading); margin-bottom:12px; }
   .hub-home .hh-go{ display:block; text-decoration:none; text-align:center; padding:14px; font-size:1rem; }
+  a.hub-home{ display:block; text-decoration:none; color:inherit; padding:22px 16px 18px; -webkit-tap-highlight-color:transparent; }
+  a.hub-home:active{ transform:scale(.985); }
+  .hub-home .hh-av{ display:block; font-size:2.6rem; line-height:1; margin-bottom:8px; }
+  .hub-home .hh-t{ display:block; font-size:1.25rem; }
 </style>
 </head>
 <body>
@@ -3132,7 +3136,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=5" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=6" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
@@ -3344,7 +3348,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.85.0';
+const APP_VERSION='v1.86.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8452,17 +8456,14 @@ async function renderHubAgent(){
   if(!_questsLoaded) await loadQuests();
   const a=hubCurAgent, ar=LANG==='ar', m=hubMeta(a), r=hubAgents[a]||{}, draft=v.dataset.agent===a?((document.getElementById('hubAgentText')||{}).value||''):'';
   v.dataset.agent=a;
-  const now=(r.now||[]).slice(0,8), news=hubNewsSorted(a).slice(0,5), links=(r.links||[]).filter(l=>hubSafeUrl(l.url)), qs=quests.filter(q=>q.agent===a);
+  const qs=quests.filter(q=>q.agent===a); // his rule: the agent's page = its own artifact (top) + quests + orders; now/news/links live inside the artifact
   const orders=hubInbox.filter(o=>o.agent===a).sort((x,y)=>String(y.at).localeCompare(String(x.at)));
   const none=t=>`<div class="hub-empty">${t}</div>`;
   const home=hubHome(a);
-  v.innerHTML=`<div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
+  v.innerHTML=`${home?`<a class="dash-card hub-home" style="--hub-c:${m.c}" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home"><span class="hh-av">${escapeHtml(m.e)}</span><span class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</span><span class="setup-btn hh-go" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</span></a>`:''}
+    <div class="hub-head">${hubAv(a,true)}<div><h2>${escapeHtml(m.name)}</h2><div class="hub-r">${escapeHtml(m.role)}${r.updatedAt?` · ${ar?'آخر تحديث':'updated'} ${escapeHtml(hubWhen(r.updatedAt)||String(r.updatedAt))}`:''}</div></div></div>
     ${(typeof r.urgent==='string'&&r.urgent.trim())?`<div class="hub-urgent" data-testid="hub-urgent">🙋 ${escapeHtml(r.urgent.trim())}</div>`:''}
-    ${home?`<div class="dash-card hub-home" style="--hub-c:${m.c}" data-testid="hub-home"><div class="hh-t">🏠 ${ar?'صفحة':'Page:'} ${escapeHtml(m.name)}</div><a class="setup-btn hh-go" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer" data-testid="hub-home-open">${ar?'افتح صفحته':'Open the page'} ↗</a></div>`:''}
-    <div class="dash-card hub-sec" data-testid="hub-now"><h3>${ar?'الحالة الآن':'Right now'}</h3>${now.length?`<ul class="hub-now">${now.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:none(ar?'ما فيه تحديث ليلحين':'No update yet')}</div>
-    <div class="dash-card hub-sec" data-testid="hub-news"><h3>${ar?'آخر الأخبار':'Latest'}</h3>${news.length?news.map(n=>`<div class="hub-news"><span class="d">${escapeHtml(n.date||'')}</span><span>${escapeHtml(n.sum||'')}</span></div>`).join(''):none(ar?'ما فيه أخبار ليلحين':'Nothing yet')}</div>
     <div class="dash-card hub-sec" data-testid="hub-quests"><h3>🗺️ ${ar?'مهامه':'Quests'}</h3>${qs.length?qs.sort((x,y)=>(y.main?1:0)-(x.main?1:0)||(x.done?1:0)-(y.done?1:0)).map(q=>`<button type="button" class="qs-item ${q.main?'main':'side'}${q.done?' done':''}" data-hqid="${escapeHtml(q.id)}" role="checkbox" aria-checked="${q.done?'true':'false'}"><span class="qs-c">${q.done?'✓':''}</span><span class="qs-t">${q.main?'⭐ ':''}${escapeHtml(q.text)}</span></button>`).join(''):none(ar?'ما عنده مهام':'No quests')}</div>
-    ${links.length?`<div class="dash-card hub-sec" data-testid="hub-links"><h3>🔗 ${ar?'صفحاته':'Pages'}</h3><div class="hub-links">${links.map(l=>`<a class="hub-link" href="${escapeHtml(hubSafeUrl(l.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label||hubSafeUrl(l.url))}</a>`).join('')}</div></div>`:''}
     <div class="dash-card hub-sec hub-compose"><h3>📤 ${ar?'أمر جديد':'New order'}</h3><textarea id="hubAgentText" class="setup-input" rows="2" maxlength="1000" placeholder="${escapeHtml(ar?`شنو تبي من ${m.name}؟`:`What do you need from ${m.name}?`)}">${escapeHtml(draft)}</textarea><button type="button" class="setup-btn hub-send" id="hubAgentSend" data-testid="hub-agent-send">📤 ${t('hub_send')}</button></div>
     <div class="dash-card hub-sec" data-testid="hub-orders"><h3>📬 ${ar?'أوامري له':'My orders'}</h3>${orders.length?orders.map(o=>{ const lk=hubSafeUrl(o.link);
       return `<div class="hub-order" data-oid="${escapeHtml(o.id)}" data-testid="hub-order"><div class="ot">${escapeHtml(o.text)}</div><div class="om">${hubStatusChip(o.status)}<span>${escapeHtml(hubWhen(o.at))}</span>${o.status==='new'?`<button type="button" class="hub-cancel" data-cancel="${escapeHtml(o.id)}" data-testid="hub-cancel">${ar?'ألغِ':'Cancel'}</button>`:''}</div>${o.reply?`<div class="orep" data-testid="hub-reply">${escapeHtml(o.reply)}</div>`:''}${lk?`<div class="om"><a class="hub-link" href="${escapeHtml(lk)}" target="_blank" rel="noopener noreferrer">🔗 ${ar?'افتح':'Open'}</a></div>`:''}</div>`; }).join(''):none(ar?'ما أرسلت له شي ليلحين':'No orders yet')}</div>`;
