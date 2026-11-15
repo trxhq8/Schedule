@@ -3132,7 +3132,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
     <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=4" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=5" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
@@ -3344,7 +3344,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.84.0';
+const APP_VERSION='v1.85.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8553,8 +8553,7 @@ async function applyHubJson(){
     if('status' in u){ o.status=u.status; o.doneAt=(u.status==='done'||u.status==='failed')?(o.doneAt||new Date().toISOString()):null; }
     if('reply' in u) o.reply=u.reply; if('link' in u) o.link=u.link; });
   if(touched) await saveHubInbox();
-  ta.value=''; document.getElementById('hubJsonPreview').innerHTML='';
-  playSfx('success'); showToast(ar?'تحدّث الهب':'Hub updated','success');
+  ta.value=''; document.getElementById('hubJsonPreview').innerHTML=`<div class="hub-empty" data-testid="hub-json-done">✅ ${ar?'انحفظ':'Saved'}</div>`; // quiet: no toast, no sound (his rule for «المقر»)
   if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent();
 }
 document.getElementById('hubQuickSend').addEventListener('click',async e=>{ const b=e.currentTarget, ta=document.getElementById('hubQuickText'); b.disabled=true;
