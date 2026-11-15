@@ -1895,6 +1895,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-chip.on{ background:var(--accent); color:var(--card); border-color:var(--accent); }
   .hub-send{ margin-top:8px; }
   .hub-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .hub-island{ display:block; width:100%; height:75vh; min-height:520px; border:0; border-radius:18px; margin:0 0 12px; background:#0b2a3a; overflow:hidden; }
+  .hub-list > .hub-grid{ margin-top:10px; }
   @media (min-width:700px){ .hub-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
   @media (min-width:1100px){ .hub-grid{ grid-template-columns:repeat(5,minmax(0,1fr)); } }
   .hub-card{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:4px; text-align:start; font:inherit; color:var(--ink); cursor:pointer; padding:12px; min-width:0; }
@@ -3134,7 +3136,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
       <div class="hub-chips" id="hubQuickAgents" role="radiogroup"></div>
       <button type="button" class="setup-btn hub-send" id="hubQuickSend" data-testid="hub-quick-send">📤 <span data-i18n="hub_send"></span></button>
     </div>
-    <div class="hub-grid" id="hubGrid" data-testid="hub-grid"></div>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=1" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <details class="qs-io hub-list" id="hubListWrap"><summary data-i18n="hub_list"></summary><div class="hub-grid" id="hubGrid" data-testid="hub-grid"></div></details>
     <details class="qs-io" id="hubIo">
       <summary data-i18n="hub_io"></summary>
       <textarea id="hubJsonText" class="setup-input" rows="6" dir="ltr" spellcheck="false" placeholder='{"agents":[{"agent":"hamour","now":["…"],"news":[{"date":"2026-11-14","sum":"…"}],"links":[{"label":"…","url":"https://…"}]}],"inbox":[{"id":"o…","status":"done","reply":"…","link":""}]}'></textarea>
@@ -3339,7 +3342,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.79.0';
+const APP_VERSION='v1.80.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4006,7 +4009,7 @@ const I18N={
   auth_sign_in:'تسجيل الدخول',auth_sign_up:'إنشاء حساب جديد',auth_guest:'👤 المتابعة كضيف',
   auth_sign_out:'🚪 تسجيل الخروج',
   mode_light:'فاتح',mode_dark:'داكن',
-  bottom_nav_hub:'المقر',back_hub:'المقر',hub_agents_title:'وكلائي',hub_quick:'أمر سريع',hub_send:'أرسل',hub_apply:'طبّق',hub_io:'📥 تحديث الوكلاء (JSON)',hub_order_ph:'شنو تبي منه؟',hub_desc_challenges:'تحديات يومية وأسبوعية ونقاط',
+  bottom_nav_hub:'المقر',back_hub:'المقر',hub_agents_title:'وكلائي',hub_quick:'أمر سريع',hub_list:'📋 عرض كقائمة',hub_send:'أرسل',hub_apply:'طبّق',hub_io:'📥 تحديث الوكلاء (JSON)',hub_order_ph:'شنو تبي منه؟',hub_desc_challenges:'تحديات يومية وأسبوعية ونقاط',
   quests_title:'مهامي',quests_io:'📥 تحديث المهام (JSON)',quests_preview:'معاينة',back_quests:'→ مهامي',
   ai_paste_title:'🤖 الصق من مساعدك',card_assistant:'مساعدك',hub_desc_assistant:'مساعد ذكي يرتب يومك معاك',auth_forgot:'نسيت كلمة المرور؟',
   settings_title:'⚙️ الإعدادات',bg_color_label:'🎨 الخلفية',backup_export:'تصدير',backup_import:'استيراد',
@@ -4170,7 +4173,7 @@ const I18N={
   auth_sign_in:'Sign In',auth_sign_up:'Create new account',auth_guest:'👤 Continue as Guest',
   auth_sign_out:'🚪 Sign out',
   mode_light:'Light',mode_dark:'Dark',
-  bottom_nav_hub:'HQ',back_hub:'HQ',hub_agents_title:'My agents',hub_quick:'Quick order',hub_send:'Send',hub_apply:'Apply',hub_io:'📥 Update agents (JSON)',hub_order_ph:'What do you need?',hub_desc_challenges:'Daily & weekly challenges, XP',
+  bottom_nav_hub:'HQ',back_hub:'HQ',hub_agents_title:'My agents',hub_quick:'Quick order',hub_list:'📋 Show as list',hub_send:'Send',hub_apply:'Apply',hub_io:'📥 Update agents (JSON)',hub_order_ph:'What do you need?',hub_desc_challenges:'Daily & weekly challenges, XP',
   quests_title:'My quests',quests_io:'📥 Update quests (JSON)',quests_preview:'Preview',back_quests:'→ My quests',
   ai_paste_title:'🤖 Paste from your assistant',card_assistant:'Your assistant',hub_desc_assistant:'An AI helper that plans your day with you',auth_forgot:'Forgot password?',
   settings_title:'⚙️ Settings',bg_color_label:'🎨 Background',backup_export:'Export',backup_import:'Import',
@@ -7866,6 +7869,7 @@ function enterSection(name){
   if(name==='collections') enterCollections();
   if(name==='store') renderStoreSection();
   if(name==='quests') renderQuests();
+  hubIslandPause(name!=='hub');
   if(name==='hub') renderHub();
   if(name==='hubagent'){ renderHubAgent(); loadHub().then(()=>{ if(currentPanelName==='hubagent') renderHubAgent(); }).catch(()=>{}); }
   if(name==='profile-hub') renderGuestNote();
@@ -8398,9 +8402,24 @@ function renderHubGrid(){
   g.innerHTML=HUB_KEYS.map(k=>{ const m=hubMeta(k), n=hubOpenCount(k), sm=hubSummary(k);
     return `<button type="button" class="dash-card hub-card" data-agent="${k}" data-testid="hub-card">${n?`<span class="hub-badge" data-testid="hub-badge" aria-label="${n}">${n}</span>`:''}${hubAv(k)}<span class="hub-n">${escapeHtml(m.name)}</span><span class="hub-r">${escapeHtml(m.role)}</span><span class="hub-s">${escapeHtml(sm||'—')}</span></button>`; }).join('');
   g.querySelectorAll('[data-agent]').forEach(b=>b.onclick=()=>{ hubCurAgent=b.dataset.agent; navTo('hubagent'); });
+  hubFeed();
 }
+function hubIslandEl(){ return document.getElementById('hubIsland'); }
+function hubFeed(){ const f=hubIslandEl(); if(!f||!f.contentWindow||!f.dataset.ready) return;
+  const agents=HUB_KEYS.map(k=>hubAgents[k]).filter(Boolean).map(r=>({agent:r.agent, now:Array.isArray(r.now)?r.now:[], news:Array.isArray(r.news)?r.news:[], updatedAt:r.updatedAt||''}));
+  try{ f.contentWindow.postMessage({type:'hq-feed', agents}, location.origin==='null'?'*':location.origin); }catch(e){} }
+window.addEventListener('message', ev=>{ const f=hubIslandEl(); if(!f||ev.source!==f.contentWindow) return;
+  if(location.origin!=='null'&&ev.origin!==location.origin) return;
+  const m=ev.data; if(!m||typeof m!=='object') return;
+  if(m.type==='hq-ready'){ f.dataset.ready='1'; if(_hubLoaded) hubFeed(); else loadHub().then(hubFeed); }
+  else if(m.type==='hq-open'&&HUB_KEYS.includes(m.agent)){ hubCurAgent=m.agent; navTo('hubagent'); } });
+// the island draws every frame — hold its frames while «المقر» isn't on screen (battery), release on return
+function hubIslandPause(on){ const f=hubIslandEl(); let w=null; try{ w=f&&f.getAttribute('src')&&f.contentWindow; if(!w||typeof w.requestAnimationFrame!=='function') return; }catch(e){ return; }
+  if(!w.__rafOrig){ w.__rafOrig=w.requestAnimationFrame.bind(w); w.__rafQ=[]; w.requestAnimationFrame=cb=>{ if(w.__hqPaused){ w.__rafQ.push(cb); return 0; } return w.__rafOrig(cb); }; }
+  w.__hqPaused=!!on; if(!on){ w.__rafQ.splice(0).forEach(cb=>w.__rafOrig(cb)); } }
 async function renderHub(){
   const qt=document.getElementById('hubQuickText'); if(qt) qt.placeholder=t('hub_order_ph');
+  const isl=hubIslandEl(); if(isl&&!isl.getAttribute('src')) isl.setAttribute('src', isl.dataset.src);
   renderHubChips(); renderHubGrid();
   await loadHub(); renderHubGrid();
 }
