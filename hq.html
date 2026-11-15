@@ -159,7 +159,7 @@ function setUrgent(id,on){
 function moveHand(id){
   const f=F[id], a=f.a; let x,y;
   if(f.stand){ const t=standBoxes(id).to; x=t.x+t.w*.5; y=t.y-8; }
-  else { [x,y]=a.head; y-=id==='shaari'?70:30; }
+  else { [x,y]=a.head; y=Math.max(y-30,a.room[1]+120); }   // keep the badge inside his own room, clear of the plate on the beam above
   at(L[id].h,x,y);
 }
 
