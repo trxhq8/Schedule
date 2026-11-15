@@ -8,7 +8,7 @@
 
    BUMP APP_VERSION every time you deploy a real update — it changes the cache
    name, which makes the old cache get deleted automatically on activate. */
-const APP_VERSION = 'v1.83.0';
+const APP_VERSION = 'v1.84.0';
 const CACHE_NAME = `my-planner-${APP_VERSION}`;
 const STATIC_CACHE = 'my-planner-static-v1'; // libraries/fonts with versioned URLs — kept across deploys
 const PRECACHE_URLS = [
@@ -37,15 +37,23 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
+  let upgradedP;
+  event.waitUntil(upgradedP =
     Promise.all([
       // delete caches from older app versions (the library cache stays)
-      caches.keys().then((names) =>
-        Promise.all(names.filter((n) => n !== CACHE_NAME && n !== STATIC_CACHE).map((n) => caches.delete(n)))
-      ),
+      caches.keys().then((names) => {
+        const old = names.filter((n) => n !== CACHE_NAME && n !== STATIC_CACHE);
+        return Promise.all(old.map((n) => caches.delete(n))).then(() => old.some((n) => n.startsWith('my-planner-v')));
+      }),
       self.clients.claim() // take control of any already-open tabs immediately
-    ])
+    ]).then(([upgraded]) => upgraded)
   );
+  // an upgrade (an older build's cache was here): a window may still be showing that older page —
+  // e.g. a home-screen app that won the 3s race with its cached copy. Reload those once into this build.
+  // Not inside waitUntil: a navigation waits for activation to finish, so awaiting it there would deadlock.
+  upgradedP.then((upgraded) => { if (!upgraded) return;
+    setTimeout(() => self.clients.matchAll({ type: 'window' }).then((cs) => cs.forEach((c) => c.navigate(c.url).catch(() => {}))), 300);
+  }).catch(() => {});
 });
 
 /* App files: network first, but never wait more than 3s — a weak connection
