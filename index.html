@@ -1694,22 +1694,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hn-btn{ flex-shrink:0; border:none; background:var(--accent); color:var(--card); font-family:var(--font-head); font-weight:800; font-size:.82rem; border-radius:12px; padding:10px 14px; min-height:42px; cursor:pointer; }
   .hn-more{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
   .hn-chip{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:999px; padding:6px 12px; min-height:34px; font-size:.75rem; font-weight:700; cursor:pointer; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  /* 🔄 missed tasks */
-  .mt-card{ padding:14px 16px; }
-  .mt-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 0; border-top:1px solid var(--line); }
-  .mt-row:first-of-type{ border-top:none; }
-  .mt-l{ flex:1 1 140px; min-width:0; display:flex; flex-direction:column; }
-  .mt-l b{ font-size:.9rem; color:var(--heading); overflow-wrap:anywhere; }
-  .mt-l small{ font-size:.72rem; color:var(--ink-soft); }
-  .mt-acts{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-  .mt-go{ border:none; background:var(--accent); color:var(--card); border-radius:10px; padding:8px 12px; min-height:38px; font-weight:800; font-size:.76rem; cursor:pointer; }
-  .mt-go:disabled{ opacity:.5; }
-  .mt-sm{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; min-width:38px; min-height:38px; padding:0 10px; font-size:.85rem; cursor:pointer; }
-  .mt-pick{ flex-basis:100%; display:flex; gap:6px; flex-wrap:wrap; }
-  .mt-pick.hidden{ display:none; }
-  .mt-pick .setup-input{ flex:1 1 120px; margin:0; min-width:0; }
-  .mt-all{ margin-top:10px; }
-  .mt-rep{ margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--bg); font-size:.82rem; display:flex; flex-direction:column; gap:8px; }
   /* 🎁 wrapped */
   .wrap-view{ position:fixed; inset:0; z-index:95; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; }
   .wrap-view.open{ display:flex; }
@@ -2209,7 +2193,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <button type="button" class="setup-chip hidden" id="firstRunChip"></button>
     <div class="dash-card first-run-card hidden" id="firstRunCard"></div>
     <div id="homeNow"></div>
-    <div id="homeMissed"></div>
     <button type="button" class="dash-card quests-mini" id="homeQuestsCard" data-nav="quests" data-testid="quests-home"><span>🗺️</span><b data-i18n="quests_title"></b><span class="qm-sub" id="homeQuestsSub"></span><span class="qm-go" aria-hidden="true">‹</span></button>
     <div id="homeRecapPrompt"></div>
     <div id="homeRamadan"></div>
@@ -3410,7 +3393,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.103.0';
+const APP_VERSION='v1.104.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3481,7 +3464,73 @@ function syncDot(){
   if(st==='ok') _syncHideT=setTimeout(()=>el.classList.remove('show'),1800);
 }
 window.addEventListener('online',syncDot); window.addEventListener('offline',syncDot);
+/* ---- commitments: per-item merge on every profile save (v1.104.0) ----
+   The profile is one blob, so a tab holding an older copy used to write its whole commitments list over a newer
+   edit made on another device (last writer wins). Now each save takes the commitments the server has right now
+   (kept live by watchProfile; re-read from the server first after the tab was asleep/offline), works out what
+   THIS tab changed since the copy it started from (added / removed / edited items), and applies only that on top
+   of the server's list. Items the other device added or edited stay. Same item edited on both: this save wins.
+   Offline saves still queue as before (no server to compare with). */
+let _cmRemoteChanged=0, _cmBase=null, _cmServer=null, _cmDraftBase=null, _cmUseDraftBase=false, _pStale=true, _pQ=Promise.resolve();
+function cmCanon(c){ const o={hard:true,...(c||{})}; Object.keys(o).forEach(k=>{ if(o[k]===undefined||(k==='prayerAt'&&!o[k])) delete o[k]; });
+  return JSON.stringify(Object.keys(o).sort().reduce((a,k)=>(a[k]=o[k],a),{})); }
+function cmListOf(v){ try{ const o=typeof v==='string'?JSON.parse(v):v; const l=o&&o.todoSetup&&o.todoSetup.commitments; return Array.isArray(l)?l:[]; }catch(e){ return null; } }
+function cmSame(a,b){ return a.length===b.length&&a.every((x,i)=>cmCanon(x)===cmCanon(b[i])); }
+function cmMerge(base,local,srv){
+  const K=cmCanon, bk=base.map(K), lk=local.map(K), n=bk.length, m=lk.length;
+  const L=Array.from({length:n+1},()=>new Int16Array(m+1)); // LCS base↔local
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j]=bk[i]===lk[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  const hunks=[]; let i=0,j=0,anchor=null,h=null;
+  const flush=()=>{ if(h&&(h.del.length||h.ins.length)) hunks.push(h); h=null; };
+  while(i<n||j<m){
+    if(i<n&&j<m&&bk[i]===lk[j]){ flush(); anchor=base[i]; i++; j++; continue; }
+    if(!h) h={after:anchor,del:[],ins:[]};
+    if(j>=m||(i<n&&L[i+1][j]>=L[i][j+1])) h.del.push(base[i++]); else h.ins.push(local[j++]);
+  }
+  flush();
+  const out=srv.slice(), ok=()=>out.map(K);
+  hunks.forEach(h=>{ let pos=-1;
+    h.del.forEach((d,x)=>{ let at=ok().indexOf(K(d));
+      if(at<0&&h.ins.length){ const lb=String(d.label||''); at=out.findIndex(o=>String(o.label||'')===lb&&!base.some(b=>K(b)===K(o))); } // edited on both: this save wins
+      if(at>=0){ out.splice(at,1); if(pos<0||at<pos) pos=at; } });
+    if(pos<0){ const a=h.after?ok().indexOf(K(h.after)):-1; pos=h.after?(a>=0?a+1:out.length):0; }
+    const add=h.ins.filter(c=>!ok().includes(K(c))); out.splice(Math.min(pos,out.length),0,...add); });
+  return out;
+}
+function cmDraftLocked(){ const card=document.getElementById('todoSetupCard'); return _cmEditIdx!=null||!!(card&&card.contains(document.activeElement)); }
+async function profileFresh(){
+  if(!_pStale||!currentUser||!fbDb||navigator.onLine===false) return;
+  try{ const d=await Promise.race([fsDataRef('profile').get({source:'server'}),new Promise((_,r)=>setTimeout(()=>r(new Error('slow')),2500))]);
+    if(d&&d.exists){ const l=cmListOf(d.data().value); if(l) _cmServer=JSON.stringify(l); } }catch(e){}
+  _pStale=false;
+}
+async function profileMergeCommits(value,baseS,useDraft){
+  let o; try{ o=JSON.parse(value); }catch(e){ return value; }
+  if(!o||typeof o!=='object') return value;
+  await profileFresh();
+  const local=(o.todoSetup&&Array.isArray(o.todoSetup.commitments))?o.todoSetup.commitments:[];
+  let out=local;
+  if(_cmServer!=null&&baseS!=null&&_cmServer!==baseS){
+    const base=JSON.parse(baseS), srv=JSON.parse(_cmServer);
+    out=cmSame(local,base)?srv:cmMerge(base,local,srv);
+  }
+  const outS=JSON.stringify(out);
+  if(!cmSame(out,local)){
+    o.todoSetup={...(o.todoSetup||{}),commitments:out}; P.todoSetup={...(P.todoSetup||{}),commitments:out};
+    if(useDraft||!cmDraftLocked()){ P._commitments=out.map(c=>({...c,days:[...(c.days||[])]})); o._commitments=P._commitments; _cmDraftBase=outS;
+      try{ if(document.getElementById('commitListChips')) renderCommitList(); }catch(e){} }
+    value=JSON.stringify(o);
+  } else if(useDraft||!cmDraftLocked()) _cmDraftBase=outS;
+  _cmBase=outS; _cmServer=outS;
+  return value;
+}
 async function storageSet(key,value){
+  if(key==='profile'&&currentUser&&fbDb){ // one at a time, in order, each merged with the server's commitments
+    const useDraft=_cmUseDraftBase&&_cmDraftBase!=null, baseS=useDraft?_cmDraftBase:_cmBase; _cmUseDraftBase=false; // the copy this save started from
+    const run=_pQ.then(async()=>{ const v=await profileMergeCommits(value,baseS,useDraft); _mem[key]=v; try{ localStorage.setItem('planner_'+key,v); }catch(e){}
+      try{ syncTrack(fsDataRef(key).set({value:v},{merge:true})); }catch(e){} });
+    _pQ=run.catch(()=>{}); return run;
+  }
   _mem[key]=value;
   try{ localStorage.setItem('planner_'+key,value); }catch(e){}
   if(currentUser&&fbDb){
@@ -3739,6 +3788,7 @@ async function bootApp(){
   const pv=await storageGet('profile');
   if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
   else{ P.lang=LANG; await storageSet('profile',JSON.stringify(P)); } // a brand-new profile keeps the language picked on the sign-in screen
+  { const l=cmListOf(P); if(l){ _cmBase=_cmServer=_cmDraftBase=JSON.stringify(l); P._commitments=l.map(c=>({...c,days:[...(c.days||[])]})); } }
   await reconcileXpCoinsFromFirestore();
   watchProfile();
   migrateProgressionFields();
@@ -5355,8 +5405,6 @@ function hnCandidates(){
   // 7) evening: habits still open
   const hs=(P.habits||[]).filter(h=>h.group!=='prayers'&&!(dailyTrack.habits||{})[h.id]);
   if(hs.length&&hr>=19) out.push({id:'h', s:54+(hr>=21?10:0), ic:'✅', title:ar?`باقي ${hs.length} من عاداتك`:`${hs.length} habit${hs.length>1?'s':''} left`, sub:hs.slice(0,3).map(habitLabelText).join(' · '), act:{k:'nav',to:'habits'}, btn:ar?'خلّصها':'Finish'});
-  // 8) yesterday's missed tasks
-  if(_missed&&_missed.items.length) out.push({id:'mt', s:58, ic:'🔄', title:ar?(_missed.items.length===1?'فاتتك مهمة':_missed.items.length===2?'فاتتك مهمتين':`فاتتك ${_missed.items.length} مهام`):`${_missed.items.length} missed task${_missed.items.length>1?'s':''}`, sub:ar?'نرتب لها وقت جديد؟':'Find them a new time?', act:{k:'missed'}, btn:ar?'رتّبها':'Sort'});
   // 9) late night
   if(hr>=23||hr<5){ const tmr=new Date(); if(hr>=23) tmr.setDate(tmr.getDate()+1);
     const first=commitmentsForDate(tmr).filter(c=>c.from).sort((a,b)=>parseHM(a.from)-parseHM(b.from))[0];
@@ -5392,101 +5440,12 @@ async function hnDo(a){
   if(a.k==='habit'){ const h=(P.habits||[]).find(x=>x.id===a.hid);
     if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:'ontime'}; } });
     setTimeout(renderHomeNow,250); return; }
-  if(a.k==='missed'){ ccJump('missed'); return; }
   if(a.k==='nav') navTo(a.to);
 }
 setInterval(()=>{ try{ if(document.visibilityState==='visible'&&document.getElementById('panel-home').classList.contains('active')) renderHomeNow(); }catch(e){} },60000);
 
-/* ================= 🔄 MISSED TASKS → A NEW TIME =================
-   One-day tasks from the last 3 days that were never ticked get a suggested
-   new slot (the first free one, today → next 3 days). Nothing moves on its
-   own. A repeating commitment missed 3+ times in a week gets a "change its
-   time?" nudge. Days the app wasn't opened at all are never judged. */
-let _missed=null;
-function mtKey(iso,c){ return iso+'|'+commitKey(c); }
-async function computeMissed(){
-  const items=[], seen=P.missedSeen||{}, recur=new Map();
-  for(let i=1;i<=7;i++){
-    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
-    const iso=isoDateStr(d.getFullYear(),d.getMonth(),d.getDate()), cms=commitmentsForDate(d); if(!cms.length) continue;
-    const doc=await trackDocFor(d); if(!doc) continue;
-    const dn=doc.commitDone||{}, ticksThatDay=Object.keys(dn).length>0;
-    cms.forEach(c=>{
-      if(dn[commitKey(c)]) return;
-      if(c.fromDate&&c.fromDate===c.toDate){ if(i<=3&&!seen[mtKey(iso,c)]) items.push({c,iso,d}); }
-      else if(ticksThatDay){ const k=c._src||c; recur.set(k,(recur.get(k)||0)+1); }
-    });
-  }
-  const repeat=[]; recur.forEach((n,c)=>{ if(n>=3&&!seen['r|'+commitKey(c)+'|'+weekKeySat(0)]) repeat.push({c,n}); });
-  return {items:items.slice(0,6), repeat:repeat.slice(0,1)};
-}
-function mtSuggest(c,list){
-  const sp=mtSpan(c), dur=sp?sp.end-sp.start:0, buf=scheduleBufferMinutes();
-  for(let i=0;i<4;i++){
-    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i);
-    const iso=isoDateStr(d.getFullYear(),d.getMonth(),d.getDate());
-    if(!sp) return {iso,d,from:'',to:''}; // an all-day task just goes to today
-    const busy=commitmentsForDate(d).filter(o=>(o._src||o)!==(c._src||c)).map(mtSpan).filter(Boolean).concat((list||[]).filter(x=>x.iso===iso).map(x=>x.span));
-    let lo=8*60; if(i===0) lo=Math.max(lo,Math.ceil((hnMinNow()+30)/15)*15);
-    const ok=s=>s>=lo&&s+dur<=23*60&&!busy.some(b=>s<b.end+buf&&b.start<s+dur+buf);
-    const mk=s=>({iso,d,from:minutesToHM(s),to:c.to?minutesToHM(s+dur):'',span:{start:s,end:s+dur}});
-    if(ok(sp.start)) return mk(sp.start);
-    for(let s=lo;s+dur<=23*60;s+=15) if(ok(s)) return mk(s);
-  }
-  return null;
-}
-function mtWhen(s){ const ar=LANG==='ar'; return aiDateLabel(s.iso)+' · '+(s.from?formatTime12h(s.from):(ar?'طول اليوم':'All day')); }
-function mtApply(c,s){ // in memory; caller persists
-  const base=c._src||c, all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(base); if(i<0) return false;
-  all[i]={...base, prayerAt:undefined, fromDate:s.iso, toDate:s.iso, days:[(s.d.getDay()+1)%7], from:s.from, to:s.from?s.to:'', moved:(c.moved||0)+1};
-  return true;
-}
-async function mtPersist(){ P._commitments=((P.todoSetup&&P.todoSetup.commitments)||[]).map(x=>{ const o={...x,days:[...(x.days||[])]}; if(!o.prayerAt) delete o.prayerAt; return o; }); await persistCommitments(); }
-async function mtMarkSeen(key){
-  const now=Date.now(); P.missedSeen=Object.fromEntries(Object.entries(P.missedSeen||{}).filter(([,t])=>now-t<30*864e5)); P.missedSeen[key]=now;
-  await storageSet('profile',JSON.stringify(P));
-}
-async function renderHomeMissed(){
-  const el=document.getElementById('homeMissed'); if(!el) return;
-  if(!currentUser){ el.innerHTML=''; return; }
-  try{ _missed=await computeMissed(); }catch(e){ _missed={items:[],repeat:[]}; }
-  const ar=LANG==='ar', {items,repeat}=_missed;
-  if(!items.length&&!repeat.length){ el.innerHTML=''; renderHomeNow(); return; }
-  const planned=[]; items.forEach(it=>{ it.s=mtSuggest(it.c,planned); if(it.s&&it.s.span) planned.push(it.s); });
-  let html=`<div class="dash-card mt-card">`;
-  if(items.length){
-    html+=`<div class="dash-card-title">🔄 ${ar?(items.length===1?'فاتتك مهمة — نرتب لها وقت؟':items.length===2?'فاتتك مهمتين — نرتب لها وقت؟':`فاتتك ${items.length} مهام — نرتب لها وقت؟`):(items.length===1?'You missed a task — find it a new time?':`You missed ${items.length} tasks — find them new times?`)}</div>`;
-    html+=items.map((it,i)=>`<div class="mt-row" data-i="${i}"><div class="mt-l"><b>${escapeHtml(it.c.label)}</b><small>${ar?'كانت':'Was'}: ${escapeHtml(aiDateLabel(it.iso))}${it.c.from?' · '+formatTime12h(it.c.from):''}</small></div>
-      <div class="mt-acts">${it.s?`<button type="button" class="mt-go" data-mv="${i}">📅 ${escapeHtml(mtWhen(it.s))}</button>`:''}<button type="button" class="mt-sm" data-pk="${i}" aria-label="${ar?'وقت ثاني':'Other time'}">🕐</button><button type="button" class="mt-sm" data-did="${i}" aria-label="${ar?'سويتها':'Did it'}">✓</button><button type="button" class="mt-sm" data-drop="${i}" aria-label="${ar?'شيلها':'Drop it'}">🗑️</button></div>
-      <div class="mt-pick hidden"><input type="date" class="setup-input" value="${it.s?it.s.iso:''}"><input type="time" class="setup-input" value="${it.s?it.s.from:(it.c.from||'')}"><button type="button" class="mt-go" data-save="${i}">${ar?'انقلها':'Move'}</button></div></div>`).join('');
-    if(items.filter(it=>it.s).length>1) html+=`<button type="button" class="cta-btn mt-all" id="mtAll">✨ ${ar?'انقل الكل للأوقات المقترحة':'Move all to the suggested times'}</button>`;
-  }
-  if(repeat.length){ const r=repeat[0];
-    html+=`<div class="mt-rep">📌 ${ar?`«${escapeHtml(r.c.label)}» فاتك ${r.n} مرات هالأسبوع. يمكن وقته مو مناسب؟`:`“${escapeHtml(r.c.label)}” was missed ${r.n} times this week. Maybe the time doesn’t fit?`}
-      <div class="mt-acts"><button type="button" class="mt-go" data-nav="schedule-add">${ar?'غيّر وقته':'Change time'}</button><button type="button" class="mt-sm" id="mtRepNo">${ar?'لا، عادي':'It’s fine'}</button></div></div>`;
-  }
-  el.innerHTML=html+'</div>';
-  const done=async(msg)=>{ if(msg) showToast(msg,'success'); await renderHomeMissed(); };
-  el.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.mv]; b.disabled=true;
-    if(mtApply(it.c,it.s)){ await mtPersist(); playSfx('pop'); await done((ar?'📅 انتقلت: ':'📅 Moved: ')+mtWhen(it.s)); } });
-  el.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>b.closest('.mt-row').querySelector('.mt-pick').classList.toggle('hidden'));
-  el.querySelectorAll('[data-save]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.save], row=b.closest('.mt-row');
-    const iso=row.querySelector('input[type=date]').value, tm=row.querySelector('input[type=time]').value; if(!iso) return;
-    const [y,m,dd]=iso.split('-').map(Number), d=new Date(y,m-1,dd), sp=mtSpan(it.c), dur=sp?sp.end-sp.start:30;
-    const s={iso,d,from:tm||'',to:(tm&&it.c.to)?minutesToHM(parseHM(tm)+dur):''};
-    if(mtApply(it.c,s)){ await mtPersist(); playSfx('pop'); await done((ar?'📅 انتقلت: ':'📅 Moved: ')+mtWhen(s)); } });
-  el.querySelectorAll('[data-did]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.did];
-    const key=calDateKey(it.d.getFullYear(),it.d.getMonth(),it.d.getDate());
-    try{ const doc=(await trackDocFor(it.d))||{}; doc.commitDone={...(doc.commitDone||{}),[commitKey(it.c)]:true}; cmLogSet(doc,commitKey(it.c),it.c,'done'); await storageSet(key,JSON.stringify(doc)); if(typeof pastDayDocCache==='object') pastDayDocCache[key]=doc; }catch(e){}
-    await mtMarkSeen(mtKey(it.iso,it.c)); playSfx('pop'); await done(ar?'👏 تمام، انحسبت':'👏 Nice, counted'); });
-  el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.drop];
-    const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(it.c._src||it.c); if(i>=0){ all.splice(i,1); await mtPersist(); }
-    await done(ar?'🗑️ انشالت':'🗑️ Dropped'); });
-  const allBtn=document.getElementById('mtAll'); if(allBtn) allBtn.onclick=async()=>{ allBtn.disabled=true; let n=0;
-    items.forEach(it=>{ if(it.s&&mtApply(it.c,it.s)) n++; }); if(n){ await mtPersist(); playSfx('success'); } await done(ar?`📅 انتقلت ${n} مهام`:`📅 Moved ${n} tasks`); };
-  const no=document.getElementById('mtRepNo'); if(no) no.onclick=async()=>{ await mtMarkSeen('r|'+commitKey(repeat[0].c)+'|'+weekKeySat(0)); await done(); };
-  renderHomeNow();
-}
+/* (v1.104.0) the «🔄 فاتتك مهمة» card and its auto-suggested moves were removed: the site never rewrites a
+   commitment's date/time by itself — his agent handles carry-over. Old `moved` / `missedSeen` data is left as is. */
 
 /* ================= 🎁 MONTHLY WRAPPED =================
    A story-style player (9:16 slides, tap to move, hold to pause) over the
@@ -8214,7 +8173,10 @@ function showUndo(msg,fn){
 }
 function attemptAddCommitment(candidate, opts){
   opts=opts||{};
-  const conflicts=findConflictsFor(candidate, (P._commitments||[]).filter((c,i)=>i!==_cmEditIdx));
+  // (v1.104.0) a text-only edit never asks about clashes (same time/days as before), and finished items never clash
+  const was=_cmEditIdx!=null?(P._commitments||[])[_cmEditIdx]:null, sk=c=>JSON.stringify([c.from||'',c.to||'',[...(c.days||[])].sort(),c.fromDate||'',c.toDate||'',c.prayerAt||null]);
+  if(was&&sk(was)===sk(candidate)) opts={...opts,forceKeep:true};
+  const conflicts=findConflictsFor(candidate, (P._commitments||[]).filter((c,i)=>i!==_cmEditIdx&&commitStatus(c)!=='ended'));
   const overlaps=conflicts.filter(c=>c.kind==='overlap');
   const bufferIssues=cmGapWarnOff()?[]:conflicts.filter(c=>c.kind==='buffer');
   if((overlaps.length||bufferIssues.length) && !opts.forceKeep){
@@ -8248,9 +8210,11 @@ function finalizeAddCommitment(candidate){
    app already behaves — the "Save" button just closes the card now. */
 async function persistCommitments(){
   P.todoSetup={commitments:P._commitments||[]};
+  _cmUseDraftBase=true; // this save's changes are measured against what the draft list was built from
   await storageSet('profile',JSON.stringify(P));
   renderTodoSection();
   refreshHome();
+  try{ hubFeed(); }catch(e){}
 }
 /* Bulk import — one line per commitment: "label | YYYY-MM-DD" for a
    single day, or "label | YYYY-MM-DD | YYYY-MM-DD" for a continuous
@@ -9192,6 +9156,7 @@ function prefillTodoSetup(){
   // treating them as movable-by-default would risk auto-suggesting a move
   // for something the user actually meant as fixed.
   P._commitments=(s.commitments||[]).map(c=>({hard:true,...c,days:[...c.days]}));
+  _cmDraftBase=JSON.stringify(s.commitments||[]);
   P._commitDays=[]; _cmEditIdx=null; setCommitEditBar(null); cmJsonInit();
   document.getElementById('commitLabel').value='';
   document.getElementById('commitAllDayToggle').checked=false;
@@ -9204,7 +9169,7 @@ function prefillTodoSetup(){
 }
 document.getElementById('todoSetupSave').addEventListener('click',async()=>{
   P.todoSetup={commitments:P._commitments||[]};
-  await storageSet('profile',JSON.stringify(P));
+  _cmUseDraftBase=true; await storageSet('profile',JSON.stringify(P));
   document.getElementById('todoSetupCard').classList.add('hidden');
   renderTodoSection();
 });
@@ -11425,6 +11390,8 @@ function watchProfile(){
       if(!snap.exists||snap.metadata.hasPendingWrites) return;
       const data=snap.data(); let remote; try{ remote=JSON.parse(data.value); }catch(e){ return; }
       if(!remote||typeof remote!=='object') return;
+      if(!snap.metadata.fromCache) _pStale=false;
+      { const l=cmListOf(remote); if(l){ _cmServer=_cmBase=JSON.stringify(l); } }
       const keepKeys=['_commitments','_commitDays',...SYNCED_PREFS], keep={};
       keepKeys.forEach(k=>{ if(P[k]!==undefined) keep[k]=P[k]; });
       const next={...remote,...keep};
@@ -11435,8 +11402,9 @@ function watchProfile(){
       const commitsBefore=JSON.stringify((P.todoSetup&&P.todoSetup.commitments)||[]);
       Object.keys(P).forEach(k=>delete P[k]); Object.assign(P,next);
       try{ mergeCosmeticsFromServer(data,false); }catch(e){}
-      const card=document.getElementById('todoSetupCard'), editing=card&&card.contains(document.activeElement);
-      if(!editing&&JSON.stringify((P.todoSetup&&P.todoSetup.commitments)||[])!==commitsBefore) P._commitments=((P.todoSetup&&P.todoSetup.commitments)||[]).map(c=>({...c,days:[...(c.days||[])]}));
+      const editing=cmDraftLocked();
+      if(!editing&&JSON.stringify((P.todoSetup&&P.todoSetup.commitments)||[])!==commitsBefore){ P._commitments=((P.todoSetup&&P.todoSetup.commitments)||[]).map(c=>({...c,days:[...(c.days||[])]})); _cmDraftBase=_cmServer; }
+      if(JSON.stringify((P.todoSetup&&P.todoSetup.commitments)||[])!==commitsBefore) _cmRemoteChanged=1;
       try{ localStorage.setItem('planner_profile',JSON.stringify(P)); }catch(e){}
       clearTimeout(_pRemoteT); _pRemoteT=setTimeout(onRemoteProfile,250);
     },()=>{});
@@ -11446,6 +11414,7 @@ function onRemoteProfile(){
   const a=document.activeElement;
   if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){ if(!a._remoteWait){ a._remoteWait=1; a.addEventListener('blur',()=>{ a._remoteWait=0; setTimeout(onRemoteProfile,50); },{once:true}); } return; } // don't redraw under someone typing
   try{ renderNavXpChip(); renderAppBackground(); }catch(e){}
+  if(_cmRemoteChanged){ _cmRemoteChanged=0; try{ hubFeed(); }catch(e){} try{ renderHomeNow(); }catch(e){} }
   try{ const act=document.querySelector('section.panel.active'), id=act?act.id.replace('panel-',''):'';
     const map={home:()=>refreshHome(), habits:()=>renderHabits(), food:()=>renderFoodSection(), workout:()=>renderWorkoutSection(), progress:()=>renderProgressSection(), challenges:()=>renderChallengesSection(), today:()=>renderTodoSection()};
     if(map[id]&&!document.getElementById('overlay').classList.contains('open')) map[id]();
@@ -11532,6 +11501,8 @@ async function refreshAuthoritativeProfileFields(){
     mergeCosmeticsFromServer(data,false);
   }catch(e){ /* offline — keep local values */ }
 }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') _pStale=true; });
+window.addEventListener('online',()=>{ _pStale=true; });
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState!=='visible'||!currentUser) return;
   await refreshAuthoritativeProfileFields();
@@ -13663,7 +13634,7 @@ function refreshHome(){
   renderHijriLine();
   renderRamadanCard();
   renderHomePushTip();
-  renderHomeNow(); renderHomeMissed(); renderLoopAsk();
+  renderHomeNow(); renderLoopAsk();
   try{ ccInit(); ccRenderBar(); }catch(e){}
   setTimeout(maybeShowGuide,2500);
   renderHomeAquarium();
@@ -13676,7 +13647,6 @@ function refreshHome(){
    renderer had to change. Open/closed is remembered per device. */
 const CC_DEFS=[
   {id:'now',el:'homeNow',head:'.hn-head',ic:'⚡',ar:'الحين',en:'Now',open:true,sum:()=>{ const b=document.querySelector('#homeNow .hn-txt b'); return b?b.textContent:''; }},
-  {id:'missed',el:'homeMissed',head:'.mt-card > .dash-card-title',ic:'🔄',ar:'الفايتة',en:'Missed'},
   /* 'plan' card removed from Home (v1.66.1): today's schedule shows in the commitments card under the checklist */
   //{id:'plan',el:'homeSchedulePreview',head:':scope > .dash-title-row',ic:'🗓️',ar:'الخطة',en:'Plan',sum:()=>{ const r=document.querySelectorAll('#homeSchedulePreview .home-todo-schedule-row'); return r.length?(LANG==='ar'?`${r.length} اليوم`:`${r.length} today`):''; }},
   {id:'health',el:'homeTodoCard',head:':scope > .dash-card-title',ic:'❤️',ar:'الصحة',en:'Health',open:true},
