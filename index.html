@@ -1926,6 +1926,10 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .ap-claude{ flex-shrink:0; font-size:.8rem; font-weight:700; color:var(--ink-soft); text-decoration:none; padding:7px 11px; border:1px solid var(--line); border-radius:999px; }
   .ap-claude[hidden]{ display:none; }
   .ap-body{ flex:1; min-height:0; position:relative; background:var(--bg); }
+  .ap-urg{ display:flex; align-items:center; gap:10px; padding:8px 12px; background:#b5533a; color:#fff; font-weight:700; line-height:1.4; flex-shrink:0; }
+  .ap-urg[hidden]{ display:none; }
+  .ap-urg span{ flex:1; min-width:0; overflow-wrap:anywhere; }
+  .ap-urg button{ flex-shrink:0; min-height:40px; padding:6px 14px; border-radius:999px; border:0; background:#fff; color:#7a2f1c; font-weight:800; font-size:.92rem; cursor:pointer; }
   .ap-body iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#fff; }
   .ap-body .hub-empty{ padding:40px 20px; text-align:center; }
   .hub-chip{ -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
@@ -3193,6 +3197,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <!-- 📄 an agent's own page, hosted privately in his Firestore (never in this public repo), sandboxed -->
   <section class="panel" id="panel-agentpage" data-testid="agent-page">
     <div class="ap-bar"><button type="button" class="ap-x" id="apClose" aria-label="close" data-testid="ap-close">✕</button><b id="apName"></b><a id="apClaude" class="ap-claude" target="_blank" rel="noopener noreferrer" data-testid="ap-claude">↗ بكلود</a></div>
+    <div class="ap-urg" id="apUrg" hidden data-testid="ap-urgent"><span id="apUrgT"></span><button type="button" id="apUrgBtn" data-testid="ap-urgent-done"></button></div>
     <div class="ap-body" id="apBody"></div>
   </section>
   <section class="panel" id="panel-hubagent">
@@ -3392,7 +3397,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.100.0';
+const APP_VERSION='v1.101.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8554,13 +8559,13 @@ async function hubTickUrgent(a){
   const r=hubAgents[a], txt=r&&typeof r.urgent==='string'?r.urgent.trim():''; if(!txt) return;
   // 1) at once, in memory: the fish sits down, the page updates
   hubUrgentDone[a]=[...new Set([...(hubUrgentDone[a]||[]),txt])].slice(-50); r.urgent='';
-  playSfx('success'); hubFeed(); if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid();
+  playSfx('success'); hubFeed(); if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='agentpage') apUrgBar();
   // 2) then persist on a fresh copy (never write over what the PC just sent)
   await saveHubUrgentDone();
   await loadHub(); if(hubAgents[a]) hubAgents[a].urgent=''; await saveHubAgents();
   hubInbox.push({id:'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), agent:a, text:'✅ خلصت: '+txt, at:new Date().toISOString(), status:'new', reply:'', link:'', doneAt:null});
   await saveHubInbox(); hubFeed();
-  if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid();
+  if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='agentpage') apUrgBar();
 }
 async function hubCancelOrder(id){
   const ar=LANG==='ar'; await loadHub();
@@ -8672,7 +8677,19 @@ function apPush(sid,sb){
   if(sb.kind==='doc'){ const j=JSON.stringify([snap.exists,snap.data]); if(sb.last===j) return; sb.last=j; }
   apPost({__ap:1,sid,snap});
 }
-function apNotify(){ if(!apCur) return; apCur.subs.forEach((sb,sid)=>apPush(sid,sb)); }
+function apNotify(){ if(!apCur) return; apCur.subs.forEach((sb,sid)=>apPush(sid,sb)); apAutoSit(); }
+/* «أطق = يقعد دايركت»: the agent's own 🙋 lists the page-db docs that finish it (urgentKeys). The moment every one of them
+   has data.done, the fish sits — same path as the ✓ (hubUrgentDone keeps it sat). Public edition: never. */
+function apAutoSit(){ if(PUB||!apCur||!_hubLoaded) return; const k=apCur.k, r=hubAgents[k];
+  const u=r&&typeof r.urgent==='string'?r.urgent.trim():'', keys=r&&Array.isArray(r.urgentKeys)?r.urgentKeys:[];
+  if(!u||!keys.length) return;
+  if(keys.every(p=>{ const e=apCur.M[p]; return !!(e&&apIsObj(e.data)&&e.data.done); })) hubTickUrgent(k); }
+function apUrgBar(){ const bar=document.getElementById('apUrg'); if(!bar) return; const ar=LANG==='ar', k=apCur?apCur.k:hubCurAgent, r=hubAgents[k];
+  const u=!PUB&&r&&typeof r.urgent==='string'?r.urgent.trim():'';
+  bar.hidden=!u; if(!u) return;
+  document.getElementById('apUrgT').textContent='🙋 '+u;
+  const b=document.getElementById('apUrgBtn'); b.disabled=false; b.textContent=ar?'✓ خلصتها':'✓ Done';
+  b.onclick=()=>{ b.disabled=true; hubTickUrgent(k); }; }
 function apSave(){ if(!apCur) return; apCur.dirty++; clearTimeout(apCur.saveT); apCur.saveT=setTimeout(apFlush,200); }
 function apFlush(){ if(!apCur||!apCur.dirty) return; clearTimeout(apCur.saveT); apDocSet('agentPageDb_'+apCur.k, JSON.stringify(apCur.M)); apCur.dirty=0; }
 function apWrite(path,fn){
@@ -8717,12 +8734,14 @@ async function apRender(){
   document.getElementById('apClose').onclick=()=>goBack('agentpage');
   body.innerHTML=`<div class="hub-empty">${ar?'يفتح…':'Opening…'}</div>`;
   apCur={k, token, M:{}, subs:new Map(), dirty:0, frame:null};
+  if(!_hubLoaded) await loadHub(); if(!apCur||apCur.token!==token) return; apUrgBar();
   const [pv,dv,uid]=await Promise.all([apDocGet('agentPage_'+k), apDocGet('agentPageDb_'+k), apUserId()]);
   if(!apCur||apCur.token!==token) return;
   let page=null; try{ page=pv?JSON.parse(pv):null; }catch(e){}
   if(!page||typeof page.html!=='string'||!page.html.trim()){
     body.innerHTML=`<div class="hub-empty">${ar?'صفحته ما وصلت هالجهاز ليلحين.':'This page hasn’t reached this device yet.'}${home?`<br><br><a class="setup-btn" href="${escapeHtml(home)}" target="_blank" rel="noopener noreferrer">${ar?'افتحها بكلود ↗':'Open in Claude ↗'}</a>`:''}</div>`; return; }
   try{ const m=dv?JSON.parse(dv):{}; apCur.M=apIsObj(m)?m:{}; }catch(e){}
+  apAutoSit();
   const f=document.createElement('iframe');
   f.setAttribute('sandbox','allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals');
   f.setAttribute('referrerpolicy','no-referrer'); f.setAttribute('data-testid','ap-frame'); f.title=questAgentName(k);
@@ -8851,7 +8870,7 @@ function hubPlan(text){
     if(!HUB_KEYS.includes(a)){ row.errs.push((ar?'وكيل مو معروف: ':'Unknown agent: ')+String(r.agent==null?'':r.agent)); return; }
     if(seenA.has(a)) row.errs.push((ar?'نفس الوكيل مكرر: ':'Agent twice: ')+a); seenA.add(a);
     row.label=`${HUB_META[a].e} ${questAgentName(a)}`;
-    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color','home','urgent'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
+    Object.keys(r).forEach(k=>{ if(!['agent','now','news','links','updatedAt','role','emoji','color','home','urgent','urgentKeys'].includes(k)) row.warns.push((ar?'تجاهلت الحقل: ':'Ignored field: ')+k); });
     let now=r.now==null?[]:r.now; if(!Array.isArray(now)){ row.errs.push(ar?'now لازم قائمة نصوص':'now must be a list of strings'); now=[]; }
     now=now.map(x=>String(x==null?'':x).trim()).filter(Boolean);
     if(now.length>8){ row.warns.push(ar?'now أكثر من ٨ أسطر — خذيت أول ٨':'now has more than 8 lines — kept the first 8'); now=now.slice(0,8); }
@@ -8866,6 +8885,9 @@ function hubPlan(text){
     const rec={agent:a, now, news, links, updatedAt:typeof r.updatedAt==='string'&&r.updatedAt.trim()?r.updatedAt.trim().slice(0,40):new Date().toISOString()};
     ['role','emoji','color'].forEach(k=>{ if(typeof r[k]==='string'&&r[k].trim()) rec[k]=r[k].trim().slice(0,k==='role'?60:16); });
     if('urgent' in r){ const u=r.urgent==null?'':r.urgent; if(typeof u!=='string') row.errs.push(ar?'urgent لازم يكون نص':'urgent must be text'); else { const v=u.trim(); if(v.length>60) row.warns.push(ar?'urgent أطول من ٦٠ حرف — قصّيته':'urgent over 60 chars — trimmed'); rec.urgent=v.slice(0,60); } }
+    if('urgentKeys' in r&&r.urgentKeys!=null){ const uk=r.urgentKeys;
+      if(!Array.isArray(uk)||uk.length>12||!uk.every(x=>typeof x==='string'&&/^[\w\-./]{1,80}$/.test(x))) row.errs.push(ar?'urgentKeys لازم قائمة (١٢ بالكثير) من مفاتيح مثل checks/ph1':'urgentKeys must be a list (max 12) of keys like checks/ph1');
+      else if(!PUB) rec.urgentKeys=[...new Set(uk)]; }
     if('home' in r){ const h=r.home==null?'':String(r.home).trim(); if(h&&!hubSafeUrl(h)) row.errs.push(ar?'home لازم يبدأ بـ https://':'home must start with https://'); else rec.home=h; }
     if(rec.color&&!/^#[0-9a-f]{6}$/i.test(rec.color)){ row.warns.push(ar?'color لازم مثل #1a2b3c — تجاهلته':'color must look like #1a2b3c — ignored'); delete rec.color; }
     if(rec.urgent&&hubUrgentIsDone(a,rec.urgent)){ row.warns.push(ar?'🙋 هذا خلّصته من قبل — ما يرجع':'🙋 already done — ignored'); rec.urgent=''; }
