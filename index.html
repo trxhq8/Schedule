@@ -3392,7 +3392,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.99.0';
+const APP_VERSION='v1.100.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5214,23 +5214,46 @@ function mtSpan(c){
    While its item runs, that agent STANDS on the island (hq-feed urgent «⏳ <item>»); a meal/gym item keeps Hurairy
    standing until it's ticked. Done or skipped → it sits at once. Order: Qur'an (hamour) → sport (hariri) & study
    (saboor) → the rest. Public edition: no agents. */
-const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور']];
+const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور'],['mangsi','منقسي']];
+/* Every item has a fish. Order: explicit c.agent → an agent's name in the label → Mangsi's aliases → the lead emoji →
+   keyword groups (+ surah names for Hamour) → Mangsi (fallback). Arabic is normalised (أإآ→ا, ة→ه, ى→ي, no tashkeel).
+   Arabic keywords of ≤3 letters, and any keyword starting with '=', match whole words only (prefix ال/و/وال/بال/لل
+   allowed) — so «مدرسة» never hits «درس». */
+const CM_MANGSI_ALIAS=['🚗','توصيل','معالي','ma3ali'];
+const CM_LEAD_EMOJI={'📖':'hamour','🏋':'hariri','💻':'saboor','🧪':'saboor','📸':'zoori','🎬':'zoori','🪵':'yaryoor','🔧':'yaryoor','🛠':'yaryoor','🪴':'faryala','🌱':'faryala','💰':'zubaidi'};
+// the 114 surahs (without «ال», normalised). Those that are also everyday words or names count only next to a Qur'an cue.
+const CM_SURAH_CLEAR=['فاتحه','بقره','اعراف','انفال','توبه','انبياء','مومنون','مؤمنون','عنكبوت','سجده','صافات','زمر','فصلت','شوري','جاثيه','احقاف','ذاريات','رحمن','مجادله','ممتحنه','منافقون','تغابن','حاقه','معارج','مزمل','مدثر','مرسلات','نازعات','تكوير','انفطار','مطففين','انشقاق','غاشيه','عاديات','قارعه','تكاثر','ماعون','كافرون','مسد','فلق'];
+const CM_SURAH_CTX=['ال عمران','عمران','نساء','مائده','مايده','انعام','يونس','هود','يوسف','رعد','ابراهيم','حجر','نحل','اسراء','كهف','مريم','طه','حج','نور','فرقان','شعراء','نمل','قصص','روم','لقمان','احزاب','سبا','فاطر','يس','ص','غافر','زخرف','دخان','محمد','فتح','حجرات','ق','طور','نجم','قمر','واقعه','حديد','حشر','صف','جمعه','طلاق','تحريم','ملك','قلم','نوح','جن','قيامه','انسان','نبا','عبس','بروج','طارق','اعلي','فجر','بلد','شمس','ليل','ضحي','شرح','تين','علق','قدر','بينه','زلزله','عصر','همزه','فيل','قريش','كوثر','نصر','اخلاص','ناس'];
+const CM_QURAN_CUE=['سوره','ايه','ايات','جزء','مراجعه','حفظ','تسميع','تلاوه','تفسير','تجويد','حلقه','قران','مصحف','ختمه','ورد'];
 const CM_AGENT_KW=[
-  ['hamour',['قرآن','قران','quran','ورد','حفظ','تسميع','حلقة','الوجه','تجويد','درس','أذكار','اذكار']],
+  ['hamour',['قرآن','قران','quran','ورد','حفظ','تسميع','حلقة','الوجه','تجويد','درس','أذكار','اذكار','سورة','إتقان','اتقان','سرد','تفسير','=حديث','فقه','مصحف','تلاوة']],
   ['hariri',['جيم','gym','تمرين','أكل','اكل','وجبة','فطور','غدا','عشا','ماي','بروتين','كرياتين','نوم']],
-  ['saboor',['class','كلاس','مذاكرة','كويز','quiz','اختبار','cs','ma','ph','fyp','محاضرة','moodle']],
+  ['saboor',['class','كلاس','مذاكرة','كويز','quiz','اختبار','cs','ma','ph','fyp','محاضرة','moodle','lab','لاب','مختبر','جامعة','كلية','واجب','exam','midterm','final']],
   ['hoot',['سيارة','زيت','برادو','بانزين','بنزين']],
-  ['yaryoor',['خشب','مطبخ','درج','كهربا','تركيب']],
-  ['zoori',['ريل','تصوير','مونتاج','ستوري','نشر','انستقرام','إنستقرام']],
+  ['yaryoor',['خشب','مطبخ','درج','كهربا','تركيب','طفاية','درنفيس','بطانية حريق','شور']],
+  ['zoori',['ريل','ريلز','reel','reels','tiktok','تيك توك','تصوير','مونتاج','ستوري','نشر','انستقرام','إنستقرام']],
   ['zubaidi',['فلوس','مصروف','مربعات','صدقة']],
   ['faryala',['نبات','زراعة','شتلة','سقي']],
   ['shaari',['حلم']]];
 const CM_WAIT_KW=['جيم','gym','تمرين','workout','أكل','اكل','وجبة','فطور','غدا','عشا','meal','breakfast','lunch','dinner'];
-function cmKwHit(L,w){ return /^[a-z]+$/.test(w)?new RegExp('(^|[^a-z])'+w+'([^a-z]|$)').test(L):L.includes(w); }
-function cmAgentGuess(label){ const L=String(label||'').toLowerCase();
-  for(const [k,n] of CM_AGENT_NAMES) if(L.includes(n)) return k;
-  for(const [k,ws] of CM_AGENT_KW) if(ws.some(w=>cmKwHit(L,w))) return k;
-  return ''; }
+const cmNorm=x=>String(x||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي');
+const CM_AR='\u0621-\u064A', _cmWordRe={};
+function cmWord(L,w){ if(!_cmWordRe[w]) _cmWordRe[w]=new RegExp('(^|[^'+CM_AR+'])(?:وال|بال|لل|ال|و)?'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=[^'+CM_AR+']|$)'); return _cmWordRe[w].test(L); }
+function cmKwHit(L,w){ // L is normalised (cmNorm)
+  if(/^[a-z]+$/.test(w)) return new RegExp('(^|[^a-z])'+w+'([^a-z]|$)').test(L);
+  const whole=w[0]==='=', n=cmNorm(whole?w.slice(1):w);
+  if(/[\u0621-\u064A]/.test(n)&&(whole||n.replace(/[^\u0621-\u064A]/g,'').length<=3)) return cmWord(L,n);
+  return L.includes(n); }
+function cmLeadEmoji(raw){ const m=String(raw||'').trim().match(/^\p{Extended_Pictographic}/u); return m?CM_LEAD_EMOJI[m[0]]||'':''; }
+function cmSurahHit(L,raw){ if(CM_SURAH_CLEAR.some(w=>cmWord(L,w))) return true;
+  return CM_SURAH_CTX.some(w=>cmWord(L,w))&&(String(raw).includes('📖')||CM_QURAN_CUE.some(w=>cmKwHit(L,w))); }
+function cmAgentGuess(label){ const raw=String(label||''), L=cmNorm(raw);
+  if(!raw.trim()) return '';
+  for(const [k,n] of CM_AGENT_NAMES) if(L.includes(cmNorm(n))) return k;
+  if(CM_MANGSI_ALIAS.some(w=>/^[a-z0-9]+$/.test(w)?new RegExp('(^|[^a-z0-9])'+w+'([^a-z0-9]|$)').test(L):L.includes(cmNorm(w)))) return 'mangsi';
+  const le=cmLeadEmoji(raw); if(le) return le;
+  for(const [k,ws] of CM_AGENT_KW){ if(ws.some(w=>cmKwHit(L,w))) return k; if(k==='hamour'&&cmSurahHit(L,raw)) return k; }
+  return 'mangsi'; }
 function cmAgentOf(c){ if(PUB||!c) return ''; const src=c._src||c;
   if(src.agent==='none') return ''; if(src.agent&&HUB_KEYS.includes(src.agent)) return src.agent; return cmAgentGuess(src.label||c.label); }
 const cmAgentRank=k=>k==='hamour'?1:(k==='hariri'||k==='saboor')?2:3;
@@ -5239,7 +5262,7 @@ function cmAgentAv(k){ if(!k) return ''; const m=hubMeta(k);
 // a tap on any avatar opens that agent's page — before the row's own click (rows are buttons too)
 document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('[data-agent-open]'); if(!a) return; e.preventDefault(); e.stopPropagation(); hubOpenAgent(a.dataset.agentOpen); },true);
 document.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const a=e.target.closest&&e.target.closest('[data-agent-open]'); if(!a) return; e.preventDefault(); e.stopPropagation(); hubOpenAgent(a.dataset.agentOpen); },true);
-function cmIsWaitItem(label){ const L=String(label||'').toLowerCase(); return CM_WAIT_KW.some(w=>cmKwHit(L,w)); }
+function cmIsWaitItem(label){ const L=cmNorm(label); return CM_WAIT_KW.some(w=>cmKwHit(L,w)); }
 // {agent:[item labels]} standing right now
 function cmStanding(){
   if(PUB) return {};
