@@ -1780,6 +1780,10 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .wt-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); margin-bottom:16px; }
   .wt-card:empty{ display:none; }
   .wt-head{ display:flex; flex-direction:column; gap:2px; margin-bottom:12px; }
+  .wt-muscle{ display:flex; align-items:center; gap:12px; padding:16px 18px; margin-bottom:12px; border-radius:16px; background:var(--card); border:1px solid var(--line); }
+  .wt-muscle .wt-mi{ font-size:1.9rem; line-height:1; }
+  .wt-muscle .wt-mt{ font-family:var(--font-head); font-size:1.15rem; color:var(--heading); line-height:1.4; }
+  .wt-muscle .wt-mt b{ font-size:1.3rem; }
   .wt-eye{ font-size:.78rem; font-weight:700; color:var(--ink-soft); }
   .wt-name{ font-family:var(--font-head); font-size:1.25rem; color:var(--heading); }
   .wt-card.flash{ animation:ccFlash 1.2s ease; }
@@ -3397,7 +3401,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.101.0';
+const APP_VERSION='v1.102.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -4223,7 +4227,7 @@ const I18N={
   q_split:'🧩 شلون تبي تقسم تمرينك؟',split_hint:'المكان (جيم/بيت) يحدد الأدوات بس — هذا يحدد شكل أسبوعك',
   split_ppl:'دفع/سحب/رجل',split_upperlower:'علوي/سفلي',split_bodypart:'حسب العضلة',split_fullbody:'جسم كامل',split_custom:'مخصص',split_loop:'لوب (يمشي على اللي سويته)',loop_behavior:'🔁 ما ينتقل للتمرين الجاي إلا لما تعلّم ✓ — لو فاتك يوم، نفس العضلة تنتظرك بكرة. (شيل الصح إذا تبي كل يوم له عضلة ثابتة)',q_loop_order:'🔁 ترتيب اللوب',q_loop_order_sub:'رتّب أيامك بالترتيب اللي تمشي عليه — الدور ما يتحرك إلا لما تعلّم «تمرين اليوم ✓»',q_loop_off:'📅 أيام إجازة ثابتة (ما تحرّك اللوب)',q_loop_next:'▶️ تمرينك الجاي هو',
   q_custom_schedule:'🗓️ رتب أسبوعك بنفسك',split_custom_incomplete:'🚫 حدد نوع تمرين (أو راحة) لكل يوم قبل الحفظ',
-  type_chest:'صدر',type_back:'ظهر',type_shoulders:'كتف',type_arms:'أذرع',type_upper:'علوي',type_lower:'سفلي',type_full:'جسم كامل',
+  type_chest:'صدر',type_back:'ظهر',type_shoulders:'أكتاف',type_arms:'ذراع',type_upper:'علوي',type_lower:'سفلي',type_full:'جسم كامل',
   q_equip:'🎒 شنو عندك من الأدوات؟',eq_db:'دمبلز',eq_band:'حبل مطاطي',eq_bar:'عقلة / بار',eq_barbell:'بار حديد (باربل)',eq_bench:'بنش',eq_kettlebell:'كيتل بيل',eq_dipbars:'متوازي ديبس',eq_mat:'مسطبة يوقا',eq_none:'ولا شي',
   equip_other_ph:'أداة ثانية؟ اكتبها هنا (اختياري)',
   q_injury:'🩹 عندك إصابات؟',inj_elbow:'الكوع',inj_shoulder:'الكتف',inj_knee:'الركبة',inj_back:'أسفل الظهر',inj_none:'ما عندي',
@@ -7547,11 +7551,11 @@ Object.assign(workoutTypes,{
   main:[{ar:'١. عقلة أستراليان — ٤ × ٨-١٢',en:'1. Australian rows — 4×8-12'},{ar:'٢. عقلة بقبضة عريضة — ٣ × ٥-٨',en:'2. Wide-grip pull-ups — 3×5-8'},{ar:'٣. سحب حبل أفقي — ٤ × ١٠',en:'3. Band rows — 4×10'},{ar:'٤. سوبرمان — ٤ × ١٢ ثانية',en:'4. Superman hold — 4×12s'},{ar:'٥. رفعات Y-T-W نايم على البطن — ٣ × ١٠ لكل شكل',en:'5. Prone Y-T-W raises — 3×10 per shape'}],
   small:[{ar:'٦. شراغ بدمبل/غرض ثقيل — ٣ × ١٥',en:'6. Shrugs (weighted item) — 3×15'},{ar:'٧. فيس بول بحبل مطاطي — ٣ × ١٥',en:'7. Band face pulls — 3×15'}],
   stretch:{ar:'🧘 استرتش ظهر علوي — ٥ دقايق',en:'🧘 Upper-back stretch — 5 min'}},
- shoulders:{icon:'🏔️',name:{ar:'كتف',en:'Shoulders'},
+ shoulders:{icon:'🏔️',name:{ar:'أكتاف',en:'Shoulders'},
   main:[{ar:'١. بايك بوش أب — ٤ × ٨-١٢',en:'1. Pike push-ups — 4×8-12'},{ar:'٢. رفرفة جانبية بحبل مطاطي — ٤ × ١٢-١٥',en:'2. Band lateral raises — 4×12-15'},{ar:'٣. رفرفة أمامية — ٣ × ١٢',en:'3. Front raises — 3×12'},{ar:'٤. بايك بوش أب مرفوع الرجل (متقدم) — ٣ × ٦-٨',en:'4. Elevated pike push-ups (advanced) — 3×6-8'},{ar:'٥. دوران كتف مقاوم بحبل مطاطي — ٣ × ١٢',en:'5. Band shoulder rotations — 3×12'}],
   small:[{ar:'٦. رفعات خلفية نايم على البطن — ٣ × ١٢',en:'6. Prone rear-delt raises — 3×12'},{ar:'٧. تعليق كتف ثابت (شراغ سلبي) — ٣ × ٢٠ ثانية',en:'7. Passive shoulder hang (if bar available) — 3×20s'}],
   stretch:{ar:'🧘 استرتش كتف كامل — ٥ دقايق',en:'🧘 Full shoulder stretch — 5 min'}},
- arms:{icon:'💪',name:{ar:'أذرع',en:'Arms'},
+ arms:{icon:'💪',name:{ar:'ذراع',en:'Arms'},
   main:[{ar:'١. باي كيرل بحبل مطاطي — ٤ × ١٠-١٢',en:'1. Band bicep curls — 4×10-12'},{ar:'٢. ضغط ماسي (تراي) — ٤ × ٨-١٢',en:'2. Diamond push-ups (triceps) — 4×8-12'},{ar:'٣. ديبس على كرسي — ٣ × ١٠-١٢',en:'3. Chair dips (triceps) — 3×10-12'},{ar:'٤. هامر كيرل بحبل مطاطي — ٣ × ١٠',en:'4. Band hammer curls — 3×10'},{ar:'٥. ترايسبس إكستنشن فوق الراس بغرض ثقيل — ٣ × ١٢',en:'5. Overhead triceps extension (weighted item) — 3×12'}],
   small:[{ar:'٦. إكسنتريك رست كيرل بطيء — ٣ × ١٥',en:'6. Slow eccentric wrist curls — 3×15'},{ar:'٧. عصر كرة بأقصى قوة — ٣ × ٢٠ ثانية',en:'7. Max-effort ball squeeze — 3×20s'}],
   stretch:{ar:'🧘 استرتش ساعد وذراع — ٥ دقايق',en:'🧘 Forearm + arm stretch — 5 min'}},
@@ -7577,11 +7581,11 @@ Object.assign(GYM_WORKOUT_TYPES,{
   main:[{ar:'١. لات بولداون — ٤ × ١٠-١٢',en:'1. Lat pulldown — 4×10-12'},{ar:'٢. تجديف بار/دمبل — ٤ × ٨-١٠',en:'2. Barbell/dumbbell row — 4×8-10'},{ar:'٣. سيتد كيبل رو — ٤ × ١٠',en:'3. Seated cable row — 4×10'},{ar:'٤. بندلاي رو — ٣ × ٨',en:'4. Pendlay row — 3×8'},{ar:'٥. عقلة (بمساعدة لو تحتاج) — ٣ × ٦-١٠',en:'5. Pull-ups (assisted if needed) — 3×6-10'}],
   small:[{ar:'٦. فيس بول كيبل — ٣ × ١٥',en:'6. Cable face pulls — 3×15'}],
   stretch:{ar:'🧘 استرتش ظهر علوي — ٥ دقايق',en:'🧘 Upper-back stretch — 5 min'}},
- shoulders:{icon:'🏔️',name:{ar:'كتف (جيم)',en:'Shoulders (gym)'},
+ shoulders:{icon:'🏔️',name:{ar:'أكتاف (جيم)',en:'Shoulders (gym)'},
   main:[{ar:'١. شولدر برس دمبل جالس — ٤ × ١٠-١٢',en:'1. Seated dumbbell shoulder press — 4×10-12'},{ar:'٢. رفرفة جانبية كيبل/دمبل — ٤ × ١٢-١٥',en:'2. Cable/dumbbell lateral raises — 4×12-15'},{ar:'٣. رفرفة أمامية دمبل — ٣ × ١٢',en:'3. Dumbbell front raise — 3×12'},{ar:'٤. شولدر برس بار واقف — ٣ × ٨-١٠',en:'4. Standing barbell overhead press — 3×8-10'},{ar:'٥. فيس بول كيبل — ٣ × ١٥',en:'5. Cable face pulls — 3×15'}],
   small:[{ar:'٦. رفرفة كتف خلفي ماكينة/دمبل — ٣ × ١٥',en:'6. Rear-delt fly (machine/dumbbell) — 3×15'}],
   stretch:{ar:'🧘 استرتش كتف كامل — ٥ دقايق',en:'🧘 Full shoulder stretch — 5 min'}},
- arms:{icon:'💪',name:{ar:'أذرع (جيم)',en:'Arms (gym)'},
+ arms:{icon:'💪',name:{ar:'ذراع (جيم)',en:'Arms (gym)'},
   main:[{ar:'١. باي كيرل بار/دمبل — ٤ × ١٠-١٢',en:'1. Barbell/dumbbell bicep curl — 4×10-12'},{ar:'٢. ترايسبس بوشداون كيبل — ٤ × ١٢',en:'2. Cable triceps pushdown — 4×12'},{ar:'٣. بريتشر كيرل — ٣ × ١٠',en:'3. Preacher curl — 3×10'},{ar:'٤. بنش قبضة ضيقة (تراي) — ٣ × ٨-١٠',en:'4. Close-grip bench press (triceps) — 3×8-10'},{ar:'٥. هامر كيرل دمبل — ٣ × ١٢',en:'5. Dumbbell hammer curl — 3×12'}],
   small:[{ar:'٦. ترايسبس اوفرهيد دمبل — ٣ × ١٢',en:'6. Overhead dumbbell triceps extension — 3×12'}],
   stretch:{ar:'🧘 استرتش ساعد وذراع — ٥ دقايق',en:'🧘 Forearm + arm stretch — 5 min'}},
@@ -7598,22 +7602,6 @@ Object.assign(GYM_WORKOUT_TYPES,{
   small:[],
   stretch:{ar:'🧘 استرتش جسم كامل — ٥ دقايق',en:'🧘 Full-body stretch — 5 min'}}
 });
-
-/* video link for any exercise: strips numbering + rep/set info from the English
-   name and builds a YouTube search link — works for every exercise at every
-   level (beginner/amateur/pro) since it's generated from the text itself,
-   not a hand-picked list */
-function exerciseVideoUrl(enText){
-  if(!enText) return null;
-  let q=enText.replace(/^\d+\.\s*/,'').split('—')[0].trim();
-  if(!q) return null;
-  return 'https://www.youtube.com/results?search_query='+encodeURIComponent(q+' exercise proper form tutorial');
-}
-function videoIconHtml(enText){
-  const url=exerciseVideoUrl(enText);
-  if(!url) return '';
-  return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="margin-inline-start:8px;text-decoration:none;font-size:0.85em;vertical-align:middle;" title="${LANG==='ar'?'شاهد فيديو الحركة':'Watch exercise video'}">🎥</a>`;
-}
 
 /* ================= ACHIEVEMENT SOUND (original, synthesized — no audio file,
    no copyrighted material) =================
@@ -7758,52 +7746,6 @@ let exRowCounter=0;
    fresh history for the new variant instead of mixing incompatible logs. */
 function slugifyExerciseName(name){ return String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function exerciseId(typeKey,enName){ return typeKey+'|'+slugifyExerciseName(enName); }
-/* Training checklist: exercise name + a single ✅ per exercise — nothing
-   else. Persisted per exercise (dailyTrack.exerciseChecks[exId]) only for
-   TODAY's day, same scoping every other today-only feature (the done
-   toggle, feedback prompt) already uses. Once the day itself is marked
-   done, every checkbox here is rendered disabled and anything left
-   unchecked is shown crossed out — "not completed", permanently, for that
-   day — see the workoutDoneToggle handler in openWorkoutDay(). */
-function exerciseTableHtml(list,timerSecs,showVideo,typeKey,isToday){
-  if(!list||!list.length) return '';
-  const locked = isToday && !!dailyTrack.workoutDone;
-  let rows='';
-  list.forEach(e=>{
-    const p=parseExerciseRow(e[LANG]);
-    const vid = showVideo ? videoIconHtml(e.en) : '';
-    const timer = showVideo ? timerIconHtml(timerSecs) : '';
-    const rid='exrow'+(exRowCounter++);
-    if(isToday && typeKey){
-      const exId=exerciseId(typeKey,parseExerciseRow(e.en).name);
-      const checked=!!(dailyTrack.exerciseChecks&&dailyTrack.exerciseChecks[exId]);
-      const rowClass = checked ? 'ex-done' : (locked ? 'ex-missed' : '');
-      rows+=`<tr id="${rid}"${rowClass?` class="${rowClass}"`:''}><td>${escapeHtml(p.name)}${vid}${timer}</td><td style="text-align:center;"><input type="checkbox" class="ex-check-input" data-exid="${exId}" ${checked?'checked':''} ${locked?'disabled':''}></td></tr>`;
-    } else {
-      // a plain, non-persisted preview checkbox for a non-today day (nothing to lock/save — there's no "today done" state for a day you're just previewing)
-      rows+=`<tr id="${rid}"><td>${escapeHtml(p.name)}${vid}${timer}</td><td style="text-align:center;"><input type="checkbox" onchange="document.getElementById('${rid}').classList.toggle('ex-done',this.checked)"></td></tr>`;
-    }
-  });
-  return `<table class="ex-table"><thead><tr><th>${LANG==='ar'?'التمرين':'Exercise'}</th><th>✓</th></tr></thead><tbody>${rows}</tbody></table>`;
-}
-/* the only place dailyTrack.exerciseChecks is written — a plain per-exercise
-   toggle, blocked entirely once the day is locked (the input itself is
-   `disabled` in that case, so this only ever fires while the day is still
-   open). */
-document.addEventListener('change',async(e)=>{
-  const el=e.target;
-  if(!el.matches || !el.matches('.ex-check-input')) return;
-  const exId=el.dataset.exid;
-  dailyTrack.exerciseChecks=dailyTrack.exerciseChecks||{};
-  dailyTrack.exerciseChecks[exId]=el.checked;
-  await saveDailyTrack();
-  const row=el.closest('tr');
-  if(row) row.classList.toggle('ex-done',el.checked);
-});
-function timerIconHtml(seconds){
-  seconds=seconds||60;
-  return `<button type="button" onclick="startRestTimer(${seconds})" style="margin-inline-start:6px;border:none;background:none;cursor:pointer;font-size:0.85em;vertical-align:middle;padding:0;" title="${LANG==='ar'?'مؤقت راحة ٦٠ ثانية':'60s rest timer'}">⏱️</button>`;
-}
 
 function currentTier(typeKey){
   const level=(P.workoutCounts&&P.workoutCounts[typeKey])||0;
@@ -10735,27 +10677,17 @@ function calorieTarget(){
 function openWorkoutDay(label,typeKey,isToday,inline){
   const day=adaptDay(typeKey), host=inline||document.getElementById('cardBody');
   if(!inline){ document.getElementById('dayTitle').textContent=`${label} ${day.icon}`; document.getElementById('daySubtitle').textContent=day.name[LANG]; }
-  let html=inline?`<div class="wt-head"><span class="wt-eye">${LANG==='ar'?'تمرين اليوم':'Today’s workout'} · ${escapeHtml(label)}</span><b class="wt-name">${day.icon} ${escapeHtml(day.name[LANG])}</b></div>`:'';
+  const ar=LANG==='ar', rest=typeKey==='rest', sport=isSportType(typeKey);
+  const mus=rest?t('rest_day_name'):dayTypeLabel(typeKey), ic=rest?'😴':sport?dayTypeIcon(typeKey):'💪';
+  // Hurairy coaches the exercises in chat — the site shows only the day's muscle (16 Nov)
+  let html=`<div class="wt-muscle${rest?' rest':''}" data-testid="wt-muscle"><span class="wt-mi" aria-hidden="true">${ic}</span><span class="wt-mt">${isToday?(ar?'تمرين اليوم':'Today’s workout'):(ar?`تمرين ${escapeHtml(label)}`:`${escapeHtml(label)}’s workout`)}: <b>${escapeHtml(mus)}</b></span></div>`;
   if(isToday){
     const lp=isLoopMode();
     if(lp) html+=`<div style="margin-bottom:8px;">${loopTodayBarHtml(P.workoutSetup,typeKey)}</div>`;
-    if(lp&&typeKey==='rest') html+=`<div class="check-item${dailyTrack.restTaken?' done':''}" id="loopRestToggle" data-testid="loop-rest-taken" style="margin-bottom:8px;"><div class="box">${dailyTrack.restTaken?'✓':''}</div><div class="txt">${LANG==='ar'?'😴 أخذت راحة':'😴 I rested'}</div></div>`;
-    else html+=`<div class="check-item${dailyTrack.workoutDone?' done':''}" id="workoutDoneToggle" style="margin-bottom:8px;"><div class="box">${dailyTrack.workoutDone?'✓':''}</div><div class="txt">${t('workout_today')}</div></div>`;
-    html+=`<div id="feedbackRow" style="margin-bottom:14px;"></div>`;
+    if(lp&&rest) html+=`<div class="check-item${dailyTrack.restTaken?' done':''}" id="loopRestToggle" data-testid="loop-rest-taken" style="margin-bottom:8px;"><div class="box">${dailyTrack.restTaken?'✓':''}</div><div class="txt">${ar?'😴 أخذت راحة':'😴 I rested'}</div></div>`;
+    else html+=`<div class="check-item${dailyTrack.workoutDone?' done':''}" id="workoutDoneToggle" data-testid="workout-done" style="margin-bottom:8px;"><div class="box">${dailyTrack.workoutDone?'✓':''}</div><div class="txt">${ar?'✓ خلصت تمرين اليوم':'✓ Done with today’s workout'}</div></div>`;
   }
-  const base=workoutTypes[typeKey]||{};
-  const showVideoIcons = typeKey!=='rest' && !isSportType(typeKey) && !day.skippedByInjury;
-  html+=`<div class="exercise"><div class="label">${day.icon} ${t('main_ex')}</div>${exerciseTableHtml(day.main,60,showVideoIcons,typeKey,isToday)}</div>`;
-  if(day.small.length){ html+=`<div class="exercise"><div class="label">${t('small_ex')}</div>${exerciseTableHtml(day.small,45,showVideoIcons,typeKey,isToday)}</div>`; }
-  if(base.tierNotes && !day.skippedByInjury && currentTier(typeKey)>=4){
-    html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 مستوى متقدم':'🔥 Advanced level'}</div>${exerciseTableHtml(base.tierBoost,60,true,typeKey,isToday)}</div>`;
-  }
-  if(day.cardioFinisher){ const vid=videoIconHtml(day.cardioFinisher.en); html+=`<div class="exercise" style="border-color:var(--gold);"><div class="label" style="color:var(--gold);">${LANG==='ar'?'🔥 فينشر حرق دهون':'🔥 Fat-burn finisher'}</div><div class="content"><div>${day.cardioFinisher[LANG]}${vid}</div></div></div>`; }
-  html+=`<div class="exercise"><div class="label">${t('closing')}</div><div class="content">${day.stretch[LANG]}${videoIconHtml(day.stretch.en)}</div></div>`;
-  if(day.extraMobility){ html+=`<div class="exercise"><div class="label">${LANG==='ar'?'🧘 مرونة إضافية':'🧘 Extra mobility'}</div><div class="content">`; day.extraMobility.forEach(e=>{ const vid=videoIconHtml(e.en); html+=`<div>${e[LANG]}${vid}</div>`; }); html+=`</div></div>`; }
   day.warns.forEach(w=>html+=`<div class="warn-chip">${escapeHtml(w[LANG])}</div>`);
-  const eqt=equipTip(typeKey);
-  if(eqt) html+=`<div class="info-chip">${eqt[LANG]}</div>`;
   host.innerHTML=html;
   if(isToday){
     const toggle=host.querySelector('#workoutDoneToggle');
@@ -10768,14 +10700,9 @@ function openWorkoutDay(label,typeKey,isToday,inline){
     if(toggle) toggle.addEventListener('click',async()=>{
       await toggleWorkoutDone(typeKey);
       if(isLoopMode()){ loopRerender(); if(inline) renderWorkoutToday(); else openWorkoutDay(label,workoutTypeForDate(new Date(),P.workoutSetup),true); return; }
-      // full re-render: picks up the new workoutDone state for both the
-      // toggle itself AND the exercise checklist below it (locking it, and
-      // crossing out anything left unchecked, the moment the day is marked
-      // done — see exerciseTableHtml()'s `locked` flag) — never patched
-      // piecemeal, so the two can never fall out of sync with each other.
+      // full re-render: picks up the new workoutDone state
       if(inline) renderWorkoutSection(); else openWorkoutDay(label,typeKey,true);
     });
-    if(dailyTrack.workoutDone && !dailyTrack.feedbackGiven && !isSportType(typeKey)) showFeedbackPrompt(typeKey,host); // difficulty feedback is for gym/home sessions, not sports
   }
   if(!inline) overlay.classList.add('open');
 }
