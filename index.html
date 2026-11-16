@@ -1797,6 +1797,16 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .sch-row .l{ flex:1; min-width:0; overflow-wrap:anywhere; }
   .sch-row.past{ opacity:.5; }
   .sch-row.next{ font-weight:700; }
+  .sch-row .sch-tick{ width:32px; height:32px; flex:none; font-size:.95rem; }
+  .sch-row .sch-b{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+  .sch-row .sch-b .l{ display:flex; align-items:center; gap:0; width:100%; }
+  .sch-row .sch-lt{ min-width:0; overflow-wrap:anywhere; }
+  .sch-row .sch-m{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  .sch-row.done .sch-lt{ text-decoration:line-through; opacity:.55; }
+  .sch-row.done.past{ opacity:1; }
+  .sch-row.skipped .l{ opacity:.55; }
+  .sch-skip{ flex:none; border:1px solid var(--line); background:var(--bg); color:var(--ink-soft); border-radius:999px; padding:5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; min-height:30px; }
+  .sch-sk{ flex:none; font-size:.72rem; color:var(--ink-soft); }
   .sch-next{ font-size:.7rem; font-weight:800; color:var(--card); background:var(--accent); border-radius:999px; padding:2px 8px; white-space:nowrap; }
   #dailyRoutineToggleCard{ display:flex; align-items:center; gap:10px; padding:12px 16px; text-align:start; border-radius:14px; }
   #dailyRoutineToggleCard .ic{ font-size:1.2rem; margin:0; display:inline; }
@@ -2275,7 +2285,6 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
     <div class="dash-card hidden" id="homeWeightTask"></div>
     <div id="homeTodoScheduleRows" class="hidden"></div>
     </div>
-    <div class="dash-card" id="dashCommitCard"></div>
     </div>
   </section>
 
@@ -3401,7 +3410,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.102.0';
+const APP_VERSION='v1.103.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5377,8 +5386,8 @@ function renderHomeNow(){
 }
 async function hnDo(a){
   if(!a) return; renderHomeNow._pick=null;
-  if(a.k==='commit'){ dailyTrack.commitDone={...(dailyTrack.commitDone||{}),[a.ck]:true}; playSfx('pop'); hubFeed(); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
-  if(a.k==='skip'){ dailyTrack.commitSkip={...(dailyTrack.commitSkip||{}),[a.ck]:true}; hubFeed(); await saveDailyTrack(); try{ renderDashCommitCard(); }catch(e){} renderHomeNow(); return; }
+  if(a.k==='commit'){ await cmTick(a.ck,true); return; }
+  if(a.k==='skip'){ await cmSkipToday(a.ck); return; }
   if(a.k==='water'){ await adjustWater(0.25); renderHomeNow(); return; }
   if(a.k==='habit'){ const h=(P.habits||[]).find(x=>x.id===a.hid);
     if(h&&!(dailyTrack.habits||{})[h.id]) toggleHabitToday(h,done=>{ if(h.group==='prayers'&&done){ dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[h.id]:'ontime'}; } });
@@ -5468,7 +5477,7 @@ async function renderHomeMissed(){
     if(mtApply(it.c,s)){ await mtPersist(); playSfx('pop'); await done((ar?'📅 انتقلت: ':'📅 Moved: ')+mtWhen(s)); } });
   el.querySelectorAll('[data-did]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.did];
     const key=calDateKey(it.d.getFullYear(),it.d.getMonth(),it.d.getDate());
-    try{ const doc=(await trackDocFor(it.d))||{}; doc.commitDone={...(doc.commitDone||{}),[commitKey(it.c)]:true}; await storageSet(key,JSON.stringify(doc)); if(typeof pastDayDocCache==='object') pastDayDocCache[key]=doc; }catch(e){}
+    try{ const doc=(await trackDocFor(it.d))||{}; doc.commitDone={...(doc.commitDone||{}),[commitKey(it.c)]:true}; cmLogSet(doc,commitKey(it.c),it.c,'done'); await storageSet(key,JSON.stringify(doc)); if(typeof pastDayDocCache==='object') pastDayDocCache[key]=doc; }catch(e){}
     await mtMarkSeen(mtKey(it.iso,it.c)); playSfx('pop'); await done(ar?'👏 تمام، انحسبت':'👏 Nice, counted'); });
   el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=async()=>{ const it=items[+b.dataset.drop];
     const all=(P.todoSetup&&P.todoSetup.commitments)||[], i=all.indexOf(it.c._src||it.c); if(i>=0){ all.splice(i,1); await mtPersist(); }
@@ -13413,11 +13422,15 @@ async function renderScheduleToday(){
   const lbl=now.toLocaleDateString(ar?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long'});
   let h=`<div class="dash-card-title dash-title-row"><span>${ar?'📅 يومك':'📅 Your day'}<small class="sch-date">${escapeHtml(lbl)}</small></span><button type="button" class="dash-link" id="schOpenDay" data-testid="sch-open-day">${ar?'بالساعات':'By the hour'}</button></div>`;
   if(!items.length) h+=`<div class="dash-empty">${ar?'ما عندك شي اليوم — ضيف التزام من تحت.':'Nothing on today — add a commitment below.'}</div>`;
-  else h+='<div class="sch-list">'+items.map((it,i)=>{ const past=it.time>=0&&it.time<=mins&&(next<0||i<next);
-    return `<div class="sch-row${past?' past':''}${i===next?' next':''}" data-testid="sch-row"><span class="t num">${it.timeLabel||(ar?'طول اليوم':'All day')}</span><span class="l">${cmAgentAv(it.ag)}${escapeHtml(it.label)}</span>${i===next?`<span class="sch-next">${ar?'الجاي':'Next'}</span>`:''}</div>`; }).join('')+'</div>';
+  else { const done=dailyTrack.commitDone||{}, skip=dailyTrack.commitSkip||{}, nd=items.filter(it=>done[it.k]).length;
+    h=h.replace(`<small class="sch-date">`,` <span class="num cmt-count" data-testid="sch-count">${nd}/${items.length}</span><small class="sch-date">`);
+    h+='<div class="sch-list">'+items.map((it,i)=>{ const past=it.time>=0&&it.time<=mins&&(next<0||i<next), dn=!!done[it.k], sk=!dn&&!!skip[it.k];
+    return `<div class="sch-row${past?' past':''}${i===next?' next':''}${dn?' done':''}${sk?' skipped':''}" data-testid="sch-row" data-k="${escapeHtml(it.k)}"><button type="button" class="dash-toggle sch-tick${dn?' done':''}" data-sch-tick="${i}" role="checkbox" aria-checked="${dn}" aria-label="${escapeHtml(it.label)}" data-testid="sch-tick">${dn?'✓':''}</button><span class="t num">${it.timeLabel||(ar?'طول اليوم':'All day')}</span><span class="sch-b"><span class="l">${cmAgentAv(it.ag)}<span class="sch-lt">${escapeHtml(it.label)}</span></span>${(()=>{ const m=(sk?`<span class="sch-sk">${ar?'⏭️ تخطّيت':'⏭️ Skipped'}</span>`:(!dn&&it.commit?`<button type="button" class="sch-skip" data-sch-skip="${i}" data-testid="sch-skip">${ar?'⏭️ تخطّي اليوم':'⏭️ Skip today'}</button>`:''))+(i===next&&!dn&&!sk?`<span class="sch-next">${ar?'الجاي':'Next'}</span>`:''); return m?`<span class="sch-m">${m}</span>`:''; })()}</span></div>`; }).join('')+'</div>'; }
   el.innerHTML=h;
   const open=()=>openCalendarDay(now.getFullYear(),now.getMonth(),now.getDate());
   el.querySelector('#schOpenDay').onclick=open;
+  el.querySelectorAll('[data-sch-tick]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const it=items[+b.dataset.schTick]; b.disabled=true; cmTick(it.k,!(dailyTrack.commitDone||{})[it.k]); });
+  el.querySelectorAll('[data-sch-skip]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); b.disabled=true; cmSkipToday(items[+b.dataset.schSkip].k); });
   el.querySelectorAll('.sch-row').forEach(r=>r.onclick=open);
 }
 document.getElementById('calPrevMonth').addEventListener('click',()=>{
@@ -13667,7 +13680,7 @@ const CC_DEFS=[
   /* 'plan' card removed from Home (v1.66.1): today's schedule shows in the commitments card under the checklist */
   //{id:'plan',el:'homeSchedulePreview',head:':scope > .dash-title-row',ic:'🗓️',ar:'الخطة',en:'Plan',sum:()=>{ const r=document.querySelectorAll('#homeSchedulePreview .home-todo-schedule-row'); return r.length?(LANG==='ar'?`${r.length} اليوم`:`${r.length} today`):''; }},
   {id:'health',el:'homeTodoCard',head:':scope > .dash-card-title',ic:'❤️',ar:'الصحة',en:'Health',open:true},
-  {id:'commits',el:'dashCommitCard',head:':scope > .dash-card-title',ic:'📅',ar:'الالتزامات',en:'Commitments'},
+  /* 'commits' card removed from Home (v1.103.0): the schedule checklist lives in the Schedule tab («يومك») */
   {id:'habits',el:'habitsCard',head:':scope > .dash-card-title',ic:'✅',ar:'العادات',en:'Habits'},
   {id:'water',el:'dashWaterCard',head:':scope > .dash-card-title',ic:'💧',ar:'الماي',en:'Water',sum:()=>(document.getElementById('dashWaterCount')||{}).textContent||''},
   {id:'workout',el:'dashWorkoutCard',head:':scope > .dash-card-title',ic:'💪',ar:'التمرين',en:'Workout',sum:()=>{ const r=document.getElementById('dashWorkoutRow'); if(!r||r.classList.contains('hidden')) return ''; return document.getElementById('dashWorkoutName').textContent+(dailyTrack.workoutDone?' ✓':''); }},
@@ -13820,9 +13833,9 @@ async function getAgendaForDate(dateObj){
 }
 async function getScheduleItemsForDate(dateObj){
   const commits=commitmentsForDate(dateObj).map(c=>({
-    time:c.from?commitTimeSpan(c).start:-1, label:c.label, ag:cmAgentOf(c), timeLabel:c.from?formatTime12h(c.from):''
+    time:c.from?commitTimeSpan(c).start:-1, label:c.label, ag:cmAgentOf(c), timeLabel:c.from?formatTime12h(c.from):'', k:commitKey(c), commit:true
   }));
-  const notes=await getAgendaForDate(dateObj);
+  const notes=(await getAgendaForDate(dateObj)).map(n=>({...n, k:'n:'+n.label+'|'+n.time}));
   return commits.concat(notes).sort((a,b)=>(a.time<0?9999:a.time)-(b.time<0?9999:b.time));
 }
 /* Weight — reuses the SAME weightLog array/chart the Progress/Food panel
@@ -14063,6 +14076,22 @@ document.getElementById('profileBar').addEventListener('click',()=>{ showPanel('
    doesn't exist yet. */
 /* ---- Home To-Do: today's commitments + schedule notes, each one tickable ---- */
 function commitKey(c){ return 'c:'+(c.label||'')+'|'+((c._src||c).from||''); }
+/* every tick reaches its agent (16 Nov): dailyTrack.commitLog[key] = {label, agent, status:'done'|'skip'|'undone', at} — last state
+   per key, saved with the day (his PC reader sees it). commitDone / commitSkip stay as they are. Public edition: no log. */
+function cmByKey(k,d){ return commitmentsForDate(d||new Date()).find(c=>commitKey(c)===k)||null; }
+function cmLogSet(doc,k,c,status){ if(PUB||!doc||!k) return;
+  const label=c?c.label:String(k).replace(/^[cn]:/,'').replace(/\|[^|]*$/,'');
+  doc.commitLog={...(doc.commitLog||{}),[k]:{label, agent:c?(cmAgentOf(c)||''):'', status, at:new Date().toISOString()}}; }
+function cmTickRefresh(){ try{ renderDashCommitCard(); }catch(e){} try{ renderHomeNow(); }catch(e){} try{ renderScheduleToday(); }catch(e){} }
+async function cmTick(k,on){ if(!k) return;
+  dailyTrack.commitDone={...(dailyTrack.commitDone||{})};
+  if(on){ dailyTrack.commitDone[k]=true; playSfx('pop'); } else delete dailyTrack.commitDone[k];
+  cmLogSet(dailyTrack,k,cmByKey(k),on?'done':'undone');
+  hubFeed(); await saveDailyTrack(); cmTickRefresh(); }
+async function cmSkipToday(k){ if(!k) return;
+  dailyTrack.commitSkip={...(dailyTrack.commitSkip||{}),[k]:true};
+  cmLogSet(dailyTrack,k,cmByKey(k),'skip');
+  hubFeed(); await saveDailyTrack(); cmTickRefresh(); }
 async function todayCommitItems(){
   const ar=LANG==='ar', d=new Date();
   const cm=commitmentsForDate(d).map(c=>({k:commitKey(c), ag:cmAgentOf(c), label:c.label, time:c.from?commitTimeSpan(c).start:-1, timeLabel:c.from?(formatTime12h(c.from)+(c.to?' – '+formatTime12h(c.to):'')):(ar?'طول اليوم':'All day'), commit:true}));
@@ -14088,9 +14117,7 @@ async function renderDashCommitCard(){
   }
   el.innerHTML=html;
   el.querySelectorAll('[data-ck]').forEach(b=>b.onclick=async()=>{
-    const k=b.dataset.ck; dailyTrack.commitDone={...(dailyTrack.commitDone||{})};
-    if(dailyTrack.commitDone[k]) delete dailyTrack.commitDone[k]; else { dailyTrack.commitDone[k]=true; playSfx('pop'); }
-    hubFeed(); await saveDailyTrack(); renderDashCommitCard(); try{ renderHomeNow(); }catch(e){}
+    const k=b.dataset.ck; await cmTick(k,!(dailyTrack.commitDone||{})[k]);
   });
 }
 function renderDailySummary(){
