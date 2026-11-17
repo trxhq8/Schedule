@@ -3393,7 +3393,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.104.0';
+const APP_VERSION='v1.105.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5282,7 +5282,7 @@ function mtSpan(c){
    While its item runs, that agent STANDS on the island (hq-feed urgent «⏳ <item>»); a meal/gym item keeps Hurairy
    standing until it's ticked. Done or skipped → it sits at once. Order: Qur'an (hamour) → sport (hariri) & study
    (saboor) → the rest. Public edition: no agents. */
-const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور'],['mangsi','منقسي']];
+const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور'],['sbaiti','سبيطي'],['mangsi','منقسي']];
 /* Every item has a fish. Order: explicit c.agent → an agent's name in the label → Mangsi's aliases → the lead emoji →
    keyword groups (+ surah names for Hamour) → Mangsi (fallback). Arabic is normalised (أإآ→ا, ة→ه, ى→ي, no tashkeel).
    Arabic keywords of ≤3 letters, and any keyword starting with '=', match whole words only (prefix ال/و/وال/بال/لل
@@ -5302,7 +5302,8 @@ const CM_AGENT_KW=[
   ['zoori',['ريل','ريلز','reel','reels','tiktok','تيك توك','تصوير','مونتاج','ستوري','نشر','انستقرام','إنستقرام']],
   ['zubaidi',['فلوس','مصروف','مربعات','صدقة']],
   ['faryala',['نبات','زراعة','شتلة','سقي']],
-  ['shaari',['حلم']]];
+  ['shaari',['حلم']],
+  ['sbaiti',['repo','repos','ريبو','فيديو تطوير','تطوير الوكلاء','تطوير الوكيل','تطوير وكيل']]];
 const CM_WAIT_KW=['جيم','gym','تمرين','workout','أكل','اكل','وجبة','فطور','غدا','عشا','meal','breakfast','lunch','dinner'];
 const cmNorm=x=>String(x||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي');
 const CM_AR='\u0621-\u064A', _cmWordRe={};
@@ -8294,7 +8295,7 @@ function cmIsoWd(v){ const [y,m,d]=v.split('-').map(Number); return (new Date(y,
    #questJsonApplyBtn: same id = that item is replaced (fields not sent are
    kept — a re-sent quest keeps its tick unless "done" is sent),
    {id, delete:true} removes it. Ticking happens here, on the board. */
-const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة']];
+const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة'],['sbaiti','سبيطي']];
 const QUEST_FIELDS=['id','agent','main','text','done','delete'];
 let quests=[], _questsLoaded=false;
 async function loadQuests(){
@@ -8424,7 +8425,8 @@ const HUB_META={
   yaryoor:{e:'🦈',c:'#0891b2',ar:'الصيانة والمشاريع',en:'DIY & maintenance'},
   zubaidi:{e:'🐟',c:'#16a34a',ar:'أمين المال',en:'Money keeper'},
   shaari:{e:'🐟',c:'#4f46e5',ar:'مفسر الأحلام',en:'Dream interpreter'},
-  faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'}
+  faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'},
+  sbaiti:{e:'🧪',c:'#8a6d3b',ar:'مطوّر الوكلاء · نائب منقسي',en:'Agent developer · Mangsi’s deputy'}
 };
 const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
 const HUB_HOME_FALLBACK={ // each agent's own artifact (15 Nov payload) — used until the bridge sends a home; Mangsi = the agents' HQ
