@@ -1903,6 +1903,17 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .hub-chip.on{ background:var(--accent); color:var(--card); border-color:var(--accent); }
   .hub-send{ margin-top:8px; }
   .hub-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  /* ↻ pull to refresh (v1.106.0) */
+  .ptr{ position:fixed; top:0; left:50%; z-index:5000; display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; background:var(--card); color:var(--heading); border:1px solid var(--line);
+    box-shadow:0 6px 18px rgba(0,0,0,.18); font-size:.8rem; font-weight:800; transform:translate(-50%,-70px); opacity:0; pointer-events:none; transition:transform .25s ease, opacity .2s ease; margin-top:env(safe-area-inset-top,0px); }
+  .ptr.drag{ transition:none; }
+  .ptr .ptr-sp{ width:16px; height:16px; border-radius:50%; border:2.5px solid var(--line); border-top-color:var(--accent); display:inline-block; }
+  .ptr.busy .ptr-sp{ animation:ptrspin .8s linear infinite; }
+  @keyframes ptrspin{ to{ transform:rotate(360deg); } }
+  .panel-head.hub-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .hub-refresh{ flex:none; width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--heading); font-size:1.15rem; font-weight:800; cursor:pointer; line-height:1; }
+  .hub-refresh:disabled{ opacity:.5; }
+  .hub-refresh.busy{ animation:ptrspin .8s linear infinite; }
   .hub-island{ display:block; width:100%; max-width:calc(90vh * 1760 / 2336); aspect-ratio:1760/2336; height:auto; max-height:90vh; border:0; padding:0; border-radius:14px; margin:0 auto 12px; background:#030d18; overflow:hidden; box-shadow:0 10px 28px rgba(3,13,24,.35); }
   .hub-list > .hub-grid{ margin-top:10px; }
   .hub-sec .qs-item + .qs-item{ margin-top:8px; }
@@ -3173,8 +3184,8 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   <!-- 🐟 الهب — the agents hub: quick order, 10 agent cards, Mangsi's update box -->
   <section class="panel root-panel" id="panel-hub">
     <div class="back-row"><button class="back-btn" data-i18n="back_home"></button><span></span></div>
-    <div class="panel-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2></div>
-    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=16" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
+    <div class="panel-head hub-head"><h2>🐟 <span data-i18n="hub_agents_title"></span></h2><button type="button" class="hub-refresh" id="hubRefreshBtn" data-testid="hub-refresh" aria-label="حدّث" title="حدّث">↻</button></div>
+    <iframe id="hubIsland" class="hub-island" data-src="hq.html?v=96d46ae5c7" title="مقر الوكلاء" data-testid="hub-island" allow="fullscreen"></iframe>
     <div class="dash-card hub-quick" data-testid="hub-quick">
       <div class="hub-q-h">⚡ <span data-i18n="hub_quick"></span></div>
       <textarea id="hubQuickText" class="setup-input" rows="2" maxlength="1000" ></textarea>
@@ -3393,7 +3404,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.105.0';
+const APP_VERSION='v1.106.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -7935,6 +7946,7 @@ function enterSection(name){
   if(name==='store') renderStoreSection();
   if(name==='quests') renderQuests();
   hubIslandPause(name!=='hub');
+  hubWatch(name==='hub'||name==='hubagent'||name==='agentpage');
   if(name!=='agentpage') apTeardown();
   if(name==='agentpage') apRender();
   if(name==='hub') renderHub();
@@ -8441,12 +8453,17 @@ let hubInbox=[], hubAgents={}, _hubLoaded=false, hubCurAgent='mangsi', hubQuickA
 function hubUrgentIsDone(a,txt){ const t=String(txt||'').trim(); return !!t&&Array.isArray(hubUrgentDone[a])&&hubUrgentDone[a].includes(t); }
 function hubScrubUrgent(){ for(const k in hubAgents){ const r=hubAgents[k]; if(r&&typeof r.urgent==='string'&&hubUrgentIsDone(k,r.urgent)) r.urgent=''; } }
 const saveHubUrgentDone=()=>storageSet('urgentDone',JSON.stringify(hubUrgentDone));
-async function loadHub(){
-  try{ const v=await storageGet('hubInbox'); const a=v?JSON.parse(v):[]; hubInbox=Array.isArray(a)?a.filter(o=>o&&o.id):[]; }catch(e){ hubInbox=[]; }
-  try{ const v=await storageGet('hubAgents'); const a=v?JSON.parse(v):[]; hubAgents={}; (Array.isArray(a)?a:[]).forEach(r=>{ if(r&&r.agent) hubAgents[r.agent]=r; }); }catch(e){ hubAgents={}; }
-  try{ const v=await storageGet('urgentDone'); const o=v?JSON.parse(v):{}; if(o&&typeof o==='object'&&!Array.isArray(o)){ for(const k in o) if(Array.isArray(o[k])){ hubUrgentDone[k]=[...new Set([...(hubUrgentDone[k]||[]),...o[k].filter(x=>typeof x==='string')])].slice(-50); } } }catch(e){}
+function hubParse(k,v){
+  if(k==='hubInbox'){ try{ const a=v?JSON.parse(v):[]; hubInbox=Array.isArray(a)?a.filter(o=>o&&o.id):[]; }catch(e){ hubInbox=[]; } }
+  else if(k==='hubAgents'){ try{ const a=v?JSON.parse(v):[]; hubAgents={}; (Array.isArray(a)?a:[]).forEach(r=>{ if(r&&r.agent) hubAgents[r.agent]=r; }); }catch(e){ hubAgents={}; } }
+  else if(k==='urgentDone'){ try{ const o=v?JSON.parse(v):{}; if(o&&typeof o==='object'&&!Array.isArray(o)){ for(const a in o) if(Array.isArray(o[a])){ hubUrgentDone[a]=[...new Set([...(hubUrgentDone[a]||[]),...o[a].filter(x=>typeof x==='string')])].slice(-50); } } }catch(e){} }
+}
+// raw (optional): {key: value} just read from the server (pull to refresh) — used instead of storageGet
+async function loadHub(raw){
+  const g=async k=>{ if(raw&&k in raw){ const v=raw[k]; if(v!=null){ _mem[k]=v; try{ localStorage.setItem('planner_'+k,v); }catch(e){} } return v; } return storageGet(k); };
+  for(const k of ['hubInbox','hubAgents','urgentDone']) hubParse(k, await g(k));
   hubScrubUrgent();
-  await apLoadIndex();
+  await apLoadIndex(raw&&'agentPagesIndex' in raw?raw.agentPagesIndex:undefined);
   _hubLoaded=true;
 }
 const saveHubInbox=()=>storageSet('hubInbox',JSON.stringify(hubInbox));
@@ -8499,7 +8516,7 @@ async function hubCancelOrder(id){
    persistence; the bridge on his PC reads it back. These docs skip the localStorage cache (pages are big). */
 const AP_MAX_KB=900, AP_DOC_MAX=256*1024, AP_MAP_MAX=900*1024;
 let apIndex={}, apCur=null;
-async function apLoadIndex(){ try{ const v=await storageGet('agentPagesIndex'); const o=v?JSON.parse(v):{}; apIndex=(o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ apIndex={}; } }
+async function apLoadIndex(rawV){ try{ const v=rawV!==undefined?rawV:await storageGet('agentPagesIndex'); const o=v?JSON.parse(v):{}; apIndex=(o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ apIndex={}; } }
 async function apDocGet(key){
   if(currentUser&&fbDb){ try{
     const ref=fsDataRef(key), cache=()=>ref.get({source:'cache'}).catch(()=>null); let d=null;
@@ -8715,9 +8732,89 @@ window.addEventListener('message', ev=>{ const f=hubIslandEl(); if(!f||ev.source
 function hubIslandPause(on){ const f=hubIslandEl(); let w=null; try{ w=f&&f.getAttribute('src')&&f.contentWindow; if(!w||typeof w.requestAnimationFrame!=='function') return; }catch(e){ return; }
   if(!w.__rafOrig){ w.__rafOrig=w.requestAnimationFrame.bind(w); w.__rafQ=[]; w.requestAnimationFrame=cb=>{ if(w.__hqPaused){ w.__rafQ.push(cb); return 0; } return w.__rafOrig(cb); }; }
   w.__hqPaused=!!on; if(!on){ w.__rafQ.splice(0).forEach(cb=>w.__rafOrig(cb)); } }
+/* ================= ↻ PULL TO REFRESH (v1.106.0) =================
+   His iPhone/iPad kept an old HQ (hq.html?v= was cache-first in the SW), old boards and old 🙋 (slow phone reads fell back to
+   the local copy for 20 s). Pull down at the top of any page (or ↻ in the HQ header):
+   a) a newer build is live → update the SW and reload into it; b) re-read the hub docs (+ profile, today, the open agent page)
+   straight from the server; c) reload the HQ frame past every cache and re-feed it; d) sit fish whose task is done, redraw. */
+let _ptrBusy=false;
+function ptrEl(){ let el=document.getElementById('ptr'); if(!el){ el=document.createElement('div'); el.id='ptr'; el.className='ptr'; el.setAttribute('data-testid','ptr'); el.setAttribute('role','status'); el.innerHTML='<span class="ptr-sp" aria-hidden="true"></span><b></b>'; document.body.appendChild(el); } return el; }
+function ptrShow(mode,dist){ const el=ptrEl(), ar=LANG==='ar', b=el.querySelector('b');
+  el.classList.toggle('busy',mode==='busy'); el.classList.toggle('drag',mode==='drag'||mode==='ready');
+  b.textContent=mode==='busy'?(ar?'يحدّث…':'Refreshing…'):mode==='ready'?(ar?'اترك للتحديث ↻':'Release to refresh ↻'):(ar?'اسحب للتحديث ↓':'Pull to refresh ↓');
+  el.style.opacity='1'; el.style.transform=`translate(-50%,${mode==='busy'?14:Math.round(dist-50)}px)`; }
+function ptrHide(){ const el=document.getElementById('ptr'); if(!el) return; el.classList.remove('busy','drag'); el.style.opacity='0'; el.style.transform='translate(-50%,-70px)'; }
+function fetchNoStore(url,ms){ const ac=typeof AbortController==='function'?new AbortController():null, t=setTimeout(()=>{ try{ ac&&ac.abort(); }catch(e){} },ms);
+  return fetch(url,{cache:'no-store',signal:ac?ac.signal:undefined}).finally(()=>clearTimeout(t)); }
+// a) newer build live → let the new SW take over, then reload into it (true = reloading)
+async function ptrNewBuild(){
+  if(!/^https?:$/.test(location.protocol)) return false;
+  try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration('./'); if(reg) await Promise.race([reg.update(),new Promise(r=>setTimeout(r,3000))]).catch(()=>{}); }catch(e){}
+  let live=''; try{ const r=await fetchNoStore('./index.html?nc='+Date.now(),6000); if(r.ok){ const m=(await r.text()).match(/const APP_VERSION='(v[0-9.]+)'/); live=m?m[1]:''; } }catch(e){ return false; }
+  if(!live||live===APP_VERSION) return false;
+  await new Promise(res=>{ let d=0; const fin=()=>{ if(!d){ d=1; res(); } }; try{ navigator.serviceWorker&&navigator.serviceWorker.addEventListener('controllerchange',fin,{once:true}); }catch(e){} setTimeout(fin,1500); });
+  location.reload(); return true;
+}
+function fsServerVal(key,ms){ return Promise.race([fsDataRef(key).get({source:'server'}),new Promise((_,r)=>setTimeout(()=>r(new Error('slow')),ms||8000))])
+  .then(d=>d.exists&&typeof d.data().value==='string'?d.data().value:null); }
+// c) reload the HQ frame past every cache, re-feed it once it's up
+function hqReload(){ const f=hubIslandEl(); if(!f||!f.getAttribute('src')) return; const base=f.dataset.src||'hq.html';
+  if(currentPanelName!=='hub'){ f.dataset.stale='1'; return; } // a hidden frame has no size (the palace can't draw at 0×0) — reload it when «المقر» opens
+  delete f.dataset.stale; f.dataset.ready=''; _hubFeedLast='';
+  f.addEventListener('load',()=>setTimeout(()=>{ try{ hubIslandPause(currentPanelName!=='hub'); }catch(e){} if(!f.dataset.ready){ f.dataset.ready='1'; } hubFeed(true); },400),{once:true});
+  f.setAttribute('src', base+(base.includes('?')?'&':'?')+'r='+Date.now()); }
+function ptrRerender(){ const id=currentPanelName;
+  try{ if(id==='hub') renderHubGrid(); else if(id==='hubagent') renderHubAgent(); else if(id==='agentpage') apUrgBar();
+    else if(id==='home') refreshHome(); else if(id==='today') renderTodoSection(); else if(id==='habits') renderHabits(); else if(id==='quests'&&typeof renderQuests==='function') renderQuests(); }catch(e){} }
+async function pullRefresh(){
+  if(_ptrBusy) return; _ptrBusy=true; ptrShow('busy'); const btn=document.getElementById('hubRefreshBtn'); if(btn){ btn.disabled=true; btn.classList.add('busy'); }
+  const ar=LANG==='ar';
+  try{
+    if(await ptrNewBuild()) return;
+    _netSlowUntil=0; let ok=navigator.onLine!==false;
+    if(ok&&currentUser&&fbDb){
+      const keys=PUB?[]:['hubAgents','hubInbox','urgentDone','agentPagesIndex'], raw={};
+      const res=await Promise.all(keys.map(k=>fsServerVal(k).then(v=>{ raw[k]=v; return 1; },()=>0)));
+      if(res.every(Boolean)){ if(keys.length) await loadHub(raw); } else ok=false;
+      // the rest of the site: a server read refreshes the local copy and wakes the live listeners (profile, today)
+      const more=[fsDataRef('profile').get({source:'server'})]; try{ more.push(fsDataRef(trackKeyOfDate(new Date())).get({source:'server'})); }catch(e){}
+      if(apCur&&apCur.k) more.push(fsDataRef('agentPageDb_'+apCur.k).get({source:'server'}));
+      const r2=await Promise.all(more.map(pr=>Promise.race([pr,new Promise((_,r)=>setTimeout(()=>r(0),8000))]).then(()=>1,()=>0)));
+      if(!r2.every(Boolean)) ok=false; else _pStale=false;
+    }
+    hqReload();
+    try{ hubScrubUrgent(); apAutoSit(); hubFeed(); }catch(e){}
+    ptrRerender();
+    showToast(ok?(ar?'✓ تحدّث':'✓ Up to date'):(ar?'ما فيه نت، هذي آخر نسخة':'No connection — this is the last copy'), ok?'success':'error');
+  }catch(e){ showToast(ar?'ما فيه نت، هذي آخر نسخة':'No connection — this is the last copy','error'); }
+  finally{ _ptrBusy=false; ptrHide(); if(btn){ btn.disabled=false; btn.classList.remove('busy'); } }
+}
+// the gesture: one finger pulled down from the very top of the page (not inside a field, sheet, or the HQ/agent frames)
+(function(){ let y0=null,x0=0,dy=0,on=false; const TH=80;
+  const blocked=t=>!!(t&&t.closest&&t.closest('input,textarea,select,[contenteditable="true"],.sheet,#overlay,.confirm-modal,iframe'))||!!document.querySelector('#overlay.open,.confirm-modal.open,.sheet:not(.hidden)')||!document.getElementById('mainWrap')||document.getElementById('mainWrap').classList.contains('hidden');
+  addEventListener('touchstart',e=>{ y0=null; if(_ptrBusy||e.touches.length!==1||(window.scrollY||document.documentElement.scrollTop)>0||blocked(e.target)) return; y0=e.touches[0].clientY; x0=e.touches[0].clientX; dy=0; on=false; },{passive:true});
+  addEventListener('touchmove',e=>{ if(y0==null) return; const t=e.touches[0]; dy=t.clientY-y0; const dx=Math.abs(t.clientX-x0);
+    if(!on){ if(dy>10&&dy>dx*1.5&&(window.scrollY||0)<=0) on=true; else { if(dy<-4||dx>14) y0=null; return; } }
+    if(e.cancelable) e.preventDefault(); const d=Math.min(dy*.6,96); ptrShow(dy>=TH?'ready':'drag',d); },{passive:false});
+  addEventListener('touchend',()=>{ if(y0==null) return; const go=on&&dy>=TH; y0=null; on=false; if(go) pullRefresh(); else ptrHide(); },{passive:true});
+  addEventListener('touchcancel',()=>{ y0=null; on=false; if(!_ptrBusy) ptrHide(); },{passive:true});
+})();
+document.getElementById('hubRefreshBtn').addEventListener('click',()=>pullRefresh());
+// live while the HQ is open: a board / 🙋 written on the PC shows here without a refresh
+let _hubUnsubs=[];
+function hubWatch(on){
+  if(!on){ _hubUnsubs.splice(0).forEach(u=>{ try{ u(); }catch(e){} }); return; }
+  if(_hubUnsubs.length||PUB||!currentUser||!fbDb) return;
+  ['hubAgents','urgentDone'].forEach(k=>{ try{ _hubUnsubs.push(fsDataRef(k).onSnapshot(sn=>{
+    if(!sn.exists||sn.metadata.hasPendingWrites) return; const v=sn.data().value; if(typeof v!=='string') return;
+    _mem[k]=v; try{ localStorage.setItem('planner_'+k,v); }catch(e){}
+    hubParse(k,v); hubScrubUrgent(); hubFeed();
+    try{ if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='agentpage'){ apUrgBar(); apAutoSit(); } }catch(e){}
+  },()=>{})); }catch(e){} });
+}
 async function renderHub(){
   const qt=document.getElementById('hubQuickText'); if(qt) qt.placeholder=t('hub_order_ph');
-  const isl=hubIslandEl(); if(isl&&!isl.getAttribute('src')) isl.setAttribute('src', isl.dataset.src);
+  const isl=hubIslandEl(); if(isl&&!isl.getAttribute('src')) isl.setAttribute('src', isl.dataset.src); else if(isl&&isl.dataset.stale) hqReload();
   renderHubChips(); renderHubGrid();
   await loadHub(); renderHubGrid();
 }

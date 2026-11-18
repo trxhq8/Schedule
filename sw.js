@@ -8,7 +8,7 @@
 
    BUMP APP_VERSION every time you deploy a real update — it changes the cache
    name, which makes the old cache get deleted automatically on activate. */
-const APP_VERSION = 'v1.105.0';
+const APP_VERSION = 'v1.106.0';
 const CACHE_NAME = `my-planner-${APP_VERSION}`;
 const STATIC_CACHE = 'my-planner-static-v1'; // libraries/fonts with versioned URLs — kept across deploys
 const PRECACHE_URLS = [
@@ -67,7 +67,10 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   let url; try { url = new URL(req.url); } catch (e) { return; }
-  // versioned data files (?v=hash) never change under the same URL: cache first
+  // pages (hq.html, any .html — the HQ frame, agent pages): network first, never cache first — even with ?v= (v1.106.0: an
+  // iPhone kept an old hq.html?v=16 forever). Its cached copy is only an offline fallback, and never the planner's index.html.
+  if (url.origin === self.location.origin && /\.html?$/i.test(url.pathname) && !/\/index\.html?$/i.test(url.pathname)) { event.respondWith(networkFirstPage(req, 5000)); return; }
+  // versioned data files (?v=hash, e.g. planner-data.js) never change under the same URL: cache first
   if (url.origin === self.location.origin && url.searchParams.has('v')) { event.respondWith(cacheFirst(req)); return; }
   if (url.origin === self.location.origin) { event.respondWith(networkFirst(req, 3000)); return; }
   if (STATIC_HOSTS.includes(url.hostname)) { event.respondWith(cacheFirst(req)); return; }
@@ -77,6 +80,13 @@ async function networkFirst(req, ms) {
   const net = fetch(req).then((r) => { if (r && r.ok) cache.put(req, r.clone()).catch(()=>{}); return r; });
   const cached = (await cache.match(req, { ignoreSearch: req.mode === 'navigate' })) || (req.mode === 'navigate' ? await cache.match('./index.html') : null);
   if (!cached) return net.catch(() => caches.match('./index.html'));
+  return Promise.race([net, new Promise((res) => setTimeout(() => res(cached), ms))]).catch(() => cached);
+}
+async function networkFirstPage(req, ms) {
+  const cache = await caches.open(CACHE_NAME);
+  const net = fetch(req, { cache: 'no-cache' }).then((r) => { if (r && r.ok) cache.put(req, r.clone()).catch(()=>{}); return r; });
+  const cached = await cache.match(req) || await cache.match(req, { ignoreSearch: true });
+  if (!cached) return net;
   return Promise.race([net, new Promise((res) => setTimeout(() => res(cached), ms))]).catch(() => cached);
 }
 async function cacheFirst(req) {
