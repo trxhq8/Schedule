@@ -3404,7 +3404,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.106.0';
+const APP_VERSION='v1.107.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8572,7 +8572,19 @@ function apShim(U){
     me:function(){ return R(JSON.parse(JSON.stringify(me))); }, id:function(){ return R(me.id); }, name:function(){ return R(me.name); },
     avatarUrl:function(){ return R(me.avatarUrl); }, email:function(){ return R(null); }, search:function(){ return R([]); },
     profiles:function(ids){ ids=typeof ids==='string'?[ids]:(ids||[]); var o={}; for(var i=0;i<ids.length;i++){ var x=ids[i]; o[x]={id:x, name:x===me.id?me.name:'', avatarUrl:me.avatarUrl, color:'#5b7fa6', email:null, isMe:x===me.id, guest:false}; } return R(o); } };
-  window.claude={ use:function(n){ return R(n==='db'?db:n==='user'?user:null); } };
+  var dictNs=null;
+  if(U.dict){ var dst='idle', dh={partial:[],final:[],state:[]};
+    var don=function(t,f){ if(typeof f!=='function') throw new TypeError('dictation: handler must be a function'); dh[t].push(f); return function(){ var i=dh[t].indexOf(f); if(i>=0) dh[t].splice(i,1); }; };
+    addEventListener('message',function(e){ if(e.source!==P) return; var m=e.data; if(!m||m.__ap!==1||!m.dict) return; var d=m.dict;
+      if(d.t==='state') dst=d.state;
+      var ev=d.t==='state'?(d.reason?{state:d.state,reason:d.reason}:{state:d.state}):{text:String(d.text||'')};
+      (dh[d.t]||[]).slice().forEach(function(f){ try{ f(ev); }catch(x){ report(x); } }); });
+    dictNs={ start:function(o){ var a={}; if(o&&o.language!=null) a.language=String(o.language); return call('dictStart',a).then(function(){}); },
+      stop:function(){ return call('dictStop',{}).then(function(){}); },
+      active:function(){ return dst!=='idle'; },
+      onPartial:function(f){ return don('partial',f); }, onFinal:function(f){ return don('final',f); },
+      onState:function(f){ var u=don('state',f); if(dst!=='idle'){ var s0=dst; setTimeout(function(){ if(dh.state.indexOf(f)>=0) f({state:s0}); },0); } return u; } }; }
+  window.claude={ use:function(n){ return R(n==='db'?db:n==='user'?user:n==='dictation'?dictNs:null); } };
 }
 function apWrap(html,U){
   const u=JSON.stringify(U).replace(/</g,'\\u003c');
@@ -8635,6 +8647,45 @@ function apWrite(path,fn){
   const was=apCur.M[path]; apCur.M[path]={data:next, version:((cur&&cur.version)||0)+1, updatedAt:new Date().toISOString()};
   if(JSON.stringify(apCur.M).length>AP_MAP_MAX){ if(was) apCur.M[path]=was; else delete apCur.M[path]; throw apErr('quota_exceeded','this page is out of room'); }
   apSave(); apNotify(); }
+/* 🎙️ dictation for agent pages (v1.107.0, Shaari's voice button): the sandboxed page can't open the microphone, so the planner
+   listens with the browser's own speech recognition and hands the page only the words (same API as claude.ai's dictation).
+   No speech recognition in this browser → claude.use('dictation') is null and the page keeps its own fallback. */
+const AP_SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+const AP_SR_ERR={'not-allowed':'not_granted','service-not-allowed':'not_granted','audio-capture':'not_granted','language-not-supported':'unavailable','network':'upstream_error','bad-grammar':'upstream_error','aborted':'stopped'};
+let apDict=null, apDictSaid=false;
+function apDictLang(l){ l=typeof l==='string'?l.trim():''; if(!l) return LANG==='ar'?'ar-KW':'en-US';
+  if(!/^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i.test(l)) return null; return /^ar$/i.test(l)?'ar-KW':/^en$/i.test(l)?'en-US':l; }
+function apDictEmit(D,d){ if(apCur&&apCur.token===D.tok) apPost({__ap:1,dict:d}); }
+function apDictSet(D,state,reason){ D.state=state; apDictEmit(D,reason?{t:'state',state,reason}:{t:'state',state}); }
+function apDictStart(m,reply){
+  if(!AP_SR) return reply(false,apErr('unavailable','dictation is not available here'));
+  const lang=apDictLang(m.language); if(!lang) return reply(false,apErr('invalid_argument','language must look like "ar" or "ar-KW"'));
+  const C=apDict;
+  if(C&&C.state==='listening') return reply(true,null);
+  if(C&&C.state==='starting'){ C.startWaits.push(reply); return; }
+  if(C&&C.state==='finishing'){ C.after=()=>apDictStart(m,reply); return; }
+  let rec; try{ rec=new AP_SR(); rec.lang=lang; rec.continuous=true; rec.interimResults=true; }catch(e){ return reply(false,apErr('unavailable','dictation is not available here')); }
+  const D=apDict={rec, tok:apCur.token, state:'idle', startWaits:[reply], stopWaits:[], reason:'', stopReason:''};
+  rec.onstart=()=>{ if(D!==apDict) return; apDictSet(D,'listening'); D.startWaits.splice(0).forEach(r=>r(true,null)); };
+  rec.onresult=ev=>{ if(D!==apDict) return; let live='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){ const r=ev.results[i], t=String((r[0]&&r[0].transcript)||'');
+      if(r.isFinal){ const x=t.trim(); if(x){ apDictEmit(D,{t:'final',text:(apDictSaid?' ':'')+x}); apDictSaid=true; } } else live+=t; }
+    apDictEmit(D,{t:'partial',text:live.trim()}); };
+  rec.onerror=ev=>{ if(D!==apDict) return; const e=ev&&ev.error; if(e==='no-speech') return; D.reason=AP_SR_ERR[e]||'upstream_error'; };
+  rec.onend=()=>{ if(D!==apDict) return; apDict=null;
+    const reason=D.stopReason||D.reason||'stopped';
+    apDictEmit(D,{t:'partial',text:''});
+    D.startWaits.splice(0).forEach(r=>r(false,apErr(reason,'dictation ended before it was listening')));
+    apDictSet(D,'idle',reason); D.stopWaits.splice(0).forEach(r=>r(true,null));
+    if(D.after) D.after(); };
+  apDictSet(D,'starting');
+  try{ rec.start(); }catch(e){ D.reason='upstream_error'; rec.onend(); }
+}
+function apDictStop(reply){ const D=apDict; if(!D||D.state==='idle') return reply(true,null);
+  D.stopWaits.push(reply); if(D.state==='finishing') return; D.stopReason=D.stopReason||'stopped'; apDictSet(D,'finishing');
+  try{ D.rec.stop(); }catch(e){ try{ D.rec.abort(); }catch(x){} } }
+function apDictKill(reason){ const D=apDict; if(!D) return; D.stopReason=reason; try{ D.rec.abort(); }catch(e){}
+  if(apDict===D) setTimeout(()=>{ if(apDict===D) D.rec.onend(); },1500); } // a browser that never fires «end» after abort
 function apHandle(m){
   const reply=(ok,v)=>apPost(ok?{__ap:1,id:m.id,ok:true,res:v}:{__ap:1,id:m.id,ok:false,err:v&&v.code?v:apErr('invalid_argument',String(v))});
   try{
@@ -8652,14 +8703,16 @@ function apHandle(m){
         if(apCur.subs.size>=64){ apPost({__ap:1,sid:m.sid,snap:{error:apErr('resource_exhausted','too many subscriptions')}}); return; }
         const sb={kind:m.kind==='doc'?'doc':'query', path:m.path, q:m.q||{}}; apCur.subs.set(m.sid,sb); apPush(m.sid,sb); return; }
       case 'unsub': apCur.subs.delete(m.sid); return;
+      case 'dictStart': return apDictStart(m,reply);
+      case 'dictStop': return apDictStop(reply);
     }
     reply(false,apErr('invalid_argument','unknown call'));
   }catch(e){ reply(false,e); }
 }
 window.addEventListener('message',ev=>{ if(!apCur||!apCur.frame||ev.source!==apCur.frame.contentWindow) return; const m=ev.data; if(!m||m.__ap!==1||typeof m.op!=='string') return; apHandle(m); });
 window.addEventListener('pagehide',()=>apFlush());
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') apFlush(); });
-function apTeardown(){ if(!apCur) return; apFlush(); try{ apCur.unsubFs&&apCur.unsubFs(); }catch(e){} if(apCur.frame) apCur.frame.remove(); apCur=null; }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'){ apFlush(); apDictKill('hidden'); } });
+function apTeardown(){ if(!apCur) return; apFlush(); apDictKill('hidden'); apDictSaid=false; try{ apCur.unsubFs&&apCur.unsubFs(); }catch(e){} if(apCur.frame) apCur.frame.remove(); apCur=null; }
 async function apRender(){
   apTeardown();
   const k=hubCurAgent, ar=LANG==='ar', body=document.getElementById('apBody'), token={};
@@ -8679,7 +8732,7 @@ async function apRender(){
   const f=document.createElement('iframe');
   f.setAttribute('sandbox','allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals');
   f.setAttribute('referrerpolicy','no-referrer'); f.setAttribute('data-testid','ap-frame'); f.title=questAgentName(k);
-  f.srcdoc=apWrap(page.html,{id:uid, name:(P&&P.publicProfile&&P.publicProfile.displayName)||'', av:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#5b7fa6"/></svg>')});
+  f.srcdoc=apWrap(page.html,{id:uid, dict:!!AP_SR, name:(P&&P.publicProfile&&P.publicProfile.displayName)||'', av:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#5b7fa6"/></svg>')});
   body.innerHTML=''; apCur.frame=f; body.appendChild(f);
   // his other devices / the bridge: follow the stored copy while nothing local is waiting to save
   if(currentUser&&fbDb){ try{ apCur.unsubFs=fsDataRef('agentPageDb_'+k).onSnapshot(s=>{
