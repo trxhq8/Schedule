@@ -3422,7 +3422,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.109.0';
+const APP_VERSION='v1.109.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3458,13 +3458,16 @@ window.addEventListener('load',()=>setTimeout(()=>checkNewVersion(true),8000));
 const _mem={};
 function fsDataRef(key){ return fbDb.collection('users').doc(currentUser.uid).collection('data').doc(key); }
 let _netSlowUntil=0;
+let _cacheSlowUntil=0;
 async function storageGet(key){
   if(currentUser&&fbDb){
     try{
-      const ref=fsDataRef(key), cacheGet=()=>ref.get({source:'cache'}).catch(()=>null);
+      // v1.109.1: the browser's database copy can hang too (a stuck storage lock — iPhone/several tabs). Never wait on it
+      // more than 1.5s; once it hung, skip it for 20s and use this device's plain copy (localStorage) below.
+      const ref=fsDataRef(key), cacheGet=()=>Date.now()<_cacheSlowUntil?Promise.resolve(null):Promise.race([ref.get({source:'cache'}),new Promise(r=>setTimeout(()=>{ _cacheSlowUntil=Date.now()+20000; r(null); },1500))]).catch(()=>null);
       let doc=null;
       if(navigator.onLine===false||Date.now()<_netSlowUntil) doc=await cacheGet();
-      if(!doc){
+      if(!doc&&!(Date.now()<_netSlowUntil&&Date.now()<_cacheSlowUntil)){
         doc=await Promise.race([ref.get().then(d=>{ _netSlowUntil=0; return d; }), new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),2500))])
           .catch(async()=>{ _netSlowUntil=Date.now()+20000; return await cacheGet(); });
       }
@@ -3559,7 +3562,7 @@ async function profileMergeCommits(value,baseS,useDraft){
    list at that moment and applies only what this tab changed (cmMerge). If the server can't be reached, nothing is
    written to it — the change stays on this device (marked «dirty», survives a reload) and is merged the same way as
    soon as the server answers again. */
-var _pDirty=null, _pInflight=0, _pRetryT=0;
+var _pDirty=null, _pInflight=0, _pRetryT=0, _pSeq=0;
 var P_DIRTY_KEY='planner_profile_dirty';
 try{ const d=JSON.parse(localStorage.getItem(P_DIRTY_KEY)||'null'); if(d&&d.uid) _pDirty=d; }catch(e){}
 function pDirtyMine(){ return !!(_pDirty&&currentUser&&_pDirty.uid===currentUser.uid); }
@@ -3588,7 +3591,7 @@ const P_SNAP_KEEP=7;
 async function pSnapDaily(prev){
   if(!prev||!currentUser||!fbDb) return; const n0=new Date(), day=isoDateStr(n0.getFullYear(),n0.getMonth(),n0.getDate()), lk='planner_psnap_'+currentUser.uid;
   try{ if(localStorage.getItem(lk)===day) return; }catch(e){}
-  try{ const idx=fsDataRef('profileSnaps'), d=await idx.get();
+  try{ const idx=fsDataRef('profileSnaps'), d=await Promise.race([idx.get(),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),8000))]);
     let days=(d.exists&&Array.isArray(d.data().days))?d.data().days.slice():[];
     if(!days.includes(day)){
       await fsDataRef('profileSnap_'+day).set({value:prev, at:new Date().toISOString()});
@@ -3598,9 +3601,9 @@ async function pSnapDaily(prev){
     try{ localStorage.setItem(lk,day); }catch(e){}
   }catch(e){}
 }
-async function profileSave(value,baseS,useDraft){
+async function profileSave(value,baseS,useDraft,seq){
   try{ JSON.parse(value); }catch(e){ return; }
-  _mem.profile=value; try{ localStorage.setItem('planner_profile',value); }catch(e){} // this device first, always
+  const latest=()=>seq==null||seq===_pSeq; // a newer save is queued → its copy is the one this device keeps
   if(pDirtyMine()) baseS=_pDirty.base; // still unsynced: this tab's changes are counted from the copy it had back then
   if(navigator.onLine===false){ pMarkDirty(baseS); return; }
   const ref=fsDataRef('profile'); _pInflight++;
@@ -3612,7 +3615,7 @@ async function profileSave(value,baseS,useDraft){
   finally{ _pInflight=Math.max(0,_pInflight-1); }
   if(!r){ pMarkDirty(baseS); return; } // not confirmed by the server → never treated as saved; retried with the same base
   pClearDirty(); _pStale=false; pSnapDaily(r.prev);
-  _mem.profile=r.v; try{ localStorage.setItem('planner_profile',r.v); }catch(e){}
+  if(latest()){ _mem.profile=r.v; try{ localStorage.setItem('planner_profile',r.v); }catch(e){} }
   if(r.changed){ P.todoSetup={...(P.todoSetup||{}),commitments:r.out};
     if(useDraft||!cmDraftLocked()){ P._commitments=r.out.map(c=>({...c,days:[...(c.days||[])]})); _cmDraftBase=r.outS;
       try{ if(document.getElementById('commitListChips')) renderCommitList(); }catch(e){} } }
@@ -3622,8 +3625,9 @@ async function profileSave(value,baseS,useDraft){
 async function storageSet(key,value){
   if(key==='profile'&&currentUser&&fbDb){ // one at a time, in order, each merged with the server's commitments inside a transaction
     const useDraft=_cmUseDraftBase&&_cmDraftBase!=null, baseS=useDraft?_cmDraftBase:_cmBase; _cmUseDraftBase=false; // the copy this save started from
-    const run=_pQ.then(()=>profileSave(value,baseS,useDraft));
-    _pQ=run.catch(()=>{}); return run;
+    const seq=++_pSeq; _mem.profile=value; try{ localStorage.setItem('planner_profile',value); }catch(e){}
+    const run=_pQ.then(()=>profileSave(value,baseS,useDraft,seq));
+    _pQ=run.catch(()=>{}); return Promise.resolve(); // v1.109.1: callers (boot, renders) only need it saved on this device
   }
   _mem[key]=value;
   try{ localStorage.setItem('planner_'+key,value); }catch(e){}
@@ -3693,10 +3697,11 @@ async function migrateLocalDataToCloud(uid){
      nice-to-have, never allowed to block getting into the app. */
   try{
     const localProfile=localStorage.getItem('planner_profile');
-    if(!localProfile) return;
+    if(!localProfile||localStorage.getItem('planner_cloudok_'+uid)) return; // v1.109.1: this account's cloud copy was already seen here
     const dataCol=fbDb.collection('users').doc(uid).collection('data');
-    const existing=await dataCol.doc('profile').get().catch(()=>null);
-    if(existing&&existing.exists) return; // account already has cloud data — never overwrite
+    const existing=await Promise.race([dataCol.doc('profile').get(),new Promise(r=>setTimeout(()=>r('slow'),3000))]).catch(()=>null);
+    if(existing==='slow'||!existing) return; // can't tell → never migrate, never block sign-in (v1.109.1)
+    if(existing.exists){ try{ localStorage.setItem('planner_cloudok_'+uid,'1'); }catch(e){} return; } // account already has cloud data — never overwrite
     /* generic — every planner_-prefixed key migrates automatically, so new
        key patterns (like Collections) never need this function touched again */
     for(let i=0;i<localStorage.length;i++){
@@ -4058,9 +4063,12 @@ function removeBootSplash(){
   setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),400); },wait);
 }
 setTimeout(removeBootSplash,12000);
+let _authFired=false;
+setTimeout(()=>{ if(_authFired||!fbAuth) return; try{ applyI18n(); }catch(e){} // v1.109.1: the card was blank while sign-in hung
+  showAuthError(LANG==='ar'?'⏳ الدخول يتأخر… إذا ما دخل، سكّر التطبيق كامل وافتحه من جديد':'⏳ Signing in is slow… if it doesn’t open, fully close the app and open it again'); },12500);
 if(fbAuth){
   fbAuth.getRedirectResult().catch(e=>{ console.error('Redirect sign-in result error:',e.code,e.message); showAuthError(signInErrorMessage(e)); });
-  fbAuth.onAuthStateChanged(async(user)=>{
+  fbAuth.onAuthStateChanged(async(user)=>{ _authFired=true;
     if(user){
       currentUser=user;
       await migrateLocalDataToCloud(user.uid);
@@ -11686,7 +11694,7 @@ async function incrementXpCoins(deltaXp,deltaCoins){
 async function reconcileXpCoinsFromFirestore(){
   if(!fbDb||!currentUser) return;
   try{
-    const doc=await fsDataRef('profile').get();
+    const doc=await Promise.race([fsDataRef('profile').get(),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),2500))]); // boot never waits on a dead line
     const data=doc.exists?doc.data():{};
     if(data.xp===undefined||data.coins===undefined){
       await fsDataRef('profile').set({xp:P.xp||0,coins:P.coins||0},{merge:true});
@@ -11817,7 +11825,7 @@ function mergeCosmeticsFromServer(data,atBoot){
 async function refreshAuthoritativeProfileFields(){
   if(!fbDb||!currentUser) return;
   try{
-    const doc=await fsDataRef('profile').get();
+    const doc=await Promise.race([fsDataRef('profile').get(),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),5000))]);
     if(!doc.exists) return;
     const data=doc.data();
     if(data.xp!==undefined){ P.xp=data.xp||0; lastSeenXp=P.xp; lastSeenLevel=levelFromXP(P.xp); } // not "earned now" — no +XP pill for another device's XP
@@ -14847,7 +14855,7 @@ function watchYesterdayTrack(key){
 async function xpClaim(id){
   P.xpClaims=P.xpClaims||{};
   if(P.xpClaims[id]) return false;
-  if(fbDb&&currentUser){ try{ const d=await fsDataRef('profile').get(); const c=(d.exists&&d.data().xpClaims)||{}; if(c[id]){ P.xpClaims[id]=1; return false; } }catch(e){} }
+  if(fbDb&&currentUser){ try{ const d=await Promise.race([fsDataRef('profile').get(),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),4000))]); const c=(d.exists&&d.data().xpClaims)||{}; if(c[id]){ P.xpClaims[id]=1; return false; } }catch(e){} }
   P.xpClaims[id]=1;
   const ids=Object.keys(P.xpClaims); if(ids.length>300) ids.slice(0,ids.length-300).forEach(k=>delete P.xpClaims[k]);
   if(fbDb&&currentUser){ try{ fsDataRef('profile').set({xpClaims:{[id]:1}},{merge:true}).catch(()=>{}); }catch(e){} }
