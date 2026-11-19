@@ -3422,7 +3422,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.108.0';
+const APP_VERSION='v1.109.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3485,7 +3485,7 @@ let _syncPending=0, _syncHideT=0;
 function syncTrack(pr){ _syncPending++; syncDot(); pr.catch(()=>{}).finally(()=>{ _syncPending=Math.max(0,_syncPending-1); syncDot(); }); }
 function syncDot(){
   const el=document.getElementById('syncDot'); if(!el) return; const ar=LANG==='ar';
-  const st=!navigator.onLine?'wait':(_syncPending>0?'busy':'ok');
+  const st=(!navigator.onLine||(typeof pDirtyMine==='function'&&pDirtyMine()&&!_syncPending))?'wait':(_syncPending>0?'busy':'ok');
   el.dataset.st=st;
   const txt=st==='wait'?(ar?'ينتظر النت — محفوظ بجهازك':'Offline — kept on this device'):st==='busy'?(ar?'يحفظ…':'Saving…'):(ar?'محفوظ ✓':'Saved ✓');
   el.querySelector('b').textContent=txt; el.title=txt;
@@ -3499,7 +3499,7 @@ window.addEventListener('online',syncDot); window.addEventListener('offline',syn
    (kept live by watchProfile; re-read from the server first after the tab was asleep/offline), works out what
    THIS tab changed since the copy it started from (added / removed / edited items), and applies only that on top
    of the server's list. Items the other device added or edited stay. Same item edited on both: this save wins.
-   Offline saves still queue as before (no server to compare with). */
+   v1.109.0: the merge now runs inside a transaction (profileSave below); offline / unreachable saves wait on this device. */
 let _cmRemoteChanged=0, _cmBase=null, _cmServer=null, _cmDraftBase=null, _cmUseDraftBase=false, _pStale=true, _pQ=Promise.resolve();
 function cmCanon(c){ const o={hard:true,...(c||{})}; Object.keys(o).forEach(k=>{ if(o[k]===undefined||(k==='prayerAt'&&!o[k])) delete o[k]; });
   return JSON.stringify(Object.keys(o).sort().reduce((a,k)=>(a[k]=o[k],a),{})); }
@@ -3553,11 +3553,76 @@ async function profileMergeCommits(value,baseS,useDraft){
   _cmBase=outS; _cmServer=outS;
   return value;
 }
+/* v1.109.0 — no blind overwrite, ever. The commitments of another device/tab were lost when this tab saved the profile
+   from an old copy: the 2.5s «is the server newer?» check timed out on a weak line (or the tab was offline / opened from
+   cache) and the save went ahead as if it knew. Now every profile save is a Firestore TRANSACTION: it reads the server's
+   list at that moment and applies only what this tab changed (cmMerge). If the server can't be reached, nothing is
+   written to it — the change stays on this device (marked «dirty», survives a reload) and is merged the same way as
+   soon as the server answers again. */
+var _pDirty=null, _pInflight=0, _pRetryT=0;
+var P_DIRTY_KEY='planner_profile_dirty';
+try{ const d=JSON.parse(localStorage.getItem(P_DIRTY_KEY)||'null'); if(d&&d.uid) _pDirty=d; }catch(e){}
+function pDirtyMine(){ return !!(_pDirty&&currentUser&&_pDirty.uid===currentUser.uid); }
+function pMarkDirty(baseS){
+  if(!pDirtyMine()) _pDirty={uid:currentUser.uid, base:baseS, at:Date.now()};
+  try{ localStorage.setItem(P_DIRTY_KEY,JSON.stringify(_pDirty)); }catch(e){}
+  syncDot(); clearTimeout(_pRetryT); _pRetryT=setTimeout(pFlush,20000);
+}
+function pClearDirty(){ _pDirty=null; try{ localStorage.removeItem(P_DIRTY_KEY); }catch(e){} clearTimeout(_pRetryT); syncDot(); }
+function pFlush(){ if(!pDirtyMine()||!fbDb) return; let v=null; try{ v=localStorage.getItem('planner_profile'); }catch(e){}
+  if(!v) v=JSON.stringify(P); storageSet('profile',v); }
+window.addEventListener('online',()=>setTimeout(pFlush,800));
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') setTimeout(pFlush,800); });
+function cmMergeInto(value,baseS,srvS){ // pure: the profile JSON with its commitments merged onto the server's
+  const o=JSON.parse(value);
+  const local=(o.todoSetup&&Array.isArray(o.todoSetup.commitments))?o.todoSetup.commitments:[];
+  let out=local;
+  if(srvS!=null&&baseS!=null&&srvS!==baseS){ const base=JSON.parse(baseS), srv=JSON.parse(srvS); out=cmSame(local,base)?srv:cmMerge(base,local,srv); }
+  const changed=!cmSame(out,local);
+  if(changed){ o.todoSetup={...(o.todoSetup||{}),commitments:out}; o._commitments=out.map(c=>({...c,days:[...(c.days||[])]})); }
+  return {v:changed?JSON.stringify(o):value, out, outS:JSON.stringify(out), changed};
+}
+/* daily safety copy (v1.109.0, Mangsi's ask): the first save of each day keeps the profile AS THE SERVER HAD IT just
+   before that save in data/profileSnap_<YYYY-MM-DD>; the last 7 days are kept (list in data/profileSnaps). */
+const P_SNAP_KEEP=7;
+async function pSnapDaily(prev){
+  if(!prev||!currentUser||!fbDb) return; const n0=new Date(), day=isoDateStr(n0.getFullYear(),n0.getMonth(),n0.getDate()), lk='planner_psnap_'+currentUser.uid;
+  try{ if(localStorage.getItem(lk)===day) return; }catch(e){}
+  try{ const idx=fsDataRef('profileSnaps'), d=await idx.get();
+    let days=(d.exists&&Array.isArray(d.data().days))?d.data().days.slice():[];
+    if(!days.includes(day)){
+      await fsDataRef('profileSnap_'+day).set({value:prev, at:new Date().toISOString()});
+      days=[...days,day].sort(); const drop=days.slice(0,Math.max(0,days.length-P_SNAP_KEEP)); days=days.slice(-P_SNAP_KEEP);
+      await idx.set({days},{merge:true});
+      drop.forEach(x=>{ try{ fsDataRef('profileSnap_'+x).delete().catch(()=>{}); }catch(e){} }); }
+    try{ localStorage.setItem(lk,day); }catch(e){}
+  }catch(e){}
+}
+async function profileSave(value,baseS,useDraft){
+  try{ JSON.parse(value); }catch(e){ return; }
+  _mem.profile=value; try{ localStorage.setItem('planner_profile',value); }catch(e){} // this device first, always
+  if(pDirtyMine()) baseS=_pDirty.base; // still unsynced: this tab's changes are counted from the copy it had back then
+  if(navigator.onLine===false){ pMarkDirty(baseS); return; }
+  const ref=fsDataRef('profile'); _pInflight++;
+  const tx=fbDb.runTransaction(async t=>{ const d=await t.get(ref);
+    const l=d.exists?cmListOf(d.data().value):null, srvS=d.exists&&l?JSON.stringify(l):null;
+    const r=cmMergeInto(value,baseS,srvS); r.prev=d.exists?d.data().value:null; t.set(ref,{value:r.v},{merge:true}); return r; });
+  let r=null;
+  try{ syncTrack(tx); r=await Promise.race([tx,new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),12000))]); }catch(e){}
+  finally{ _pInflight=Math.max(0,_pInflight-1); }
+  if(!r){ pMarkDirty(baseS); return; } // not confirmed by the server → never treated as saved; retried with the same base
+  pClearDirty(); _pStale=false; pSnapDaily(r.prev);
+  _mem.profile=r.v; try{ localStorage.setItem('planner_profile',r.v); }catch(e){}
+  if(r.changed){ P.todoSetup={...(P.todoSetup||{}),commitments:r.out};
+    if(useDraft||!cmDraftLocked()){ P._commitments=r.out.map(c=>({...c,days:[...(c.days||[])]})); _cmDraftBase=r.outS;
+      try{ if(document.getElementById('commitListChips')) renderCommitList(); }catch(e){} } }
+  else if(useDraft||!cmDraftLocked()) _cmDraftBase=r.outS;
+  _cmBase=r.outS; _cmServer=r.outS;
+}
 async function storageSet(key,value){
-  if(key==='profile'&&currentUser&&fbDb){ // one at a time, in order, each merged with the server's commitments
+  if(key==='profile'&&currentUser&&fbDb){ // one at a time, in order, each merged with the server's commitments inside a transaction
     const useDraft=_cmUseDraftBase&&_cmDraftBase!=null, baseS=useDraft?_cmDraftBase:_cmBase; _cmUseDraftBase=false; // the copy this save started from
-    const run=_pQ.then(async()=>{ const v=await profileMergeCommits(value,baseS,useDraft); _mem[key]=v; try{ localStorage.setItem('planner_'+key,v); }catch(e){}
-      try{ syncTrack(fsDataRef(key).set({value:v},{merge:true})); }catch(e){} });
+    const run=_pQ.then(()=>profileSave(value,baseS,useDraft));
     _pQ=run.catch(()=>{}); return run;
   }
   _mem[key]=value;
@@ -3814,10 +3879,13 @@ async function bootApp(){
   await loadWeightLog();
   await loadFoodDraft();
   if(!PUB) loadQuests().catch(()=>{});
+  const dirtyPv=pDirtyMine()?(()=>{ try{ return localStorage.getItem('planner_profile'); }catch(e){ return null; } })():null;
   const pv=await storageGet('profile');
-  if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
+  if(dirtyPv){ try{ P={...P,...JSON.parse(dirtyPv)}; }catch(e){} }
+  else if(pv){ try{ P={...P,...JSON.parse(pv)}; }catch(e){} }
   else{ P.lang=LANG; await storageSet('profile',JSON.stringify(P)); } // a brand-new profile keeps the language picked on the sign-in screen
   { const l=cmListOf(P); if(l){ _cmBase=_cmServer=_cmDraftBase=JSON.stringify(l); P._commitments=l.map(c=>({...c,days:[...(c.days||[])]})); } }
+  if(dirtyPv){ try{ localStorage.setItem('planner_profile',dirtyPv); }catch(e){} _cmBase=_pDirty.base; setTimeout(pFlush,500); } // unsynced edits from last time
   await reconcileXpCoinsFromFirestore();
   watchProfile();
   migrateProgressionFields();
@@ -11645,6 +11713,7 @@ function watchProfile(){
       if(!snap.exists||snap.metadata.hasPendingWrites) return;
       const data=snap.data(); let remote; try{ remote=JSON.parse(data.value); }catch(e){ return; }
       if(!remote||typeof remote!=='object') return;
+      if(pDirtyMine()||_pInflight>0){ if(!snap.metadata.fromCache&&pDirtyMine()) setTimeout(pFlush,300); return; } // our save merges with the server itself
       if(!snap.metadata.fromCache) _pStale=false;
       { const l=cmListOf(remote); if(l){ _cmServer=_cmBase=JSON.stringify(l); } }
       const keepKeys=['_commitments','_commitDays',...SYNCED_PREFS], keep={};
