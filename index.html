@@ -1681,6 +1681,23 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   .coll-mode-btn.active{ background:var(--accent-deep); color:#fff; border-color:var(--heading); }
 
   /* ⚡ what now */
+  /* ⚡ quick check (v1.108.0): one card on top each time he opens the site — what's ticked, what's due and still open */
+  .qc{ position:fixed; z-index:75; top:calc(10px + env(safe-area-inset-top)); left:12px; right:12px; max-width:520px; margin:0 auto; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:18px; box-shadow:0 12px 34px rgba(0,0,0,.22); padding:12px 14px 12px; animation:qcIn .28s ease; max-height:calc(100vh - 40px); overflow:auto; }
+  .qc.out{ animation:qcOut .35s ease forwards; }
+  @keyframes qcIn{ from{ opacity:0; transform:translateY(-14px); } to{ opacity:1; transform:none; } }
+  @keyframes qcOut{ to{ opacity:0; transform:translateY(-14px); } }
+  @media (prefers-reduced-motion:reduce){ .qc,.qc.out{ animation:none; } }
+  .qc-head{ display:flex; align-items:center; gap:8px; font-family:var(--font-head); font-weight:800; font-size:.95rem; }
+  .qc-head span{ flex:1; }
+  .qc-x{ border:none; background:var(--bg); color:var(--ink); width:38px; height:38px; border-radius:50%; font-size:1rem; cursor:pointer; flex-shrink:0; }
+  .qc-row{ margin-top:8px; font-size:.85rem; font-weight:700; }
+  .qc-row b{ font-family:var(--font-head); }
+  .qc-items{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .qc-it{ border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:12px; padding:8px 12px; min-height:42px; font-size:.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; max-width:100%; text-align:start; }
+  .qc-it small{ opacity:.65; font-weight:600; }
+  .qc-it.done{ background:var(--accent); color:var(--card); border-color:var(--accent); }
+  .qc-more{ border:1px dashed var(--line); background:none; color:var(--ink); border-radius:12px; padding:8px 12px; min-height:42px; font-weight:800; cursor:pointer; }
+  .qc-all{ margin-top:8px; font-family:var(--font-head); font-weight:800; font-size:1rem; text-align:center; }
   .hn-card{ padding:14px 16px 14px 20px; padding-inline:20px 16px; position:relative; }
   .hn-card::before{ content:''; position:absolute; inset-block:16px; inset-inline-start:7px; width:4px; border-radius:4px; background:var(--accent); opacity:.85; }
   .hn-head{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-head); font-weight:800; font-size:.82rem; color:var(--ink-soft); margin-bottom:8px; }
@@ -2176,6 +2193,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
   </div>
 </div>
 
+<div id="quickCheck" class="qc" role="dialog" aria-live="polite" data-testid="quick-check" hidden></div>
 <div class="wrap hidden" id="mainWrap">
 
   <!-- HOME -->
@@ -3404,7 +3422,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.107.0';
+const APP_VERSION='v1.108.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5455,6 +5473,84 @@ async function hnDo(a){
   if(a.k==='nav') navTo(a.to);
 }
 setInterval(()=>{ try{ if(document.visibilityState==='visible'&&document.getElementById('panel-home').classList.contains('active')) renderHomeNow(); }catch(e){} },60000);
+
+/* ================= ⚡ QUICK CHECK (v1.108.0, his ask 19 Nov: «أول بأول») =================
+   Once per open of the site (or a return after ≥30 min away) one card on top: how much he has ticked today, and every item whose
+   time has come and is still open — prayers, morning/evening adhkar, timed schedule items, meals. One tap ticks it through the
+   SAME save path as everywhere else (toggleHabitToday / cmTick / mealSetDone). Items whose time hasn't come never show. Nothing
+   due → no card. Closes with ✕, or by itself after «🎉 كلّه معبّى». Never twice in one open. */
+const QC_GAP=30*60000, QC_MAX=6;
+let _qcShown=false, _qcHiddenAt=0, _qcAll=false, _qcBusy=false, _qcOpen=false;
+function qcDoneCount(){ const hb=dailyTrack.habits||{}, ids=new Set((P.habits||[]).map(h=>h.id));
+  let n=Object.keys(hb).filter(k=>hb[k]&&ids.has(k)).length;
+  const today=new Set(commitmentsForDate(new Date()).map(commitKey)), cd=dailyTrack.commitDone||{};
+  n+=Object.keys(cd).filter(k=>cd[k]&&today.has(k)).length;
+  n+=(dailyTrack.meals||[]).filter(Boolean).length;
+  const sd=dailyTrack.supplements||{}; n+=Object.keys(sd).filter(k=>sd[k]).length;
+  return n; }
+function qcItems(){
+  const ar=LANG==='ar', now=hnMinNow(), n=new Date(), out=[], hb=dailyTrack.habits||{}, habits=P.habits||[];
+  const hm=m=>formatTime12h(minutesToHM(Math.max(0,Math.min(1439,Math.round(m)))));
+  const tm=window._todayPT;
+  // 1) prayers whose time has started
+  if(tm) habits.filter(h=>h.group==='prayers').forEach(h=>{ const tn=PRAYER_TIMING_KEY[h.id]; if(!tn||hb[h.id]) return;
+    const st=ptToDate(tm[tn]); if(!st||st>n) return;
+    out.push({id:'p:'+h.id, at:st.getHours()*60+st.getMinutes(), ic:'🕌', label:habitLabelText(h), k:'prayer', h}); });
+  // 2) adhkar: morning after Fajr, evening after Asr (5:00 / 15:30 when prayer times aren't known)
+  [['h_adhkar_am','Fajr',5*60],['h_adhkar_pm','Asr',15*60+30]].forEach(([id,tn,fb])=>{ const h=habits.find(x=>x.id===id); if(!h||hb[id]) return;
+    const st=tm&&ptToDate(tm[tn]), at=st?st.getHours()*60+st.getMinutes():fb; if(at>now) return;
+    out.push({id:'h:'+id, at, ic:'📿', label:habitLabelText(h).replace(/^📿\s*/,''), k:'habit', h}); });
+  // 3) timed schedule items that have started and aren't ticked or skipped
+  const done=dailyTrack.commitDone||{}, skip=dailyTrack.commitSkip||{}, seen=new Set();
+  commitmentsForDate(new Date()).forEach(c=>{ const ck=commitKey(c), sp=mtSpan(c); if(!sp||done[ck]||skip[ck]||seen.has(ck)||sp.start>now) return; seen.add(ck);
+    out.push({id:'c:'+ck, at:sp.start, ic:'📌', label:c.label, k:'commit', ck}); });
+  // 4) meals whose slot has come (same 9am → 9pm spread as «شسوي الحين؟»)
+  if(P.foodSetup){ try{ const v=getTodayMenu(todayWeekdayIndex()), fl=dailyTrack.meals||[], m=v.meals.length;
+    v.meals.forEach((ml,i)=>{ const at=9*60+(m>1?i*(12*60/(m-1)):0); if(fl[i]||at>now) return;
+      out.push({id:'m:'+i, at, ic:'🍽️', label:SLOT_LABELS_BY_KEY[ml.slotKey]?SLOT_LABELS_BY_KEY[ml.slotKey][LANG]:(ar?'وجبة':'Meal'), k:'meal', i, v}); }); }catch(e){} }
+  out.forEach(x=>x.when=hm(x.at));
+  return out.sort((a,b)=>a.at-b.at); }
+async function qcPrayerTimes(){ if(window._todayPT||!prayerHabitIds().length) return;
+  const tm=await Promise.race([fetchPrayerTimes(new Date()), new Promise(r=>setTimeout(()=>r(null),4000))]); if(tm) window._todayPT=tm; }
+function qcEl(){ return document.getElementById('quickCheck'); }
+function qcClose(){ const el=qcEl(); if(!el||el.hidden) return; _qcOpen=false; el.classList.add('out'); setTimeout(()=>{ if(!_qcOpen){ el.hidden=true; el.classList.remove('out'); el.innerHTML=''; } },350); }
+function qcRender(){
+  const el=qcEl(); if(!el||!_qcOpen) return; const ar=LANG==='ar', list=qcItems(), cnt=qcDoneCount();
+  const head=`<div class="qc-head"><span>${ar?'⚡ تشيك سريع':'⚡ Quick check'}</span><button type="button" class="qc-x" data-testid="qc-close" aria-label="${ar?'سكّر':'Close'}">✕</button></div>`;
+  if(!list.length){ el.innerHTML=head+`<div class="qc-row">✅ ${ar?'عبّيت':'Ticked'}: <b class="num" data-testid="qc-done">${cnt}</b></div><div class="qc-all" data-testid="qc-all-done">${ar?'🎉 كلّه معبّى':'🎉 All filled in'}</div>`;
+    el.querySelector('.qc-x').onclick=qcClose; clearTimeout(qcRender._t); qcRender._t=setTimeout(qcClose,2600); return; }
+  clearTimeout(qcRender._t);
+  const shown=_qcAll?list:list.slice(0,QC_MAX), rest=list.length-shown.length;
+  el.innerHTML=head+`<div class="qc-row">✅ ${ar?'عبّيت':'Ticked'}: <b class="num" data-testid="qc-done">${cnt}</b></div>
+    <div class="qc-row">⏳ ${ar?'باقي تعبيه':'Still to fill'}: <b class="num" data-testid="qc-left">${list.length}</b></div>
+    <div class="qc-items">${shown.map((x,i)=>`<button type="button" class="qc-it" data-qc="${i}" data-testid="qc-item" data-qc-id="${escapeHtml(x.id)}">${x.ic} ${escapeHtml(x.label)} <small>${escapeHtml(x.when)}</small></button>`).join('')}${rest>0?`<button type="button" class="qc-more" dir="ltr" data-testid="qc-more">+${rest}</button>`:''}</div>`;
+  el.querySelector('.qc-x').onclick=qcClose;
+  const mb=el.querySelector('.qc-more'); if(mb) mb.onclick=()=>{ _qcAll=true; qcRender(); };
+  el.querySelectorAll('[data-qc]').forEach(b=>b.onclick=()=>qcTick(shown[+b.dataset.qc],b)); }
+async function qcTick(x,b){
+  if(!x||_qcBusy) return; _qcBusy=true; if(b){ b.classList.add('done'); b.disabled=true; }
+  try{
+    if(x.k==='commit') await cmTick(x.ck,true);
+    else if(x.k==='meal'){ playSfx&&playSfx('check'); await mealSetDone(x.i,true,x.v); }
+    else if(!(dailyTrack.habits||{})[x.h.id]){
+      let late=false; if(x.k==='prayer'){ const tn=PRAYER_TIMING_KEY[x.h.id], tm=window._todayPT, en=tm&&ptToDate(tm[PRAYER_WINDOW_END[tn]]);
+        if(en){ if(tn==='Isha'&&en.getHours()<6) en.setDate(en.getDate()+1); late=new Date()>en; } }
+      await new Promise(res=>toggleHabitToday(x.h,done=>{ if(x.k==='prayer'&&done) dailyTrack.prayerStatus={...(dailyTrack.prayerStatus||{}),[x.h.id]:late?'late':'ontime'}; res(); }));
+      await new Promise(r=>setTimeout(r,350)); // toggleHabitToday saves right after its paint
+    }
+  }catch(e){}
+  _qcBusy=false; qcRender(); try{ if(document.getElementById('panel-home').classList.contains('active')) refreshHome(); }catch(e){} }
+async function qcOpen(){
+  if(_qcShown||!currentUser||!P||document.getElementById('mainWrap').classList.contains('hidden')||document.visibilityState!=='visible') return;
+  _qcShown=true; await qcPrayerTimes();
+  if(!qcItems().length) return; // nothing due: no card
+  const el=qcEl(); if(!el) return; _qcAll=false; _qcOpen=true; el.classList.remove('out'); el.hidden=false; qcRender(); }
+// live: a tick made anywhere else (this tab or another device) updates the open card
+function qcSync(){ if(_qcOpen) qcRender(); }
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'){ _qcHiddenAt=Date.now(); return; }
+  if(_qcHiddenAt&&Date.now()-_qcHiddenAt>=QC_GAP){ _qcShown=false; qcClose(); setTimeout(async()=>{ try{ await checkDayRollover(); }catch(e){} qcOpen(); },900); }
+  _qcHiddenAt=0; });
 
 /* (v1.104.0) the «🔄 فاتتك مهمة» card and its auto-suggested moves were removed: the site never rewrites a
    commitment's date/time by itself — his agent handles carry-over. Old `moved` / `missedSeen` data is left as is. */
@@ -11208,6 +11304,7 @@ function onRemoteDailyTrack(){
   _dtRemoteT=setTimeout(()=>{
     try{ if(document.getElementById('panel-home').classList.contains('active')) refreshHome(); }catch(e){}
     try{ renderHomeTodoProgress(); }catch(e){}
+    try{ qcSync(); }catch(e){}
     try{ const act=document.querySelector('section.panel.active'), id=act?act.id.replace('panel-',''):'';
       if(id==='habits') renderHabits(); else if(id==='food') renderFoodSection(); else if(id==='workout') renderWorkoutSection(); }catch(e){}
   },150);
@@ -11232,9 +11329,28 @@ async function saveDailyTrack(){
   // — the elements are static DOM, just invisible while Home isn't shown.
   renderHomeTodoProgress();
   renderHomeDietTrainingPreview();
+  try{ qcSync(); }catch(e){}
   if(document.getElementById('homeWeightTask')) renderHomeWeightTask();
 }
 
+// one meal tick → saved, and the once-a-day «nutrition complete» award (Food checklist + the quick check share it)
+async function mealSetDone(i,on,v){
+  dailyTrack.meals=dailyTrack.meals||[]; dailyTrack.meals[i]=!!on;
+  await saveDailyTrack();
+  // "nutrition day complete" = every one of today's active meal slots
+  // checked off — real completion, never a guess, awarded exactly once
+  const allDone=v.meals.every((_,idx)=>dailyTrack.meals[idx]);
+  if(allDone && !(dailyTrack.xpAwarded&&dailyTrack.xpAwarded.nutrition)){
+    dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
+    dailyTrack.xpAwarded.nutrition=true;
+    updateNamedStreak('nutrition');
+    await awardXP(XP_CONFIG.nutrition_day_complete);
+    P.lifetimeStats.nutritionDaysHit=(P.lifetimeStats.nutritionDaysHit||0)+1;
+    await storageSet('profile',JSON.stringify(P));
+    await saveDailyTrack();
+    await notifyNewUnlocks();
+  }
+}
 function renderMealChecklist(idx,v){
   const mc=document.getElementById('mealChecklist'); mc.innerHTML='';
   v.meals.forEach((m,i)=>{
@@ -11248,23 +11364,10 @@ function renderMealChecklist(idx,v){
       swapSingleTodayMeal(m.slotKey);
     });
     item.addEventListener('click',async()=>{
-      dailyTrack.meals[i]=!dailyTrack.meals[i];
-      item.classList.toggle('done',dailyTrack.meals[i]);
-      item.querySelector('.box').textContent=dailyTrack.meals[i]?'✓':'';
-      await saveDailyTrack();
-      // "nutrition day complete" = every one of today's active meal slots
-      // checked off — real completion, never a guess, awarded exactly once
-      const allDone=v.meals.every((_,idx)=>dailyTrack.meals[idx]);
-      if(allDone && !(dailyTrack.xpAwarded&&dailyTrack.xpAwarded.nutrition)){
-        dailyTrack.xpAwarded=dailyTrack.xpAwarded||{};
-        dailyTrack.xpAwarded.nutrition=true;
-        updateNamedStreak('nutrition');
-        await awardXP(XP_CONFIG.nutrition_day_complete);
-        P.lifetimeStats.nutritionDaysHit=(P.lifetimeStats.nutritionDaysHit||0)+1;
-        await storageSet('profile',JSON.stringify(P));
-        await saveDailyTrack();
-        await notifyNewUnlocks();
-      }
+      const on=!dailyTrack.meals[i];
+      item.classList.toggle('done',on);
+      item.querySelector('.box').textContent=on?'✓':'';
+      await mealSetDone(i,on,v);
     });
     mc.appendChild(item);
   });
@@ -15080,6 +15183,7 @@ function launchApp(){
   // this to Social (refreshHome, which normally does it, won't run then)
   applyI18n(); applyTheme(P.palette,P.mode,P.font);
   showPanel('home'); // refreshes Home itself — calling refreshHome() first rendered it twice
+  setTimeout(qcOpen,1500); // ⚡ quick check, once per open
 }
 
 /* ================= COLLECTIONS =================
