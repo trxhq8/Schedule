@@ -3422,7 +3422,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.109.1';
+const APP_VERSION='v1.110.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3473,6 +3473,7 @@ async function storageGet(key){
       }
       if(doc){
         const v=doc.exists?doc.data().value:null;
+        if(v!==null&&/^daily-track:/.test(key)&&doc.metadata&&!doc.metadata.fromCache&&!dtDirtyList().includes(key)) _dtBase[key]=v;
         if(v!==null){ try{ localStorage.setItem('planner_'+key,v); }catch(e){} return v; }
         if(doc.metadata&&!doc.metadata.fromCache) return null; // the server really has nothing
       }
@@ -3488,7 +3489,7 @@ let _syncPending=0, _syncHideT=0;
 function syncTrack(pr){ _syncPending++; syncDot(); pr.catch(()=>{}).finally(()=>{ _syncPending=Math.max(0,_syncPending-1); syncDot(); }); }
 function syncDot(){
   const el=document.getElementById('syncDot'); if(!el) return; const ar=LANG==='ar';
-  const st=(!navigator.onLine||(typeof pDirtyMine==='function'&&pDirtyMine()&&!_syncPending))?'wait':(_syncPending>0?'busy':'ok');
+  const st=(!navigator.onLine||(((typeof pDirtyMine==='function'&&pDirtyMine())||(typeof dtDirtyAny==='function'&&dtDirtyAny()))&&!_syncPending))?'wait':(_syncPending>0?'busy':'ok');
   el.dataset.st=st;
   const txt=st==='wait'?(ar?'ينتظر النت — محفوظ بجهازك':'Offline — kept on this device'):st==='busy'?(ar?'يحفظ…':'Saving…'):(ar?'محفوظ ✓':'Saved ✓');
   el.querySelector('b').textContent=txt; el.title=txt;
@@ -3622,7 +3623,55 @@ async function profileSave(value,baseS,useDraft,seq){
   else if(useDraft||!cmDraftLocked()) _cmDraftBase=r.outS;
   _cmBase=r.outS; _cmServer=r.outS;
 }
+/* v1.110.0 (23 Nov, his ticks on iPad / PC / phone vanished): a day's checklist was ONE blob written whole (last writer
+   wins). A device that booted on its own stale copy (slow network → localStorage, v1.109.1) or whose listener had dropped
+   wrote that old copy back over ticks made on another device, and a write the server never confirmed was treated as saved.
+   Now every daily-track save is a transaction: it reads the server's copy and lays on top ONLY what this device changed since
+   the copy it last saw from the server (3-way, per item); with no known server copy it keeps both sides (a tick on either
+   device stays). Not confirmed by the server → kept on this device (amber dot) and retried until it is. */
+var _dtBase={}, _dtLatest={}, _dtQueued={}, _dtQ=Promise.resolve(), _dtRetryT=0, DT_DIRTY_KEY='planner_dt_dirty';
+function dtIsObj(x){ return !!x&&typeof x==='object'&&!Array.isArray(x); }
+function dtEq(a,b){ return JSON.stringify(a)===JSON.stringify(b); }
+function dtMerge(base,local,srv,dep){
+  if(dtEq(local,base)) return srv; if(dtEq(srv,base)||dtEq(srv,local)) return local;
+  if(dep<3&&dtIsObj(local)&&dtIsObj(srv)){ const b=dtIsObj(base)?base:{}, o={};
+    new Set([...Object.keys(srv),...Object.keys(local),...Object.keys(b)]).forEach(k=>{ const v=dtMerge(b[k],local[k],srv[k],dep+1); if(v!==undefined) o[k]=v; }); return o; }
+  if(dep<3&&Array.isArray(local)&&Array.isArray(srv)){ const b=Array.isArray(base)?base:[], n=Math.max(local.length,srv.length);
+    return Array.from({length:n},(_,i)=>{ const v=dtMerge(b[i],local[i],srv[i],dep+1); return v===undefined?false:v; }); }
+  return local; }
+function dtUnion(local,srv,dep){ // no known server copy: keep both sides
+  if(local===undefined) return srv; if(srv===undefined) return local;
+  if(dep<3&&dtIsObj(local)&&dtIsObj(srv)){ const o={...srv}; Object.keys(local).forEach(k=>{ o[k]=dtUnion(local[k],srv[k],dep+1); }); return o; }
+  if(dep<3&&Array.isArray(local)&&Array.isArray(srv)){ const n=Math.max(local.length,srv.length); return Array.from({length:n},(_,i)=>dtUnion(local[i],srv[i],dep+1)); }
+  if(local===false&&srv===true) return true; if(typeof local==='number'&&typeof srv==='number') return Math.max(local,srv);
+  return local; }
+function dtDirtyList(){ try{ return JSON.parse(localStorage.getItem(DT_DIRTY_KEY)||'[]')||[]; }catch(e){ return []; } }
+function dtDirtyAny(){ return dtDirtyList().length>0; }
+function dtSetDirty(key,on){ let l=dtDirtyList().filter(k=>k!==key); if(on) l.push(key); try{ localStorage.setItem(DT_DIRTY_KEY,JSON.stringify(l)); }catch(e){}
+  try{ syncDot(); }catch(e){} clearTimeout(_dtRetryT); if(l.length) _dtRetryT=setTimeout(dtFlush,20000); }
+function dtFlush(){ if(!currentUser||!fbDb) return; dtDirtyList().forEach(k=>{ let v=null; try{ v=localStorage.getItem('planner_'+k); }catch(e){} if(v) dtQueue(k,v); }); }
+window.addEventListener('online',()=>setTimeout(dtFlush,900));
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') setTimeout(dtFlush,900); });
+setInterval(()=>{ if(dtDirtyAny()) dtFlush(); },45000);
+function dtQueue(key,value){ _dtLatest[key]=value; if(_dtQueued[key]) return; _dtQueued[key]=true;
+  _dtQ=_dtQ.then(()=>{ _dtQueued[key]=false; return dtSave(key); }).catch(()=>{}); }
+async function dtSave(key){
+  const sent=key===dailyTrackKey?JSON.stringify(dailyTrack):_dtLatest[key]; let local; try{ local=JSON.parse(sent); }catch(e){ return; }
+  if(navigator.onLine===false){ dtSetDirty(key,true); return; }
+  const ref=fsDataRef(key), baseS=_dtBase[key]; let base=null; try{ base=baseS!=null?JSON.parse(baseS):null; }catch(e){}
+  const tx=fbDb.runTransaction(async t=>{ const d=await t.get(ref); let srv=null; try{ srv=d.exists?JSON.parse(d.data().value):null; }catch(e){}
+    const out=srv==null?local:(base?dtMerge(base,local,srv,0):dtUnion(local,srv,0)), s=JSON.stringify(out); t.set(ref,{value:s},{merge:true}); return s; });
+  let s=null; try{ syncTrack(tx); s=await Promise.race([tx,new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),12000))]); }catch(e){}
+  if(s==null){ try{ localStorage.setItem("planner_"+key,sent); }catch(e){} dtSetDirty(key,true); return; }
+  _dtBase[key]=s; dtSetDirty(key,false);
+  if(key===dailyTrackKey){ const merged=JSON.parse(s), cur=JSON.parse(JSON.stringify(dailyTrack));
+    const next={...freshDay(),...dtMerge(local,cur,merged,0)}; // changes made while this save ran stay on top
+    if(!dtEq(next,dailyTrack)){ dailyTrack=next; try{ onRemoteDailyTrack(); }catch(e){} }
+    try{ localStorage.setItem('planner_'+key,JSON.stringify(dailyTrack)); }catch(e){} }
+  else { try{ localStorage.setItem('planner_'+key,s); }catch(e){} }
+}
 async function storageSet(key,value){
+  if(/^daily-track:/.test(key)&&currentUser&&fbDb){ _mem[key]=value; try{ localStorage.setItem('planner_'+key,value); }catch(e){} dtQueue(key,value); return; }
   if(key==='profile'&&currentUser&&fbDb){ // one at a time, in order, each merged with the server's commitments inside a transaction
     const useDraft=_cmUseDraftBase&&_cmDraftBase!=null, baseS=useDraft?_cmDraftBase:_cmBase; _cmUseDraftBase=false; // the copy this save started from
     const seq=++_pSeq; _mem.profile=value; try{ localStorage.setItem('planner_profile',value); }catch(e){}
@@ -11364,9 +11413,13 @@ function watchDailyTrack(){
   _dtUnsubKey=key;
   try{
     _dtUnsub=fsDataRef(key).onSnapshot(snap=>{
-      if(!snap.exists||snap.metadata.hasPendingWrites||key!==dailyTrackKey) return;
+      if(!snap.exists||snap.metadata.hasPendingWrites||snap.metadata.fromCache||key!==dailyTrackKey) return;
       let remote; try{ remote=JSON.parse(snap.data().value); }catch(e){ return; }
-      const next={...freshDay(),...remote};
+      const prevS=_dtBase[key]; let prev=null; try{ prev=prevS!=null?JSON.parse(prevS):null; }catch(e){}
+      _dtBase[key]=snap.data().value; // v1.110.0: merged, so a tick this device hasn't synced yet is never dropped
+      const mine=JSON.parse(JSON.stringify(dailyTrack));
+      const next={...freshDay(),...(prev?dtMerge(prev,mine,remote,0):dtUnion(mine,remote,0))};
+      if(!dtEq(next,remote)) dtQueue(key,JSON.stringify(next));
       if(JSON.stringify(next)===JSON.stringify(dailyTrack)) return;
       dailyTrack=next;
       try{ localStorage.setItem('planner_'+key,snap.data().value); }catch(e){}
