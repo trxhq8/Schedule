@@ -3399,7 +3399,11 @@ try{
   fbApp=firebase.initializeApp(firebaseConfig);
   fbAuth=firebase.auth();
   fbDb=firebase.firestore();
-  fbDb.enablePersistence({synchronizeTabs:true}).catch(()=>{}); // offline cache + auto-resync, best-effort
+  /* v1.111.0 (23 Nov, his ticks on iPhone/iPad/PC «كل ما أعبيه يرجع»): the IndexedDB cache (enablePersistence + synchronizeTabs)
+     wedged on iOS and with many open tabs: writes never left the device and the stale cached copy came back over his ticks.
+     Memory cache only now — this device's own copy lives in localStorage (storageGet fallback, daily-track dirty retry, profile dirty
+     retry), so offline still works. Long-polling auto-detect for mobile networks that break the streaming channel. */
+  try{ fbDb.settings({experimentalAutoDetectLongPolling:true, merge:true}); }catch(e){}
   /* Firebase Auth's default (LOCAL) persistence writes the session to
      localStorage internally, deep inside the SDK — not through any call of
      ours, so our own try/catches around sign-in never see it. In storage-
@@ -3422,7 +3426,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.110.1';
+const APP_VERSION='v1.111.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3443,6 +3447,9 @@ async function checkNewVersion(force){
       b.textContent=ar?'✨ نسخة جديدة — حدّث':'✨ New version — refresh';
       b.onclick=()=>{ b.disabled=true; location.reload(); };
       document.body.appendChild(b);
+      // v1.111.0: no tap needed — a fix reaches him the moment he opens the site (waits only while he is typing)
+      const go=()=>{ const a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return setTimeout(go,4000); b.disabled=true; location.reload(); };
+      setTimeout(go,1200);
     }
   }catch(e){} finally{ _verChecking=false; }
 }
