@@ -3422,7 +3422,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.110.0';
+const APP_VERSION='v1.110.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8739,13 +8739,23 @@ const AP_MAX_KB=900, AP_DOC_MAX=256*1024, AP_MAP_MAX=900*1024;
 let apIndex={}, apCur=null;
 async function apLoadIndex(rawV){ try{ const v=rawV!==undefined?rawV:await storageGet('agentPagesIndex'); const o=v?JSON.parse(v):{}; apIndex=(o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ apIndex={}; } }
 async function apDocGet(key){
+  // v1.110.1 (23 Nov, his phone at the beach: «صفحته ما وصلت هالجهاز»): a 100 KB page on a slow network took >4 s, the read gave up
+  // and the empty device cache said «not here». Now: this device's own copy shows at once when it has one, and a first open
+  // waits for the server (up to 25 s, one retry) instead of giving up.
+  const lsK='planner_ap_'+key; let own=null; try{ own=localStorage.getItem(lsK); }catch(e){}
+  const keep=v=>{ if(typeof v==='string'){ try{ localStorage.setItem(lsK,v); }catch(e){} } return v; };
   if(currentUser&&fbDb){ try{
-    const ref=fsDataRef(key), cache=()=>ref.get({source:'cache'}).catch(()=>null); let d=null;
-    if(navigator.onLine===false||Date.now()<_netSlowUntil) d=await cache();
-    if(!d) d=await Promise.race([ref.get(), new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),4000))]).catch(async()=>{ _netSlowUntil=Date.now()+20000; return await cache(); });
-    if(d&&d.exists&&typeof d.data().value==='string') return d.data().value;
-    if(d&&d.metadata&&!d.metadata.fromCache) return _mem[key]!==undefined?_mem[key]:null;
+    const ref=fsDataRef(key), cache=()=>Promise.race([ref.get({source:'cache'}),new Promise(r=>setTimeout(()=>r(null),1500))]).catch(()=>null);
+    const srv=ms=>Promise.race([ref.get({source:'server'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),ms))]).catch(()=>null);
+    let d=null;
+    if(navigator.onLine!==false) d=await srv(own?5000:12000);
+    if(d&&!d.exists) return null;
+    if(d&&typeof d.data().value==='string') return keep(d.data().value);
+    const c=await cache(); if(c&&c.exists&&typeof c.data().value==='string') return keep(c.data().value);
+    if(own) return own;
+    if(navigator.onLine!==false){ d=await srv(13000); if(d&&d.exists&&typeof d.data().value==='string') return keep(d.data().value); }
   }catch(e){} }
+  if(own) return own;
   return _mem[key]!==undefined?_mem[key]:null;
 }
 function apDocSet(key,value){ _mem[key]=value; if(currentUser&&fbDb){ try{ syncTrack(fsDataRef(key).set({value},{merge:true})); }catch(e){} } }
