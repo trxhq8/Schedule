@@ -8,7 +8,7 @@
 
    BUMP APP_VERSION every time you deploy a real update — it changes the cache
    name, which makes the old cache get deleted automatically on activate. */
-const APP_VERSION = 'v1.111.0';
+const APP_VERSION = 'v1.111.1';
 const CACHE_NAME = `my-planner-${APP_VERSION}`;
 const STATIC_CACHE = 'my-planner-static-v1'; // libraries/fonts with versioned URLs — kept across deploys
 const PRECACHE_URLS = [
@@ -30,7 +30,8 @@ const STATIC_HOSTS = ['www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.
 self.addEventListener('install', (event) => {
   self.skipWaiting(); // activate the new SW immediately, don't wait for old tabs to close
   event.waitUntil(Promise.all([
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)).catch(()=>{}),
+    // v1.111.1: precache past the browser HTTP cache (it could hand back the previous build for 10 min)
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS.map((u) => new Request(u, { cache: 'reload' })))).catch(()=>{}),
     // the app can't start offline without these, so keep them from the first visit on
     caches.open(STATIC_CACHE).then((cache) => Promise.all(LIBS.map((u) => cache.match(u).then((hit) => hit || cache.add(u).catch(()=>{}))))).catch(()=>{})
   ]));
@@ -72,12 +73,13 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin && /\.html?$/i.test(url.pathname) && !/\/index\.html?$/i.test(url.pathname)) { event.respondWith(networkFirstPage(req, 5000)); return; }
   // versioned data files (?v=hash, e.g. planner-data.js) never change under the same URL: cache first
   if (url.origin === self.location.origin && url.searchParams.has('v')) { event.respondWith(cacheFirst(req)); return; }
-  if (url.origin === self.location.origin) { event.respondWith(networkFirst(req, 3000)); return; }
+  // v1.111.1 (his phone on 5G kept the old build after «refresh»): the page itself waits up to 8 s for the network, never the HTTP cache
+  if (url.origin === self.location.origin) { event.respondWith(networkFirst(req, req.mode === 'navigate' ? 8000 : 3000)); return; }
   if (STATIC_HOSTS.includes(url.hostname)) { event.respondWith(cacheFirst(req)); return; }
 });
 async function networkFirst(req, ms) {
   const cache = await caches.open(CACHE_NAME);
-  const net = fetch(req).then((r) => { if (r && r.ok) cache.put(req, r.clone()).catch(()=>{}); return r; });
+  const net = fetch(req, req.mode === 'navigate' ? { cache: 'no-cache' } : undefined).then((r) => { if (r && r.ok) cache.put(req, r.clone()).catch(()=>{}); return r; });
   const cached = (await cache.match(req, { ignoreSearch: req.mode === 'navigate' })) || (req.mode === 'navigate' ? await cache.match('./index.html') : null);
   if (!cached) return net.catch(() => caches.match('./index.html'));
   return Promise.race([net, new Promise((res) => setTimeout(() => res(cached), ms))]).catch(() => cached);
