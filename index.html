@@ -3426,7 +3426,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.114.0';
+const APP_VERSION='v1.114.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -11733,7 +11733,6 @@ function renderStreakBadge(){
    XP only ever follows a real, already-recorded completion. */
 const XP_CONFIG={
   habit_complete:5, water_target_complete:10, nutrition_day_complete:15, workout_complete:25,
-  hand_done:25, // v1.114.0: an agent's 🙋 dropped because he ticked every key — one-time per hand per day (never Hamour, never «تعال سولف»)
   collection_unlock_common:10, collection_unlock_uncommon:30, collection_unlock_epic:90, collection_unlock_mythic:250, collection_unlock_legendary:1200,
   achievement_unlock:15 // fallback only — every real achievement below specifies its own xp
 };
@@ -11744,6 +11743,7 @@ const XP_CONFIG={
    milestones, all one-time or period-gated, so the Store's prices stay
    meaningful instead of being flooded by routine daily behavior. */
 const COIN_CONFIG={
+  hand_done:25, // v1.114.0: an agent's 🙋 dropped because he ticked every key — one-time per hand per day (never Hamour, never «تعال سولف»)
   collection_unlock_common:10, collection_unlock_uncommon:40, collection_unlock_epic:120, collection_unlock_mythic:350, collection_unlock_legendary:1800
 };
 /* ================= XP/COINS: AUTHORITATIVE TOP-LEVEL FIELDS =================
