@@ -3426,7 +3426,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.113.0';
+const APP_VERSION='v1.114.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -8723,8 +8723,20 @@ async function hubSendOrder(agent,text){
   showToast(ar?`📤 انرسل لـ${questAgentName(agent)}`:`📤 Sent to ${questAgentName(agent)}`,'success');
   return true;
 }
-async function hubTickUrgent(a){
+/* 🪙 v1.114.0 (24 Nov, his ask via Sbaiti): a hand that drops because he DID its ticks earns coins once (agent+text+day).
+   One-off agent tasks only: Hamour's (worship stays for Allah) and «💬 تعال سولف» earn nothing; daily routine still earns zero. */
+async function hubHandCoins(a,txt){
+  if(PUB||a==='hamour'||/تعالs*سولف/.test(txt)) return;
+  const d=new Date(), key=a+'|'+txt+'|'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  const got=Array.isArray(P.handCoins)?P.handCoins:[]; if(got.includes(key)) return;
+  P.handCoins=[...got,key].slice(-120);
+  const amt=COIN_CONFIG.hand_done||25; await awardCoins(amt);
+  const nm=(QUEST_AGENTS.find(x=>x[0]===a)||[a,a])[1];
+  try{ showToast('🪙 +'+amt+(LANG==='ar'?' من ':' from ')+nm); }catch(e){}
+}
+async function hubTickUrgent(a,byKeys){
   const r=hubAgents[a], txt=r&&typeof r.urgent==='string'?r.urgent.trim():''; if(!txt) return;
+  if(byKeys) hubHandCoins(a,txt).catch(()=>{});
   // 1) at once, in memory: the fish sits down, the page updates
   hubUrgentDone[a]=[...new Set([...(hubUrgentDone[a]||[]),txt])].slice(-50); r.urgent='';
   playSfx('success'); hubFeed(); if(currentPanelName==='hubagent') renderHubAgent(); else if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='agentpage') apUrgBar();
@@ -8873,7 +8885,7 @@ function apNotify(){ if(!apCur) return; apCur.subs.forEach((sb,sid)=>apPush(sid,
 function apAutoSit(){ if(PUB||!apCur||!_hubLoaded) return; const k=apCur.k, r=hubAgents[k];
   const u=r&&typeof r.urgent==='string'?r.urgent.trim():'', keys=r&&Array.isArray(r.urgentKeys)?r.urgentKeys:[];
   if(!u||!keys.length) return;
-  if(keys.every(p=>{ const e=apCur.M[p]; return !!(e&&apIsObj(e.data)&&e.data.done); })) hubTickUrgent(k); }
+  if(keys.every(p=>{ const e=apCur.M[p]; return !!(e&&apIsObj(e.data)&&e.data.done); })) hubTickUrgent(k,true); }
 function apUrgBar(){ const bar=document.getElementById('apUrg'); if(!bar) return; const ar=LANG==='ar', k=apCur?apCur.k:hubCurAgent, r=hubAgents[k];
   const u=!PUB&&r&&typeof r.urgent==='string'?r.urgent.trim():'';
   bar.hidden=!u; if(!u) return;
@@ -11721,6 +11733,7 @@ function renderStreakBadge(){
    XP only ever follows a real, already-recorded completion. */
 const XP_CONFIG={
   habit_complete:5, water_target_complete:10, nutrition_day_complete:15, workout_complete:25,
+  hand_done:25, // v1.114.0: an agent's 🙋 dropped because he ticked every key — one-time per hand per day (never Hamour, never «تعال سولف»)
   collection_unlock_common:10, collection_unlock_uncommon:30, collection_unlock_epic:90, collection_unlock_mythic:250, collection_unlock_legendary:1200,
   achievement_unlock:15 // fallback only — every real achievement below specifies its own xp
 };
