@@ -3333,7 +3333,7 @@ body.app-bg-active .cos-rarity-head{ display:inline-flex; background:color-mix(i
 <!-- ============ BOTTOM NAV (mobile app-shell navigation) ============ -->
 <button type="button" id="quickLogFab" class="quick-fab hidden" aria-label="سجّل بسرعة / Quick log">＋</button>
 <nav id="bottomNav" class="hidden" aria-label="Main">
-  <button type="button" class="bottom-nav-item" data-goto="home"><span class="ic" aria-hidden="true">🏠</span><span data-i18n="bottom_nav_home"></span></button>
+  <!-- v1.113.0 (24 Nov, his ask): no Home tab — everything on it lives in the Schedule, Health (nutrition: water, weight, supplements · habits) and Challenges -->
   <button type="button" class="bottom-nav-item" data-goto="today"><span class="ic" aria-hidden="true">📅</span><span data-i18n="bottom_nav_schedule"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="health"><span class="ic" aria-hidden="true">🩺</span><span data-i18n="bottom_nav_health"></span></button>
   <button type="button" class="bottom-nav-item" data-goto="challenges"><span class="ic" aria-hidden="true">🎯</span><span data-i18n="bottom_nav_challenges"></span></button>
@@ -3426,7 +3426,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.112.0';
+const APP_VERSION='v1.113.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5012,7 +5012,7 @@ document.getElementById('importFileInput').addEventListener('change',async(e)=>{
   e.target.value='';
 });
 
-document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('home'); });
+document.getElementById('homeBtn').addEventListener('click',()=>{ showPanel('today'); enterSection('today'); });
 document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPanel('profile-hub'); });
 /* Collections has its own back-stack (species → category → animals → home)
    instead of always jumping straight to home like every other section's
@@ -5028,7 +5028,7 @@ document.getElementById('profileHubBtn').addEventListener('click',()=>{ showPane
    is lit. Back goes to wherever the panel was opened FROM (returnTo) —
    e.g. Nutrition opened from Home backs to Home — falling back to the
    parent section when there's no history. */
-const ROOT_PANELS=PUB?['home','today','health','challenges','profile-hub']:['home','today','health','hub','profile-hub'];
+const ROOT_PANELS=PUB?['today','health','challenges','profile-hub']:['today','health','hub','profile-hub'];
 /* full edition: the 🐟 Hub takes the Challenges slot; Challenges lives under You */
 (function(){ const gone=document.querySelector(`#bottomNav .bottom-nav-item[data-goto="${PUB?'hub':'challenges'}"]`); if(gone) gone.remove();
   if(!PUB){ const ch=document.getElementById('panel-challenges'); if(ch){ ch.classList.remove('root-panel'); const b=ch.querySelector('.back-row .back-btn'); if(b) b.dataset.i18n='back_you'; } } })();
@@ -5062,7 +5062,7 @@ const BACK_LABEL={ hub:'back_hub', home:'back_home', today:'back_schedule', heal
   food:'back_nutrition', workout:'back_training', habits:'back_habits', progress:'back_progress', profile:'back_profile', social:'back_friends', store:'back_store', collections:'back_collection' };
 const returnTo={};
 let currentPanelName='home';
-function backTargetFor(name){ return returnTo[name]||PANEL_PARENT[name]||'home'; }
+function backTargetFor(name){ const b=returnTo[name]||PANEL_PARENT[name]||'today'; return b==='home'?'today':b; }
 function goBack(name){
   const target=backTargetFor(name);
   delete returnTo[name];
@@ -5078,7 +5078,7 @@ function syncBackLabel(name){
 function navTo(target){
   if(target==='settings'){ document.getElementById('settingsBtn').click(); return; }
   if(target==='schedule-add'){ showPanel('today'); enterSection('today'); openRoutineSetup(); return; }
-  if(target==='home-weight'){ showPanel('home'); setTimeout(()=>{ const i=document.getElementById('homeWeightInput'); if(i){ i.scrollIntoView({behavior:'smooth',block:'center'}); i.focus(); } },120); return; }
+  if(target==='home-weight'){ showPanel('food'); setTimeout(()=>{ const i=document.getElementById('bodyWeight')||document.getElementById('homeWeightInput'); if(i){ i.scrollIntoView({behavior:'smooth',block:'center'}); i.focus(); } },120); return; }
   showPanel(target); enterSection(target);
 }
 document.addEventListener('click',e=>{
@@ -5142,6 +5142,7 @@ function isBrandNewAccount(){
 function showPanel(name){
   revertCosmeticPreview(); // leaving the Store cancels any live try-on in progress
   const opts=arguments[1]||{};
+  if(name==='home'){ try{ refreshHome(); }catch(e){} name='today'; } // v1.113.0: Home tab removed — every old path lands on the Schedule
   if(name==='diettraining') name='health'; // old combined Diet+Training entry → the Health hub
   if(name==='health'){ name=healthLastTab(); opts._hs=1; } // the Health tab opens its last sub-tab
   if(name==='social') name='profile-hub'; // friends were removed (v1.77) — any old link lands on You
@@ -15337,7 +15338,7 @@ function launchApp(){
   // language + theme must be applied even when the username gate redirects
   // this to Social (refreshHome, which normally does it, won't run then)
   applyI18n(); applyTheme(P.palette,P.mode,P.font);
-  showPanel('home'); // refreshes Home itself — calling refreshHome() first rendered it twice
+  showPanel('today'); enterSection('today'); // v1.113.0: opens on the Schedule (Home tab removed)
   setTimeout(qcOpen,1500); // ⚡ quick check, once per open
 }
 
