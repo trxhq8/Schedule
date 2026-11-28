@@ -3426,7 +3426,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.114.1';
+const APP_VERSION='v1.115.0';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -3954,6 +3954,7 @@ async function bootApp(){
   if(dirtyPv){ try{ localStorage.setItem('planner_profile',dirtyPv); }catch(e){} _cmBase=_pDirty.base; setTimeout(pFlush,500); } // unsynced edits from last time
   await reconcileXpCoinsFromFirestore();
   watchProfile();
+  setTimeout(()=>{ try{ hubDropPull(); }catch(e){} },4000); // v1.115.0: the bridge's drop box
   migrateProgressionFields();
   await migrateRewardValuesV2();
   migrateRetiredCosmetics();
@@ -8541,7 +8542,7 @@ function cmIsoWd(v){ const [y,m,d]=v.split('-').map(Number); return (new Date(y,
    #questJsonApplyBtn: same id = that item is replaced (fields not sent are
    kept — a re-sent quest keeps its tick unless "done" is sent),
    {id, delete:true} removes it. Ticking happens here, on the board. */
-const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة'],['sbaiti','سبيطي']];
+const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة'],['sbaiti','سبيطي'],['mazlaqana','مزلقانة']];
 const QUEST_FIELDS=['id','agent','main','text','done','delete'];
 let quests=[], _questsLoaded=false;
 async function loadQuests(){
@@ -8672,7 +8673,8 @@ const HUB_META={
   zubaidi:{e:'🐟',c:'#16a34a',ar:'أمين المال',en:'Money keeper'},
   shaari:{e:'🐟',c:'#4f46e5',ar:'مفسر الأحلام',en:'Dream interpreter'},
   faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'},
-  sbaiti:{e:'🧪',c:'#8a6d3b',ar:'مطوّر الوكلاء · نائب منقسي',en:'Agent developer · Mangsi’s deputy'}
+  sbaiti:{e:'🧪',c:'#8a6d3b',ar:'مطوّر الوكلاء · نائب منقسي',en:'Agent developer · Mangsi’s deputy'},
+  mazlaqana:{e:'🐠',c:'#c2410c',ar:'إعلام نادي المعالي',en:'Ma3ali club media'}
 };
 const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
 const HUB_HOME_FALLBACK={ // each agent's own artifact (15 Nov payload) — used until the bridge sends a home; Mangsi = the agents' HQ
@@ -9256,6 +9258,12 @@ async function applyHubJson(){
   await loadHub(); // re-check against what's saved right now
   const plan=hubPlan(ta.value);
   if(!plan.ok){ renderHubPreview(plan); return; }
+  await hubCommitPlan(plan);
+  ta.value=''; document.getElementById('hubJsonPreview').innerHTML=`<div class="hub-empty" data-testid="hub-json-done">✅ ${ar?'انحفظ':'Saved'}</div>`; // quiet: no toast, no sound (his rule for «المقر»)
+  if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent();
+}
+// v1.115.0: one save path for the Apply button and the bridge drop below
+async function hubCommitPlan(plan){
   if(plan.agents.length){ plan.agents.forEach(rec=>{ hubAgents[rec.agent]=rec; }); hubScrubUrgent(); await saveHubAgents(); }
   let touched=false;
   plan.inbox.forEach(u=>{ const o=hubInbox.find(x=>x.id===u.id); if(!o) return; touched=true;
@@ -9267,9 +9275,50 @@ async function applyHubJson(){
       apDocSet('agentPage_'+pg.agent, JSON.stringify({html:pg.html, updatedAt:pg.updatedAt, version}));
       apIndex[pg.agent]={updatedAt:pg.updatedAt, version, size:pg.size}; });
     await storageSet('agentPagesIndex', JSON.stringify(apIndex)); }
-  ta.value=''; document.getElementById('hubJsonPreview').innerHTML=`<div class="hub-empty" data-testid="hub-json-done">✅ ${ar?'انحفظ':'Saved'}</div>`; // quiet: no toast, no sound (his rule for «المقر»)
-  if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent();
 }
+/* v1.115.0 (Sbaiti, 28 Nov) «صندوق الجسر»: the scheduled hub-bridge can't drive Chrome on its own (Claude in Chrome asks «Allow» on every
+   scheduled run, a known bug, so it waited for his click all day). Now the bridge leaves the same {agents, inbox, pages} JSON, gzipped and
+   AES-GCM encrypted, on this repo's «drop» branch. Whenever the site is open (any device) it fetches that file, decrypts it with the key kept
+   only in his own private data (hubDropKey, made here once), and saves it exactly like the Apply button. The public file is unreadable. */
+const HUB_DROP_URL='https://raw.githubusercontent.com/trxhq8/Schedule/drop/hub.enc.json';
+let _dropBusy=false, _dropKey=null;
+async function hubDropGetKey(){
+  if(_dropKey) return _dropKey;
+  const ref=fsDataRef('hubDropKey');
+  let doc=await Promise.race([ref.get({source:'server'}),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),6000))]);
+  let k=null; try{ const v=doc.exists?doc.data().value:null; k=v?JSON.parse(v).k:null; }catch(e){}
+  if(!k&&!doc.exists){ // only when the server says there is none (never because a read was slow)
+    const raw=crypto.getRandomValues(new Uint8Array(32)); k=btoa(String.fromCharCode(...raw));
+    await ref.set({value:JSON.stringify({k, at:new Date().toISOString()})});
+  }
+  if(!k) return null;
+  _dropKey=await crypto.subtle.importKey('raw',Uint8Array.from(atob(k),c=>c.charCodeAt(0)),'AES-GCM',false,['decrypt']);
+  return _dropKey;
+}
+async function hubDropPull(){
+  if(PUB||!currentUser||!fbDb||_dropBusy||document.hidden||navigator.onLine===false) return;
+  _dropBusy=true;
+  try{
+    const key=await hubDropGetKey(); if(!key) return;
+    const r=await fetch(HUB_DROP_URL+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
+    const box=await r.json(); if(!box||!box.seq||!box.iv||!box.ct) return;
+    const seqDoc=await fsDataRef('hubDropSeq').get({source:'server'}).catch(()=>null);
+    const done=seqDoc&&seqDoc.exists?Number(seqDoc.data().value)||0:0;
+    if(box.seq<=done) return;
+    const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+    let bytes=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b(box.iv)},key,b(box.ct)));
+    if(box.z) bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+    await loadHub();
+    const plan=hubPlan(new TextDecoder().decode(bytes));
+    if(!plan.ok){ console.warn('hub drop not applied:',plan.fatal||plan.rows.filter(x=>x.errs.length)); }
+    else await hubCommitPlan(plan);
+    await fsDataRef('hubDropSeq').set({value:String(box.seq), at:new Date().toISOString(), ok:!!plan.ok},{merge:true}); // a bad drop is skipped, not retried forever
+    if(plan.ok){ if(currentPanelName==='hub') renderHubGrid(); else if(currentPanelName==='hubagent') renderHubAgent(); }
+  }catch(e){ console.warn('hub drop skipped:',e); }
+  finally{ _dropBusy=false; }
+}
+setInterval(()=>{ hubDropPull(); },120000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) setTimeout(hubDropPull,1500); });
 document.getElementById('hubQuickSend').addEventListener('click',async e=>{ const b=e.currentTarget, ta=document.getElementById('hubQuickText'); b.disabled=true;
   if(await hubSendOrder(hubQuickAgent,ta.value)){ ta.value=''; renderHubGrid(); } b.disabled=false; });
 document.getElementById('hubJsonPreviewBtn').addEventListener('click',async()=>{ await loadHub(); renderHubPreview(hubPlan(document.getElementById('hubJsonText').value)); });
