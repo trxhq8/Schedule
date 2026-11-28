@@ -3426,7 +3426,7 @@ try{
 /* ================= VERSION + SERVICE WORKER ================= */
 /* Bump this on every real deploy — must match APP_VERSION inside sw.js so
    the old cache gets cleared and the new one takes over immediately. */
-const APP_VERSION='v1.115.0';
+const APP_VERSION='v1.115.1';
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js').catch(()=>{ /* fails silently when run as a Claude Artifact / sandboxed preview — expected there */ });
@@ -5450,13 +5450,13 @@ function mtSpan(c){
    While its item runs, that agent STANDS on the island (hq-feed urgent «⏳ <item>»); a meal/gym item keeps Hurairy
    standing until it's ticked. Done or skipped → it sits at once. Order: Qur'an (hamour) → sport (hariri) & study
    (saboor) → the rest. Public edition: no agents. */
-const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور'],['sbaiti','سبيطي'],['mangsi','منقسي']];
+const CM_AGENT_NAMES=[['hariri','هريري'],['saboor','الصبور'],['hoot','الحوت'],['yaryoor','يريور'],['zoori','زوري'],['zubaidi','زبيدي'],['faryala','فريالة'],['shaari','شعري'],['hamour','هامور'],['sbaiti','سبيطي'],['nuwaibi','نويبي'],['mangsi','منقسي']];
 /* Every item has a fish. Order: explicit c.agent → an agent's name in the label → Mangsi's aliases → the lead emoji →
    keyword groups (+ surah names for Hamour) → Mangsi (fallback). Arabic is normalised (أإآ→ا, ة→ه, ى→ي, no tashkeel).
    Arabic keywords of ≤3 letters, and any keyword starting with '=', match whole words only (prefix ال/و/وال/بال/لل
    allowed) — so «مدرسة» never hits «درس». */
 const CM_MANGSI_ALIAS=['🚗','توصيل','معالي','ma3ali'];
-const CM_LEAD_EMOJI={'📖':'hamour','🏋':'hariri','💻':'saboor','🧪':'saboor','📸':'zoori','🎬':'zoori','🪵':'yaryoor','🔧':'yaryoor','🛠':'yaryoor','🪴':'faryala','🌱':'faryala','💰':'zubaidi'};
+const CM_LEAD_EMOJI={'📖':'hamour','🏋':'hariri','💻':'saboor','🧪':'saboor','📸':'zoori','🎬':'zoori','🪵':'yaryoor','🔧':'yaryoor','🛠':'yaryoor','🪴':'faryala','🌱':'faryala','💰':'zubaidi','🐾':'nuwaibi'};
 // the 114 surahs (without «ال», normalised). Those that are also everyday words or names count only next to a Qur'an cue.
 const CM_SURAH_CLEAR=['فاتحه','بقره','اعراف','انفال','توبه','انبياء','مومنون','مؤمنون','عنكبوت','سجده','صافات','زمر','فصلت','شوري','جاثيه','احقاف','ذاريات','رحمن','مجادله','ممتحنه','منافقون','تغابن','حاقه','معارج','مزمل','مدثر','مرسلات','نازعات','تكوير','انفطار','مطففين','انشقاق','غاشيه','عاديات','قارعه','تكاثر','ماعون','كافرون','مسد','فلق'];
 const CM_SURAH_CTX=['ال عمران','عمران','نساء','مائده','مايده','انعام','يونس','هود','يوسف','رعد','ابراهيم','حجر','نحل','اسراء','كهف','مريم','طه','حج','نور','فرقان','شعراء','نمل','قصص','روم','لقمان','احزاب','سبا','فاطر','يس','ص','غافر','زخرف','دخان','محمد','فتح','حجرات','ق','طور','نجم','قمر','واقعه','حديد','حشر','صف','جمعه','طلاق','تحريم','ملك','قلم','نوح','جن','قيامه','انسان','نبا','عبس','بروج','طارق','اعلي','فجر','بلد','شمس','ليل','ضحي','شرح','تين','علق','قدر','بينه','زلزله','عصر','همزه','فيل','قريش','كوثر','نصر','اخلاص','ناس'];
@@ -5471,6 +5471,7 @@ const CM_AGENT_KW=[
   ['zubaidi',['فلوس','مصروف','مربعات','صدقة']],
   ['faryala',['نبات','زراعة','شتلة','سقي']],
   ['shaari',['حلم']],
+  ['nuwaibi',['حيوان','حيوانات','بيطري','صقر','قنص','مقناص']],
   ['sbaiti',['repo','repos','ريبو','فيديو تطوير','تطوير الوكلاء','تطوير الوكيل','تطوير وكيل']]];
 const CM_WAIT_KW=['جيم','gym','تمرين','workout','أكل','اكل','وجبة','فطور','غدا','عشا','meal','breakfast','lunch','dinner'];
 const cmNorm=x=>String(x||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي');
@@ -8542,7 +8543,7 @@ function cmIsoWd(v){ const [y,m,d]=v.split('-').map(Number); return (new Date(y,
    #questJsonApplyBtn: same id = that item is replaced (fields not sent are
    kept — a re-sent quest keeps its tick unless "done" is sent),
    {id, delete:true} removes it. Ticking happens here, on the board. */
-const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة'],['sbaiti','سبيطي'],['mazlaqana','مزلقانة']];
+const QUEST_AGENTS=[['mangsi','منقسي'],['zoori','زوري'],['hariri','هريري'],['hamour','هامور'],['hoot','الحوت'],['saboor','الصبور'],['yaryoor','يريور'],['zubaidi','زبيدي'],['shaari','شعري'],['faryala','فريالة'],['sbaiti','سبيطي'],['mazlaqana','مزلقانة'],['nuwaibi','نويبي']];
 const QUEST_FIELDS=['id','agent','main','text','done','delete'];
 let quests=[], _questsLoaded=false;
 async function loadQuests(){
@@ -8674,7 +8675,8 @@ const HUB_META={
   shaari:{e:'🐟',c:'#4f46e5',ar:'مفسر الأحلام',en:'Dream interpreter'},
   faryala:{e:'🐡',c:'#65a30d',ar:'النباتات والزراعة',en:'Plants & farming'},
   sbaiti:{e:'🧪',c:'#8a6d3b',ar:'مطوّر الوكلاء · نائب منقسي',en:'Agent developer · Mangsi’s deputy'},
-  mazlaqana:{e:'🐠',c:'#c2410c',ar:'إعلام نادي المعالي',en:'Ma3ali club media'}
+  mazlaqana:{e:'🐠',c:'#c2410c',ar:'إعلام نادي المعالي',en:'Ma3ali club media'},
+  nuwaibi:{e:'🐟',c:'#a16207',ar:'الحيوانات والبر والقنص',en:'Animals, desert & falconry'}
 };
 const HUB_KEYS=QUEST_AGENTS.map(x=>x[0]);
 const HUB_HOME_FALLBACK={ // each agent's own artifact (15 Nov payload) — used until the bridge sends a home; Mangsi = the agents' HQ
